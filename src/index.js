@@ -435,27 +435,42 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // Autoreact
-  const autoreacts = db.getAutoreacts(message.guild.id);
-  for (const ar of autoreacts) {
-    if (ar.trigger && contentLower.includes(ar.trigger.toLowerCase())) {
-      message.react(ar.emoji).catch(() => {});
+  // 🤖 AUTOREACT & AUTORESPONDER EVALUATION
+  const isCommandMsg = message.content.startsWith(PREFIX) ||
+                       message.content.startsWith(`<@${client.user.id}>`) ||
+                       message.content.startsWith(`<@!${client.user.id}>`);
+
+  if (!isCommandMsg) {
+    // Autoreact
+    const autoreacts = db.getAutoreacts(message.guild.id);
+    for (const ar of autoreacts) {
+      if (ar.trigger) {
+        const cleanTrigger = ar.trigger.toLowerCase().trim();
+        if (contentLower.includes(cleanTrigger)) {
+          message.react(ar.emoji).catch(() => {});
+        }
+      }
     }
-  }
 
-  // Autoresponder
-  const autoresponses = db.getAutoresponses(message.guild.id);
-  for (const resp of autoresponses) {
-    if (!resp.trigger) continue;
-    const triggerLower = resp.trigger.toLowerCase();
-    if (contentLower === triggerLower || contentLower.includes(triggerLower)) {
-      let replyText = resp.response
-        .replace(/{user}/g, `<@${message.author.id}>`)
-        .replace(/{username}/g, message.author.username)
-        .replace(/{server}/g, message.guild.name)
-        .replace(/{membercount}/g, message.guild.memberCount.toString());
+    // Autoresponder
+    const autoresponses = db.getAutoresponses(message.guild.id);
+    for (const resp of autoresponses) {
+      if (!resp.trigger) continue;
+      const cleanTrigger = resp.trigger.toLowerCase().trim();
 
-      message.channel.send(replyText).catch(() => {});
+      const isMatch = contentLower === cleanTrigger || contentLower.includes(cleanTrigger);
+
+      if (isMatch) {
+        let replyText = resp.response
+          .replace(/{user}/g, `<@${message.author.id}>`)
+          .replace(/{username}/g, message.author.username)
+          .replace(/{server}/g, message.guild.name)
+          .replace(/{membercount}/g, message.guild.memberCount.toString());
+
+        console.log(`🤖 [Autoresponder Triggered] "${cleanTrigger}" in #${message.channel.name} by ${message.author.tag}`);
+        message.channel.send(replyText).catch(() => {});
+        break;
+      }
     }
   }
 

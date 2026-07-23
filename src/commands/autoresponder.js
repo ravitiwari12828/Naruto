@@ -5,10 +5,11 @@ const emojis = require('../utils/emojis');
 module.exports = {
   name: 'autoresponder',
   description: 'Manage automated message responses and emoji reactions with placeholders',
-  aliases: ['ar', 'react', 'autoreact'],
+  aliases: ['ar', 'react', 'autoreact', 'autoresponse'],
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawCmd = message.content.trim().split(/ +/)[0];
+    const invoked = rawCmd.replace(/^[^a-zA-Z0-9]/, '').toLowerCase();
     const isReact = invoked === 'react' || invoked === 'autoreact';
     const sub = args[0] ? args[0].toLowerCase() : null;
 
@@ -23,7 +24,7 @@ module.exports = {
         return renderModuleHelpPanel(message, 'autoresponder');
       }
 
-      if (sub === 'add') {
+      if (sub === 'add' || sub === 'create') {
         const trigger = args[1]?.toLowerCase();
         const emoji = args[2];
         if (!trigger || !emoji) {
@@ -33,7 +34,7 @@ module.exports = {
         return message.reply(`${emojis.SUCCESS} Added autoreact! Messages containing \`${trigger}\` will react with ${emoji}`);
       }
 
-      if (sub === 'remove') {
+      if (sub === 'remove' || sub === 'delete') {
         const triggerOrId = args[1]?.toLowerCase();
         if (!triggerOrId) return message.reply(`${emojis.WARNING} Usage: \`.react remove <triggerWord>\``);
         const removed = db.removeAutoreact(message.guild.id, triggerOrId);
@@ -73,7 +74,7 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Usage: \`.ar add <triggerWord> <reply message>\`\n*Placeholders supported:* \`{user}\`, \`{username}\`, \`{server}\`, \`{membercount}\``);
       }
       const item = db.addAutoresponse(message.guild.id, trigger, responseText);
-      return message.reply(`${emojis.SUCCESS} Created autoresponder \`[ID: ${item.id}]\` for trigger \`${trigger}\`!`);
+      return message.reply(`${emojis.SUCCESS} Created autoresponder \`[ID: ${item.id}]\` for trigger \`${trigger}\`!\n• **Trigger:** \`${trigger}\`\n• **Reply:** ${responseText}`);
     }
 
     if (sub === 'delete' || sub === 'remove') {
@@ -96,5 +97,9 @@ module.exports = {
       });
       return message.channel.send({ embeds: [embed] });
     }
+
+    // Default Fallback
+    const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+    return renderModuleHelpPanel(message, 'autoresponder');
   }
 };
