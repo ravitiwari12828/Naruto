@@ -7,6 +7,41 @@ const emojis = require('../utils/emojis');
 // ─────────────────────────────────────────
 const CATEGORIES = [
   {
+    label: 'Analytics & Tracking',
+    value: 'analytics',
+    description: 'Track chat, voice timing, invites, joins/leaves, commands & tickets',
+    emojiObj: emojis.OBJ_ZAP || { name: '📊' },
+    heading: '📊 Timeframe & Category Analytics Suite',
+    commands: [
+      'analytics', '1d', '7d', '14d', '30d', 'overall',
+      'topmessages', 'topvoice', 'topinvites', 'joinsleaves',
+      'topcommands', 'ticketstats', 'userstats', 'serverstats'
+    ]
+  },
+  {
+    label: 'ModMail System',
+    value: 'modmail',
+    description: 'DM ModMail support threads, staff replies & HTML transcripts',
+    emojiObj: { name: '📬' },
+    heading: '📬 ModMail Support System',
+    commands: [
+      'modmail setup', 'r <message>', 'close [reason]',
+      'modmail', 'modmailtranscript'
+    ]
+  },
+  {
+    label: 'No-Prefix & Premium',
+    value: 'noprefix',
+    description: 'No-prefix authorization, server premium & user VIP management',
+    emojiObj: emojis.OBJ_PREMIUM || { name: '💎' },
+    heading: '💎 No-Prefix & Premium Suite',
+    commands: [
+      'noprefix add', 'noprefix remove', 'noprefix list',
+      'premium activate', 'premium revoke', 'premium adduser',
+      'premium revokeuser', 'premium status', 'premium redeem'
+    ]
+  },
+  {
     label: 'Tickets',
     value: 'ticket',
     description: 'Support ticket system: setup, category, claim, close, transcript',
@@ -17,30 +52,46 @@ const CATEGORIES = [
       'category_remove', 'category_toggle', 'category_list',
       'panel_deploy', 'claim', 'close',
       'reopen', 'add_member', 'remove_member',
-      'info', 'transcript', 'ticket setup (Wizard)'
+      'info', 'transcript', 'callstaff'
     ]
   },
   {
-    label: 'Voice',
+    label: 'Voice & VoiceMaster',
     value: 'voice',
-    description: 'Voice admin: vcdeafen, vckick, vclist, vcmoveall, vcmute, vcpull',
+    description: 'Voice admin, join-to-create temp VCs & VoiceMaster control panel',
     emojiObj: emojis.OBJ_VOICE,
-    heading: `${emojis.VOICE} Voice Commands`,
+    heading: `${emojis.VOICE} Voice & VoiceMaster Commands`,
     commands: [
+      'vctemp setup', 'vctemp disable', 'vctemp status', 'setupvc',
       'vcdeafen', 'vckick', 'vckickall', 'vclist',
       'vcmoveall', 'vcmute', 'vcmuteall', 'vcpull',
       'vcpullall', 'vcundeafen', 'vcunmute', 'vcunmuteall'
     ]
   },
   {
-    label: 'Premium',
-    value: 'premium',
-    description: 'botcustomize, premiumguild, temp voice setup & status',
-    emojiObj: emojis.OBJ_PREMIUM,
-    heading: `${emojis.PREMIUM} Premium Commands`,
+    label: 'Music Suite',
+    value: 'music',
+    description: 'Lavalink music player: seek, equalizer, multi-filters, 24/7 AFK mode',
+    emojiObj: emojis.OBJ_MUSIC,
+    heading: `${emojis.MUSIC} Music & Audio Filter Commands`,
     commands: [
-      'botcustomize', 'premiumguild', 'vctemp setup',
-      'vctemp disable', 'vctemp status'
+      'play', 'pause', 'resume', 'seek', 'equalizer',
+      'filter', 'skip', 'stop', 'queue', 'nowplaying',
+      'volume', 'loop', 'shuffle', '247', 'join', 'leave'
+    ]
+  },
+  {
+    label: 'AntiNuke & Security',
+    value: 'antinuke',
+    description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, BypassRole & 21 Security Filters',
+    emojiObj: emojis.OBJ_ANTINUKE,
+    heading: `${emojis.ANTINUKE} AntiNuke & Security Commands`,
+    isAntinukeSuite: true,
+    commands: [
+      'antinuke', 'antinuke enable', 'antinuke disable',
+      'panicmode enable', 'panicmode disable', 'panicmode set',
+      'whitelist add', 'whitelist remove', 'extraowner add',
+      'extraowner remove', 'bypassrole add', 'quarantine'
     ]
   },
   {
@@ -52,22 +103,7 @@ const CATEGORIES = [
     commands: [
       'level rank', 'level leaderboard', 'level setup',
       'level disable', 'level status', '/level rank',
-      '/level leaderboard', '/level setup', '/level disable',
-      '/level status', '/leaderboard setup', '/leaderboard refresh'
-    ]
-  },
-  {
-    label: 'Music',
-    value: 'music',
-    description: 'Lavalink music player: play, pause, queue, search, filter, lyrics',
-    emojiObj: emojis.OBJ_MUSIC,
-    heading: `${emojis.MUSIC} Music Commands`,
-    commands: [
-      'autoplay', 'clear', 'filter', 'forceskip', 'grab',
-      'join', 'leave', 'loop', 'lyrics', 'nowplaying',
-      'pause', 'play', 'queue', 'remove', 'resume',
-      'search', 'seek', 'shuffle', 'skip', 'skipto',
-      'stop', 'volume'
+      '/level leaderboard', '/level setup', '/level disable'
     ]
   },
   {
@@ -100,11 +136,11 @@ const CATEGORIES = [
     ]
   },
   {
-    label: 'Utility',
+    label: 'Utility & Logs',
     value: 'info',
     description: 'activity, afk, advlogsetup, logsetup, serverbanner, snipe',
     emojiObj: emojis.OBJ_INFO,
-    heading: `${emojis.STATS_NEW} Utility Commands`,
+    heading: `${emojis.STATS_NEW} Utility & Log Commands`,
     commands: [
       'activity', 'afk', 'avatar', 'advlogsetup',
       'logsetup', 'roleinfo', 'serverbanner',
@@ -141,17 +177,6 @@ const CATEGORIES = [
       'ninja lb level',
       'ninja lb ryo',
       'ninja lb xp'
-    ]
-  },
-  {
-    label: 'Activity & Stats',
-    value: 'activity',
-    description: 'Track chat, voice, level XP & invites',
-    emojiObj: emojis.OBJ_ZAP || { name: '⚡' },
-    heading: `${emojis.ZAP} Activity & Stats`,
-    commands: [
-      'activity server', 'activity chat',
-      'activity voice', 'activity invites'
     ]
   },
   {
@@ -267,42 +292,18 @@ const CATEGORIES = [
   {
     label: 'Welcome',
     value: 'welcome',
-    description: 'welcome, welcomechannel, welcomemessage, welcomereset, welcometest',
+    description: 'welcome, welcomechannel, welcomemessage, welcomeimage, welcometest',
     emojiObj: emojis.OBJ_WELCOME,
     heading: `${emojis.WELCOME} Welcome Commands`,
     commands: [
-      '/welcome', 'welcome', 'welcomechannel',
-      'welcomemessage', 'welcomereset', 'welcometest'
-    ]
-  },
-  {
-    label: 'Voicemaster',
-    value: 'voicemaster',
-    description: 'vctemp setup, vctemp disable, vctemp status, tempvc',
-    emojiObj: emojis.OBJ_VOICE,
-    heading: `${emojis.VOICE} Voicemaster Commands`,
-    commands: [
-      'vctemp setup', 'vctemp disable',
-      'vctemp status', 'tempvc'
-    ]
-  },
-  {
-    label: 'AntiNuke',
-    value: 'antinuke',
-    description: 'AntiNuke, PanicMode, 15-Day Quarantine Probation & 21 Security Filters',
-    emojiObj: emojis.OBJ_ANTINUKE,
-    heading: `${emojis.ANTINUKE} Antinuke`,
-    isAntinukeSuite: true,
-    commands: [
-      '.securesetup', '.quarantine (15-Day Guard)',
-      '.antinuke', '.antinuke enable', '.antinuke disable',
-      '.whitelist', '.extraowner', '.bypassrole'
+      'welcome', 'welcomechannel', 'welcomemessage',
+      'welcomeimage', 'welcometest', 'welcomereset'
     ]
   }
 ];
 
 function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
-  const totalCommands = message.client.commands && message.client.commands.size > 0 ? message.client.commands.size : 187;
+  const totalCommands = message.client.commands && message.client.commands.size > 0 ? message.client.commands.size : 283;
 
   const embed = new EmbedBuilder()
     .setColor(0x00E5FF)
@@ -352,146 +353,150 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     });
 
   if (cat.isAntinukeSuite) {
-    embed.setTitle(`${emojis.ANTINUKE} Antinuke`);
+    embed.setTitle(`${cat.heading}`);
     embed.setDescription(
-      `**Antinuke**\n` +
-      `\`\`\`\n.antinuke, .antinuke enable, .antinuke disable, .whitelist, .extraowner, .bypassrole\n\`\`\`\n\n` +
-      `**Panicmode**\n` +
-      `\`\`\`\n.panicmode, .panicmode enable, .panicmode disable, .panicmode reset, .panicmode set\n\`\`\`\n\n` +
-      `**Filters**\n` +
-      `${emojis.SUCCESS} \`Anti ban\`\n` +
-      `${emojis.SUCCESS} \`Anti kick\`\n` +
-      `${emojis.SUCCESS} \`Anti bot add\`\n` +
-      `${emojis.SUCCESS} \`Anti channel create\`\n` +
-      `${emojis.SUCCESS} \`Anti channel delete\`\n` +
-      `${emojis.SUCCESS} \`Anti channel update\`\n` +
-      `${emojis.SUCCESS} \`Anti role create\`\n` +
-      `${emojis.SUCCESS} \`Anti role delete\`\n` +
-      `${emojis.SUCCESS} \`Anti role update\`\n` +
-      `${emojis.SUCCESS} \`Anti webhook create\`\n` +
-      `${emojis.SUCCESS} \`Anti webhook delete\`\n` +
-      `${emojis.SUCCESS} \`Anti webhook update\`\n` +
-      `${emojis.SUCCESS} \`Anti sticker/emoji create\`\n` +
-      `${emojis.SUCCESS} \`Anti sticker/emoji delete\`\n` +
-      `${emojis.SUCCESS} \`Anti sticker/emoji update\`\n\n` +
-      `**Special Filters**\n` +
-      `${emojis.SUCCESS} \`Anti guild update\`\n` +
-      `${emojis.SUCCESS} \`Anti unban\`\n` +
-      `${emojis.SUCCESS} \`Anti spam\`\n` +
-      `${emojis.SUCCESS} \`Anti content filter\`\n` +
-      `${emojis.SUCCESS} \`Anti raid protection\`\n` +
-      `${emojis.SUCCESS} \`Anti everyone/here\``
+      `🔒 **Server Protection & Owner Security Suite**\n\n` +
+      `• **\`securesetup\`**: Deploy AntiNuke whitelist & emergency panic mode.\n` +
+      `• **\`quarantine\`**: 15-day member probation guard against mass pings.\n` +
+      `• **\`antinuke\`**: Enable/disable individual security filters (antiban, antikick, antibot, antichannel, antirole, antiwebhook).\n` +
+      `• **\`panicmode\`**: Emergency lockdown system (Level 1-3).\n` +
+      `• **\`whitelist / extraowner / bypassrole\`**: Owner-only permission delegation.\n\n` +
+      `**Command List:**\n` +
+      `\`${cat.commands.join('`, `')}\``
     );
   } else {
-    const formattedPills = cat.commands.map(cmd => `\`${cmd}\``).join(', ');
     embed.setTitle(`${cat.heading}`);
-    embed.setDescription(formattedPills);
+    embed.setDescription(
+      `Below is the complete list of commands for **${cat.label}**.\n` +
+      `Type \`.help <command>\` for detailed usage on any command.\n\n` +
+      `\`\`\`\n` +
+      cat.commands.map(cmd => `.${cmd}`).join('\n') +
+      `\n\`\`\``
+    );
   }
 
   if (devPortalBanner) embed.setImage(devPortalBanner);
   return embed;
 }
 
+function buildDropdownMenu() {
+  const options = CATEGORIES.map(cat => {
+    const opt = {
+      label: cat.label,
+      value: cat.value,
+      description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description
+    };
+    if (typeof cat.emojiObj === 'string') {
+      opt.emoji = cat.emojiObj;
+    } else if (cat.emojiObj && cat.emojiObj.id) {
+      opt.emoji = { id: cat.emojiObj.id, name: cat.emojiObj.name };
+    } else if (cat.emojiObj && cat.emojiObj.name) {
+      opt.emoji = cat.emojiObj.name;
+    }
+    return opt;
+  });
+
+  return new ActionRowBuilder().addComponents(
+    new StringSelectMenuBuilder()
+      .setCustomId('help_category_select')
+      .setPlaceholder('▚ Select a Module to View Commands...')
+      .addOptions(options)
+  );
+}
+
+function buildNavigationButtons() {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('help_home')
+      .setEmoji('🏠')
+      .setLabel('Home')
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId('help_delete')
+      .setEmoji('🗑️')
+      .setLabel('Delete')
+      .setStyle(ButtonStyle.Danger)
+  );
+}
+
 module.exports = {
   name: 'help',
-  description: 'Display Naruto Bot help panel with all command categories',
+  description: 'Interactive Multi-Module Help Panel with Dropdown Menu & Category Navigator',
   aliases: ['h', 'menu', 'commands'],
 
   async execute(message, args) {
-    const categoryQuery = args[0] ? args[0].toLowerCase() : null;
-
+    const author = message.author;
     let botUser = message.client.user;
+
     try {
       botUser = await message.client.users.fetch(message.client.user.id, { force: true });
-    } catch (err) {}
+    } catch (e) {}
 
     const botAvatar = botUser.displayAvatarURL({ dynamic: true, size: 512 });
-    const devPortalBanner = botUser.bannerURL({ dynamic: true, size: 1024 })
-      || message.client.botBannerURL
-      || process.env.BANNER_URL;
+    const devPortalBanner = message.client.botBannerURL || null;
 
-    // Direct category argument e.g. .help mod
-    if (categoryQuery) {
-      const cat = CATEGORIES.find(c => c.value === categoryQuery || c.label.toLowerCase() === categoryQuery);
-      if (!cat) {
-        const validValues = CATEGORIES.map(c => `\`${c.value}\``).join(', ');
-        return message.reply(`⚠️ Category \`${categoryQuery}\` not found! Available: ${validValues}`);
+    if (args[0]) {
+      const search = args[0].toLowerCase();
+      const cat = CATEGORIES.find(c => c.value === search || c.label.toLowerCase() === search);
+      if (cat) {
+        const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
+        return message.channel.send({
+          embeds: [catEmbed],
+          components: [buildDropdownMenu(), buildNavigationButtons()]
+        });
       }
-      const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
-      return message.channel.send({ embeds: [catEmbed] });
     }
 
-    // ── Main Help Dashboard with Dropdown & Home Button ──
     const mainEmbed = buildMainEmbed(message, botUser, botAvatar, devPortalBanner);
+    const dropdownRow = buildDropdownMenu();
+    const navRow = buildNavigationButtons();
 
-    const selectMenu = new StringSelectMenuBuilder()
-      .setCustomId('help_select')
-      .setPlaceholder('📖 Select a command category...')
-      .addOptions(
-        CATEGORIES.map(cat => ({
-          label: cat.label,
-          value: cat.value,
-          description: cat.description ? (cat.description.length > 90 ? cat.description.slice(0, 87) + '...' : cat.description) : undefined,
-          emoji: cat.emojiObj
-        }))
-      );
+    const helpMessage = await message.channel.send({
+      embeds: [mainEmbed],
+      components: [dropdownRow, navRow]
+    });
 
-    const selectRow = new ActionRowBuilder().addComponents(selectMenu);
-    const buttonRow = new ActionRowBuilder().addComponents(
-      new ButtonBuilder()
-        .setCustomId('help_home')
-        .setLabel('🏠 Main Menu')
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId('help_securesetup')
-        .setLabel('🛡️ Quick Security Setup')
-        .setStyle(ButtonStyle.Success),
-      new ButtonBuilder()
-        .setLabel('🔗 Invite Bot')
-        .setURL(`https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands`)
-        .setStyle(ButtonStyle.Link)
-    );
-
-    const helpMsg = await message.channel.send({ embeds: [mainEmbed], components: [selectRow, buttonRow] });
-
-    // Component Collector
-    const collector = helpMsg.createMessageComponentCollector({
-      time: 180000
+    const collector = helpMessage.createMessageComponentCollector({
+      time: 300000
     });
 
     collector.on('collect', async (interaction) => {
-      if (interaction.user.id !== message.author.id) {
-        return interaction.reply({ content: '❌ Only the user who ran `.help` can use these controls.', ephemeral: true });
+      if (interaction.user.id !== author.id) {
+        return interaction.reply({
+          content: '❌ Only the user who ran `.help` can use this menu.',
+          flags: 64
+        });
       }
 
       await interaction.deferUpdate();
 
       if (interaction.customId === 'help_home') {
-        const homeEmbed = buildMainEmbed(message, botUser, botAvatar, devPortalBanner);
-        return helpMsg.edit({ embeds: [homeEmbed], components: [selectRow, buttonRow] });
+        return helpMessage.edit({
+          embeds: [buildMainEmbed(message, botUser, botAvatar, devPortalBanner)],
+          components: [buildDropdownMenu(), buildNavigationButtons()]
+        });
       }
 
-      if (interaction.customId === 'help_securesetup') {
-        const secureCmd = message.client.commands.get('securesetup');
-        if (secureCmd) {
-          return secureCmd.execute(message, []);
-        }
+      if (interaction.customId === 'help_delete') {
+        return helpMessage.delete().catch(() => {});
       }
 
-      if (interaction.customId === 'help_select') {
+      if (interaction.isStringSelectMenu() && interaction.customId === 'help_category_select') {
         const selectedValue = interaction.values[0];
         const cat = CATEGORIES.find(c => c.value === selectedValue);
-        if (!cat) return;
 
-        const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
-        return helpMsg.edit({ embeds: [catEmbed], components: [selectRow, buttonRow] });
+        if (cat) {
+          const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
+          return helpMessage.edit({
+            embeds: [catEmbed],
+            components: [buildDropdownMenu(), buildNavigationButtons()]
+          });
+        }
       }
     });
 
     collector.on('end', () => {
-      selectMenu.setDisabled(true);
-      const disabledSelectRow = new ActionRowBuilder().addComponents(selectMenu);
-      helpMsg.edit({ components: [disabledSelectRow, buttonRow] }).catch(() => {});
+      helpMessage.edit({ components: [] }).catch(() => {});
     });
   }
 };
