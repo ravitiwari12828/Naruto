@@ -365,8 +365,85 @@ class ResilientDatabase {
     return this.data.autoresponses[guildId] || [];
   }
 
+  addAutoresponse(guildId, trigger, responseText) {
+    if (!this.data.autoresponses[guildId]) this.data.autoresponses[guildId] = [];
+    const id = Date.now().toString(36);
+    const item = { id, trigger: trigger.toLowerCase().trim(), response: responseText };
+    this.data.autoresponses[guildId].push(item);
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `INSERT OR REPLACE INTO autoresponses (id, guildId, trigger, response) VALUES (?, ?, ?, ?)`,
+        [id, guildId, item.trigger, item.response]
+      );
+    }
+    this.saveJSON();
+    return item;
+  }
+
+  deleteAutoresponse(guildId, triggerOrId) {
+    if (!this.data.autoresponses[guildId]) return false;
+    const target = triggerOrId.toLowerCase().trim();
+    const initialLen = this.data.autoresponses[guildId].length;
+    this.data.autoresponses[guildId] = this.data.autoresponses[guildId].filter(
+      item => item.id !== target && item.trigger !== target
+    );
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `DELETE FROM autoresponses WHERE guildId = ? AND (id = ? OR trigger = ?)`,
+        [guildId, target, target]
+      );
+    }
+    this.saveJSON();
+    return this.data.autoresponses[guildId].length < initialLen;
+  }
+
   getAutoreacts(guildId) {
     return this.data.autoreacts[guildId] || [];
+  }
+
+  addAutoreact(guildId, trigger, emoji) {
+    if (!this.data.autoreacts[guildId]) this.data.autoreacts[guildId] = [];
+    const id = Date.now().toString(36);
+    const item = { id, trigger: trigger.toLowerCase().trim(), emoji };
+    this.data.autoreacts[guildId].push(item);
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `INSERT OR REPLACE INTO autoreacts (id, guildId, trigger, emoji) VALUES (?, ?, ?, ?)`,
+        [id, guildId, item.trigger, item.emoji]
+      );
+    }
+    this.saveJSON();
+    return item;
+  }
+
+  removeAutoreact(guildId, triggerOrId) {
+    if (!this.data.autoreacts[guildId]) return false;
+    const target = triggerOrId.toLowerCase().trim();
+    const initialLen = this.data.autoreacts[guildId].length;
+    this.data.autoreacts[guildId] = this.data.autoreacts[guildId].filter(
+      item => item.id !== target && item.trigger !== target
+    );
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `DELETE FROM autoreacts WHERE guildId = ? AND (id = ? OR trigger = ?)`,
+        [guildId, target, target]
+      );
+    }
+    this.saveJSON();
+    return this.data.autoreacts[guildId].length < initialLen;
+  }
+
+  resetAutoreact(guildId) {
+    this.data.autoreacts[guildId] = [];
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(`DELETE FROM autoreacts WHERE guildId = ?`, [guildId]);
+    }
+    this.saveJSON();
+    return true;
   }
 }
 

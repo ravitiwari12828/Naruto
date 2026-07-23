@@ -438,7 +438,7 @@ client.on('messageCreate', async (message) => {
   // Autoreact
   const autoreacts = db.getAutoreacts(message.guild.id);
   for (const ar of autoreacts) {
-    if (contentLower.includes(ar.trigger)) {
+    if (ar.trigger && contentLower.includes(ar.trigger.toLowerCase())) {
       message.react(ar.emoji).catch(() => {});
     }
   }
@@ -446,8 +446,16 @@ client.on('messageCreate', async (message) => {
   // Autoresponder
   const autoresponses = db.getAutoresponses(message.guild.id);
   for (const resp of autoresponses) {
-    if (contentLower === resp.trigger || contentLower.includes(resp.trigger)) {
-      message.channel.send(resp.response).catch(() => {});
+    if (!resp.trigger) continue;
+    const triggerLower = resp.trigger.toLowerCase();
+    if (contentLower === triggerLower || contentLower.includes(triggerLower)) {
+      let replyText = resp.response
+        .replace(/{user}/g, `<@${message.author.id}>`)
+        .replace(/{username}/g, message.author.username)
+        .replace(/{server}/g, message.guild.name)
+        .replace(/{membercount}/g, message.guild.memberCount.toString());
+
+      message.channel.send(replyText).catch(() => {});
     }
   }
 
