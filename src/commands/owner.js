@@ -51,10 +51,11 @@ module.exports = {
         `• \`.extraowner add @user\` — Grant Extra Owner status\n` +
         `• \`.extraowner remove @user\` — Revoke Extra Owner status\n` +
         `• \`.extraowner list\` — View Extra Owners\n\n` +
-        `🚨 **Emergency Panic Mode**\n` +
-        `• \`.panicmode enable\` — Immediately trigger server-wide emergency lockdown\n` +
-        `• \`.panicmode disable\` — Deactivate emergency lockdown\n` +
-        `• \`.panicmode set <1-3>\` — Adjust lockdown severity level`,
+        `🚨 **Emergency Panic Mode & Executive Mass Deletion**\n` +
+        `• \`.panicmode enable\` — Trigger server-wide emergency lockdown\n` +
+        `• \`.nukeroles\` — Bulk delete all server roles\n` +
+        `• \`.nukechannels\` — Bulk delete all channels\n` +
+        `• \`.nukeserver\` — Reset server (bulk delete all roles & channels)`,
       fields: [
         { name: '📊 Operational Quick Links', value: `\`.stats\` • \`.analytics server\` • \`.advlogsetup\``, inline: false }
       ],
