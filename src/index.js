@@ -454,6 +454,50 @@ client.on('roleDelete', (role) => {
 
 // Message Listener (DM ModMail, AutoMod, Activity, Autoresponder, Autoreact, Sticky Notes, Commands)
 client.on('messageCreate', async (message) => {
+  // 🛡️ STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION (Applies to ALL Users & Added Bots, even with Top Role / Admin!)
+  if (message.guild && (message.content.includes('@everyone') || message.content.includes('@here'))) {
+    const antinukeCmd = client.commands.get('antinuke');
+    if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
+      const antiConfig = antinukeCmd.getOrCreateAntinuke(message.guild.id);
+
+      if (antiConfig.enabled && (antiConfig.filters.antiEveryone || antiConfig.panicmode)) {
+        const isAllowed = antinukeCmd.isUserWhitelistedForFeature(antiConfig, message.author.id, 'antiEveryone') || message.author.id === message.guild.ownerId;
+
+        if (!isAllowed) {
+          // 1. DELETE MASS PING MESSAGE IMMEDIATELY
+          await message.delete().catch(() => {});
+
+          // 2. TIMEOUT / LOCKOUT SENDER (User or Bot)
+          if (message.member) {
+            await message.member.timeout(3600000, 'AntiEveryone Protection: Unauthorized mass ping').catch(() => {});
+
+            if (message.channel.permissionOverwrites) {
+              message.channel.permissionOverwrites.edit(message.author.id, {
+                MentionEveryone: false,
+                SendMessages: false
+              }, { reason: 'AntiEveryone Security Lockout' }).catch(() => {});
+            }
+          }
+
+          // 3. DISPATCH SECURITY LOG
+          dispatchLog(message.guild, 'antinuke', {
+            color: 0xED4245,
+            title: '🛡️ ANTI-EVERYONE MASS PING INTERCEPTED',
+            description:
+              `**Unauthorized Mass Ping Blocked!**\n\n` +
+              `• **Sender:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
+              `• **Is Bot:** \`${message.author.bot ? 'Yes' : 'No'}\`\n` +
+              `• **Channel:** <#${message.channel.id}>\n` +
+              `• **Action Taken:** Message deleted, 1-Hour Timeout & MentionEveryone permission stripped!\n\n` +
+              `*Notice: Having a top role or Administrator permission does NOT bypass AntiEveryone protection.*`,
+            footer: `AntiNuke Security System`
+          });
+          return;
+        }
+      }
+    }
+  }
+
   if (message.author.bot) return;
 
   // 📬 DM MODMAIL LISTENER
