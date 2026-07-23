@@ -31,23 +31,76 @@ function getOrCreateAntinuke(guildId) {
         antiGuildUpdate: true,
         antiUnban: true,
         antiSpam: true,
-        antiContentFilter: true,
         antiRaid: true,
         antiEveryone: true
       }
     });
   }
-  return antinukeConfigs.get(guildId);
+  const cfg = antinukeConfigs.get(guildId);
+  if (!cfg.filters) {
+    cfg.filters = {
+      antiBan: true,
+      antiKick: true,
+      antiBotAdd: true,
+      antiChannelCreate: true,
+      antiChannelDelete: true,
+      antiChannelUpdate: true,
+      antiRoleCreate: true,
+      antiRoleDelete: true,
+      antiRoleUpdate: true,
+      antiWebhookCreate: true,
+      antiWebhookDelete: true,
+      antiWebhookUpdate: true,
+      antiEmojiCreate: true,
+      antiEmojiDelete: true,
+      antiEmojiUpdate: true,
+      antiGuildUpdate: true,
+      antiUnban: true,
+      antiSpam: true,
+      antiRaid: true,
+      antiEveryone: true
+    };
+  }
+  return cfg;
 }
+
+const FILTER_MAP = {
+  'ban': ['antiBan'],
+  'antiban': ['antiBan'],
+  'kick': ['antiKick'],
+  'antikick': ['antiKick'],
+  'bot': ['antiBotAdd'],
+  'antibot': ['antiBotAdd'],
+  'channel': ['antiChannelCreate', 'antiChannelDelete', 'antiChannelUpdate'],
+  'antichannel': ['antiChannelCreate', 'antiChannelDelete', 'antiChannelUpdate'],
+  'role': ['antiRoleCreate', 'antiRoleDelete', 'antiRoleUpdate'],
+  'antirole': ['antiRoleCreate', 'antiRoleDelete', 'antiRoleUpdate'],
+  'webhook': ['antiWebhookCreate', 'antiWebhookDelete', 'antiWebhookUpdate'],
+  'antiwebhook': ['antiWebhookCreate', 'antiWebhookDelete', 'antiWebhookUpdate'],
+  'emoji': ['antiEmojiCreate', 'antiEmojiDelete', 'antiEmojiUpdate'],
+  'antiemoji': ['antiEmojiCreate', 'antiEmojiDelete', 'antiEmojiUpdate'],
+  'server': ['antiGuildUpdate'],
+  'antiguild': ['antiGuildUpdate'],
+  'unban': ['antiUnban'],
+  'antiunban': ['antiUnban'],
+  'spam': ['antiSpam'],
+  'antispam': ['antiSpam'],
+  'raid': ['antiRaid'],
+  'antiraid': ['antiRaid'],
+  'everyone': ['antiEveryone'],
+  'here': ['antiEveryone'],
+  'antieveryone': ['antiEveryone']
+};
 
 module.exports = {
   name: 'antinuke',
-  description: 'AntiNuke Security Suite: antinuke, whitelist, extraowner, bypassrole, panicmode & 21 security filters',
+  description: 'Granular AntiNuke Protection Suite: enable/disable individual features, whitelist, extraowner, panicmode & 21 security filters',
   aliases: [
     'panicmode', 'whitelist', 'extraowner',
     'bypassrole', 'security'
   ],
   antinukeConfigs,
+  getOrCreateAntinuke,
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
@@ -67,17 +120,45 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // .antinuke enable / disable
-    if (sub === 'enable') {
-      config.enabled = true;
-      antinukeConfigs.set(guild.id, config);
-      return message.reply(`${emojis.SHIELD} AntiNuke Security Shield is now **ENABLED**!`);
+    // .antinuke enable [feature/all]
+    if (sub === 'enable' || sub === 'on') {
+      const target = args[1]?.toLowerCase();
+
+      if (!target || target === 'all') {
+        config.enabled = true;
+        Object.keys(config.filters).forEach(k => config.filters[k] = true);
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SHIELD} AntiNuke Security System & ALL 21 protection filters are now **ENABLED**!`);
+      }
+
+      if (FILTER_MAP[target]) {
+        config.enabled = true;
+        FILTER_MAP[target].forEach(k => config.filters[k] = true);
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`✅ AntiNuke feature **${target.toUpperCase()}** enabled successfully!`);
+      }
+
+      return message.reply(`ℹ️ Feature \`${target}\` not recognized.\nAvailable features: \`antiban\`, \`antikick\`, \`antibot\`, \`antichannel\`, \`antirole\`, \`antiwebhook\`, \`antiguild\`, \`antispam\`, \`antiraid\`, \`antieveryone\`, \`all\`.`);
     }
 
-    if (sub === 'disable') {
-      config.enabled = false;
-      antinukeConfigs.set(guild.id, config);
-      return message.reply(`⚠️ AntiNuke Security Shield is now **DISABLED**.`);
+    // .antinuke disable [feature/all]
+    if (sub === 'disable' || sub === 'off') {
+      const target = args[1]?.toLowerCase();
+
+      if (!target || target === 'all') {
+        config.enabled = false;
+        Object.keys(config.filters).forEach(k => config.filters[k] = false);
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`⚠️ AntiNuke Security System is now **DISABLED**.`);
+      }
+
+      if (FILTER_MAP[target]) {
+        FILTER_MAP[target].forEach(k => config.filters[k] = false);
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`⚠️ AntiNuke feature **${target.toUpperCase()}** disabled.`);
+      }
+
+      return message.reply(`ℹ️ Feature \`${target}\` not recognized.\nAvailable features: \`antiban\`, \`antikick\`, \`antibot\`, \`antichannel\`, \`antirole\`, \`antiwebhook\`, \`antiguild\`, \`antispam\`, \`antiraid\`, \`antieveryone\`, \`all\`.`);
     }
 
     // .panicmode enable / disable / reset / set
@@ -100,70 +181,61 @@ module.exports = {
       if (mode === 'disable' || mode === 'off' || mode === 'reset') {
         config.panicmode = false;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`${emojis.SUCCESS} Panic Mode deactivated.`);
+        return message.reply(`✅ Panic Mode deactivated.`);
       }
     }
 
-    // .whitelist @user
+    // .whitelist add @user / remove @user / list
     if (sub === 'whitelist' || invoked === 'whitelist') {
-      const target = message.mentions.users.first();
-      if (!target) return message.reply(`${emojis.WARNING} Usage: \`.whitelist @user\``);
+      const action = args[1]?.toLowerCase();
+      const user = message.mentions.users.first() || message.client.users.cache.get(args[2]);
 
-      if (config.whitelistedUsers.has(target.id)) {
-        config.whitelistedUsers.delete(target.id);
-        return message.reply(`${emojis.SUCCESS} Removed **${target.tag}** from AntiNuke whitelist.`);
-      } else {
-        config.whitelistedUsers.add(target.id);
-        return message.reply(`${emojis.SHIELD} Added **${target.tag}** to AntiNuke whitelist!`);
+      if (action === 'add' && user) {
+        config.whitelistedUsers.add(user.id);
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`✅ Added **${user.tag}** to AntiNuke Whitelist.`);
       }
+
+      if (action === 'remove' && user) {
+        config.whitelistedUsers.delete(user.id);
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`✅ Removed **${user.tag}** from AntiNuke Whitelist.`);
+      }
+
+      const list = Array.from(config.whitelistedUsers).map(id => `<@${id}> (\`${id}\`)`).join('\n') || 'None';
+      const embed = createStyledEmbed({
+        title: `🛡️ AntiNuke Whitelisted Users`,
+        description: list,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
     }
 
-    // .extraowner @user
-    if (sub === 'extraowner' || invoked === 'extraowner') {
-      const target = message.mentions.users.first();
-      if (!target) return message.reply(`${emojis.WARNING} Usage: \`.extraowner @user\``);
-
-      config.extraOwners.add(target.id);
-      config.whitelistedUsers.add(target.id);
-      return message.reply(`${emojis.SHIELD} Granted **${target.tag}** Extra Owner AntiNuke permissions!`);
-    }
-
-    // .bypassrole @role
-    if (sub === 'bypassrole' || invoked === 'bypassrole') {
-      const role = message.mentions.roles.first();
-      if (!role) return message.reply(`${emojis.WARNING} Usage: \`.bypassrole @role\``);
-
-      config.bypassRoles.add(role.id);
-      return message.reply(`${emojis.SHIELD} Added <@&${role.id}> to AntiNuke bypass roles.`);
-    }
-
-    // Default AntiNuke Overview & 21 Filters Card (Matches Screenshot 3)
-    const filterList = [
-      `✅ **Anti Ban**`, `✅ **Anti Kick**`, `✅ **Anti Bot Add**`,
-      `✅ **Anti Channel Create**`, `✅ **Anti Channel Delete**`, `✅ **Anti Channel Update**`,
-      `✅ **Anti Role Create**`, `✅ **Anti Role Delete**`, `✅ **Anti Role Update**`,
-      `✅ **Anti Webhook Create**`, `✅ **Anti Webhook Delete**`, `✅ **Anti Webhook Update**`,
-      `✅ **Anti Sticker/Emoji Create**`, `✅ **Anti Sticker/Emoji Delete**`, `✅ **Anti Sticker/Emoji Update**`
-    ];
-
-    const specialFilterList = [
-      `✅ **Anti Guild Update**`, `✅ **Anti Unban**`, `✅ **Anti Spam**`,
-      `✅ **Anti Content Filter**`, `✅ **Anti Raid Protection**`, `✅ **Anti Everyone/Here**`
-    ];
+    // Default Status & Filter Config Dashboard
+    const f = config.filters;
+    const filterStatusText =
+      `• **Anti Ban**: ${f.antiBan ? '`ON ✅`' : '`OFF ❌`'}\n` +
+      `• **Anti Kick**: ${f.antiKick ? '`ON ✅`' : '`OFF ❌`'}\n` +
+      `• **Anti Bot Add**: ${f.antiBotAdd ? '`ON ✅`' : '`OFF ❌`'}\n` +
+      `• **Anti Channel**: ${f.antiChannelCreate ? '`ON ✅`' : '`OFF ❌`'}\n` +
+      `• **Anti Role**: ${f.antiRoleCreate ? '`ON ✅`' : '`OFF ❌`'}\n` +
+      `• **Anti Webhook**: ${f.antiWebhookCreate ? '`ON ✅`' : '`OFF ❌`'}\n` +
+      `• **Anti Server Update**: ${f.antiGuildUpdate ? '`ON ✅`' : '`OFF ❌`'}\n` +
+      `• **Anti Spam**: ${f.antiSpam ? '`ON ✅`' : '`OFF ❌`'}\n` +
+      `• **Anti Raid**: ${f.antiRaid ? '`ON ✅`' : '`OFF ❌`'}\n` +
+      `• **Anti Mass Ping**: ${f.antiEveryone ? '`ON ✅`' : '`OFF ❌`'}`;
 
     const embed = createStyledEmbed({
-      title: `🛡️ AntiNuke Protection Suite`,
-      subtitle: `${emojis.SHIELD} Konoha Shinobi Defense Grid`,
-      description:
-        `**Antinuke Commands:**\n` +
-        `\`\`\`\n.antinuke | .antinuke enable | .antinuke disable\n.whitelist | .extraowner | .bypassrole\n\`\`\`\n` +
-        `**Panicmode:**\n` +
-        `\`\`\`\n.panicmode | .panicmode enable | .panicmode disable\n.panicmode reset | .panicmode set\n\`\`\`\n` +
-        `**Filters (15 Active):**\n${filterList.join('\n')}\n\n` +
-        `**Special Filters (6 Active):**\n${specialFilterList.join('\n')}`,
+      title: `🛡️ AntiNuke Security Dashboard`,
+      fields: [
+        { name: '⚙️ Main Shield', value: config.enabled ? '`ENABLED ✅`' : '`DISABLED ❌`', inline: true },
+        { name: '🚨 Panic Mode', value: config.panicmode ? '`ACTIVE 🚨`' : '`NORMAL 🟢`', inline: true },
+        { name: '📜 Individual Protection Filters', value: filterStatusText, inline: false },
+        { name: '💡 Commands', value: `\`.antinuke enable antiban\`\n\`.antinuke disable antibot\`\n\`.antinuke enable all\`\n\`.whitelist add @user\``, inline: false }
+      ],
       requestedBy: author,
-      clientUser,
-      footerText: `Shield Status: ${config.enabled ? 'PROTECTED ✅' : 'DISABLED ⚠️'}`
+      clientUser
     });
     return message.channel.send({ embeds: [embed] });
   }

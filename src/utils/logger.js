@@ -27,29 +27,28 @@ async function dispatchLog(guild, logType, embedData) {
   // Fallback search by channel name in guild cache if not mapped explicitly
   if (!channelId) {
     const channelNameMap = {
-      modlogs: 'modlogs',
-      antinuke: 'bot-antinuke-logs',
-      automod: 'olympus-automod',
-      modlimits: 'olympus-limit-logs',
-      messages: 'msgs-log',
-      invites: 'invites-log',
-      channels: 'channel-logs',
-      roles: 'role-logs',
-      members: 'member-logs',
-      joinleave: 'join-leave-logs',
-      voice: 'vc-logs',
-      webhooks: 'webhook-logs',
-      banunban: 'ban-unban-logs',
-      antiraid: 'anti-raid-logs',
-      botlogging: 'bot-logging',
-      safety: 'safety-logs',
-      ticketlogs: 'ticket-logs',
-      transcripts: 'ticket-transcripts',
-      server: 'server-logs'
+      modlogs: ['mod-logs', 'modlogs'],
+      antinuke: ['antinuke-logs', 'bot-antinuke-logs'],
+      automod: ['automod-logs', 'olympus-automod'],
+      messages: ['message-logs', 'msgs-log'],
+      invites: ['invite-logs', 'invites-log'],
+      channels: ['channel-logs'],
+      roles: ['role-logs'],
+      members: ['member-logs'],
+      joinleave: ['join-leave-logs'],
+      voice: ['vc-logs', 'voice-logs'],
+      vc: ['vc-logs', 'voice-logs'],
+      webhooks: ['webhook-logs'],
+      banunban: ['ban-unban-logs'],
+      ticketlogs: ['ticket-logs'],
+      transcripts: ['ticket-transcripts'],
+      modmaillogs: ['modmail-logs'],
+      modmailtranscripts: ['modmail-transcripts'],
+      server: ['server-logs']
     };
 
-    const targetName = channelNameMap[logType] || logType;
-    const foundChan = guild.channels.cache.find(c => c.name === targetName || c.name.includes(logType));
+    const targets = channelNameMap[logType] || [logType];
+    const foundChan = guild.channels.cache.find(c => targets.includes(c.name) || c.name.includes(logType));
     if (foundChan) {
       channelId = foundChan.id;
       store.channels.set(logType, channelId);

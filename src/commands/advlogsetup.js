@@ -12,7 +12,7 @@ const { getOrCreateAdvLogStore } = require('../utils/logger');
 
 module.exports = {
   name: 'advlogsetup',
-  description: 'Deploy complete multi-category server logging channels (Security Logs, Server Logs, Emergency Logs, Ticket Logs)',
+  description: 'Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs)',
   aliases: ['logmodule', 'createlogcategory', 'logssetup', 'advlogs'],
 
   async execute(message, args) {
@@ -32,18 +32,17 @@ module.exports = {
 
     function buildDashboardEmbed(actionText = '') {
       return createStyledEmbed({
-        title: `📜 Advanced Multi-Category Server Logging System`,
-        subtitle: `${emojis.SHIELD} Full Event & Audit Trail Architecture`,
+        title: `📜 Server Audit & Event Logging Suite`,
+        subtitle: `${emojis.SHIELD} Clean & Dedicated Event Routing`,
         description:
-          `Deploy organized category trees and log channels matching your exact server security layout.\n\n` +
+          `Deploy organized logging categories and channels for complete server activity tracking.\n\n` +
           `**Configured Logging Categories:**\n` +
-          `• ❄️ **Security Logs**: \`modlogs\`, \`wick-logs\`, \`bot-antinuke-logs\`, \`olympus-limit-logs\`, \`olympus-automod\`\n` +
-          `• ❄️ **Server Logs**: \`server-logs\`, \`msgs-log\`, \`invites-log\`, \`channel-logs\`, \`moderation-logs\`, \`vc-logs\`, \`join-leave-logs\`, \`role-logs\`, \`member-logs\`, \`webhook-logs\`, \`ban-unban-logs\`\n` +
-          `• ♡ **Emergency Logs**: \`anti-raid-logs\`, \`bot-logging\`, \`safety-logs\`\n` +
-          `• ♡ **Ticket Logs**: \`ticket-logs\`, \`ticket-transcripts\`\n\n` +
+          `• 🛡️ **Security & Moderation**: \`mod-logs\`, \`antinuke-logs\`, \`automod-logs\`\n` +
+          `• 📁 **Server Audit Logs**: \`server-logs\`, \`message-logs\`, \`channel-logs\`, \`role-logs\`, \`member-logs\`, \`voice-logs\`, \`join-leave-logs\`\n` +
+          `• 🎟️ **Ticket & ModMail Logs**: \`ticket-logs\`, \`ticket-transcripts\`, \`modmail-logs\`, \`modmail-transcripts\`\n\n` +
           `• Active Mapped Channels: **\`${store.channels.size}\` Channels**\n\n` +
           (actionText ? `> 💡 **Status:** ${actionText}\n\n` : '') +
-          `*Click the button below to automatically create and bind all categories & channels!*`,
+          `*Click the button below to automatically create and bind all audit categories & channels!*`,
         requestedBy: author,
         clientUser
       });
@@ -86,45 +85,32 @@ module.exports = {
       if (interaction.customId === 'advlog_deploy_all') {
         const categoryStructure = [
           {
-            name: '❄️ · Security Logs ? .☘️ ·',
+            name: '🛡️ · Security Logs ·',
             channels: [
-              { key: 'modlogs', name: 'modlogs' },
-              { key: 'wicklogs', name: 'wick-logs' },
-              { key: 'antinuke', name: 'bot-antinuke-logs' },
-              { key: 'modlimits', name: 'olympus-limit-logs' },
-              { key: 'automod', name: 'olympus-automod' }
+              { key: 'modlogs', name: 'mod-logs' },
+              { key: 'antinuke', name: 'antinuke-logs' },
+              { key: 'automod', name: 'automod-logs' }
             ]
           },
           {
-            name: '❄️ · Server Logs ? .☘️ ·',
+            name: '📁 · Server Audit Logs ·',
             channels: [
               { key: 'server', name: 'server-logs' },
-              { key: 'messages', name: 'msgs-log' },
-              { key: 'invites', name: 'invites-log' },
+              { key: 'messages', name: 'message-logs' },
               { key: 'channels', name: 'channel-logs' },
-              { key: 'moderation', name: 'moderation-logs' },
-              { key: 'voice', name: 'vc-logs' },
-              { key: 'joinleave', name: 'join-leave-logs' },
-              { key: 'general', name: 'general-logs' },
               { key: 'roles', name: 'role-logs' },
               { key: 'members', name: 'member-logs' },
-              { key: 'webhooks', name: 'webhook-logs' },
-              { key: 'banunban', name: 'ban-unban-logs' }
+              { key: 'voice', name: 'voice-logs' },
+              { key: 'joinleave', name: 'join-leave-logs' }
             ]
           },
           {
-            name: '♡. Emergency Logs ♡',
-            channels: [
-              { key: 'antiraid', name: 'anti-raid-logs' },
-              { key: 'botlogging', name: 'bot-logging' },
-              { key: 'safety', name: 'safety-logs' }
-            ]
-          },
-          {
-            name: '♡. Ticket Logs ♡',
+            name: '🎟️ · Ticket & ModMail Logs ·',
             channels: [
               { key: 'ticketlogs', name: 'ticket-logs' },
-              { key: 'transcripts', name: 'ticket-transcripts' }
+              { key: 'transcripts', name: 'ticket-transcripts' },
+              { key: 'modmaillogs', name: 'modmail-logs' },
+              { key: 'modmailtranscripts', name: 'modmail-transcripts' }
             ]
           }
         ];
@@ -167,7 +153,7 @@ module.exports = {
         }
 
         store.enabled = true;
-        actionStatus = `Successfully deployed ${createdCount} new channels across 4 logging categories! All events are live routed.`;
+        actionStatus = `Successfully deployed ${createdCount} new channels across 3 audit logging categories! All server events are live routed.`;
       }
 
       else if (interaction.customId === 'advlog_toggle') {

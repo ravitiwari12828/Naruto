@@ -39,7 +39,8 @@ const client = new Client({
     GatewayIntentBits.MessageContent,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessageReactions,
-    GatewayIntentBits.GuildVoiceStates
+    GatewayIntentBits.GuildVoiceStates,
+    GatewayIntentBits.DirectMessages
   ],
   partials: [Partials.Message, Partials.Channel, Partials.Reaction]
 });
@@ -103,6 +104,28 @@ client.on('guildCreate', async (guild) => {
   }
 });
 
+// Member Join Welcome Listener
+client.on('guildMemberAdd', async (member) => {
+  const welcomeCmd = client.commands.get('welcome');
+  if (welcomeCmd && welcomeCmd.getOrCreateWelcomeConfig) {
+    const config = welcomeCmd.getOrCreateWelcomeConfig(member.guild.id);
+    if (config.enabled && config.channelId) {
+      const chan = member.guild.channels.cache.get(config.channelId);
+      if (chan && chan.isTextBased()) {
+        const payload = welcomeCmd.buildWelcomeCard(config, member);
+        await chan.send(payload).catch(() => {});
+      }
+    }
+  }
+
+  dispatchLog(member.guild, 'joinleave', {
+    color: 0x57F287,
+    title: '📥 Member Joined',
+    description: `**User:** ${member.user.tag} (${member.id})\n**Account Created:** <t:${Math.floor(member.user.createdTimestamp / 1000)}:R>`,
+    footer: `Total Members: ${member.guild.memberCount}`
+  });
+});
+
 // Voice State Update Listener (VoiceMaster Join-to-Create, In-VC Auto Role, VC Audit Logs)
 client.on('voiceStateUpdate', async (oldState, newState) => {
   const guild = newState.guild || oldState.guild;
@@ -113,7 +136,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   const vmCmd = client.commands.get('voicemaster');
   const config = vmCmd ? vmCmd.getOrCreateVMConfig(guild.id) : { enabled: false };
 
-  // 1. In-VC Auto Role Management
+  // 1. In-VC Auto Role
   if (config.inVcRoleId) {
     const role = guild.roles.cache.get(config.inVcRoleId);
     if (role) {
@@ -170,7 +193,6 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       config.activeTempVCs.set(tempVC.id, { ownerId: member.id, guildId: guild.id });
       await newState.setChannel(tempVC).catch(() => {});
 
-      // Auto-post VoiceMaster Control Panel into newly created VC text chat
       if (vmCmd) {
         const embed = vmCmd.buildVoiceMasterInterfaceEmbed();
         const rows = vmCmd.buildVoiceMasterActionRows();
@@ -275,10 +297,90 @@ client.on('roleDelete', (role) => {
   });
 });
 
-// Message Listener (AutoMod, Activity, Autoresponder, Autoreact, Commands)
+// Message Listener (DM ModMail, AutoMod, Activity, Autoresponder, Autoreact, Sticky Notes, Commands)
 client.on('messageCreate', async (message) => {
-  if (message.author.bot || !message.guild) return;
+  if (message.author.bot) return;
 
+  // 📬 DM MODMAIL LISTENER
+  if (!message.guild) {
+    const modmailCmd = client.commands.get('modmail');
+    if (!modmailCmd) return;
+
+    // Find main target guild
+    const guild = client.guilds.cache.first();
+    if (!guild) return;
+
+    let ticket = modmailCmd.activeModmailTickets.get(message.author.id);
+
+    if (!ticket) {
+      const config = modmailCmd.getOrCreateModmailConfig(guild.id);
+      let category = config.categoryId ? guild.channels.cache.get(config.categoryId) : null;
+      if (!category) category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && c.name.toLowerCase().includes('modmail'));
+
+      const cleanName = message.author.username.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+      const chanName = `ticket-${cleanName}`;
+
+      try {
+        const ticketChan = await guild.channels.create({
+          name: chanName,
+          type: ChannelType.GuildText,
+          parent: category ? category.id : undefined,
+          permissionOverwrites: [
+            { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
+          ]
+        });
+
+        // Staff Alert Embed matching Screenshot 2
+        const alertEmbed = new EmbedBuilder()
+          .setColor(0x57F287)
+          .setTitle(`New Ticket: ${message.author.username}`)
+          .addFields(
+            { name: 'User', value: `<@${message.author.id}> 🚩`, inline: true },
+            { name: 'ID', value: `\`${message.author.id}\``, inline: true }
+          )
+          .setDescription(`Use \`!r <message>\` to reply.\nUse \`!close [reason]\` to end the ticket.`)
+          .setFooter({ text: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}` });
+
+        await ticketChan.send({ content: '@here', embeds: [alertEmbed] });
+
+        ticket = {
+          channelId: ticketChan.id,
+          threadId: ticketChan.id,
+          guildId: guild.id,
+          messages: []
+        };
+
+        modmailCmd.activeModmailTickets.set(message.author.id, ticket);
+        await message.reply(`📬 **ModMail Opened**: Your message has been received by support staff. We will reply shortly!`);
+      } catch (e) {
+        console.error('Failed to create ModMail channel:', e.message);
+        return;
+      }
+    }
+
+    // Forward user's DM to ModMail channel
+    const targetChan = guild.channels.cache.get(ticket.channelId);
+    if (targetChan) {
+      const userMsgEmbed = new EmbedBuilder()
+        .setColor(0x57F287)
+        .setAuthor({ name: message.author.tag, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+        .setDescription(message.content || '*[Attachment]*')
+        .setTimestamp();
+
+      await targetChan.send({ embeds: [userMsgEmbed] });
+
+      ticket.messages.push({
+        authorTag: message.author.tag,
+        isStaff: false,
+        content: message.content || '[Attachment]',
+        timestamp: Date.now()
+      });
+      modmailCmd.activeModmailTickets.set(message.author.id, ticket);
+    }
+    return;
+  }
+
+  // GUILD MESSAGES
   db.addMessage(message.author.id, 1);
 
   // 15-Day Quarantine Check
@@ -323,6 +425,31 @@ client.on('messageCreate', async (message) => {
     }
   }
 
+  // 📌 ROCK-SOLID STICKY NOTES ENGINE (Always kept at the bottom)
+  const stickyCmd = client.commands.get('stickynote');
+  if (stickyCmd && stickyCmd.stickyNotesStore) {
+    const stickyData = stickyCmd.stickyNotesStore.get(message.channel.id);
+    if (stickyData && stickyData.text) {
+      // Delete previous sticky message if present
+      if (stickyData.lastMsgId) {
+        message.channel.messages.fetch(stickyData.lastMsgId).then(m => m.delete().catch(() => {})).catch(() => {});
+      }
+      const stickyEmbed = createStyledEmbed({
+        title: `📌 Sticky Note`,
+        description: stickyData.text,
+        clientUser: client.user,
+        footerText: `Sticky Message • Stays at the bottom of this channel`
+      });
+      // Send fresh sticky message at the bottom
+      setTimeout(() => {
+        message.channel.send({ embeds: [stickyEmbed] }).then(sentMsg => {
+          stickyData.lastMsgId = sentMsg.id;
+          stickyCmd.stickyNotesStore.set(message.channel.id, stickyData);
+        }).catch(() => {});
+      }, 500);
+    }
+  }
+
   const mentionPrefix = `<@${client.user.id}>`;
   const mentionNicknamePrefix = `<@!${client.user.id}>`;
   let usedPrefix = null;
@@ -363,7 +490,7 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-// Interaction Listener (Ticket Category Dropdown, Call Staff, Transcripts to DM, VoiceMaster Panel, Music Filters)
+// Interaction Listener
 client.on('interactionCreate', async (interaction) => {
   // 1. TICKET CATEGORY SELECT MENU
   if (interaction.isStringSelectMenu() && interaction.customId === 'ticket_category_select') {
@@ -375,7 +502,8 @@ client.on('interactionCreate', async (interaction) => {
 
     const ticketCmd = client.commands.get('ticket');
     const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(guild.id) : { ticketCounter: 0, staffRoles: new Set(), categories: [] };
-    // Check if user already has an active ticket open in this server
+    
+    // Check open ticket limit
     const existingTicket = guild.channels.cache.find(c =>
       c.isTextBased() &&
       c.topic &&
@@ -384,14 +512,14 @@ client.on('interactionCreate', async (interaction) => {
 
     if (existingTicket) {
       return interaction.editReply({
-        content: `⚠️ You already have an open ticket in ${existingTicket}! Each user can only have **1 open ticket** at a time. Please close your existing ticket before creating a new one.`
+        content: `⚠️ You already have an open ticket in ${existingTicket}! Each user can only have **1 open ticket** at a time. Please close your active ticket before creating a new one.`
       }).catch(() => {});
     }
 
     const me = guild.members.me;
     if (!me.permissions.has(PermissionsBitField.Flags.ManageChannels) || !me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
       return interaction.editReply({
-        content: `❌ **Missing Bot Permissions**: The bot needs **Manage Channels** and **Manage Roles** permissions to create ticket channels and set permissions.\n\n👉 **Fix**: Give the bot role **Administrator** or **Manage Channels** & **Manage Roles** permissions in Server Settings.`
+        content: `❌ **Missing Bot Permissions**: The bot needs **Manage Channels** and **Manage Roles** permissions to create ticket channels and set permissions.`
       }).catch(() => {});
     }
 
@@ -445,7 +573,7 @@ client.on('interactionCreate', async (interaction) => {
     } catch (e) {
       console.error('Failed to create ticket channel:', e);
       return interaction.editReply({
-        content: `❌ **Failed to Create Ticket**: \`${e.message || 'Permission Error'}\`.\n\n👉 **Required Permissions**: Ensure the bot has **Administrator** or **Manage Channels** & **Manage Roles** permissions.`
+        content: `❌ **Failed to Create Ticket**: \`${e.message || 'Permission Error'}\`.`
       }).catch(() => {});
     }
   }
@@ -455,7 +583,6 @@ client.on('interactionCreate', async (interaction) => {
     await interaction.deferReply({ flags: 64 }).catch(() => {});
     const val = interaction.values[0];
     const filterName = val.replace('filter_', '');
-
     return interaction.editReply({ content: `🎶 Audio filter set to **${filterName.toUpperCase()}**!` }).catch(() => {});
   }
 
@@ -470,7 +597,7 @@ client.on('interactionCreate', async (interaction) => {
 
     const staffPings = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(' ') || '@here';
     await channel.send({ content: `📞 **Call Staff Alert**: ${staffPings}\n<@${user.id}> has requested immediate support staff attendance in this ticket!` }).catch(() => {});
-    return interaction.reply({ content: `📞 Support staff summoned!`, ephemeral: true }).catch(() => {});
+    return interaction.reply({ content: `📞 Support staff summoned!`, flags: 64 }).catch(() => {});
   }
 
   // 4. CLAIM TICKET BUTTON
@@ -483,20 +610,18 @@ client.on('interactionCreate', async (interaction) => {
     const ticketCmd = client.commands.get('ticket');
     const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(interaction.guild.id) : { staffRoles: new Set() };
 
-    // 1. Staff check (Administrator OR has any staffRole)
     const isStaff = member.permissions.has(PermissionsBitField.Flags.Administrator) ||
                     Array.from(config.staffRoles).some(rId => member.roles.cache.has(rId));
 
     if (!isStaff) {
-      return interaction.reply({ content: `❌ Only support staff members can claim tickets!`, ephemeral: true }).catch(() => {});
+      return interaction.reply({ content: `❌ Only support staff members can claim tickets!`, flags: 64 }).catch(() => {});
     }
 
-    // 2. Prevent multi-claim check
     const embed = EmbedBuilder.from(message.embeds[0]);
     const claimedField = embed.data.fields?.find(f => f.name.includes('Claimed'));
 
     if (claimedField && !claimedField.value.toLowerCase().includes('unclaimed') && !claimedField.value.toLowerCase().includes('none')) {
-      return interaction.reply({ content: `⚠️ This ticket is already claimed by ${claimedField.value}! A ticket can only be claimed by 1 staff member.`, ephemeral: true }).catch(() => {});
+      return interaction.reply({ content: `⚠️ This ticket is already claimed by ${claimedField.value}! A ticket can only be claimed by 1 staff member.`, flags: 64 }).catch(() => {});
     }
 
     embed.spliceFields(2, 1, { name: '🙋‍♂️ Claimed By', value: `<@${user.id}> (\`${user.tag}\`)`, inline: true });
@@ -518,7 +643,7 @@ client.on('interactionCreate', async (interaction) => {
     }
   }
 
-  // 5. PRIORITY TICKET BUTTON (With 4-5h / 10-12h Escalation Reminders)
+  // 5. PRIORITY TICKET BUTTON
   if (interaction.customId === 'ticket_priority_btn') {
     const user = interaction.user;
     const message = interaction.message;
@@ -539,12 +664,7 @@ client.on('interactionCreate', async (interaction) => {
     await interaction.reply({ content: `🚦 Priority set to **${newPriority}** by <@${user.id}>.` }).catch(() => {});
   }
 
-  // 6. ADD MEMBER BUTTON
-  if (interaction.customId === 'ticket_addmember_btn') {
-    return interaction.reply({ content: `➕ Use \`.ticket add @user\` to grant a member access to this ticket.`, ephemeral: true }).catch(() => {});
-  }
-
-  // 7. LOCK TICKET BUTTON
+  // 6. LOCK TICKET BUTTON
   if (interaction.customId === 'ticket_lock_btn') {
     const user = interaction.user;
     const channel = interaction.channel;
@@ -558,7 +678,7 @@ client.on('interactionCreate', async (interaction) => {
     return interaction.reply({ content: `🔒 Ticket locked by <@${user.id}>.` }).catch(() => {});
   }
 
-  // 8. CLOSE TICKET BUTTON (DM Transcript Buffer Delivery!)
+  // 7. CLOSE TICKET BUTTON
   if (interaction.customId === 'ticket_close_btn') {
     const user = interaction.user;
     const channel = interaction.channel;
@@ -570,7 +690,6 @@ client.on('interactionCreate', async (interaction) => {
     const buffer = ticketCmd ? ticketCmd.generateTranscriptBuffer(channel, msgs, user) : Buffer.from('Transcript', 'utf-8');
     const attachment = new AttachmentBuilder(buffer, { name: `${channel.name}-transcript.txt` });
 
-    // Send Transcript directly to Opener's DM
     const topic = channel.topic || '';
     const match = topic.match(/owner:(\d+)/);
     const ownerId = match ? match[1] : null;
@@ -606,13 +725,13 @@ client.on('interactionCreate', async (interaction) => {
     }, 5000);
   }
 
-  // 9. VOICEMASTER INTERFACE CONTROLLER BUTTONS
+  // 8. VOICEMASTER INTERFACE CONTROLLER BUTTONS
   if (interaction.customId.startsWith('vm_')) {
     const voiceState = interaction.member?.voice;
     const channel = voiceState?.channel;
 
     if (!channel) {
-      return interaction.reply({ content: `${emojis.WARNING} You must be in your private Voice Channel to use controls!`, ephemeral: true }).catch(() => {});
+      return interaction.reply({ content: `${emojis.WARNING} You must be in your private Voice Channel to use controls!`, flags: 64 }).catch(() => {});
     }
 
     const action = interaction.customId.replace('vm_', '');
@@ -620,30 +739,30 @@ client.on('interactionCreate', async (interaction) => {
     switch (action) {
       case 'lock':
         await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: false });
-        return interaction.reply({ content: `🔒 Voice channel locked!`, ephemeral: true });
+        return interaction.reply({ content: `🔒 Voice channel locked!`, flags: 64 });
       case 'unlock':
         await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: true });
-        return interaction.reply({ content: `🔓 Voice channel unlocked!`, ephemeral: true });
+        return interaction.reply({ content: `🔓 Voice channel unlocked!`, flags: 64 });
       case 'hide':
         await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { ViewChannel: false });
-        return interaction.reply({ content: `👁️ Voice channel hidden!`, ephemeral: true });
+        return interaction.reply({ content: `👁️ Voice channel hidden!`, flags: 64 });
       case 'reveal':
         await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { ViewChannel: true });
-        return interaction.reply({ content: `👁️‍🗨️ Voice channel revealed!`, ephemeral: true });
+        return interaction.reply({ content: `📖 Voice channel revealed!`, flags: 64 });
       case 'mute':
         channel.members.forEach(m => m.voice.setMute(true).catch(() => {}));
-        return interaction.reply({ content: `🔇 Muted all members in VC.`, ephemeral: true });
+        return interaction.reply({ content: `🔇 Muted all members in VC.`, flags: 64 });
       case 'unmute':
         channel.members.forEach(m => m.voice.setMute(false).catch(() => {}));
-        return interaction.reply({ content: `🔊 Unmuted all members in VC.`, ephemeral: true });
+        return interaction.reply({ content: `🔊 Unmuted all members in VC.`, flags: 64 });
       case 'deafen':
         channel.members.forEach(m => m.voice.setDeaf(true).catch(() => {}));
-        return interaction.reply({ content: `🔕 Deafened members in VC.`, ephemeral: true });
+        return interaction.reply({ content: `🔕 Deafened members in VC.`, flags: 64 });
       case 'undeafen':
         channel.members.forEach(m => m.voice.setDeaf(false).catch(() => {}));
-        return interaction.reply({ content: `🔔 Undeafened members in VC.`, ephemeral: true });
+        return interaction.reply({ content: `🔔 Undeafened members in VC.`, flags: 64 });
       default:
-        return interaction.reply({ content: `⚙️ VoiceMaster action executed!`, ephemeral: true });
+        return interaction.reply({ content: `⚙️ VoiceMaster action executed!`, flags: 64 });
     }
   }
 });

@@ -1,7 +1,8 @@
+const { EmbedBuilder } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 
-// Global Welcome Config store (guildId -> { channelId, message, enabled })
+// Global Welcome Config store
 const welcomeConfigs = new Map();
 
 function getOrCreateWelcomeConfig(guildId) {
@@ -9,19 +10,72 @@ function getOrCreateWelcomeConfig(guildId) {
     welcomeConfigs.set(guildId, {
       enabled: true,
       channelId: null,
-      message: 'Welcome {user} to **{server}**! You are member #{membercount}! 🍃'
+      useEmbed: true,
+      headerText: '★.◦@°.★ Welcome to {server} ☕.◦★ {user}',
+      title: 'Welcome!',
+      description:
+        `╭ ──-── ──-── ──-── ╮\n` +
+        `   Check out! **Events**\n` +
+        `🍵 **Take Roles**\n` +
+        `📖 **Read Rules**\n` +
+        `╰ ──-── ──-── ──-── ╯`,
+      footer: "You're {membercount}th Member in our Server !",
+      imageUrl: null,
+      useAvatarThumbnail: true
     });
   }
   return welcomeConfigs.get(guildId);
 }
 
+function buildWelcomeCard(config, member) {
+  const guild = member.guild;
+  const user = member.user;
+
+  const headerText = (config.headerText || 'Welcome {user} to {server}')
+    .replace(/{user}/g, `<@${user.id}>`)
+    .replace(/{username}/g, user.username)
+    .replace(/{server}/g, guild.name)
+    .replace(/{membercount}/g, guild.memberCount.toString());
+
+  const description = (config.description || 'Welcome!')
+    .replace(/{user}/g, `<@${user.id}>`)
+    .replace(/{username}/g, user.username)
+    .replace(/{server}/g, guild.name)
+    .replace(/{membercount}/g, guild.memberCount.toString());
+
+  const footer = (config.footer || "You're {membercount}th Member in our Server !")
+    .replace(/{user}/g, user.username)
+    .replace(/{server}/g, guild.name)
+    .replace(/{membercount}/g, guild.memberCount.toString());
+
+  if (!config.useEmbed) {
+    return { content: `${headerText}\n\n${description}` };
+  }
+
+  const embed = new EmbedBuilder()
+    .setColor(0x2B2D31)
+    .setTitle(config.title || 'Welcome!')
+    .setDescription(description)
+    .setFooter({ text: footer });
+
+  if (config.useAvatarThumbnail) {
+    embed.setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
+  } else if (config.imageUrl) {
+    embed.setImage(config.imageUrl);
+  }
+
+  return { content: headerText, embeds: [embed] };
+}
+
 module.exports = {
   name: 'welcome',
-  description: 'Welcome Commands: welcome, welcomechannel, welcomemessage, welcomereset, welcometest',
+  description: 'Picture & Embed Welcome Suite matching screenshot 1: welcomechannel, welcomemessage, welcomeimage, welcometest',
   aliases: [
-    'welcomechannel', 'welcomemessage', 'welcomereset', 'welcometest'
+    'welcomechannel', 'welcomemessage', 'welcomeimage', 'welcomeembed', 'welcomereset', 'welcometest'
   ],
   welcomeConfigs,
+  getOrCreateWelcomeConfig,
+  buildWelcomeCard,
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
@@ -29,6 +83,8 @@ module.exports = {
 
     if (invoked === 'welcomechannel') sub = 'channel';
     if (invoked === 'welcomemessage') sub = 'message';
+    if (invoked === 'welcomeimage') sub = 'image';
+    if (invoked === 'welcomeembed') sub = 'embed';
     if (invoked === 'welcomereset') sub = 'reset';
     if (invoked === 'welcometest') sub = 'test';
 
@@ -41,73 +97,62 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // .welcomechannel <#channel>
+    // 1. .welcomechannel <#channel>
     if (sub === 'channel' || sub === 'setchannel') {
       const chan = message.mentions.channels.first() || message.channel;
       config.channelId = chan.id;
       config.enabled = true;
       welcomeConfigs.set(guild.id, config);
-
-      const embed = createStyledEmbed({
-        title: `👋 Welcome Channel Set`,
-        description: `New member welcome greetings will be sent to ${chan}!`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      return message.reply(`👋 Welcome greetings channel set to ${chan}!`);
     }
 
-    // .welcomemessage <template>
+    // 2. .welcomemessage <text>
     if (sub === 'message' || sub === 'setmessage') {
       const template = (invoked === 'welcomemessage' ? args : args.slice(1)).join(' ');
       if (!template) {
-        return message.reply(`${emojis.WARNING} Usage: \`.welcomemessage <template>\`\nPlaceholders: \`{user}\`, \`{server}\`, \`{membercount}\``);
+        return message.reply(`${emojis.WARNING} Usage: \`.welcomemessage <text>\`\nPlaceholders: \`{user}\`, \`{server}\`, \`{membercount}\``);
       }
-
-      config.message = template;
+      config.description = template;
       welcomeConfigs.set(guild.id, config);
-
-      const embed = createStyledEmbed({
-        title: `📜 Welcome Message Template Saved`,
-        description: `Updated template:\n> *${template}*`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      return message.reply(`✅ Welcome message description updated.`);
     }
 
-    // .welcomereset
+    // 3. .welcomeimage <url / avatar / reset>
+    if (sub === 'image') {
+      const url = args[1];
+      if (url === 'avatar' || !url) {
+        config.useAvatarThumbnail = true;
+        config.imageUrl = null;
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`🖼️ Welcome card set to use member avatar thumbnail!`);
+      }
+      config.useAvatarThumbnail = false;
+      config.imageUrl = url;
+      welcomeConfigs.set(guild.id, config);
+      return message.reply(`🖼️ Welcome card background/image set to: ${url}`);
+    }
+
+    // 4. .welcometest
+    if (sub === 'test') {
+      const payload = buildWelcomeCard(config, message.member);
+      return message.channel.send(payload);
+    }
+
+    // 5. .welcomereset
     if (sub === 'reset') {
       welcomeConfigs.delete(guild.id);
-      return message.reply(`${emojis.SUCCESS} Welcome system configuration reset to default.`);
+      return message.reply(`✅ Welcome configuration reset to default.`);
     }
 
-    // .welcometest
-    if (sub === 'test') {
-      const formatted = config.message
-        .replace(/{user}/g, `<@${author.id}>`)
-        .replace(/{server}/g, guild.name)
-        .replace(/{membercount}/g, guild.memberCount.toString());
-
-      const embed = createStyledEmbed({
-        title: `👋 Welcome Preview — ${guild.name}`,
-        subtitle: `${emojis.NARUTO} New Shinobi Joined the Village!`,
-        description: formatted,
-        requestedBy: author,
-        clientUser,
-        thumbnailUrl: author.displayAvatarURL({ dynamic: true, size: 512 })
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // Default Welcome Help
+    // Default Help
     const embed = createStyledEmbed({
-      title: `👋 Welcome System Commands`,
+      title: `👋 Picture & Embed Welcome System Commands`,
       description:
         `\`.welcomechannel <#channel>\` — Set welcome greetings channel\n` +
-        `\`.welcomemessage <template>\` — Customize welcome text\n` +
-        `\`.welcomereset\` — Reset welcome settings\n` +
-        `\`.welcometest\` — Preview welcome card`,
+        `\`.welcomemessage <text>\` — Customize welcome embed text & emojis\n` +
+        `\`.welcomeimage <url / avatar>\` — Set thumbnail avatar or custom image\n` +
+        `\`.welcometest\` — Preview welcome card (matching screenshot 1)\n` +
+        `\`.welcomereset\` — Reset settings`,
       requestedBy: author,
       clientUser
     });
