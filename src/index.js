@@ -150,7 +150,10 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   }
 
   // 3. VoiceMaster Join to Create Private VC
-  if (config.enabled && newState.channelId && newState.channelId === config.triggerChanId) {
+  const isTrigger = (config.enabled && newState.channelId && newState.channelId === config.triggerChanId) ||
+                    (newState.channel?.name?.toLowerCase().includes('join to create'));
+
+  if (isTrigger) {
     try {
       const category = newState.channel?.parent;
       const cleanName = member.user.username.replace(/[^a-zA-Z0-9]/g, '') || 'Member';

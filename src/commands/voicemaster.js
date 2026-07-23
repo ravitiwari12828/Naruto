@@ -19,7 +19,7 @@ function getOrCreateVMConfig(guildId) {
       triggerChanId: null,
       interfaceChanId: null,
       inVcRoleId: null,
-      activeTempVCs: new Map() // vcChannelId -> { ownerId, guildId }
+      activeTempVCs: new Map()
     });
   }
   const cfg = voicemasterConfigs.get(guildId);
@@ -44,7 +44,7 @@ function buildVoiceMasterInterfaceEmbed() {
       `• 🔒 **Lock** your voice channel\n` +
       `• 🔓 **Unlock** your voice channel\n` +
       `• 👁️ **Hide** your voice channel\n` +
-      `• 👁️‍🗨️ **Reveal** your voice channel\n` +
+      `• 📖 **Reveal** your voice channel\n` +
       `• 📝 **Rename** your voice channel\n` +
       `• 👥 **Limit** your voice channel user limit\n` +
       `• 🔇 **Mute** a user\n` +
@@ -69,7 +69,7 @@ function buildVoiceMasterActionRows() {
     new ButtonBuilder().setCustomId('vm_lock').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_unlock').setEmoji('🔓').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_hide').setEmoji('👁️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_reveal').setEmoji('👁️‍🗨️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_reveal').setEmoji('📖').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_rename').setEmoji('📝').setStyle(ButtonStyle.Secondary)
   );
 
@@ -94,8 +94,8 @@ function buildVoiceMasterActionRows() {
 
 module.exports = {
   name: 'voicemaster',
-  description: 'VoiceMaster Commands: setupvc, vctemp setup, invcrole, status',
-  aliases: ['vctemp', 'tempvc', 'vm', 'setupvc', 'invcrole'],
+  description: 'VoiceMaster Setup & Interface: setupvc, vcsetup, vctemp setup, tempvc',
+  aliases: ['vctemp', 'tempvc', 'vm', 'setupvc', 'vcsetup', 'invcrole'],
   voicemasterConfigs,
   getOrCreateVMConfig,
   buildVoiceMasterInterfaceEmbed,
@@ -105,7 +105,7 @@ module.exports = {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
     let sub = args[0]?.toLowerCase();
 
-    if (invoked === 'setupvc') sub = 'setup';
+    if (['setupvc', 'vcsetup'].includes(invoked)) sub = 'setup';
     if (invoked === 'invcrole') sub = 'role';
 
     const author = message.author;
@@ -117,8 +117,8 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // 1. .setupvc / .vctemp setup
-    if (sub === 'setup') {
+    // 1. SETUP COMMAND (.setupvc / .vcsetup / .vctemp setup / .vc setup)
+    if (['setup', 'create'].includes(sub)) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can run VoiceMaster setup.`);
       }
@@ -192,7 +192,7 @@ module.exports = {
     const embed = createStyledEmbed({
       title: `🎙️ VoiceMaster System Commands`,
       description:
-        `\`.setupvc\` — 1-Click deploy Join to Create VC & Interface Panel\n` +
+        `\`.vcsetup\` / \`.setupvc\` — 1-Click deploy Join to Create VC & Interface Panel\n` +
         `\`.invcrole @role\` — Set automatic role assigned while in VC\n` +
         `\`.tempvc\` — View VoiceMaster system status`,
       fields: [

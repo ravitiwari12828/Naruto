@@ -16,6 +16,11 @@ module.exports = {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
     let sub = args[0]?.toLowerCase();
 
+    if (sub === 'setup' || sub === 'setupvc' || sub === 'vcsetup') {
+      const vmCmd = message.client.commands.get('voicemaster');
+      if (vmCmd) return vmCmd.execute(message, args);
+    }
+
     // Directly handle top-level command invocations like .vcmute, .vckick, etc.
     if (invoked.startsWith('vc') && invoked !== 'vc' && invoked !== 'voice') {
       sub = invoked;
