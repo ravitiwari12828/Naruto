@@ -360,18 +360,8 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Default: help list
-    const embed = createStyledEmbed({
-      title: `${emojis.FUN} Fun Commands`,
-      subtitle: 'Naruto-themed fun for the whole server!',
-      description:
-        '`.8ball` `.truth` `.dare` `.wyr` `.pickup` `.fortune`\n' +
-        '`.vibecheck` `.mood` `.smartrate` `.rizzmeter` `.shipname`\n' +
-        '`.poke` `.bonk` `.cuddle` `.highfive` `.wave`\n' +
-        '`.wanted` `.wasted` `.powerlevel` `.coolrate`',
-      requestedBy: author,
-      clientUser
-    });
-    return message.channel.send({ embeds: [embed] });
+    // Default Fun Help Panel matching screenshot
+    const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+    return renderModuleHelpPanel(message, 'fun');
   }
 };

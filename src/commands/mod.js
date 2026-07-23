@@ -386,29 +386,8 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // Default: Mod Help
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    const embed = createStyledEmbed({
-      title: `${emojis.MOD} Moderation Commands`,
-      description:
-        `\`.ban @user [reason]\` — Ban a shinobi\n` +
-        `\`.hackban <ID> [reason]\` — Ban by User ID\n` +
-        `\`.kick @user [reason]\` — Kick a shinobi\n` +
-        `\`.mute @user [time] [reason]\` — Timeout a member\n` +
-        `\`.unmute @user\` — Remove timeout\n` +
-        `\`.unban <ID>\` — Unban a user\n` +
-        `\`.unbanall\` — Lift all bans\n` +
-        `\`.purge <1-100>\` — Delete messages\n` +
-        `\`.purgebots [amount]\` — Delete bot messages\n` +
-        `\`.nuke\` — Clone + delete channel\n` +
-        `\`.role @user @role\` — Add/remove role\n` +
-        `\`.rolemenu\` — List all server roles\n` +
-        `\`.list\` — View ban list\n` +
-        `\`.warn @user [reason]\` — Warn a member`,
-      requestedBy: message.author,
-      clientUser
-    });
-    return message.channel.send({ embeds: [embed] });
+    // Default Mod Help Panel matching screenshot
+    const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+    return renderModuleHelpPanel(message, 'mod');
   }
 };

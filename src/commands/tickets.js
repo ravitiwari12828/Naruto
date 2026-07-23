@@ -286,6 +286,7 @@ module.exports = {
       }
     }
 
-    return message.reply(`ℹ️ Usage: \`.ticket setup\` (deploy panel), \`.ticket staff add @role\` (set staff).`);
+    const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+    return renderModuleHelpPanel(message, 'ticket');
   }
 };

@@ -199,17 +199,8 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Default help
-    const embed = createStyledEmbed({
-      title: `${emojis.GIVEAWAY} Giveaway Commands`,
-      description:
-        `\`.giveaway create <time> <winners> <prize>\` — Start a giveaway\n` +
-        `\`.giveaway end <ID>\` — End a giveaway early\n` +
-        `\`.giveaway reroll <ID>\` — Pick new winner(s)\n` +
-        `\`.giveaway list\` — View all giveaways`,
-      requestedBy: message.author,
-      clientUser
-    });
-    return message.channel.send({ embeds: [embed] });
+    // Default Giveaway Help Panel matching screenshot
+    const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+    return renderModuleHelpPanel(message, 'giveaway');
   }
 };

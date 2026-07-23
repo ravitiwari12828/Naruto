@@ -198,21 +198,8 @@ module.exports = {
       return message.reply(`🔓 Unlocked **${voiceState.channel.name}**.`);
     }
 
-    // Default Voice Help
-    const embed = createStyledEmbed({
-      title: `🔊 Voice Management Commands`,
-      description:
-        `\`.vcdeafen @user\` / \`.vcundeafen @user\` — Server deafen/undeafen\n` +
-        `\`.vckick @user\` / \`.vckickall\` — Kick users from voice channel\n` +
-        `\`.vclist\` — List active members in voice channel\n` +
-        `\`.vcmoveall <#targetVC>\` — Move all members to another VC\n` +
-        `\`.vcmute @user\` / \`.vcmuteall\` — Mute users in voice channel\n` +
-        `\`.vcunmute @user\` / \`.vcunmuteall\` — Unmute users in voice channel\n` +
-        `\`.vcpull @user\` / \`.vcpullall\` — Pull users into your VC\n` +
-        `\`.vc lock\` / \`.vc unlock\` — Lock or unlock current VC`,
-      requestedBy: author,
-      clientUser
-    });
-    return message.channel.send({ embeds: [embed] });
+    // Default Voice Help Panel matching screenshot
+    const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+    return renderModuleHelpPanel(message, 'voice');
   }
 };

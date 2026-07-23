@@ -188,21 +188,8 @@ module.exports = {
       return message.reply(`✅ In-VC Auto Role set to <@&${role.id}>!`);
     }
 
-    // 3. STATUS / HELP
-    const embed = createStyledEmbed({
-      title: `🎙️ VoiceMaster System Commands`,
-      description:
-        `\`.vcsetup\` / \`.setupvc\` — 1-Click deploy Join to Create VC & Interface Panel\n` +
-        `\`.invcrole @role\` — Set automatic role assigned while in VC\n` +
-        `\`.tempvc\` — View VoiceMaster system status`,
-      fields: [
-        { name: '⚙️ Status', value: config.enabled ? '`ENABLED ✅`' : '`DISABLED ❌`', inline: true },
-        { name: '🔊 Trigger Channel', value: config.triggerChanId ? `<#${config.triggerChanId}>` : '*Not set*', inline: true },
-        { name: '💬 Interface Channel', value: config.interfaceChanId ? `<#${config.interfaceChanId}>` : '*Not set*', inline: true }
-      ],
-      requestedBy: author,
-      clientUser
-    });
-    return message.channel.send({ embeds: [embed] });
+    // Default VoiceMaster Help Panel matching screenshot
+    const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+    return renderModuleHelpPanel(message, 'voice');
   }
 };

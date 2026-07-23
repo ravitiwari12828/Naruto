@@ -144,18 +144,8 @@ module.exports = {
       return message.reply(`✅ Welcome configuration reset to default.`);
     }
 
-    // Default Help
-    const embed = createStyledEmbed({
-      title: `👋 Picture & Embed Welcome System Commands`,
-      description:
-        `\`.welcomechannel <#channel>\` — Set welcome greetings channel\n` +
-        `\`.welcomemessage <text>\` — Customize welcome embed text & emojis\n` +
-        `\`.welcomeimage <url / avatar>\` — Set thumbnail avatar or custom image\n` +
-        `\`.welcometest\` — Preview welcome card (matching screenshot 1)\n` +
-        `\`.welcomereset\` — Reset settings`,
-      requestedBy: author,
-      clientUser
-    });
-    return message.channel.send({ embeds: [embed] });
+    // Default Help Panel matching screenshot
+    const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+    return renderModuleHelpPanel(message, 'welcome');
   }
 };

@@ -156,20 +156,8 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Default Level Help
-    const embed = createStyledEmbed({
-      title: `${emojis.LEVEL} Leveling System Commands`,
-      description:
-        `\`.level rank [@user]\` — View Shinobi rank card & XP progress\n` +
-        `\`.level leaderboard\` — View server level leaderboard\n` +
-        `\`.level setup <#channel>\` — Configure level-up notifications\n` +
-        `\`.level disable\` — Disable level system\n` +
-        `\`.level status\` — View leveling system status\n` +
-        `\`.level addxp @user <amount>\` — Grant bonus XP (Admin)\n` +
-        `\`.level setlevel @user <level>\` — Set user level (Admin)`,
-      requestedBy: author,
-      clientUser
-    });
-    return message.channel.send({ embeds: [embed] });
+    // Default Level Help Panel matching screenshot
+    const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+    return renderModuleHelpPanel(message, 'level');
   }
 };
