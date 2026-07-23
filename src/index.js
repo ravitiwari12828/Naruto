@@ -375,7 +375,18 @@ client.on('interactionCreate', async (interaction) => {
 
     const ticketCmd = client.commands.get('ticket');
     const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(guild.id) : { ticketCounter: 0, staffRoles: new Set(), categories: [] };
-    const { logChan, category } = ticketCmd ? await ticketCmd.ensureTicketLogChannels(guild) : { logChan: null, category: null };
+    // Check if user already has an active ticket open in this server
+    const existingTicket = guild.channels.cache.find(c =>
+      c.isTextBased() &&
+      c.topic &&
+      c.topic.includes(`owner:${user.id}`)
+    );
+
+    if (existingTicket) {
+      return interaction.editReply({
+        content: `⚠️ You already have an open ticket in ${existingTicket}! Each user can only have **1 open ticket** at a time. Please close your existing ticket before creating a new one.`
+      }).catch(() => {});
+    }
 
     config.ticketCounter++;
     const ticketNum = config.ticketCounter;
