@@ -89,12 +89,12 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
     title: `${emojis.WELCOME} Welcome & Greetings System Dashboard`,
     subtitle: `ORBIS-Style Welcome, Join DM, Leave DM & Boost Panel`,
     description:
-      `**Status:** ${config.enabled ? '`Enabled ✅`' : '`Disabled ❌`'}\n` +
+      `**Status:** ${config.enabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`}\n` +
       `**Style:** \`${config.style || 'modern'}\`\n` +
       `**Channel:** ${chanStr}\n` +
-      `**Join DM:** ${config.joinDmEnabled ? '`Enabled ✅`' : '`Disabled ❌`'}\n` +
-      `**Leave DM:** ${config.leaveDmEnabled ? '`Enabled ✅`' : '`Disabled ❌`'}\n` +
-      `**Boost Msg:** ${config.boostEnabled ? '`Enabled ✅`' : '`Disabled ❌`'} (${boostChanStr})\n\n` +
+      `**Join DM:** ${config.joinDmEnabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`}\n` +
+      `**Leave DM:** ${config.leaveDmEnabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`}\n` +
+      `**Boost Msg:** ${config.boostEnabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`} (${boostChanStr})\n\n` +
       `**Welcome Message:**\n> *${config.headerText}*\n\n` +
       `**Join DM Message:**\n> *${config.joinDmText || 'Not set'}*\n\n` +
       `**Leave DM Message:**\n> *${config.leaveDmText || 'Not set'}*\n\n` +

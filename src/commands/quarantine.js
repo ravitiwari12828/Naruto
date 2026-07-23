@@ -82,7 +82,7 @@ module.exports = {
     if (sub === 'disable') {
       config.enabled = false;
       quarantineConfigs.set(guild.id, config);
-      return message.reply(`⚠️ 15-Day New Joiner Security Grid is now **DISABLED**.`);
+      return message.reply(`${emojis.WARNING} 15-Day New Joiner Security Grid is now **DISABLED**.`);
     }
 
     // .quarantine days <number>
@@ -96,7 +96,7 @@ module.exports = {
       quarantineConfigs.set(guild.id, config);
 
       const embed = createStyledEmbed({
-        title: `⚙️ Probation Window Updated`,
+        title: `${emojis.GEAR} Probation Window Updated`,
         description: `New users & bots must now be in the server for at least **\`${num} Days\`** before executing admin/mod commands, @everyone mentions, or channel renames!`,
         requestedBy: author,
         clientUser
@@ -130,10 +130,10 @@ module.exports = {
 
     // Default Status Overview Card
     const embed = createStyledEmbed({
-      title: `🛡️ 15-Day New Joiner Security Probation Grid`,
+      title: `${emojis.SHIELD} 15-Day New Joiner Security Probation Grid`,
       subtitle: `${emojis.SHIELD} Konoha Anti-Rogue Joiner Protection`,
       fields: [
-        { name: '⚙️ Status', value: config.enabled ? '`ENABLED ✅`' : '`DISABLED ⚠️`', inline: true },
+        { name: '⚙️ Status', value: config.enabled ? `\`ENABLED\` ${emojis.ENABLED}` : `\`DISABLED\` ${emojis.DISABLED}`, inline: true },
         { name: '⏱️ Probation Period', value: `\`${config.days} Days\``, inline: true },
         { name: '🚫 Enforced Restrictions', value: `• Ban / Kick Commands\n• @everyone & @here Mentions\n• Mass Channel Renaming & Deletion\n• Mass Role Modifications`, inline: false }
       ],

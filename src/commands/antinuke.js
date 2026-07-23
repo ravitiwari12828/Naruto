@@ -109,10 +109,10 @@ const FILTER_MAP = {
 const ALL_PERMS = ['ban', 'kick', 'bot', 'channel', 'role', 'webhook', 'guild', 'all'];
 
 function formatUserPerms(permsSet) {
-  if (!permsSet || permsSet.size === 0) return '`NONE ❌`';
-  if (permsSet.has('all')) return '`ALL BYPASSES ✅`';
+  if (!permsSet || permsSet.size === 0) return `\`NONE\` ${emojis.DISABLED}`;
+  if (permsSet.has('all')) return `\`ALL BYPASSES\` ${emojis.ENABLED}`;
   const list = Array.from(permsSet).map(p => `\`${p.toUpperCase()}\``).join(', ');
-  return list || '`NONE ❌`';
+  return list || `\`NONE\` ${emojis.DISABLED}`;
 }
 
 function isUserWhitelistedForFeature(config, userId, featureName) {
@@ -220,7 +220,7 @@ module.exports = {
         const changes = args.slice(2);
         if (changes.length === 0) {
           const embed = createStyledEmbed({
-            title: `⚙️ Whitelist Permissions — ${targetUser.username}`,
+            title: `${emojis.GEAR} Whitelist Permissions — ${targetUser.username}`,
             description:
               `**Current Granted Permissions:**\n${formatUserPerms(permsSet)}\n\n` +
               `**Available Permissions:**\n` +
@@ -261,7 +261,7 @@ module.exports = {
         antinukeConfigs.set(guild.id, config);
 
         const embed = createStyledEmbed({
-          title: `✅ Whitelist Permissions Updated`,
+          title: `${emojis.SUCCESS} Whitelist Permissions Updated`,
           description: `**User:** <@${targetUser.id}>\n**New Granted Permissions:** ${formatUserPerms(permsSet)}`,
           requestedBy: author,
           clientUser
@@ -275,7 +275,7 @@ module.exports = {
         if (targetUser) {
           config.whitelistedUsers.delete(targetUser.id);
           antinukeConfigs.set(guild.id, config);
-          return message.reply(`✅ Removed **${targetUser.tag}** from AntiNuke Whitelist.`);
+          return message.reply(`${emojis.SUCCESS} Removed **${targetUser.tag}** from AntiNuke Whitelist.`);
         }
       }
 
@@ -293,7 +293,7 @@ module.exports = {
         description:
           `Welcome **${author.username}**! Server Owner and Extra Owners can grant or toggle individual bypass permissions for whitelisted members.\n\n` +
           `**Whitelisted Members & Granted Permissions:**\n${listText}\n\n` +
-          `**👑 Whitelist Management Commands:**\n` +
+          `**${emojis.OWNER_CROWN} Whitelist Management Commands:**\n` +
           `• \`.whitelist add @user [perms]\` — Add user to whitelist\n` +
           `• \`.whitelist perms @user +ban -role\` — Toggle specific ON/OFF perms\n` +
           `• \`.whitelist remove @user\` — Revoke user from whitelist`,
@@ -318,10 +318,10 @@ module.exports = {
         config.enabled = true;
         FILTER_MAP[target].forEach(k => config.filters[k] = true);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`✅ AntiNuke feature **${target.toUpperCase()}** enabled successfully!`);
+        return message.reply(`${emojis.SUCCESS} AntiNuke feature **${target.toUpperCase()}** enabled successfully!`);
       }
 
-      return message.reply(`ℹ️ Feature \`${target}\` not recognized.\nAvailable features: \`antiban\`, \`antikick\`, \`antibot\`, \`antichannel\`, \`antirole\`, \`antiwebhook\`, \`antiguild\`, \`antispam\`, \`antiraid\`, \`antieveryone\`, \`all\`.`);
+      return message.reply(`${emojis.INFO} Feature \`${target}\` not recognized.\nAvailable features: \`antiban\`, \`antikick\`, \`antibot\`, \`antichannel\`, \`antirole\`, \`antiwebhook\`, \`antiguild\`, \`antispam\`, \`antiraid\`, \`antieveryone\`, \`all\`.`);
     }
 
     // 2. .antinuke disable [feature/all]
@@ -332,16 +332,16 @@ module.exports = {
         config.enabled = false;
         Object.keys(config.filters).forEach(k => config.filters[k] = false);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`⚠️ AntiNuke Security System is now **DISABLED**.`);
+        return message.reply(`${emojis.WARNING} AntiNuke Security System is now **DISABLED**.`);
       }
 
       if (FILTER_MAP[target]) {
         FILTER_MAP[target].forEach(k => config.filters[k] = false);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`⚠️ AntiNuke feature **${target.toUpperCase()}** disabled.`);
+        return message.reply(`${emojis.WARNING} AntiNuke feature **${target.toUpperCase()}** disabled.`);
       }
 
-      return message.reply(`ℹ️ Feature \`${target}\` not recognized.\nAvailable features: \`antiban\`, \`antikick\`, \`antibot\`, \`antichannel\`, \`antirole\`, \`antiwebhook\`, \`antiguild\`, \`antispam\`, \`antiraid\`, \`antieveryone\`, \`all\`.`);
+      return message.reply(`${emojis.INFO} Feature \`${target}\` not recognized.\nAvailable features: \`antiban\`, \`antikick\`, \`antibot\`, \`antichannel\`, \`antirole\`, \`antiwebhook\`, \`antiguild\`, \`antispam\`, \`antiraid\`, \`antieveryone\`, \`all\`.`);
     }
 
     // 3. .panicmode enable / disable / reset / set <level>
@@ -365,20 +365,20 @@ module.exports = {
       if (mode === 'disable' || mode === 'off') {
         config.panicmode = false;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`✅ Panic Mode deactivated. Server returned to normal AntiNuke status.`);
+        return message.reply(`${emojis.SUCCESS} Panic Mode deactivated. Server returned to normal AntiNuke status.`);
       }
 
       if (mode === 'reset') {
         config.panicmode = false;
         config.panicLevel = 1;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`✅ Panic Mode status and lock levels have been fully reset.`);
+        return message.reply(`${emojis.SUCCESS} Panic Mode status and lock levels have been fully reset.`);
       }
 
       if (mode === 'set' && args[2]) {
         const lvl = parseInt(args[2]);
         if (isNaN(lvl) || lvl < 1 || lvl > 3) {
-          return message.reply(`ℹ️ Panic level must be between 1 and 3 e.g. \`.panicmode set 2\`.`);
+          return message.reply(`${emojis.INFO} Panic level must be between 1 and 3 e.g. \`.panicmode set 2\`.`);
         }
         config.panicLevel = lvl;
         antinukeConfigs.set(guild.id, config);
@@ -394,18 +394,18 @@ module.exports = {
       if (action === 'add' && user) {
         config.extraOwners.add(user.id);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`👑 Added **${user.tag}** as Extra Owner with full security bypass permissions!`);
+        return message.reply(`${emojis.OWNER_CROWN} Added **${user.tag}** as Extra Owner with full security bypass permissions!`);
       }
 
       if (action === 'remove' && user) {
         config.extraOwners.delete(user.id);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`👑 Removed **${user.tag}** from Extra Owners.`);
+        return message.reply(`${emojis.OWNER_CROWN} Removed **${user.tag}** from Extra Owners.`);
       }
 
       const list = Array.from(config.extraOwners).map(id => `<@${id}> (\`${id}\`)`).join('\n') || 'None';
       const embed = createStyledEmbed({
-        title: `👑 Extra Owners (Full Security Access)`,
+        title: `${emojis.OWNER_CROWN} Extra Owners (Full Security Access)`,
         description: list,
         requestedBy: author,
         clientUser
@@ -421,18 +421,18 @@ module.exports = {
       if (action === 'add' && role) {
         config.bypassRoles.add(role.id);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`🛡️ Added <@&${role.id}> to AntiNuke Bypass Roles.`);
+        return message.reply(`${emojis.SHIELD} Added <@&${role.id}> to AntiNuke Bypass Roles.`);
       }
 
       if (action === 'remove' && role) {
         config.bypassRoles.delete(role.id);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`🛡️ Removed <@&${role.id}> from AntiNuke Bypass Roles.`);
+        return message.reply(`${emojis.SHIELD} Removed <@&${role.id}> from AntiNuke Bypass Roles.`);
       }
 
       const list = Array.from(config.bypassRoles).map(id => `<@&${id}> (\`${id}\`)`).join('\n') || 'None';
       const embed = createStyledEmbed({
-        title: `🛡️ AntiNuke Bypass Roles`,
+        title: `${emojis.SHIELD} AntiNuke Bypass Roles`,
         description: list,
         requestedBy: author,
         clientUser
@@ -443,24 +443,24 @@ module.exports = {
     // Default Status & Filter Config Dashboard (.antinuke)
     const f = config.filters;
     const filterStatusText =
-      `• **Anti Ban**: ${f.antiBan ? '`ON ✅`' : '`OFF ❌`'}\n` +
-      `• **Anti Kick**: ${f.antiKick ? '`ON ✅`' : '`OFF ❌`'}\n` +
-      `• **Anti Bot Add**: ${f.antiBotAdd ? '`ON ✅`' : '`OFF ❌`'}\n` +
-      `• **Anti Channel**: ${f.antiChannelCreate ? '`ON ✅`' : '`OFF ❌`'}\n` +
-      `• **Anti Role**: ${f.antiRoleCreate ? '`ON ✅`' : '`OFF ❌`'}\n` +
-      `• **Anti Webhook**: ${f.antiWebhookCreate ? '`ON ✅`' : '`OFF ❌`'}\n` +
-      `• **Anti Server Update**: ${f.antiGuildUpdate ? '`ON ✅`' : '`OFF ❌`'}\n` +
-      `• **Anti Spam**: ${f.antiSpam ? '`ON ✅`' : '`OFF ❌`'}\n` +
-      `• **Anti Raid**: ${f.antiRaid ? '`ON ✅`' : '`OFF ❌`'}\n` +
-      `• **Anti Mass Ping**: ${f.antiEveryone ? '`ON ✅`' : '`OFF ❌`'}`;
+      `• **Anti Ban**: ${f.antiBan ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+      `• **Anti Kick**: ${f.antiKick ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+      `• **Anti Bot Add**: ${f.antiBotAdd ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+      `• **Anti Channel**: ${f.antiChannelCreate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+      `• **Anti Role**: ${f.antiRoleCreate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+      `• **Anti Webhook**: ${f.antiWebhookCreate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+      `• **Anti Server Update**: ${f.antiGuildUpdate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+      `• **Anti Spam**: ${f.antiSpam ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+      `• **Anti Raid**: ${f.antiRaid ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+      `• **Anti Mass Ping**: ${f.antiEveryone ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}`;
 
     const embed = createStyledEmbed({
-      title: `🛡️ AntiNuke Security Dashboard`,
+      title: `${emojis.SHIELD} AntiNuke Security Dashboard`,
       fields: [
-        { name: '⚙️ Main Shield', value: config.enabled ? '`ENABLED ✅`' : '`DISABLED ❌`', inline: true },
-        { name: '🚨 Panic Mode', value: config.panicmode ? `\`ACTIVE (Level ${config.panicLevel}) 🚨\`` : '`NORMAL 🟢`', inline: true },
+        { name: '⚙️ Main Shield', value: config.enabled ? `\`ENABLED\` ${emojis.ENABLED}` : `\`DISABLED\` ${emojis.DISABLED}`, inline: true },
+        { name: '🚨 Panic Mode', value: config.panicmode ? `\`ACTIVE (Level ${config.panicLevel})\` 🚨` : `\`NORMAL\` ${emojis.ENABLED}`, inline: true },
         { name: '📜 Protection Filters', value: filterStatusText, inline: false },
-        { name: '👑 Permissions Policy', value: '🔒 **Server Owner & Extra Owners Only**', inline: false }
+        { name: '👑 Permissions Policy', value: `🔒 **Server Owner & Extra Owners Only**`, inline: false }
       ],
       requestedBy: author,
       clientUser

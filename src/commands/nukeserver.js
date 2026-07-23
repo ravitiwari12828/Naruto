@@ -51,7 +51,7 @@ module.exports = {
 
     // 1. ULTRA-FAST ROLE DELETION (.nukeroles / .deleteroles)
     if (sub === 'roles') {
-      const msg = await message.channel.send(`⚡ **Lightning Fast Role Purge Initiated...**`);
+      const msg = await message.channel.send(`${emojis.ZAP} **Lightning Fast Role Purge Initiated...**`);
 
       const targetRoles = Array.from(guild.roles.cache.values()).filter(r => r.name !== '@everyone' && !r.managed && r.editable);
       const { successCount, failCount } = await fastBatchDelete(targetRoles, async (role) => {
@@ -60,7 +60,7 @@ module.exports = {
       }, 15);
 
       const embed = createStyledEmbed({
-        title: `⚡ Mass Role Deletion Complete`,
+        title: `${emojis.ZAP} Mass Role Deletion Complete`,
         description: `Successfully deleted **${successCount}** roles in high-speed parallel batching!`,
         requestedBy: author,
         clientUser
@@ -83,7 +83,7 @@ module.exports = {
       }, 15);
 
       const embed = createStyledEmbed({
-        title: `⚡ Mass Channel Deletion Complete`,
+        title: `${emojis.ZAP} Mass Channel Deletion Complete`,
         description: `Successfully deleted **${successCount}** channels in parallel batching! Fresh channel ready.`,
         requestedBy: author,
         clientUser
@@ -120,7 +120,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `💥 ULTRA-FAST SERVER NUKE COMPLETE`,
+        title: `${emojis.KABOOM} ULTRA-FAST SERVER NUKE COMPLETE`,
         description:
           `• **Deleted Channels**: **${chanResult.successCount}**\n` +
           `• **Deleted Roles**: **${roleResult.successCount}**\n\n` +
@@ -135,6 +135,6 @@ module.exports = {
       return;
     }
 
-    return message.reply(`ℹ️ Usage:\n• \`.nukeroles\` — Ultra-fast role purge\n• \`.nukechannels\` — Ultra-fast channel purge\n• \`.nukeserver\` — Ultra-fast full server reset`);
+    return message.reply(`${emojis.INFO} Usage:\n• \`.nukeroles\` — Ultra-fast role purge\n• \`.nukechannels\` — Ultra-fast channel purge\n• \`.nukeserver\` — Ultra-fast full server reset`);
   }
 };
