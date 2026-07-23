@@ -69,13 +69,13 @@ module.exports = {
         const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
         return message.channel.send({
           embeds: [catEmbed],
-          components: [buildDropdownMenu(), buildNavigationButtons()]
+          components: [buildDropdownMenu(message.client), buildNavigationButtons()]
         });
       }
     }
 
     const mainEmbed = buildMainEmbed(message, botUser, botAvatar, devPortalBanner);
-    const dropdownRow = buildDropdownMenu();
+    const dropdownRow = buildDropdownMenu(message.client);
     const navRow = buildNavigationButtons();
 
     const helpMessage = await message.channel.send({
@@ -100,7 +100,7 @@ module.exports = {
       if (interaction.customId === 'help_home') {
         return helpMessage.edit({
           embeds: [buildMainEmbed(message, botUser, botAvatar, devPortalBanner)],
-          components: [buildDropdownMenu(), buildNavigationButtons()]
+          components: [buildDropdownMenu(message.client), buildNavigationButtons()]
         });
       }
 
@@ -116,7 +116,7 @@ module.exports = {
           const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
           return helpMessage.edit({
             embeds: [catEmbed],
-            components: [buildDropdownMenu(), buildNavigationButtons()]
+            components: [buildDropdownMenu(message.client), buildNavigationButtons()]
           });
         }
       }
