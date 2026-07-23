@@ -38,7 +38,8 @@ class ResilientDatabase {
       autoresponses: {},
       autoreacts: {},
       automod: {},
-      settings: {}
+      settings: {},
+      analytics: []
     };
 
     if (sqlite3) {
@@ -64,6 +65,7 @@ class ResilientDatabase {
       if (fs.existsSync(jsonDbPath)) {
         const raw = fs.readFileSync(jsonDbPath, 'utf8');
         this.data = Object.assign(this.data, JSON.parse(raw));
+        if (!this.data.analytics) this.data.analytics = [];
       } else {
         this.saveJSON();
       }
@@ -129,6 +131,15 @@ class ResilientDatabase {
         prefix TEXT DEFAULT '.'
       )`);
 
+      this.sqliteDb.run(`CREATE TABLE IF NOT EXISTS analytics_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        guildId TEXT,
+        userId TEXT,
+        eventType TEXT,
+        value INTEGER DEFAULT 1,
+        timestamp INTEGER
+      )`);
+
       this.loadFromSQLite();
     });
   }
@@ -153,55 +164,9 @@ class ResilientDatabase {
         });
       }
     });
-
-    this.sqliteDb.all(`SELECT * FROM autoroles`, [], (err, rows) => {
-      if (!err && rows) {
-        rows.forEach(r => {
-          this.data.autoroles[r.guildId] = {
-            humans: JSON.parse(r.humans || '[]'),
-            bots: JSON.parse(r.bots || '[]')
-          };
-        });
-      }
-    });
-
-    this.sqliteDb.all(`SELECT * FROM autoresponses`, [], (err, rows) => {
-      if (!err && rows) {
-        rows.forEach(r => {
-          if (!this.data.autoresponses[r.guildId]) this.data.autoresponses[r.guildId] = [];
-          this.data.autoresponses[r.guildId].push({ id: r.id, trigger: r.trigger, response: r.response });
-        });
-      }
-    });
-
-    this.sqliteDb.all(`SELECT * FROM autoreacts`, [], (err, rows) => {
-      if (!err && rows) {
-        rows.forEach(r => {
-          if (!this.data.autoreacts[r.guildId]) this.data.autoreacts[r.guildId] = [];
-          this.data.autoreacts[r.guildId].push({ id: r.id, trigger: r.trigger, emoji: r.emoji });
-        });
-      }
-    });
-
-    this.sqliteDb.all(`SELECT * FROM automod`, [], (err, rows) => {
-      if (!err && rows) {
-        rows.forEach(r => {
-          this.data.automod[r.guildId] = {
-            enabled: Boolean(r.enabled),
-            profanity: Boolean(r.profanity),
-            caps: Boolean(r.caps),
-            mention: Boolean(r.mention),
-            emoji: Boolean(r.emoji),
-            punishment: r.punishment,
-            whitelistedBots: JSON.parse(r.whitelistedBots || '[]'),
-            ignoredChannels: JSON.parse(r.ignoredChannels || '[]')
-          };
-        });
-      }
-    });
   }
 
-  // --- USER METHODS ---
+  // --- USER XP, MESSAGES & VOICE TIMING ---
   getUser(userId) {
     if (!this.data.users[userId]) {
       this.data.users[userId] = {
@@ -215,24 +180,34 @@ class ResilientDatabase {
         ryo: 500,
         jutsuList: ['Rasengan', 'Shadow Clone Jutsu']
       };
-
-      if (this.useSqlite && this.sqliteDb) {
-        this.sqliteDb.run(
-          `INSERT OR REPLACE INTO users (id, messages, voiceSeconds, invites, xp, level, rank, chakra, ryo, jutsuList) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          [userId, 0, 0, 0, 0, 1, 'Academy Student', 100, 500, JSON.stringify(['Rasengan', 'Shadow Clone Jutsu'])]
-        );
-      }
-      this.saveJSON();
     }
-    const user = this.data.users[userId];
-    user.rank = calculateRank(user.level || 1);
-    return user;
+    return this.data.users[userId];
   }
 
-  updateUser(userId, updateFn) {
+  addMessage(userId, count = 1) {
     const user = this.getUser(userId);
-    updateFn(user);
-    user.rank = calculateRank(user.level || 1);
+    user.messages += count;
+    user.xp += count * 5;
+    const oldLevel = user.level;
+    user.level = Math.floor(0.1 * Math.sqrt(user.xp)) + 1;
+    user.rank = calculateRank(user.level);
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `INSERT OR REPLACE INTO users (id, messages, voiceSeconds, invites, xp, level, rank, chakra, ryo, jutsuList) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [userId, user.messages, user.voiceSeconds, user.invites, user.xp, user.level, user.rank, user.chakra, user.ryo, JSON.stringify(user.jutsuList)]
+      );
+    }
+    this.saveJSON();
+    return { user, leveledUp: user.level > oldLevel };
+  }
+
+  addVoiceTime(userId, seconds) {
+    const user = this.getUser(userId);
+    user.voiceSeconds += seconds;
+    user.xp += Math.floor(seconds / 60) * 10;
+    user.level = Math.floor(0.1 * Math.sqrt(user.xp)) + 1;
+    user.rank = calculateRank(user.level);
 
     if (this.useSqlite && this.sqliteDb) {
       this.sqliteDb.run(
@@ -244,135 +219,104 @@ class ResilientDatabase {
     return user;
   }
 
-  addMessage(userId, count = 1) {
-    return this.updateUser(userId, (u) => {
-      u.messages += count;
-      u.xp += count * 5;
-      const nextLevelXp = u.level * 100;
-      if (u.xp >= nextLevelXp) {
-        u.level += 1;
-        u.rank = calculateRank(u.level);
-      }
-    });
-  }
-
   addInvites(userId, count = 1) {
-    return this.updateUser(userId, (u) => {
-      u.invites = Math.max(0, u.invites + count);
+    const user = this.getUser(userId);
+    user.invites += count;
+    user.xp += count * 15;
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `INSERT OR REPLACE INTO users (id, messages, voiceSeconds, invites, xp, level, rank, chakra, ryo, jutsuList) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [userId, user.messages, user.voiceSeconds, user.invites, user.xp, user.level, user.rank, user.chakra, user.ryo, JSON.stringify(user.jutsuList)]
+      );
+    }
+    this.saveJSON();
+    return user;
+  }
+
+  // --- TIME-WINDOWED ANALYTICS tracking ---
+  recordAnalyticsEvent(guildId, userId, eventType, value = 1) {
+    const now = Date.now();
+    if (!this.data.analytics) this.data.analytics = [];
+
+    const ev = { guildId, userId, eventType, value, timestamp: now };
+    this.data.analytics.push(ev);
+
+    // Keep memory cache within 60 days
+    const maxAge = 60 * 86400 * 1000;
+    if (this.data.analytics.length > 50000) {
+      this.data.analytics = this.data.analytics.filter(e => (now - e.timestamp) < maxAge);
+    }
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `INSERT INTO analytics_events (guildId, userId, eventType, value, timestamp) VALUES (?, ?, ?, ?, ?)`,
+        [guildId, userId, eventType, value, now]
+      );
+    }
+    this.saveJSON();
+  }
+
+  getAnalyticsStats(guildId, windowMs = null) {
+    const now = Date.now();
+    const minTime = windowMs ? (now - windowMs) : 0;
+
+    const events = (this.data.analytics || []).filter(e => (!guildId || e.guildId === guildId) && e.timestamp >= minTime);
+
+    const stats = {
+      messages: 0,
+      voiceSeconds: 0,
+      invites: 0,
+      joins: 0,
+      leaves: 0,
+      commands: 0,
+      ticketsCreated: 0,
+      ticketsClosed: 0
+    };
+
+    events.forEach(e => {
+      if (e.eventType === 'message') stats.messages += e.value;
+      if (e.eventType === 'voice') stats.voiceSeconds += e.value;
+      if (e.eventType === 'invite') stats.invites += e.value;
+      if (e.eventType === 'join') stats.joins += e.value;
+      if (e.eventType === 'leave') stats.leaves += e.value;
+      if (e.eventType === 'command') stats.commands += e.value;
+      if (e.eventType === 'ticket_created') stats.ticketsCreated += e.value;
+      if (e.eventType === 'ticket_closed') stats.ticketsClosed += e.value;
     });
+
+    return stats;
   }
 
-  // --- AUTOROLES ---
-  getAutoroles(guildId) {
-    if (!this.data.autoroles[guildId]) {
-      this.data.autoroles[guildId] = { humans: [], bots: [] };
-    }
-    return this.data.autoroles[guildId];
-  }
+  getUserAnalyticsStats(guildId, userId, windowMs = null) {
+    const now = Date.now();
+    const minTime = windowMs ? (now - windowMs) : 0;
 
-  setAutorole(guildId, targetType, roleId, action = 'add') {
-    const config = this.getAutoroles(guildId);
-    const list = config[targetType] || [];
-    if (action === 'add') {
-      if (!list.includes(roleId)) list.push(roleId);
-    } else if (action === 'remove') {
-      const idx = list.indexOf(roleId);
-      if (idx > -1) list.splice(idx, 1);
-    } else if (action === 'reset') {
-      config[targetType] = [];
-    }
-    this.data.autoroles[guildId] = config;
-
-    if (this.useSqlite && this.sqliteDb) {
-      this.sqliteDb.run(
-        `INSERT OR REPLACE INTO autoroles (guildId, humans, bots) VALUES (?, ?, ?)`,
-        [guildId, JSON.stringify(config.humans), JSON.stringify(config.bots)]
-      );
-    }
-    this.saveJSON();
-    return config;
-  }
-
-  // --- AUTORESPONDER ---
-  getAutoresponses(guildId) {
-    return this.data.autoresponses[guildId] || [];
-  }
-
-  addAutoresponse(guildId, trigger, response) {
-    if (!this.data.autoresponses[guildId]) this.data.autoresponses[guildId] = [];
-    const item = { id: Date.now().toString(36), trigger: trigger.toLowerCase(), response };
-    this.data.autoresponses[guildId].push(item);
-
-    if (this.useSqlite && this.sqliteDb) {
-      this.sqliteDb.run(
-        `INSERT INTO autoresponses (id, guildId, trigger, response) VALUES (?, ?, ?, ?)`,
-        [item.id, guildId, item.trigger, item.response]
-      );
-    }
-    this.saveJSON();
-    return item;
-  }
-
-  deleteAutoresponse(guildId, triggerOrId) {
-    if (!this.data.autoresponses[guildId]) return false;
-    const initialLen = this.data.autoresponses[guildId].length;
-    this.data.autoresponses[guildId] = this.data.autoresponses[guildId].filter(
-      r => r.id !== triggerOrId && r.trigger !== triggerOrId.toLowerCase()
+    const events = (this.data.analytics || []).filter(e =>
+      (!guildId || e.guildId === guildId) &&
+      e.userId === userId &&
+      e.timestamp >= minTime
     );
 
-    if (this.useSqlite && this.sqliteDb) {
-      this.sqliteDb.run(
-        `DELETE FROM autoresponses WHERE guildId = ? AND (id = ? OR trigger = ?)`,
-        [guildId, triggerOrId, triggerOrId.toLowerCase()]
-      );
-    }
-    this.saveJSON();
-    return this.data.autoresponses[guildId].length < initialLen;
-  }
+    const stats = {
+      messages: 0,
+      voiceSeconds: 0,
+      invites: 0,
+      commands: 0,
+      ticketsCreated: 0,
+      ticketsClosed: 0
+    };
 
-  // --- AUTOREACT ---
-  getAutoreacts(guildId) {
-    return this.data.autoreacts[guildId] || [];
-  }
+    events.forEach(e => {
+      if (e.eventType === 'message') stats.messages += e.value;
+      if (e.eventType === 'voice') stats.voiceSeconds += e.value;
+      if (e.eventType === 'invite') stats.invites += e.value;
+      if (e.eventType === 'command') stats.commands += e.value;
+      if (e.eventType === 'ticket_created') stats.ticketsCreated += e.value;
+      if (e.eventType === 'ticket_closed') stats.ticketsClosed += e.value;
+    });
 
-  addAutoreact(guildId, trigger, emoji) {
-    if (!this.data.autoreacts[guildId]) this.data.autoreacts[guildId] = [];
-    const item = { id: Date.now().toString(36), trigger: trigger.toLowerCase(), emoji };
-    this.data.autoreacts[guildId].push(item);
-
-    if (this.useSqlite && this.sqliteDb) {
-      this.sqliteDb.run(
-        `INSERT INTO autoreacts (id, guildId, trigger, emoji) VALUES (?, ?, ?, ?)`,
-        [item.id, guildId, item.trigger, item.emoji]
-      );
-    }
-    this.saveJSON();
-    return item;
-  }
-
-  removeAutoreact(guildId, triggerOrId) {
-    if (!this.data.autoreacts[guildId]) return false;
-    const initialLen = this.data.autoreacts[guildId].length;
-    this.data.autoreacts[guildId] = this.data.autoreacts[guildId].filter(
-      r => r.id !== triggerOrId && r.trigger !== triggerOrId.toLowerCase()
-    );
-
-    if (this.useSqlite && this.sqliteDb) {
-      this.sqliteDb.run(
-        `DELETE FROM autoreacts WHERE guildId = ? AND (id = ? OR trigger = ?)`,
-        [guildId, triggerOrId, triggerOrId.toLowerCase()]
-      );
-    }
-    this.saveJSON();
-    return this.data.autoreacts[guildId].length < initialLen;
-  }
-
-  resetAutoreact(guildId) {
-    this.data.autoreacts[guildId] = [];
-    if (this.useSqlite && this.sqliteDb) {
-      this.sqliteDb.run(`DELETE FROM autoreacts WHERE guildId = ?`, [guildId]);
-    }
-    this.saveJSON();
+    return stats;
   }
 
   // --- AUTOMOD & ANTIBOT ---
@@ -415,6 +359,14 @@ class ResilientDatabase {
     }
     this.saveJSON();
     return config;
+  }
+
+  getAutoresponses(guildId) {
+    return this.data.autoresponses[guildId] || [];
+  }
+
+  getAutoreacts(guildId) {
+    return this.data.autoreacts[guildId] || [];
   }
 }
 

@@ -104,8 +104,12 @@ client.on('guildCreate', async (guild) => {
   }
 });
 
+const voiceJoinTimes = new Map();
+
 // Member Join Welcome Listener
 client.on('guildMemberAdd', async (member) => {
+  db.recordAnalyticsEvent(member.guild.id, member.id, 'join', 1);
+
   const welcomeCmd = client.commands.get('welcome');
   if (welcomeCmd && welcomeCmd.getOrCreateWelcomeConfig) {
     const config = welcomeCmd.getOrCreateWelcomeConfig(member.guild.id);
@@ -148,8 +152,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     }
   }
 
-  // 2. VC Audit Logs
+  // 2. VC Audit Logs & Voice Timing Analytics
   if (!oldState.channelId && newState.channelId) {
+    voiceJoinTimes.set(member.id, Date.now());
     dispatchLog(guild, 'vc', {
       color: 0x57F287,
       title: '🔊 Voice Channel Joined',
@@ -157,6 +162,14 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       footer: `User ID: ${member.id}`
     });
   } else if (oldState.channelId && !newState.channelId) {
+    if (voiceJoinTimes.has(member.id)) {
+      const durationSec = Math.floor((Date.now() - voiceJoinTimes.get(member.id)) / 1000);
+      if (durationSec > 0) {
+        db.addVoiceTime(member.id, durationSec);
+        db.recordAnalyticsEvent(guild.id, member.id, 'voice', durationSec);
+      }
+      voiceJoinTimes.delete(member.id);
+    }
     dispatchLog(guild, 'vc', {
       color: 0xED4245,
       title: '🔇 Voice Channel Left',
@@ -249,6 +262,8 @@ client.on('messageUpdate', (oldMsg, newMsg) => {
 
 // Member Leave Listener
 client.on('guildMemberRemove', (member) => {
+  db.recordAnalyticsEvent(member.guild.id, member.id, 'leave', 1);
+
   dispatchLog(member.guild, 'joinleave', {
     color: 0xED4245,
     title: '📤 Member Left',
@@ -382,6 +397,7 @@ client.on('messageCreate', async (message) => {
 
   // GUILD MESSAGES
   db.addMessage(message.author.id, 1);
+  db.recordAnalyticsEvent(message.guild.id, message.author.id, 'message', 1);
 
   // 15-Day Quarantine Check
   const quarantineCmd = client.commands.get('quarantine');
@@ -484,6 +500,7 @@ client.on('messageCreate', async (message) => {
   if (!command) return;
 
   console.log(`⚡ [Executing Command] .${commandName} requested by ${message.author.tag}`);
+  db.recordAnalyticsEvent(message.guild.id, message.author.id, 'command', 1);
 
   const statsCmd = client.commands.get('stats');
   if (statsCmd && statsCmd.incrementCommandCount) {
@@ -576,6 +593,7 @@ client.on('interactionCreate', async (interaction) => {
         await logChan.send({ embeds: [logEmbed] }).catch(() => {});
       }
 
+      db.recordAnalyticsEvent(guild.id, user.id, 'ticket_created', 1);
       ticketCmd.ticketConfigs.set(guild.id, config);
       return interaction.editReply({ content: `✅ Ticket created! Head over to ${ticketChan}` }).catch(() => {});
     } catch (e) {
@@ -710,6 +728,8 @@ client.on('interactionCreate', async (interaction) => {
     const user = interaction.user;
     const channel = interaction.channel;
     const ticketCmd = client.commands.get('ticket');
+
+    db.recordAnalyticsEvent(interaction.guild.id, user.id, 'ticket_closed', 1);
 
     await interaction.reply({ content: `🔒 Ticket closed by <@${user.id}>. Sending transcript & deleting in **5 seconds**...` }).catch(() => {});
 
