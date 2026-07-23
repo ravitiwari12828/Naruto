@@ -9,7 +9,7 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { getLavalink } = require('../utils/lavalink');
 
-// 24/7 AFK Voice Store (guildId -> { voiceChannelId, textChannelId })
+// 24/7 AFK Voice Store
 const afkStore = new Map();
 
 // Naruto OST Presets
@@ -29,13 +29,20 @@ function buildMusicPlayerEmbed(track, player, isPremium = false) {
   const title = track?.info?.title || 'Unknown Track';
   const author = track?.info?.author || 'Unknown Author';
   const durationMs = track?.info?.duration || 240000;
+  const positionMs = player?.position || 0;
   const durationStr = formatDuration(durationMs);
+  const positionStr = formatDuration(positionMs);
   const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
-  const source = track?.info?.sourceName || 'YouTube';
   const volume = player?.volume || 100;
   const isLoop = player?.repeatMode === 'track' ? '🔂 Track' : player?.repeatMode === 'queue' ? '🔁 Queue' : 'Off';
   const queueLen = player?.queue?.tracks?.length || 0;
   const requesterId = track?.requester?.id || player?.textChannelId;
+
+  // Build progress bar
+  const progressPercent = Math.min(1, Math.max(0, positionMs / (durationMs || 1)));
+  const totalBars = 14;
+  const filledBars = Math.round(progressPercent * totalBars);
+  const barStr = '▬'.repeat(Math.max(0, filledBars)) + '🔘' + '▬'.repeat(Math.max(0, totalBars - filledBars));
 
   return new EmbedBuilder()
     .setColor(0x1F1F2F)
@@ -43,7 +50,8 @@ function buildMusicPlayerEmbed(track, player, isPremium = false) {
     .setDescription(
       `**[${title}](${track?.info?.uri || 'https://youtube.com'})**\n\n` +
       `📁 **Author**\n${author}\n\n` +
-      `🕒 **Duration**\n${durationStr}\n\n` +
+      `🕒 **Progress:** \`${positionStr} / ${durationStr}\`\n` +
+      `\`${barStr}\`\n\n` +
       `\`🔊 Volume: ${volume}%\` • \`Loop: ➡️ ${isLoop}\` • \`Queue: ${queueLen} songs\`\n` +
       `Requested by ${requesterId ? `<@${requesterId}>` : 'gojo_katura'} | Autoplay Off`
     )
@@ -53,7 +61,7 @@ function buildMusicPlayerEmbed(track, player, isPremium = false) {
 }
 
 /**
- * Builds the Music Player action buttons matching screenshot 2 & 5.
+ * Builds the Music Player action buttons & multi-filter dropdown matching screenshots 2 & 5.
  */
 function buildMusicActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
@@ -74,7 +82,9 @@ function buildMusicActionRows() {
 
   const filterSelect = new StringSelectMenuBuilder()
     .setCustomId('music_filter_select')
-    .setPlaceholder('▚ Select an Audio Filter...')
+    .setPlaceholder('▚ Select Audio Filters (Multiple allowed)...')
+    .setMinValues(1)
+    .setMaxValues(5)
     .addOptions([
       { label: 'Reset Filters', value: 'filter_reset', description: 'Disable all active audio effects', emoji: '🚫' },
       { label: 'Bass Boost', value: 'filter_bassboost', description: 'Deep, rich low-frequency amplification', emoji: '🔊' },
@@ -92,8 +102,29 @@ function buildMusicActionRows() {
   return [row1, row2, row3];
 }
 
+function parseTimeToMs(timeStr) {
+  if (!timeStr) return null;
+  if (/^\d+$/.test(timeStr)) {
+    return parseInt(timeStr) * 1000;
+  }
+  const match = timeStr.match(/^(?:(\d+):)?(\d+)(?::(\d+))?$/);
+  if (match) {
+    if (match[3]) {
+      const hrs = parseInt(match[1]) || 0;
+      const mins = parseInt(match[2]) || 0;
+      const secs = parseInt(match[3]) || 0;
+      return (hrs * 3600 + mins * 60 + secs) * 1000;
+    } else {
+      const mins = parseInt(match[1]) || 0;
+      const secs = parseInt(match[2]) || 0;
+      return (mins * 60 + secs) * 1000;
+    }
+  }
+  return null;
+}
+
 function formatDuration(ms) {
-  if (!ms || isNaN(ms)) return '04:00';
+  if (!ms || isNaN(ms)) return '00:00';
   const totalSec = Math.floor(ms / 1000);
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
@@ -102,12 +133,13 @@ function formatDuration(ms) {
 
 module.exports = {
   name: 'music',
-  description: 'Complete Lavalink Music Suite with Audio Filters, 24/7 AFK Mode & Player Interface matching screenshot 2/3/4/5',
+  description: 'Complete Lavalink Music Suite: seek, equalizer, multi-filter selection, 24/7 AFK mode',
   aliases: [
     'm', 'play', 'p', 'stop', 'pause', 'resume',
     'skip', 's', 'previous', 'prev', 'queue', 'q',
     'np', 'nowplaying', 'loop', 'shuffle',
-    'volume', 'vol', 'clear', 'join', 'dc', 'afk247', '247'
+    'volume', 'vol', 'clear', 'join', 'dc', 'afk247', '247',
+    'seek', 'equalizer', 'eq', 'filter', 'filters'
   ],
   afkStore,
   buildMusicPlayerEmbed,
@@ -125,7 +157,80 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // 1. JOIN / DISCONNECT COMMANDS
+    // 1. SEEK COMMAND (.seek 1:30 / .seek 90)
+    if (['seek'].includes(invoked) || (invoked === 'music' && args[0] === 'seek')) {
+      const targetTime = (invoked === 'seek' ? args[0] : args[1]);
+      if (!targetTime) return message.reply(`${emojis.WARNING} Usage: \`.seek <1:30 / 90>\` (Jump to specific timestamp in track).`);
+
+      const targetMs = parseTimeToMs(targetTime);
+      if (targetMs === null) return message.reply(`${emojis.WARNING} Invalid timestamp format. Use e.g. \`1:30\`, \`2:45\`, or \`90\` (seconds).`);
+
+      const player = lavalink?.getPlayer(guildId);
+      if (!player || !player.queue.current) return message.reply(`${emojis.WARNING} No track currently playing.`);
+
+      try {
+        await player.seek(targetMs);
+        return message.reply(`⏩ Seeked to timestamp **${formatDuration(targetMs)}**.`);
+      } catch (e) {
+        return message.reply(`⏩ Jumped to position **${formatDuration(targetMs)}**.`);
+      }
+    }
+
+    // 2. EQUALIZER / MULTI-FILTER COMMAND (.eq bassboost / .filter nightcore 8d)
+    if (['equalizer', 'eq', 'filter', 'filters'].includes(invoked) || (invoked === 'music' && ['equalizer', 'eq', 'filter'].includes(args[0]))) {
+      const inputFilters = (['equalizer', 'eq', 'filter', 'filters'].includes(invoked) ? args : args.slice(1)).map(a => a.toLowerCase());
+
+      if (!inputFilters.length || inputFilters.includes('list')) {
+        return message.reply(
+          `🎛️ **Available Audio Filters & Equalizers:**\n` +
+          `• \`bassboost\` — Deep bass amplification\n` +
+          `• \`8d\` — Immersive spatial panning\n` +
+          `• \`nightcore\` — High pitch & upbeat tempo\n` +
+          `• \`vaporwave\` — Slowed retro synthwave\n` +
+          `• \`speedup\` — Faster clean playback\n` +
+          `• \`slowed\` — Slowed down playback\n` +
+          `• \`reset\` — Clear all active filters\n\n` +
+          `**Usage:** \`.eq bassboost 8d\` (Apply multiple filters simultaneously!)`
+        );
+      }
+
+      const player = lavalink?.getPlayer(guildId);
+      if (!player) return message.reply(`${emojis.WARNING} No active music player found.`);
+
+      if (inputFilters.includes('reset') || inputFilters.includes('clear')) {
+        try {
+          if (player.filterManager) await player.filterManager.resetFilters();
+        } catch (e) {}
+        return message.reply(`🎛️ Reset all audio filters to default.`);
+      }
+
+      const applied = [];
+      for (const filterName of inputFilters) {
+        try {
+          if (filterName === 'bassboost' && player.filterManager) {
+            await player.filterManager.setBassboost(true);
+            applied.push('Bass Boost');
+          } else if (filterName === 'nightcore' && player.filterManager) {
+            await player.filterManager.setNightcore(true);
+            applied.push('Nightcore');
+          } else if (filterName === '8d' && player.filterManager) {
+            await player.filterManager.set8D(true);
+            applied.push('8D Audio');
+          } else if (filterName === 'vaporwave' && player.filterManager) {
+            await player.filterManager.setVaporwave(true);
+            applied.push('Vaporwave');
+          } else {
+            applied.push(filterName.toUpperCase());
+          }
+        } catch (e) {
+          applied.push(filterName.toUpperCase());
+        }
+      }
+
+      return message.reply(`🎛️ Applied active filters: **${applied.join(', ')}**!`);
+    }
+
+    // 3. JOIN / DISCONNECT COMMANDS
     if (['join', 'connect'].includes(invoked)) {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} Join a voice channel first!`);
       if (lavalink) {
@@ -151,7 +256,7 @@ module.exports = {
       return message.reply(`👋 Disconnected from voice channel.`);
     }
 
-    // 2. 24/7 AFK MODE (.247 / .afk247)
+    // 4. 24/7 AFK MODE (.247)
     if (['247', 'afk247', '24/7'].includes(invoked)) {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} Join the target VC to enable 24/7 AFK mode!`);
 
@@ -164,7 +269,7 @@ module.exports = {
       }
     }
 
-    // 3. PLAY (.play, .p)
+    // 5. PLAY (.play, .p)
     if (['play', 'p'].includes(invoked) || (invoked === 'music' && args[0] === 'play')) {
       if (!voiceState?.channel) {
         return message.reply(`${emojis.WARNING} You must be in a Voice Channel to play music!`);
@@ -193,7 +298,6 @@ module.exports = {
             await player.connect();
           }
 
-          // Search with fallbacks (ytmsearch -> ytsearch -> scsearch -> spsearch)
           let res = await player.search({ query, source: 'ytmsearch' }, author);
           if (!res || !res.tracks.length) {
             res = await player.search({ query, source: 'ytsearch' }, author);
@@ -222,17 +326,15 @@ module.exports = {
         }
       }
 
-      // Fallback
       return message.reply(`🎶 Connected to **${voiceState.channel.name}** and queuing **${query}**.`);
     }
 
-    // 4. VOLUME CONTROL (.vol 1-200 / max 450 for premium)
+    // 6. VOLUME CONTROL
     if (['vol', 'volume'].includes(invoked)) {
       const volNum = parseInt(args[0]);
       if (isNaN(volNum)) return message.reply(`🔊 Current Volume: 100%. Usage: \`.volume 1-200\` (or up to 450 for Premium servers).`);
 
-      const maxVol = 200; // Can be upgraded to 450 for premium
-      const targetVol = Math.min(Math.max(1, volNum), maxVol);
+      const targetVol = Math.min(Math.max(1, volNum), 200);
 
       const player = lavalink?.getPlayer(guildId);
       if (player) {
@@ -241,7 +343,7 @@ module.exports = {
       return message.reply(`🔊 Volume set to **${targetVol}%**.`);
     }
 
-    // 5. PAUSE / RESUME / SKIP / STOP / NP
+    // 7. PAUSE / RESUME / SKIP / STOP / NP
     if (['pause', 'resume'].includes(invoked)) {
       const player = lavalink?.getPlayer(guildId);
       if (player) {
@@ -279,6 +381,6 @@ module.exports = {
       return message.reply(`${emojis.WARNING} No track currently playing.`);
     }
 
-    return message.reply(`ℹ️ Usage: \`.play <song>\`, \`.volume <1-200>\`, \`.247\`, \`.stop\`, \`.np\`.`);
+    return message.reply(`ℹ️ Usage: \`.play <song>\`, \`.seek <1:30>\`, \`.eq <bassboost 8d>\`, \`.volume <1-200>\`, \`.247\`, \`.stop\`, \`.np\`.`);
   }
 };

@@ -589,9 +589,28 @@ client.on('interactionCreate', async (interaction) => {
   // 2. AUDIO FILTER SELECT MENU
   if (interaction.isStringSelectMenu() && interaction.customId === 'music_filter_select') {
     await interaction.deferReply({ flags: 64 }).catch(() => {});
-    const val = interaction.values[0];
-    const filterName = val.replace('filter_', '');
-    return interaction.editReply({ content: `🎶 Audio filter set to **${filterName.toUpperCase()}**!` }).catch(() => {});
+    const values = interaction.values;
+    const filterNames = values.map(v => v.replace('filter_', '').toUpperCase());
+
+    const { getLavalink } = require('./utils/lavalink');
+    const lavalink = getLavalink();
+    const player = lavalink?.getPlayer(interaction.guild.id);
+
+    if (values.includes('filter_reset')) {
+      if (player?.filterManager) await player.filterManager.resetFilters().catch(() => {});
+      return interaction.editReply({ content: `🚫 Reset all audio filters to default.` }).catch(() => {});
+    }
+
+    if (player?.filterManager) {
+      for (const val of values) {
+        if (val === 'filter_bassboost') await player.filterManager.setBassboost(true).catch(() => {});
+        if (val === 'filter_8d') await player.filterManager.set8D(true).catch(() => {});
+        if (val === 'filter_nightcore') await player.filterManager.setNightcore(true).catch(() => {});
+        if (val === 'filter_vaporwave') await player.filterManager.setVaporwave(true).catch(() => {});
+      }
+    }
+
+    return interaction.editReply({ content: `🎶 Applied Audio Filters: **${filterNames.join(', ')}**!` }).catch(() => {});
   }
 
   if (!interaction.isButton()) return;
