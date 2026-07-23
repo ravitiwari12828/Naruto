@@ -23,5 +23,8 @@
     "dotenv": "^16.4.5",
     "lavalink-client": "^2.10.3",
     "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^7.0.2"
   }
 }
