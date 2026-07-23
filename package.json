@@ -4,8 +4,8 @@
   "description": "Naruto One - Feature-Packed Discord Bot with Activity, AI, Automations, Autoresponder, Automod & Naruto Ninjutsu RPG",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "node --watch index.js"
+    "start": "node --max-old-space-size=256 index.js",
+    "dev": "node index.js"
   },
   "keywords": [
     "discord",
@@ -22,8 +22,6 @@
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",
     "lavalink-client": "^2.10.3",
-    "sqlite3": "^6.0.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "sqlite3": "^6.0.1"
   }
 }

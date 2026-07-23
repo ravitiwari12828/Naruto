@@ -22,7 +22,8 @@ const {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  AttachmentBuilder
+  AttachmentBuilder,
+  Options
 } = require('discord.js');
 const db = require('./database/db');
 const emojis = require('./utils/emojis');
@@ -33,6 +34,15 @@ const { initLavalink } = require('./utils/lavalink');
 const PREFIX = process.env.PREFIX || '.';
 
 const client = new Client({
+  makeCache: Options.cacheWithLimits({
+    MessageManager: 50,
+    StageInstanceManager: 0,
+    GuildBanManager: 0,
+    GuildInviteManager: 0,
+    GuildStickerManager: 0,
+    ReactionManager: 0,
+    PresenceManager: 0
+  }),
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
