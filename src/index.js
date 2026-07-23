@@ -471,7 +471,7 @@ client.on('messageCreate', async (message) => {
           if (message.member) {
             await message.member.timeout(3600000, 'AntiEveryone Protection: Unauthorized mass ping').catch(() => {});
 
-            if (message.channel.permissionOverwrites) {
+            if (message.channel && message.channel.permissionOverwrites) {
               message.channel.permissionOverwrites.edit(message.author.id, {
                 MentionEveryone: false,
                 SendMessages: false
