@@ -116,10 +116,64 @@ client.on('guildCreate', async (guild) => {
 
 const voiceJoinTimes = new Map();
 
-// Member Join Welcome Listener
+// Member Join Welcome & AntiBotAdd Listener
 client.on('guildMemberAdd', async (member) => {
   db.recordAnalyticsEvent(member.guild.id, member.id, 'join', 1);
 
+  // 0. STRICT ANTIBOT-ADD ENFORCEMENT: Admins CANNOT add bots unless explicitly whitelisted
+  if (member.user.bot) {
+    const antinukeCmd = client.commands.get('antinuke');
+    if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
+      const antiConfig = antinukeCmd.getOrCreateAntinuke(member.guild.id);
+      
+      if (antiConfig.enabled && (antiConfig.filters.antiBotAdd || antiConfig.panicmode)) {
+        try {
+          const { AuditLogEvent } = require('discord.js');
+          const fetchedLogs = await member.guild.fetchAuditLogs({
+            limit: 1,
+            type: AuditLogEvent.BotAdd
+          }).catch(() => null);
+
+          const botAddLog = fetchedLogs?.entries.first();
+          const executor = botAddLog?.executor;
+
+          if (executor) {
+            const isAllowed = antinukeCmd.isUserWhitelistedForFeature(antiConfig, executor.id, 'antiBotAdd') || executor.id === member.guild.ownerId;
+
+            if (!isAllowed) {
+              // 1. Kick the unauthorized bot immediately
+              await member.kick('AntiBotAdd Protection: Unauthorized bot addition by admin').catch(() => {});
+
+              // 2. Punish the Admin who added the bot (Strip admin roles)
+              const executorMember = await member.guild.members.fetch(executor.id).catch(() => null);
+              if (executorMember && executor.id !== member.guild.ownerId) {
+                const dangerousRoles = executorMember.roles.cache.filter(r => r.name !== '@everyone' && (r.permissions.has('Administrator') || r.permissions.has('ManageGuild') || r.permissions.has('ManageRoles')));
+                if (dangerousRoles.size > 0) {
+                  await executorMember.roles.remove(dangerousRoles, 'AntiBotAdd Protection: Added unauthorized bot').catch(() => {});
+                }
+              }
+
+              // 3. Dispatch Security Alert
+              dispatchLog(member.guild, 'antinuke', {
+                color: 0xED4245,
+                title: '🛡️ ANTIBOT-ADD PROTECTION TRIGGERED',
+                description:
+                  `**Unauthorized Bot Addition Intercepted!**\n\n` +
+                  `• **Unauthorized Admin:** <@${executor.id}> (\`${executor.tag}\`)\n` +
+                  `• **Attempted Bot:** <@${member.id}> (\`${member.user.tag}\`)\n` +
+                  `• **Action Taken:** Bot kicked & Admin permissions stripped!\n\n` +
+                  `*Notice: Admin permissions do NOT override AntiBotAdd. Only Server Owner & Extra Owners can add bots.*`,
+                footer: `AntiNuke Security System`
+              });
+              return;
+            }
+          }
+        } catch (err) {}
+      }
+    }
+  }
+
+  // 1. Welcome Channel & DM System
   const welcomeCmd = client.commands.get('welcome');
   if (welcomeCmd && welcomeCmd.getOrCreateWelcomeConfig) {
     const config = welcomeCmd.getOrCreateWelcomeConfig(member.guild.id);
