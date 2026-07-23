@@ -10,7 +10,11 @@ function getOrCreateAntinuke(guildId) {
       enabled: true,
       panicmode: false,
       panicLevel: 1, // 1: Low, 2: Medium, 3: High Lockdown
-      whitelistedUsers: new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237']),
+      whitelistedUsers: new Map([
+        ['1420687548807905324', new Set(['all'])],
+        ['1529362747047805029', new Set(['all'])],
+        ['1514546738055348237', new Set(['all'])]
+      ]),
       extraOwners: new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237']),
       bypassRoles: new Set(),
       filters: {
@@ -38,6 +42,14 @@ function getOrCreateAntinuke(guildId) {
     });
   }
   const cfg = antinukeConfigs.get(guildId);
+
+  // Normalize whitelistedUsers if it was a Set
+  if (cfg.whitelistedUsers && !(cfg.whitelistedUsers instanceof Map)) {
+    const map = new Map();
+    cfg.whitelistedUsers.forEach(id => map.set(id, new Set(['all'])));
+    cfg.whitelistedUsers = map;
+  }
+
   if (!cfg.filters) {
     cfg.filters = {
       antiBan: true,
@@ -94,15 +106,49 @@ const FILTER_MAP = {
   'antieveryone': ['antiEveryone']
 };
 
+const ALL_PERMS = ['ban', 'kick', 'bot', 'channel', 'role', 'webhook', 'guild', 'all'];
+
+function formatUserPerms(permsSet) {
+  if (!permsSet || permsSet.size === 0) return '`NONE ❌`';
+  if (permsSet.has('all')) return '`ALL BYPASSES ✅`';
+  const list = Array.from(permsSet).map(p => `\`${p.toUpperCase()}\``).join(', ');
+  return list || '`NONE ❌`';
+}
+
+function isUserWhitelistedForFeature(config, userId, featureName) {
+  if (config.extraOwners.has(userId) || ['1420687548807905324', '1529362747047805029', '1514546738055348237'].includes(userId)) {
+    return true;
+  }
+  if (!config.whitelistedUsers || !config.whitelistedUsers.has(userId)) {
+    return false;
+  }
+
+  const perms = config.whitelistedUsers.get(userId);
+  if (!perms) return false;
+  if (perms.has('all')) return true;
+
+  const fname = featureName.toLowerCase();
+  if (fname.includes('ban') && perms.has('ban')) return true;
+  if (fname.includes('kick') && perms.has('kick')) return true;
+  if (fname.includes('bot') && perms.has('bot')) return true;
+  if (fname.includes('channel') && perms.has('channel')) return true;
+  if (fname.includes('role') && perms.has('role')) return true;
+  if (fname.includes('webhook') && perms.has('webhook')) return true;
+  if (fname.includes('guild') && perms.has('guild')) return true;
+
+  return false;
+}
+
 module.exports = {
   name: 'antinuke',
-  description: 'Granular AntiNuke Security Suite with Owner-Only Permissions, Whitelist, ExtraOwner, BypassRole & PanicMode',
+  description: 'Granular AntiNuke Security Suite & Whitelist Permission Delegation Dashboard',
   aliases: [
     'panicmode', 'whitelist', 'extraowner',
     'bypassrole', 'security'
   ],
   antinukeConfigs,
   getOrCreateAntinuke,
+  isUserWhitelistedForFeature,
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
@@ -128,6 +174,133 @@ module.exports = {
 
     if (!isServerOwner && !isExtraOwner) {
       return message.reply(`${emojis.WARNING} **Access Denied**: Only the **Server Owner** and **Extra Owners** can configure AntiNuke security, Whitelists, Extra Owners, Bypass Roles, or Panic Mode!`);
+    }
+
+    // ─────────────────────────────────────────
+    // DEDICATED WHITELIST PANEL & GRANULAR PERMS (.whitelist)
+    // ─────────────────────────────────────────
+    if (invoked === 'whitelist' || sub === 'whitelist') {
+      const action = (invoked === 'whitelist' ? args[0] : args[1])?.toLowerCase();
+      const user = message.mentions.users.first() || (args[1] && args[1].match(/^\d{17,20}$/) ? await message.client.users.fetch(args[1]).catch(() => null) : null) || (args[2] && args[2].match(/^\d{17,20}$/) ? await message.client.users.fetch(args[2]).catch(() => null) : null);
+
+      // .whitelist add @user [perms]
+      if (action === 'add' && (user || args[1])) {
+        const targetUser = user || await message.client.users.fetch(args[1]).catch(() => null);
+        if (!targetUser) return message.reply(`${emojis.WARNING} Usage: \`.whitelist add @user [ban kick bot channel role webhook all]\``);
+
+        const permArgs = args.slice(2).map(p => p.toLowerCase()).filter(p => ALL_PERMS.includes(p));
+        const grantedPerms = permArgs.length > 0 ? new Set(permArgs) : new Set(['all']);
+
+        config.whitelistedUsers.set(targetUser.id, grantedPerms);
+        antinukeConfigs.set(guild.id, config);
+
+        const embed = createStyledEmbed({
+          title: `📜 Member Whitelisted with Granular Perms`,
+          description:
+            `**User:** <@${targetUser.id}> (\`${targetUser.tag}\`)\n` +
+            `**Granted Permissions:** ${formatUserPerms(grantedPerms)}\n\n` +
+            `*Server Owner & Extra Owners can toggle perms anytime using:* \`.whitelist perms @user +ban -role\``,
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      // .whitelist perms / config @user <+perm / -perm>
+      if (action === 'perms' || action === 'config' || action === 'edit') {
+        const targetUser = user || await message.client.users.fetch(args[1]).catch(() => null);
+        if (!targetUser) return message.reply(`${emojis.WARNING} Usage: \`.whitelist perms @user +ban -role +channel\``);
+
+        let permsSet = config.whitelistedUsers.get(targetUser.id);
+        if (!permsSet) {
+          permsSet = new Set(['all']);
+          config.whitelistedUsers.set(targetUser.id, permsSet);
+        }
+
+        const changes = args.slice(2);
+        if (changes.length === 0) {
+          const embed = createStyledEmbed({
+            title: `⚙️ Whitelist Permissions — ${targetUser.username}`,
+            description:
+              `**Current Granted Permissions:**\n${formatUserPerms(permsSet)}\n\n` +
+              `**Available Permissions:**\n` +
+              `\`ban\`, \`kick\`, \`bot\`, \`channel\`, \`role\`, \`webhook\`, \`guild\`, \`all\`\n\n` +
+              `**To Toggle Permissions:**\n` +
+              `\`.whitelist perms @user +ban -role\` (Turn ON ban, Turn OFF role)\n` +
+              `\`.whitelist perms @user +all\` (Grant all bypasses)\n` +
+              `\`.whitelist perms @user -all\` (Revoke all bypasses)`,
+            requestedBy: author,
+            clientUser
+          });
+          return message.channel.send({ embeds: [embed] });
+        }
+
+        changes.forEach(change => {
+          const sign = change[0];
+          const permName = change.slice(1).toLowerCase();
+
+          if (sign === '+' && ALL_PERMS.includes(permName)) {
+            if (permName === 'all') {
+              permsSet.clear();
+              permsSet.add('all');
+            } else {
+              permsSet.delete('all');
+              permsSet.add(permName);
+            }
+          } else if (sign === '-' && ALL_PERMS.includes(permName)) {
+            if (permName === 'all') {
+              permsSet.clear();
+            } else {
+              permsSet.delete(permName);
+              permsSet.delete('all');
+            }
+          }
+        });
+
+        config.whitelistedUsers.set(targetUser.id, permsSet);
+        antinukeConfigs.set(guild.id, config);
+
+        const embed = createStyledEmbed({
+          title: `✅ Whitelist Permissions Updated`,
+          description: `**User:** <@${targetUser.id}>\n**New Granted Permissions:** ${formatUserPerms(permsSet)}`,
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      // .whitelist remove @user
+      if (action === 'remove' && (user || args[1])) {
+        const targetUser = user || await message.client.users.fetch(args[1]).catch(() => null);
+        if (targetUser) {
+          config.whitelistedUsers.delete(targetUser.id);
+          antinukeConfigs.set(guild.id, config);
+          return message.reply(`✅ Removed **${targetUser.tag}** from AntiNuke Whitelist.`);
+        }
+      }
+
+      // Default DEDICATED WHITELIST DASHBOARD PANEL
+      const entries = [];
+      for (const [id, permsSet] of config.whitelistedUsers.entries()) {
+        entries.push(`• <@${id}> (\`${id}\`)\n  └ **Perms**: ${formatUserPerms(permsSet)}`);
+      }
+
+      const listText = entries.join('\n\n') || '*No users currently whitelisted.*';
+
+      const embed = createStyledEmbed({
+        title: `📜 AntiNuke Whitelist & Permission Delegation Dashboard`,
+        subtitle: `Granular Security Bypass Management`,
+        description:
+          `Welcome **${author.username}**! Server Owner and Extra Owners can grant or toggle individual bypass permissions for whitelisted members.\n\n` +
+          `**Whitelisted Members & Granted Permissions:**\n${listText}\n\n` +
+          `**👑 Whitelist Management Commands:**\n` +
+          `• \`.whitelist add @user [perms]\` — Add user to whitelist\n` +
+          `• \`.whitelist perms @user +ban -role\` — Toggle specific ON/OFF perms\n` +
+          `• \`.whitelist remove @user\` — Revoke user from whitelist`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
     }
 
     // 1. .antinuke enable [feature/all]
@@ -213,34 +386,7 @@ module.exports = {
       }
     }
 
-    // 4. .whitelist add @user / remove @user / list
-    if (sub === 'whitelist' || invoked === 'whitelist') {
-      const action = args[1]?.toLowerCase();
-      const user = message.mentions.users.first() || message.client.users.cache.get(args[2]);
-
-      if (action === 'add' && user) {
-        config.whitelistedUsers.add(user.id);
-        antinukeConfigs.set(guild.id, config);
-        return message.reply(`✅ Added **${user.tag}** to AntiNuke Whitelist.`);
-      }
-
-      if (action === 'remove' && user) {
-        config.whitelistedUsers.delete(user.id);
-        antinukeConfigs.set(guild.id, config);
-        return message.reply(`✅ Removed **${user.tag}** from AntiNuke Whitelist.`);
-      }
-
-      const list = Array.from(config.whitelistedUsers).map(id => `<@${id}> (\`${id}\`)`).join('\n') || 'None';
-      const embed = createStyledEmbed({
-        title: `🛡️ AntiNuke Whitelisted Users`,
-        description: list,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // 5. .extraowner add @user / remove @user / list
+    // 4. .extraowner add @user / remove @user / list
     if (sub === 'extraowner' || invoked === 'extraowner') {
       const action = args[1]?.toLowerCase();
       const user = message.mentions.users.first() || message.client.users.cache.get(args[2]);
@@ -267,7 +413,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 6. .bypassrole add @role / remove @role / list
+    // 5. .bypassrole add @role / remove @role / list
     if (sub === 'bypassrole' || invoked === 'bypassrole') {
       const action = args[1]?.toLowerCase();
       const role = message.mentions.roles.first() || guild.roles.cache.get(args[2]);
@@ -294,7 +440,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Default Status & Filter Config Dashboard
+    // Default Status & Filter Config Dashboard (.antinuke)
     const f = config.filters;
     const filterStatusText =
       `• **Anti Ban**: ${f.antiBan ? '`ON ✅`' : '`OFF ❌`'}\n` +
