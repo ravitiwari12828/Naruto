@@ -388,6 +388,13 @@ client.on('interactionCreate', async (interaction) => {
       }).catch(() => {});
     }
 
+    const me = guild.members.me;
+    if (!me.permissions.has(PermissionsBitField.Flags.ManageChannels) || !me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
+      return interaction.editReply({
+        content: `❌ **Missing Bot Permissions**: The bot needs **Manage Channels** and **Manage Roles** permissions to create ticket channels and set permissions.\n\n👉 **Fix**: Give the bot role **Administrator** or **Manage Channels** & **Manage Roles** permissions in Server Settings.`
+      }).catch(() => {});
+    }
+
     config.ticketCounter++;
     const ticketNum = config.ticketCounter;
 
@@ -399,12 +406,12 @@ client.on('interactionCreate', async (interaction) => {
     try {
       const overwrites = [
         { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
-        { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.AttachFiles] },
-        { id: client.user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.ManageChannels] }
+        { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.AttachFiles, PermissionsBitField.Flags.ReadMessageHistory] },
+        { id: client.user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.AttachFiles, PermissionsBitField.Flags.ManageChannels, PermissionsBitField.Flags.ManageRoles] }
       ];
 
       config.staffRoles.forEach(roleId => {
-        overwrites.push({ id: roleId, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.AttachFiles] });
+        overwrites.push({ id: roleId, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.AttachFiles, PermissionsBitField.Flags.ReadMessageHistory] });
       });
 
       const ticketChan = await guild.channels.create({
@@ -435,7 +442,9 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.editReply({ content: `✅ Ticket created! Head over to ${ticketChan}` }).catch(() => {});
     } catch (e) {
       console.error('Failed to create ticket channel:', e);
-      return interaction.editReply({ content: `❌ Failed to create ticket channel. Check bot permissions.` }).catch(() => {});
+      return interaction.editReply({
+        content: `❌ **Failed to Create Ticket**: \`${e.message || 'Permission Error'}\`.\n\n👉 **Required Permissions**: Ensure the bot has **Administrator** or **Manage Channels** & **Manage Roles** permissions.`
+      }).catch(() => {});
     }
   }
 
