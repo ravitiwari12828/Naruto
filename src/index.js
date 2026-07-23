@@ -395,6 +395,8 @@ client.on('interactionCreate', async (interaction) => {
       }).catch(() => {});
     }
 
+    const { logChan, category } = ticketCmd ? await ticketCmd.ensureTicketLogChannels(guild) : { logChan: null, category: null };
+
     config.ticketCounter++;
     const ticketNum = config.ticketCounter;
 
