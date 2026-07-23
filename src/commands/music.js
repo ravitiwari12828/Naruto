@@ -46,7 +46,7 @@ function buildMusicPlayerEmbed(track, player, isPremium = false) {
 
   return new EmbedBuilder()
     .setColor(0x1F1F2F)
-    .setTitle(`:music: Now Playing`)
+    .setTitle(`${emojis.MUSIC} Now Playing`)
     .setDescription(
       `**[${title}](${track?.info?.uri || 'https://youtube.com'})**\n\n` +
       `📁 **Author**\n${author}\n\n` +
