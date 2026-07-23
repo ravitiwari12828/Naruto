@@ -454,14 +454,46 @@ client.on('interactionCreate', async (interaction) => {
   // 4. CLAIM TICKET BUTTON
   if (interaction.customId === 'ticket_claim_btn') {
     const user = interaction.user;
+    const member = interaction.member;
     const message = interaction.message;
     const channel = interaction.channel;
 
+    const ticketCmd = client.commands.get('ticket');
+    const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(interaction.guild.id) : { staffRoles: new Set() };
+
+    // 1. Staff check (Administrator OR has any staffRole)
+    const isStaff = member.permissions.has(PermissionsBitField.Flags.Administrator) ||
+                    Array.from(config.staffRoles).some(rId => member.roles.cache.has(rId));
+
+    if (!isStaff) {
+      return interaction.reply({ content: `❌ Only support staff members can claim tickets!`, ephemeral: true }).catch(() => {});
+    }
+
+    // 2. Prevent multi-claim check
     const embed = EmbedBuilder.from(message.embeds[0]);
+    const claimedField = embed.data.fields?.find(f => f.name.includes('Claimed'));
+
+    if (claimedField && !claimedField.value.toLowerCase().includes('unclaimed') && !claimedField.value.toLowerCase().includes('none')) {
+      return interaction.reply({ content: `⚠️ This ticket is already claimed by ${claimedField.value}! A ticket can only be claimed by 1 staff member.`, ephemeral: true }).catch(() => {});
+    }
+
     embed.spliceFields(2, 1, { name: '🙋‍♂️ Claimed By', value: `<@${user.id}> (\`${user.tag}\`)`, inline: true });
 
     await message.edit({ embeds: [embed] }).catch(() => {});
     await interaction.reply({ content: `🛡️ Ticket claimed by <@${user.id}>.` }).catch(() => {});
+
+    if (ticketCmd) {
+      const { logChan } = await ticketCmd.ensureTicketLogChannels(interaction.guild);
+      if (logChan) {
+        const logEmbed = createStyledEmbed({
+          title: `🙋‍♂️ Ticket Claimed`,
+          description: `**Staff Member:** <@${user.id}> (\`${user.tag}\`)\n**Ticket Channel:** ${channel}`,
+          requestedBy: user,
+          clientUser: client.user
+        });
+        await logChan.send({ embeds: [logEmbed] }).catch(() => {});
+      }
+    }
   }
 
   // 5. PRIORITY TICKET BUTTON (With 4-5h / 10-12h Escalation Reminders)
