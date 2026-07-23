@@ -8,6 +8,33 @@ const {
   buildNavigationButtons
 } = require('../utils/panelRenderer');
 
+const EMOJI_MAP = {
+  owner: emojis.OWNER_CROWN,
+  analytics: emojis.ANALYTICS_ZAP,
+  modmail: emojis.MODMAIL_ENVELOPE,
+  noprefix: emojis.PREMIUM,
+  ticket: emojis.TICKETS,
+  voice: emojis.VOICE,
+  music: emojis.MUSIC,
+  antinuke: emojis.ANTINUKE,
+  level: emojis.LEVEL,
+  fun: emojis.FUN,
+  giveaway: emojis.GIVEAWAY,
+  info: emojis.STATS_NEW,
+  mod: emojis.MOD,
+  ninja: emojis.NINJUTSU,
+  channel: emojis.TOOLS,
+  autorole: emojis.GEAR,
+  autoresponder: emojis.AUTORESPOND,
+  automod: emojis.SHIELD,
+  priority: emojis.PRIORITY,
+  reactionrole: emojis.REACTIONROLES,
+  stickynote: emojis.STICKY,
+  profile: emojis.PROFILE,
+  roles: emojis.ROLES,
+  welcome: emojis.WELCOME
+};
+
 function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
   const totalCommands = message.client.commands && message.client.commands.size > 0 ? message.client.commands.size : 285;
 
@@ -24,7 +51,8 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
       `\`\`\`\n\n` +
       `**📦 All Modules**\n` +
       CATEGORIES.map(cat => {
-        return `${cat.unicodeFallback || '✨'} » **${cat.label}**`;
+        const customEmoji = EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
+        return `${customEmoji} » **${cat.label}**`;
       }).join('\n') +
       `\n\n**Links**\n` +
       `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands) | [Support Server](https://discord.gg/) | [Vote](https://top.gg/bot/${message.client.user.id})`
