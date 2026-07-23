@@ -74,7 +74,7 @@ if (fs.existsSync(commandsPath)) {
 }
 
 // Ready Event
-client.once('ready', async () => {
+client.once('clientReady', async () => {
   try {
     initLavalink(client);
   } catch (e) {
