@@ -7,6 +7,23 @@ const emojis = require('../utils/emojis');
 // ─────────────────────────────────────────
 const CATEGORIES = [
   {
+    label: 'Bot Owner Suite',
+    value: 'owner',
+    description: 'Executive Control: No-Prefix, Premium, BotLock, ExtraOwner & PanicMode',
+    emojiObj: { name: '👑' },
+    heading: '👑 Bot Owner Executive Management Suite',
+    isOwnerOnlyModule: true,
+    commands: [
+      'owner', 'ownermenu',
+      'noprefix add', 'noprefix remove', 'noprefix list',
+      'premium activate', 'premium revoke', 'premium adduser',
+      'premium revokeuser', 'premium status',
+      'botlock enable', 'botlock add', 'botlock list',
+      'extraowner add', 'extraowner remove',
+      'panicmode enable', 'panicmode set'
+    ]
+  },
+  {
     label: 'Analytics & Tracking',
     value: 'analytics',
     description: 'Track chat, voice timing, invites, joins/leaves, commands & tickets',
@@ -27,18 +44,6 @@ const CATEGORIES = [
     commands: [
       'modmail setup', 'r <message>', 'close [reason]',
       'modmail', 'modmailtranscript'
-    ]
-  },
-  {
-    label: 'No-Prefix & Premium',
-    value: 'noprefix',
-    description: 'No-prefix authorization, server premium & user VIP management',
-    emojiObj: emojis.OBJ_PREMIUM || { name: '💎' },
-    heading: '💎 No-Prefix & Premium Suite',
-    commands: [
-      'noprefix add', 'noprefix remove', 'noprefix list',
-      'premium activate', 'premium revoke', 'premium adduser',
-      'premium revokeuser', 'premium status', 'premium redeem'
     ]
   },
   {
@@ -303,7 +308,7 @@ const CATEGORIES = [
 ];
 
 function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
-  const totalCommands = message.client.commands && message.client.commands.size > 0 ? message.client.commands.size : 283;
+  const totalCommands = message.client.commands && message.client.commands.size > 0 ? message.client.commands.size : 285;
 
   const embed = new EmbedBuilder()
     .setColor(0x00E5FF)
@@ -352,7 +357,20 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
       iconURL: message.author.displayAvatarURL({ dynamic: true })
     });
 
-  if (cat.isAntinukeSuite) {
+  if (cat.isOwnerOnlyModule) {
+    embed.setTitle(`${cat.heading}`);
+    embed.setDescription(
+      `👑 **Bot Owner & Executive Management Suite**\n\n` +
+      `• **\`owner\` / \`ownermenu\`**: Open the dedicated Bot Owner Panel.\n` +
+      `• **\`noprefix add/remove/list\`**: Authorize users to run commands without prefix.\n` +
+      `• **\`premium activate/revoke/adduser\`**: Manage server Premium & user VIP status.\n` +
+      `• **\`botlock enable/add/list\`**: Private bot lockdown & authorized server whitelist.\n` +
+      `• **\`extraowner add/remove/list\`**: Delegate Extra Owner security rights.\n` +
+      `• **\`panicmode enable/disable/set\`**: Server-wide emergency lockdown.\n\n` +
+      `**Command List:**\n` +
+      `\`${cat.commands.join('`, `')}\``
+    );
+  } else if (cat.isAntinukeSuite) {
     embed.setTitle(`${cat.heading}`);
     embed.setDescription(
       `🔒 **Server Protection & Owner Security Suite**\n\n` +
