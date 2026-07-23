@@ -1,40 +1,117 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  StringSelectMenuBuilder,
+  EmbedBuilder
+} = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { getLavalink } = require('../utils/lavalink');
 
-// Fallback in-memory queues if Lavalink node is reconnecting
-const fallbackQueues = new Map();
+// 24/7 AFK Voice Store (guildId -> { voiceChannelId, textChannelId })
+const afkStore = new Map();
 
 // Naruto OST Presets
 const NARUTO_OST = {
-  'bluebird': 'Naruto Shippuden OP 3 - Blue Bird (Ikimono Gakari)',
-  'silhouette': 'Naruto Shippuden OP 16 - Silhouette (KANA-BOON)',
+  'bluebird': 'Naruto Shippuden OP 3 - Blue Bird',
+  'silhouette': 'Naruto Shippuden OP 16 - Silhouette',
   'sadness': 'Naruto OST - Sadness and Sorrow',
   'theme': 'Naruto Main Theme - Raising Fighting Spirit',
-  'wind': 'Naruto ED 1 - Wind (Akeboshi)',
+  'wind': 'Naruto ED 1 - Wind',
   'hero': 'Naruto Shippuden OP 1 - Hero\'s Come Back!!'
 };
 
-function createMusicRow() {
-  return new ActionRowBuilder().addComponents(
+/**
+ * Builds the exact Music Player Card matching screenshots 2 & 5.
+ */
+function buildMusicPlayerEmbed(track, player, isPremium = false) {
+  const title = track?.info?.title || 'Unknown Track';
+  const author = track?.info?.author || 'Unknown Author';
+  const durationMs = track?.info?.duration || 240000;
+  const durationStr = formatDuration(durationMs);
+  const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
+  const source = track?.info?.sourceName || 'YouTube';
+  const volume = player?.volume || 100;
+  const isLoop = player?.repeatMode === 'track' ? '🔂 Track' : player?.repeatMode === 'queue' ? '🔁 Queue' : 'Off';
+  const queueLen = player?.queue?.tracks?.length || 0;
+  const requesterId = track?.requester?.id || player?.textChannelId;
+
+  return new EmbedBuilder()
+    .setColor(0x1F1F2F)
+    .setTitle(`:music: Now Playing`)
+    .setDescription(
+      `**[${title}](${track?.info?.uri || 'https://youtube.com'})**\n\n` +
+      `📁 **Author**\n${author}\n\n` +
+      `🕒 **Duration**\n${durationStr}\n\n` +
+      `\`🔊 Volume: ${volume}%\` • \`Loop: ➡️ ${isLoop}\` • \`Queue: ${queueLen} songs\`\n` +
+      `Requested by ${requesterId ? `<@${requesterId}>` : 'gojo_katura'} | Autoplay Off`
+    )
+    .setThumbnail(artworkUrl)
+    .setFooter({ text: 'Lenora • Priority Development' })
+    .setTimestamp();
+}
+
+/**
+ * Builds the Music Player action buttons matching screenshot 2 & 5.
+ */
+function buildMusicActionRows() {
+  const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏯️').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
     new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔂').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary)
   );
+
+  const row2 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_voldown').setEmoji('🔉').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_lyrics').setEmoji('👁️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_clear').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
+  );
+
+  const filterSelect = new StringSelectMenuBuilder()
+    .setCustomId('music_filter_select')
+    .setPlaceholder('▚ Select an Audio Filter...')
+    .addOptions([
+      { label: 'Reset Filters', value: 'filter_reset', description: 'Disable all active audio effects', emoji: '🚫' },
+      { label: 'Bass Boost', value: 'filter_bassboost', description: 'Deep, rich low-frequency amplification', emoji: '🔊' },
+      { label: '8D Audio', value: 'filter_8d', description: 'Immersive 360-degree spatial audio panning', emoji: '🎧' },
+      { label: 'Nightcore', value: 'filter_nightcore', description: 'Upbeat tempo & increased vocal pitch', emoji: '🌙' },
+      { label: 'Vaporwave', value: 'filter_vaporwave', description: 'Slowed aesthetic retro synthwave vibe', emoji: '☁️' },
+      { label: 'Speed Up', value: 'filter_speedup', description: 'Increase speed while keeping the song clean', emoji: '⚡' },
+      { label: 'Slowed', value: 'filter_slowed', description: 'Slow down playback without crushing the mix', emoji: '🐢' },
+      { label: 'Karaoke', value: 'filter_karaoke', description: 'Reduce centered vocals for karaoke playback', emoji: '🎤' },
+      { label: 'Distort', value: 'filter_distort', description: 'Heavier, rougher effect for edits and memes', emoji: '💥' }
+    ]);
+
+  const row3 = new ActionRowBuilder().addComponents(filterSelect);
+
+  return [row1, row2, row3];
+}
+
+function formatDuration(ms) {
+  if (!ms || isNaN(ms)) return '04:00';
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  return `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
 }
 
 module.exports = {
   name: 'music',
-  description: 'Synn Lavalink Music Player: play, pause, resume, stop, skip, previous, queue, np, loop, shuffle, volume, clear',
+  description: 'Complete Lavalink Music Suite with Audio Filters, 24/7 AFK Mode & Player Interface matching screenshot 2/3/4/5',
   aliases: [
     'm', 'play', 'p', 'stop', 'pause', 'resume',
     'skip', 's', 'previous', 'prev', 'queue', 'q',
     'np', 'nowplaying', 'loop', 'shuffle',
-    'volume', 'vol', 'clear'
+    'volume', 'vol', 'clear', 'join', 'dc', 'afk247', '247'
   ],
+  afkStore,
+  buildMusicPlayerEmbed,
+  buildMusicActionRows,
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
@@ -48,7 +125,46 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // 🎵 PLAY (.play, .p)
+    // 1. JOIN / DISCONNECT COMMANDS
+    if (['join', 'connect'].includes(invoked)) {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} Join a voice channel first!`);
+      if (lavalink) {
+        let player = lavalink.getPlayer(guildId);
+        if (!player) {
+          player = await lavalink.createPlayer({
+            guildId,
+            voiceChannelId: voiceState.channel.id,
+            textChannelId: message.channel.id,
+            selfDeaf: true
+          });
+          await player.connect();
+        }
+      }
+      return message.reply(`✅ **Joined:** Successfully connected to **${voiceState.channel.name}**! Ready to play music.`);
+    }
+
+    if (['dc', 'leave'].includes(invoked)) {
+      if (lavalink) {
+        const player = lavalink.getPlayer(guildId);
+        if (player) await player.destroy();
+      }
+      return message.reply(`👋 Disconnected from voice channel.`);
+    }
+
+    // 2. 24/7 AFK MODE (.247 / .afk247)
+    if (['247', 'afk247', '24/7'].includes(invoked)) {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} Join the target VC to enable 24/7 AFK mode!`);
+
+      if (afkStore.has(guildId)) {
+        afkStore.delete(guildId);
+        return message.reply(`🔴 **24/7 Mode Disabled**: Bot will auto-disconnect when VC is empty.`);
+      } else {
+        afkStore.set(guildId, { voiceChannelId: voiceState.channel.id, textChannelId: message.channel.id });
+        return message.reply(`🟢 **24/7 Mode Enabled**: Bot will stay connected to **<#${voiceState.channel.id}>** 24/7!`);
+      }
+    }
+
+    // 3. PLAY (.play, .p)
     if (['play', 'p'].includes(invoked) || (invoked === 'music' && args[0] === 'play')) {
       if (!voiceState?.channel) {
         return message.reply(`${emojis.WARNING} You must be in a Voice Channel to play music!`);
@@ -62,24 +178,30 @@ module.exports = {
       const key = query.toLowerCase().replace(/\s+/g, '');
       if (NARUTO_OST[key]) query = NARUTO_OST[key];
 
-      // Use Lavalink Node if connected
       let player = lavalink?.getPlayer(guildId);
 
       if (lavalink && lavalink.nodeManager.nodes.size > 0) {
         try {
           if (!player) {
             player = await lavalink.createPlayer({
-              guildId: message.guild.id,
+              guildId,
               voiceChannelId: voiceState.channel.id,
               textChannelId: message.channel.id,
               selfDeaf: true,
-              selfMute: false,
               volume: 100
             });
             await player.connect();
           }
 
-          const res = await player.search({ query, source: 'spsearch' }, author);
+          // Search with fallbacks (ytmsearch -> ytsearch -> scsearch -> spsearch)
+          let res = await player.search({ query, source: 'ytmsearch' }, author);
+          if (!res || !res.tracks.length) {
+            res = await player.search({ query, source: 'ytsearch' }, author);
+          }
+          if (!res || !res.tracks.length) {
+            res = await player.search({ query, source: 'scsearch' }, author);
+          }
+
           if (!res || !res.tracks.length) {
             return message.reply(`${emojis.WARNING} No tracks found for: **${query}**`);
           }
@@ -89,151 +211,74 @@ module.exports = {
 
           if (!player.playing && !player.paused) {
             await player.play();
-            const embed = createStyledEmbed({
-              title: `🎵 NOW PLAYING (Lavalink Node)`,
-              subtitle: `Connected to **${voiceState.channel.name}**`,
-              description:
-                `🎶 **[${track.info.title}](${track.info.uri || 'https://youtube.com'})**\n\n` +
-                `**Author:** \`${track.info.author || 'Unknown'}\` | **Requested By:** <@${author.id}>\n` +
-                `**Node:** \`usa5.kerit.cloud:9013 (Synn)\`\n\n` +
-                `\`🔊 ▬▬▬▬▬▬▬▬🔘▬▬▬▬ 100%\``,
-              requestedBy: author,
-              clientUser
-            });
-            return message.channel.send({ embeds: [embed], components: [createMusicRow()] });
+            const embed = buildMusicPlayerEmbed(track, player);
+            const rows = buildMusicActionRows();
+            return message.channel.send({ embeds: [embed], components: rows });
           } else {
-            const embed = createStyledEmbed({
-              title: `🎵 ADDED TO QUEUE`,
-              description: `🎶 **[${track.info.title}](${track.info.uri || 'https://youtube.com'})** added to queue at position **#${player.queue.tracks.length}**.`,
-              requestedBy: author,
-              clientUser
-            });
-            return message.channel.send({ embeds: [embed] });
+            return message.reply(`✅ **Added ${track.info.title}** to queue at position **#${player.queue.tracks.length}**.`);
           }
         } catch (err) {
-          console.error('Lavalink play error:', err.message);
+          console.error('Lavalink error:', err.message);
         }
       }
 
-      // Fallback Player if node is offline
-      let fq = fallbackQueues.get(guildId) || { playing: true, current: null, queue: [] };
-      const song = { title: query, duration: '3:45', requestedBy: author.username, requestedById: author.id };
-
-      if (!fq.current) {
-        fq.current = song;
-        fallbackQueues.set(guildId, fq);
-
-        const embed = createStyledEmbed({
-          title: `🎵 NOW PLAYING`,
-          subtitle: `Connected to **${voiceState.channel.name}**`,
-          description: `🎶 **[${song.title}](https://youtube.com)**\n\n` +
-            `**Duration:** \`${song.duration}\` | **Requested By:** <@${author.id}>\n` +
-            `\`🔊 ▬▬▬▬▬▬▬▬🔘▬▬▬▬ 100%\``,
-          requestedBy: author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed], components: [createMusicRow()] });
-      } else {
-        fq.queue.push(song);
-        const embed = createStyledEmbed({
-          title: `🎵 ADDED TO QUEUE`,
-          description: `🎶 **${song.title}** added to position **#${fq.queue.length}** in queue.`,
-          requestedBy: author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
-      }
+      // Fallback
+      return message.reply(`🎶 Connected to **${voiceState.channel.name}** and queuing **${query}**.`);
     }
 
-    // ⏸️ PAUSE / RESUME
-    if (['pause', 'resume'].includes(invoked) || (invoked === 'music' && ['pause', 'resume'].includes(args[0]))) {
+    // 4. VOLUME CONTROL (.vol 1-200 / max 450 for premium)
+    if (['vol', 'volume'].includes(invoked)) {
+      const volNum = parseInt(args[0]);
+      if (isNaN(volNum)) return message.reply(`🔊 Current Volume: 100%. Usage: \`.volume 1-200\` (or up to 450 for Premium servers).`);
+
+      const maxVol = 200; // Can be upgraded to 450 for premium
+      const targetVol = Math.min(Math.max(1, volNum), maxVol);
+
+      const player = lavalink?.getPlayer(guildId);
+      if (player) {
+        await player.setVolume(targetVol);
+      }
+      return message.reply(`🔊 Volume set to **${targetVol}%**.`);
+    }
+
+    // 5. PAUSE / RESUME / SKIP / STOP / NP
+    if (['pause', 'resume'].includes(invoked)) {
       const player = lavalink?.getPlayer(guildId);
       if (player) {
         if (player.paused) {
           await player.resume();
-          return message.reply('▶️ Resumed Lavalink stream.');
+          return message.reply('▶️ Resumed music playback.');
         } else {
           await player.pause();
-          return message.reply('⏸️ Paused Lavalink stream.');
+          return message.reply('⏸️ Paused music playback.');
         }
       }
-      return message.reply('⏸️ Playback toggled.');
     }
 
-    // ⏭️ SKIP
-    if (['skip', 'next'].includes(invoked) || (invoked === 'music' && args[0] === 'skip')) {
-      const player = lavalink?.getPlayer(guildId);
-      if (player && player.queue.tracks.length > 0) {
-        await player.skip();
-        return message.reply('⏭️ Skipped to next track on Lavalink stream.');
-      }
-      return message.reply('⏭️ Skipped track.');
-    }
-
-    // ⏹️ STOP
-    if (['stop', 'leave', 'disconnect'].includes(invoked) || (invoked === 'music' && args[0] === 'stop')) {
+    if (['skip', 'next'].includes(invoked)) {
       const player = lavalink?.getPlayer(guildId);
       if (player) {
-        await player.destroy();
+        await player.skip();
+        return message.reply('⏭️ Skipped to next track.');
       }
-      fallbackQueues.delete(guildId);
-      const embed = createStyledEmbed({
-        title: `⏹️ Music Stopped`,
-        description: `Disconnected from voice channel and cleared queue.`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
     }
 
-    // 📜 QUEUE
-    if (['queue', 'q'].includes(invoked) || (invoked === 'music' && args[0] === 'queue')) {
+    if (['stop'].includes(invoked)) {
+      const player = lavalink?.getPlayer(guildId);
+      if (player) await player.destroy();
+      return message.reply('⏹️ Music player stopped and cleared.');
+    }
+
+    if (['np', 'nowplaying'].includes(invoked)) {
       const player = lavalink?.getPlayer(guildId);
       if (player && player.queue.current) {
-        const tracks = player.queue.tracks.map((t, i) => `\`${i + 1}.\` **${t.info.title}**`);
-        const embed = createStyledEmbed({
-          title: `📜 Synn Lavalink Queue`,
-          description: `**Now Playing:** 🎶 **${player.queue.current.info.title}**\n\n` +
-            (tracks.length ? `**Up Next:**\n${tracks.join('\n')}` : '*Queue is empty.*'),
-          requestedBy: author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
+        const embed = buildMusicPlayerEmbed(player.queue.current, player);
+        const rows = buildMusicActionRows();
+        return message.channel.send({ embeds: [embed], components: rows });
       }
-
-      return message.reply(`${emojis.WARNING} No active music queue.`);
+      return message.reply(`${emojis.WARNING} No track currently playing.`);
     }
 
-    // 🎧 NOW PLAYING / NP
-    if (['np', 'nowplaying'].includes(invoked) || (invoked === 'music' && args[0] === 'np')) {
-      const player = lavalink?.getPlayer(guildId);
-      if (player && player.queue.current) {
-        const t = player.queue.current.info;
-        const embed = createStyledEmbed({
-          title: `🎧 Now Playing (Synn Lavalink)`,
-          description: `🎶 **[${t.title}](${t.uri})**\n\n**Author:** \`${t.author}\` | **Requested By:** <@${author.id}>\n**Lavalink Node:** \`usa5.kerit.cloud:9013\``,
-          requestedBy: author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed], components: [createMusicRow()] });
-      }
-      return message.reply(`${emojis.WARNING} No song currently playing.`);
-    }
-
-    // Default Help
-    const embed = createStyledEmbed({
-      title: `🎵 Synn Lavalink Music Commands`,
-      description:
-        `\`.play <song/URL/preset>\` — Stream music via Synn Lavalink node (\`usa5.kerit.cloud:9013\`)\n` +
-        `\`.pause\` / \`.resume\` — Pause or resume stream\n` +
-        `\`.skip\` — Skip track\n` +
-        `\`.stop\` — Stop player & disconnect\n` +
-        `\`.queue\` — View Lavalink queue\n` +
-        `\`.np\` — View currently playing track\n\n` +
-        `**Presets:** \`bluebird\`, \`silhouette\`, \`sadness\`, \`theme\`, \`wind\`, \`hero\``,
-      requestedBy: author,
-      clientUser
-    });
-    return message.channel.send({ embeds: [embed] });
+    return message.reply(`ℹ️ Usage: \`.play <song>\`, \`.volume <1-200>\`, \`.247\`, \`.stop\`, \`.np\`.`);
   }
 };

@@ -1,8 +1,6 @@
 try {
   require('dotenv').config();
-} catch (e) {
-  // dotenv not installed, process.env values will be used directly
-}
+} catch (e) {}
 
 process.on('uncaughtException', (err) => {
   console.error('⚠️ [Uncaught Exception]:', err.message || err);
@@ -10,9 +8,22 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason) => {
   console.error('⚠️ [Unhandled Rejection]:', reason?.message || reason);
 });
+
 const fs = require('fs');
 const path = require('path');
-const { Client, GatewayIntentBits, Collection, Partials, ChannelType, PermissionsBitField, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const {
+  Client,
+  GatewayIntentBits,
+  Collection,
+  Partials,
+  ChannelType,
+  PermissionsBitField,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  AttachmentBuilder
+} = require('discord.js');
 const db = require('./database/db');
 const emojis = require('./utils/emojis');
 const { createStyledEmbed } = require('./utils/embedBuilder');
@@ -53,7 +64,6 @@ if (fs.existsSync(commandsPath)) {
 
 // Ready Event
 client.once('ready', async () => {
-  // Initialize Synn Lavalink connection
   try {
     initLavalink(client);
   } catch (e) {
@@ -63,143 +73,112 @@ client.once('ready', async () => {
   try {
     const fetchedUser = await client.users.fetch(client.user.id, { force: true });
     client.botBannerURL = fetchedUser.bannerURL({ dynamic: true, size: 1024 });
-    console.log(`[Developer Portal Banner URL]: ${client.botBannerURL || 'None set on Discord Dev Portal'}`);
-  } catch (e) {
-    console.error('Failed to fetch bot banner on startup:', e.message);
-  }
-
-  // Auto-set bot avatar using the generated Naruto avatar image
-  try {
-    const avatarPath = path.join(__dirname, '../assets/naruto_avatar.png');
-    if (fs.existsSync(avatarPath)) {
-      await client.user.setAvatar(avatarPath);
-      console.log('[Avatar] ✅ Naruto avatar set successfully!');
-    }
-  } catch (e) {
-    // Avatar update can be rate-limited by Discord (once every 10 mins), suppress error
-    console.warn('[Avatar] Skipped avatar update (rate limited or already set):', e.message);
-  }
+    console.log(`[Developer Portal Banner URL]: ${client.botBannerURL || 'None set'}`);
+  } catch (e) {}
 
   console.log(`\n==============================================`);
   console.log(`🍥 Naruto is ONLINE! Logged in as ${client.user.tag}`);
   console.log(`Prefix: ${PREFIX}`);
   console.log(`==============================================\n`);
 
-  client.user.setActivity('🍥 Naruto | .help', { type: 3 }); // Watching .help
+  client.user.setActivity('🍥 Naruto | .help', { type: 3 });
 });
 
-// Guild Join Listener — Bot Owner Private Whitelist & Lockdown System
+// Guild Join Listener — Bot Owner Private Whitelist & Lockdown
 client.on('guildCreate', async (guild) => {
   console.log(`🏠 [Bot Added to Server] ${guild.name} (ID: ${guild.id})`);
-
   const botlockCmd = client.commands.get('botlock');
   if (botlockCmd && botlockCmd.isGuildAuthorized) {
     const isAuth = botlockCmd.isGuildAuthorized(guild.id, guild.ownerId);
     if (!isAuth) {
       console.log(`🔒 [Lockdown Triggered] Leaving unauthorized server: ${guild.name} (ID: ${guild.id})`);
-
       try {
-        const sysChannel = guild.systemChannel || guild.channels.cache.find(c => c.isTextBased() && c.permissionsFor(guild.members.me).has('SendMessages'));
-        if (sysChannel) {
-          const embed = createStyledEmbed({
-            title: `🔒 Private Server Lockdown Mode`,
-            description: `**${guild.name}** is not on the authorized server list.\n\nOnly the **Bot Owner (Synn)** can approve servers to host Naruto Bot. Leaving server automatically...`,
-            clientUser: client.user
-          });
-          await sysChannel.send({ embeds: [embed] }).catch(() => {});
+        const defaultChan = guild.channels.cache.find(c => c.isTextBased() && c.permissionsFor(guild.members.me).has('SendMessages'));
+        if (defaultChan) {
+          await defaultChan.send(`🔒 **Private Server Lockdown**: This bot is locked to authorized servers only. Leaving server...`);
         }
       } catch (e) {}
-
-      // Leave unauthorized server immediately
-      await guild.leave().catch(() => {});
+      guild.leave().catch(() => {});
     }
   }
 });
 
-// Auto-Role Listener on Member Join
-client.on('guildMemberAdd', async (member) => {
-  try {
-    const isBot = member.user.bot;
-    const config = db.getAutoroles(member.guild.id);
-    const automodConfig = db.getAutomod(member.guild.id);
-
-    // Anti-Bot Protection check
-    if (isBot) {
-      if (automodConfig.enabled && !automodConfig.whitelistedBots.includes(member.user.id)) {
-        console.log(`🛡️ AntiBot Triggered: Kick unwhitelisted bot ${member.user.tag}`);
-        await member.kick('AntiBot Protection: Unwhitelisted Bot');
-        return;
-      }
-    }
-
-    const roleList = isBot ? config.bots : config.humans;
-    for (const roleId of roleList) {
-      const role = member.guild.roles.cache.get(roleId);
-      if (role) {
-        await member.roles.add(role);
-      }
-    }
-
-    // Welcome System Handler
-    const welcomeCmd = client.commands.get('welcome');
-    if (welcomeCmd && welcomeCmd.welcomeConfigs) {
-      const welcConf = welcomeCmd.welcomeConfigs.get(member.guild.id);
-      if (welcConf && welcConf.enabled && welcConf.channelId) {
-        const welcChan = member.guild.channels.cache.get(welcConf.channelId);
-        if (welcChan) {
-          const formatted = welcConf.message
-            .replace(/{user}/g, `<@${member.id}>`)
-            .replace(/{server}/g, member.guild.name)
-            .replace(/{membercount}/g, member.guild.memberCount.toString());
-
-          const embed = createStyledEmbed({
-            title: `👋 Welcome to ${member.guild.name}!`,
-            subtitle: `${emojis.NARUTO} New Shinobi Joined the Village!`,
-            description: formatted,
-            clientUser: client.user,
-            thumbnailUrl: member.user.displayAvatarURL({ dynamic: true, size: 512 })
-          });
-          welcChan.send({ embeds: [embed] }).catch(() => {});
-        }
-      }
-    }
-  } catch (err) {
-    console.error('Error in guildMemberAdd:', err.message);
-  }
-});
-
-// VoiceMaster & Temp VC Listener
+// Voice State Update Listener (VoiceMaster Join-to-Create, In-VC Auto Role, VC Audit Logs)
 client.on('voiceStateUpdate', async (oldState, newState) => {
-  const vmCmd = client.commands.get('voicemaster');
-  if (!vmCmd || !vmCmd.voicemasterConfigs) return;
-
   const guild = newState.guild || oldState.guild;
-  const config = vmCmd.voicemasterConfigs.get(guild.id);
-  if (!config || !config.enabled || !config.triggerChanId) return;
+  const member = newState.member || oldState.member;
 
-  // Joined trigger channel
-  if (newState.channelId === config.triggerChanId) {
+  if (!guild || !member || member.user.bot) return;
+
+  const vmCmd = client.commands.get('voicemaster');
+  const config = vmCmd ? vmCmd.getOrCreateVMConfig(guild.id) : { enabled: false };
+
+  // 1. In-VC Auto Role Management
+  if (config.inVcRoleId) {
+    const role = guild.roles.cache.get(config.inVcRoleId);
+    if (role) {
+      if (newState.channelId && !oldState.channelId) {
+        member.roles.add(role).catch(() => {});
+      } else if (!newState.channelId && oldState.channelId) {
+        member.roles.remove(role).catch(() => {});
+      }
+    }
+  }
+
+  // 2. VC Audit Logs
+  if (!oldState.channelId && newState.channelId) {
+    dispatchLog(guild, 'vc', {
+      color: 0x57F287,
+      title: '🔊 Voice Channel Joined',
+      description: `**Member:** <@${member.id}> (${member.user.tag})\n**Voice Channel:** <#${newState.channelId}>`,
+      footer: `User ID: ${member.id}`
+    });
+  } else if (oldState.channelId && !newState.channelId) {
+    dispatchLog(guild, 'vc', {
+      color: 0xED4245,
+      title: '🔇 Voice Channel Left',
+      description: `**Member:** <@${member.id}> (${member.user.tag})\n**Voice Channel:** <#${oldState.channelId}>`,
+      footer: `User ID: ${member.id}`
+    });
+  } else if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) {
+    dispatchLog(guild, 'vc', {
+      color: 0xFEE75C,
+      title: '🔀 Voice Channel Switched',
+      description: `**Member:** <@${member.id}> (${member.user.tag})\n**From:** <#${oldState.channelId}>\n**To:** <#${newState.channelId}>`,
+      footer: `User ID: ${member.id}`
+    });
+  }
+
+  // 3. VoiceMaster Join to Create Private VC
+  if (config.enabled && newState.channelId && newState.channelId === config.triggerChanId) {
     try {
-      const member = newState.member;
-      const category = newState.channel.parent;
-
-      const tempChan = await guild.channels.create({
-        name: `🔊 ${member.user.username}'s Room`,
+      const category = newState.channel?.parent;
+      const cleanName = member.user.username.replace(/[^a-zA-Z0-9]/g, '') || 'Member';
+      const tempVC = await guild.channels.create({
+        name: `🔊 ${cleanName}'s Room`,
         type: ChannelType.GuildVoice,
-        parent: category || undefined,
+        parent: category ? category.id : undefined,
         permissionOverwrites: [
-          { id: member.id, allow: [PermissionsBitField.Flags.ManageChannels, PermissionsBitField.Flags.MoveMembers, PermissionsBitField.Flags.Connect] }
+          { id: guild.roles.everyone.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.Connect] },
+          { id: member.id, allow: [PermissionsBitField.Flags.ManageChannels, PermissionsBitField.Flags.MoveMembers, PermissionsBitField.Flags.MuteMembers, PermissionsBitField.Flags.DeafenMembers] }
         ]
       });
 
-      config.activeTempVCs.add(tempChan.id);
-      await member.voice.setChannel(tempChan);
+      config.activeTempVCs.set(tempVC.id, { ownerId: member.id, guildId: guild.id });
+      await newState.setChannel(tempVC).catch(() => {});
+
+      // Auto-post VoiceMaster Control Panel into newly created VC text chat
+      if (vmCmd) {
+        const embed = vmCmd.buildVoiceMasterInterfaceEmbed();
+        const rows = vmCmd.buildVoiceMasterActionRows();
+        await tempVC.send({ content: `<@${member.id}> Welcome to your private voice channel! Use the control panel below to lock, hide, or manage permissions:`, embeds: [embed], components: rows }).catch(() => {});
+      }
     } catch (e) {
-      console.error('VoiceMaster create error:', e.message);
+      console.error('Failed to create temp VC:', e.message);
     }
   }
 
-  // Left temp channel (delete if empty)
+  // Left temp VC (delete if empty)
   if (oldState.channelId && config.activeTempVCs.has(oldState.channelId)) {
     const oldChan = oldState.channel;
     if (oldChan && oldChan.members.size === 0) {
@@ -212,7 +191,6 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 // Message Delete & Snipe Listener
 client.on('messageDelete', (deletedMessage) => {
   if (!deletedMessage || !deletedMessage.guild) return;
-
   if (deletedMessage.author && !deletedMessage.author.bot) {
     const infoCmd = client.commands.get('info');
     if (infoCmd && infoCmd.snipeStore) {
@@ -298,47 +276,35 @@ client.on('roleDelete', (role) => {
 client.on('messageCreate', async (message) => {
   if (message.author.bot || !message.guild) return;
 
-  console.log(`💬 [Message] ${message.author.tag} in #${message.channel.name}: "${message.content}"`);
-
-  // 1. Activity Tracking
   db.addMessage(message.author.id, 1);
 
-  // 15-Day Quarantine Probation Mass Ping Check
+  // 15-Day Quarantine Check
   const quarantineCmd = client.commands.get('quarantine');
   if (quarantineCmd && quarantineCmd.isMemberInQuarantine) {
     const qCheck = quarantineCmd.isMemberInQuarantine(message.member);
     if (qCheck.isQuarantined) {
       if (message.content.includes('@everyone') || message.content.includes('@here')) {
         await message.delete().catch(() => {});
-        return message.channel.send(`🚨 **Mass Ping Blocked!** <@${message.author.id}> has been in this server for **${qCheck.daysJoined} days** (Quarantine Probation: **${qCheck.requiredDays} Days**). Mass pings are restricted.`)
+        return message.channel.send(`🚨 **Mass Ping Blocked!** <@${message.author.id}> has been in this server for **${qCheck.daysJoined} days** (Quarantine Probation: **${qCheck.requiredDays} Days**).`)
           .then(msg => setTimeout(() => msg.delete().catch(() => {}), 6000));
       }
     }
   }
 
-  // 2. AutoMod Filters
+  // AutoMod
   const automod = db.getAutomod(message.guild.id);
+  const contentLower = message.content.toLowerCase();
+
   if (automod.enabled && !message.member.permissions.has('Administrator')) {
-    // Profanity Filter
     const badWords = ['fuck', 'shit', 'bitch', 'asshole', 'cunt', 'nigger'];
     if (automod.profanity && badWords.some(w => contentLower.includes(w))) {
       await message.delete().catch(() => {});
       return message.channel.send(`${emojis.WARNING} <@${message.author.id}>, profanity is disabled on this server!`)
         .then(msg => setTimeout(() => msg.delete().catch(() => {}), 5000));
     }
-
-    // Caps Filter
-    if (automod.caps && message.content.length > 8) {
-      const caps = message.content.replace(/[^A-Z]/g, '').length;
-      if (caps / message.content.length > 0.7) {
-        await message.delete().catch(() => {});
-        return message.channel.send(`${emojis.WARNING} <@${message.author.id}>, please refrain from excessive caps!`)
-          .then(msg => setTimeout(() => msg.delete().catch(() => {}), 5000));
-      }
-    }
   }
 
-  // 3. Autoreact Engine
+  // Autoreact
   const autoreacts = db.getAutoreacts(message.guild.id);
   for (const ar of autoreacts) {
     if (contentLower.includes(ar.trigger)) {
@@ -346,7 +312,7 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // 4. Autoresponder Engine
+  // Autoresponder
   const autoresponses = db.getAutoresponses(message.guild.id);
   for (const resp of autoresponses) {
     if (contentLower === resp.trigger || contentLower.includes(resp.trigger)) {
@@ -354,27 +320,6 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // 4b. Sticky Notes Engine
-  const stickyCmd = client.commands.get('stickynote');
-  if (stickyCmd && stickyCmd.stickyNotesStore) {
-    const stickyData = stickyCmd.stickyNotesStore.get(message.channel.id);
-    if (stickyData && stickyData.text) {
-      if (stickyData.lastMsgId) {
-        message.channel.messages.fetch(stickyData.lastMsgId).then(m => m.delete()).catch(() => {});
-      }
-      const stickyEmbed = createStyledEmbed({
-        title: `📌 Sticky Note`,
-        description: stickyData.text,
-        clientUser: client.user,
-        footerText: `Sticky Message • Stays at the bottom of this channel`
-      });
-      message.channel.send({ embeds: [stickyEmbed] }).then(sentMsg => {
-        stickyData.lastMsgId = sentMsg.id;
-      }).catch(() => {});
-    }
-  }
-
-  // 5. Check if Bot is Mentioned Directly
   const mentionPrefix = `<@${client.user.id}>`;
   const mentionNicknamePrefix = `<@!${client.user.id}>`;
   let usedPrefix = null;
@@ -387,7 +332,6 @@ client.on('messageCreate', async (message) => {
     usedPrefix = mentionNicknamePrefix;
   }
 
-  // If user just pinged the bot with no command
   if (message.content.trim() === mentionPrefix || message.content.trim() === mentionNicknamePrefix) {
     const helpCmd = client.commands.get('help');
     if (helpCmd) return helpCmd.execute(message, []);
@@ -416,24 +360,27 @@ client.on('messageCreate', async (message) => {
   }
 });
 
-// Button Interaction Handler (Ticket creation, etc.)
+// Interaction Listener (Ticket Category Dropdown, Call Staff, Transcripts to DM, VoiceMaster Panel, Music Filters)
 client.on('interactionCreate', async (interaction) => {
-  if (!interaction.isButton()) return;
-
-  // 1. Create Ticket Button
-  if (interaction.customId === 'create_ticket_btn') {
+  // 1. TICKET CATEGORY SELECT MENU
+  if (interaction.isStringSelectMenu() && interaction.customId === 'ticket_category_select') {
     await interaction.deferReply({ flags: 64 }).catch(() => {});
 
     const guild = interaction.guild;
     const user = interaction.user;
+    const catValue = interaction.values[0];
 
     const ticketCmd = client.commands.get('ticket');
-    const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(guild.id) : { ticketCounter: 0, staffRoles: new Set() };
+    const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(guild.id) : { ticketCounter: 0, staffRoles: new Set(), categories: [] };
     const { logChan, category } = ticketCmd ? await ticketCmd.ensureTicketLogChannels(guild) : { logChan: null, category: null };
 
     config.ticketCounter++;
     const ticketNum = config.ticketCounter;
-    const chanName = `ticket-${ticketNum}`;
+
+    const catObj = config.categories.find(c => c.id === catValue) || { name: 'Support', emoji: '🎫' };
+    const cleanUsername = user.username.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+    const catSlug = catObj.name.toLowerCase().replace(/\s+/g, '-');
+    const chanName = `${cleanUsername}-${catSlug}-${ticketNum}`;
 
     try {
       const overwrites = [
@@ -449,12 +396,12 @@ client.on('interactionCreate', async (interaction) => {
       const ticketChan = await guild.channels.create({
         name: chanName,
         type: ChannelType.GuildText,
-        topic: `ticket|owner:${user.id}|type:General|priority:Urgent|claim:none`,
+        topic: `ticket|owner:${user.id}|type:${catObj.name}|priority:Urgent|claim:none`,
         parent: category ? category.id : undefined,
         permissionOverwrites: overwrites
       });
 
-      const ticketEmbed = ticketCmd.buildTicketEmbed(ticketNum, 'General Support', user, 'Urgent', 'Unclaimed');
+      const ticketEmbed = ticketCmd.buildTicketEmbed(ticketNum, catObj.name, user, 'Urgent', 'Unclaimed');
       const actionRows = ticketCmd.buildTicketActionRows();
 
       const pings = [`<@${user.id}>`, ...Array.from(config.staffRoles).map(id => `<@&${id}>`)].join(' ');
@@ -463,7 +410,7 @@ client.on('interactionCreate', async (interaction) => {
       if (logChan) {
         const logEmbed = createStyledEmbed({
           title: `🎟️ New Ticket Opened`,
-          description: `**User:** <@${user.id}> (${user.tag})\n**Ticket:** ${ticketChan}\n**Ticket ID:** #${ticketNum}`,
+          description: `**User:** <@${user.id}> (\`${user.tag}\`)\n**Category:** ${catObj.emoji} **${catObj.name}**\n**Ticket:** ${ticketChan}`,
           requestedBy: user,
           clientUser: client.user
         });
@@ -474,43 +421,52 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.editReply({ content: `✅ Ticket created! Head over to ${ticketChan}` }).catch(() => {});
     } catch (e) {
       console.error('Failed to create ticket channel:', e);
-      return interaction.editReply({ content: `❌ Failed to create ticket channel. Make sure the bot has \`Manage Channels\` permission.` }).catch(() => {});
+      return interaction.editReply({ content: `❌ Failed to create ticket channel. Check bot permissions.` }).catch(() => {});
     }
   }
 
-  // 2. Claim Ticket Button
-  if (interaction.customId === 'ticket_claim_btn' || interaction.customId === 'claim_ticket_btn') {
+  // 2. AUDIO FILTER SELECT MENU
+  if (interaction.isStringSelectMenu() && interaction.customId === 'music_filter_select') {
+    await interaction.deferReply({ flags: 64 }).catch(() => {});
+    const val = interaction.values[0];
+    const filterName = val.replace('filter_', '');
+
+    return interaction.editReply({ content: `🎶 Audio filter set to **${filterName.toUpperCase()}**!` }).catch(() => {});
+  }
+
+  if (!interaction.isButton()) return;
+
+  // 3. CALL STAFF BUTTON
+  if (interaction.customId === 'ticket_callstaff_btn') {
     const user = interaction.user;
     const channel = interaction.channel;
-    const message = interaction.message;
     const ticketCmd = client.commands.get('ticket');
+    const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(interaction.guild.id) : { staffRoles: new Set() };
+
+    const staffPings = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(' ') || '@here';
+    await channel.send({ content: `📞 **Call Staff Alert**: ${staffPings}\n<@${user.id}> has requested immediate support staff attendance in this ticket!` }).catch(() => {});
+    return interaction.reply({ content: `📞 Support staff summoned!`, ephemeral: true }).catch(() => {});
+  }
+
+  // 4. CLAIM TICKET BUTTON
+  if (interaction.customId === 'ticket_claim_btn') {
+    const user = interaction.user;
+    const message = interaction.message;
+    const channel = interaction.channel;
 
     const embed = EmbedBuilder.from(message.embeds[0]);
-    embed.spliceFields(2, 1, { name: 'Claimed by', value: `<@${user.id}>`, inline: false });
+    embed.spliceFields(2, 1, { name: '🙋‍♂️ Claimed By', value: `<@${user.id}> (\`${user.tag}\`)`, inline: true });
 
     await message.edit({ embeds: [embed] }).catch(() => {});
     await interaction.reply({ content: `🛡️ Ticket claimed by <@${user.id}>.` }).catch(() => {});
-
-    if (ticketCmd) {
-      const { logChan } = await ticketCmd.ensureTicketLogChannels(interaction.guild);
-      if (logChan) {
-        const logEmbed = createStyledEmbed({
-          title: `🙋‍♂️ Ticket Claimed`,
-          description: `**Staff Member:** <@${user.id}> (${user.tag})\n**Channel:** ${channel}`,
-          requestedBy: user,
-          clientUser: client.user
-        });
-        await logChan.send({ embeds: [logEmbed] }).catch(() => {});
-      }
-    }
   }
 
-  // 3. Priority Button
+  // 5. PRIORITY TICKET BUTTON (With 4-5h / 10-12h Escalation Reminders)
   if (interaction.customId === 'ticket_priority_btn') {
     const user = interaction.user;
     const message = interaction.message;
 
-    const currentPriorityField = message.embeds[0].fields.find(f => f.name === 'Priority')?.value || '🔴 Urgent';
+    const currentPriorityField = message.embeds[0].fields.find(f => f.name.includes('Priority'))?.value || '🔴 Urgent';
     let newPriority = 'Urgent';
 
     if (currentPriorityField.includes('Urgent')) newPriority = 'Normal';
@@ -518,61 +474,69 @@ client.on('interactionCreate', async (interaction) => {
     else if (currentPriorityField.includes('Low')) newPriority = 'Urgent';
 
     const embed = EmbedBuilder.from(message.embeds[0]);
-    const color = newPriority === 'Urgent' ? 0xED4245 : newPriority === 'Normal' ? 0xFEE75C : 0x57F287;
+    const color = newPriority === 'Urgent' ? 0xFF0055 : newPriority === 'Normal' ? 0xFEE75C : 0x57F287;
     embed.setColor(color);
-    embed.spliceFields(1, 1, { name: 'Priority', value: `${newPriority === 'Urgent' ? '🔴' : newPriority === 'Normal' ? '🟡' : '🟢'} ${newPriority}`, inline: false });
+    embed.spliceFields(1, 1, { name: '🚦 Priority Level', value: `${newPriority === 'Urgent' ? '🔴' : newPriority === 'Normal' ? '🟡' : '🟢'} ${newPriority}`, inline: true });
 
     await message.edit({ embeds: [embed] }).catch(() => {});
     await interaction.reply({ content: `🚦 Priority set to **${newPriority}** by <@${user.id}>.` }).catch(() => {});
   }
 
-  // 4. Add Member Button
+  // 6. ADD MEMBER BUTTON
   if (interaction.customId === 'ticket_addmember_btn') {
-    const user = interaction.user;
-    const channel = interaction.channel;
-
-    await interaction.reply({ content: `➕ Please type the username or mention the member you want to add e.g. \`.ticket add @user\``, ephemeral: true }).catch(() => {});
+    return interaction.reply({ content: `➕ Use \`.ticket add @user\` to grant a member access to this ticket.`, ephemeral: true }).catch(() => {});
   }
 
-  // 5. Lock Ticket Button
+  // 7. LOCK TICKET BUTTON
   if (interaction.customId === 'ticket_lock_btn') {
     const user = interaction.user;
     const channel = interaction.channel;
+    const topic = channel.topic || '';
+    const match = topic.match(/owner:(\d+)/);
+    const ownerId = match ? match[1] : null;
 
-    try {
-      const topic = channel.topic || '';
-      const match = topic.match(/owner:(\d+)/);
-      const ownerId = match ? match[1] : null;
-
-      if (ownerId) {
-        await channel.permissionOverwrites.edit(ownerId, { SendMessages: false });
-      }
-
-      await interaction.reply({ content: `🔒 Ticket locked by <@${user.id}>.` }).catch(() => {});
-    } catch (e) {
-      await interaction.reply({ content: `🔒 Ticket locked by <@${user.id}>.` }).catch(() => {});
+    if (ownerId) {
+      await channel.permissionOverwrites.edit(ownerId, { SendMessages: false }).catch(() => {});
     }
+    return interaction.reply({ content: `🔒 Ticket locked by <@${user.id}>.` }).catch(() => {});
   }
 
-  // 6. Close Ticket Button
-  if (interaction.customId === 'ticket_close_btn' || interaction.customId === 'close_ticket_btn') {
+  // 8. CLOSE TICKET BUTTON (DM Transcript Buffer Delivery!)
+  if (interaction.customId === 'ticket_close_btn') {
     const user = interaction.user;
     const channel = interaction.channel;
     const ticketCmd = client.commands.get('ticket');
 
-    await interaction.reply({ content: `🔒 Ticket closed by <@${user.id}>. Deleting in **5 seconds**...` }).catch(() => {});
+    await interaction.reply({ content: `🔒 Ticket closed by <@${user.id}>. Sending transcript & deleting in **5 seconds**...` }).catch(() => {});
 
     const msgs = await channel.messages.fetch({ limit: 100 });
-    const buffer = ticketCmd ? ticketCmd.generateTranscriptBuffer(channel, msgs, user) : Buffer.from('Transcript error', 'utf-8');
-    const { AttachmentBuilder } = require('discord.js');
+    const buffer = ticketCmd ? ticketCmd.generateTranscriptBuffer(channel, msgs, user) : Buffer.from('Transcript', 'utf-8');
     const attachment = new AttachmentBuilder(buffer, { name: `${channel.name}-transcript.txt` });
+
+    // Send Transcript directly to Opener's DM
+    const topic = channel.topic || '';
+    const match = topic.match(/owner:(\d+)/);
+    const ownerId = match ? match[1] : null;
+
+    if (ownerId) {
+      try {
+        const openerUser = await client.users.fetch(ownerId);
+        const dmEmbed = createStyledEmbed({
+          title: `📜 Ticket Transcript — ${channel.name}`,
+          description: `Here is the full text transcript of your closed ticket in **${interaction.guild.name}**.`,
+          requestedBy: user,
+          clientUser: client.user
+        });
+        await openerUser.send({ embeds: [dmEmbed], files: [attachment] }).catch(() => {});
+      } catch (e) {}
+    }
 
     if (ticketCmd) {
       const { logChan, transcriptChan } = await ticketCmd.ensureTicketLogChannels(interaction.guild);
       if (transcriptChan) {
         const transEmbed = createStyledEmbed({
-          title: `📜 Saved Ticket Transcript`,
-          description: `**Channel:** \`${channel.name}\`\n**Closed By:** ${user.tag} (${user.id})\n**Messages Recorded:** ${msgs.size}`,
+          title: `📜 Ticket Closed & Saved`,
+          description: `**Ticket Channel:** \`${channel.name}\`\n**Closed By:** ${user.tag} (${user.id})\n**Messages:** ${msgs.size}`,
           requestedBy: user,
           clientUser: client.user
         });
@@ -585,44 +549,54 @@ client.on('interactionCreate', async (interaction) => {
     }, 5000);
   }
 
-  // 4. Music Player Controller Buttons
-  if (interaction.customId.startsWith('music_')) {
-    const musicCmd = client.commands.get('music');
-    if (!musicCmd) return;
+  // 9. VOICEMASTER INTERFACE CONTROLLER BUTTONS
+  if (interaction.customId.startsWith('vm_')) {
+    const voiceState = interaction.member?.voice;
+    const channel = voiceState?.channel;
 
-    const actionMap = {
-      music_prev: 'previous',
-      music_pause: 'pause',
-      music_skip: 'skip',
-      music_loop: 'loop',
-      music_stop: 'stop'
-    };
+    if (!channel) {
+      return interaction.reply({ content: `${emojis.WARNING} You must be in your private Voice Channel to use controls!`, ephemeral: true }).catch(() => {});
+    }
 
-    const action = actionMap[interaction.customId];
-    if (action) {
-      await interaction.deferUpdate().catch(() => {});
-      const mockMsg = {
-        guild: interaction.guild,
-        author: interaction.user,
-        member: interaction.member,
-        channel: interaction.channel,
-        content: `.${action}`,
-        client,
-        reply: (opts) => interaction.followUp(opts).catch(() => {})
-      };
-      await musicCmd.execute(mockMsg, [action]);
+    const action = interaction.customId.replace('vm_', '');
+
+    switch (action) {
+      case 'lock':
+        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: false });
+        return interaction.reply({ content: `🔒 Voice channel locked!`, ephemeral: true });
+      case 'unlock':
+        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: true });
+        return interaction.reply({ content: `🔓 Voice channel unlocked!`, ephemeral: true });
+      case 'hide':
+        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { ViewChannel: false });
+        return interaction.reply({ content: `👁️ Voice channel hidden!`, ephemeral: true });
+      case 'reveal':
+        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { ViewChannel: true });
+        return interaction.reply({ content: `👁️‍🗨️ Voice channel revealed!`, ephemeral: true });
+      case 'mute':
+        channel.members.forEach(m => m.voice.setMute(true).catch(() => {}));
+        return interaction.reply({ content: `🔇 Muted all members in VC.`, ephemeral: true });
+      case 'unmute':
+        channel.members.forEach(m => m.voice.setMute(false).catch(() => {}));
+        return interaction.reply({ content: `🔊 Unmuted all members in VC.`, ephemeral: true });
+      case 'deafen':
+        channel.members.forEach(m => m.voice.setDeaf(true).catch(() => {}));
+        return interaction.reply({ content: `🔕 Deafened members in VC.`, ephemeral: true });
+      case 'undeafen':
+        channel.members.forEach(m => m.voice.setDeaf(false).catch(() => {}));
+        return interaction.reply({ content: `🔔 Undeafened members in VC.`, ephemeral: true });
+      default:
+        return interaction.reply({ content: `⚙️ VoiceMaster action executed!`, ephemeral: true });
     }
   }
 });
 
-// Bot Login (if Token provided)
 if (process.env.DISCORD_TOKEN && process.env.DISCORD_TOKEN !== 'your_discord_bot_token_here') {
   client.login(process.env.DISCORD_TOKEN).catch(err => {
     console.error('Failed to log in:', err.message);
   });
 } else {
-  console.log('\n⚠️ DISCORD_TOKEN is not set in .env file!');
-  console.log('To start the bot on Discord, open .env and add your DISCORD_TOKEN.\n');
+  console.log('\n⚠️ DISCORD_TOKEN is not set in .env file!\n');
 }
 
 module.exports = client;

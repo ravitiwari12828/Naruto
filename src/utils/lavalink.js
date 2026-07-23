@@ -11,8 +11,17 @@ function initLavalink(client) {
         port: parseInt(process.env.LAVALINK_PORT) || 9013,
         authorization: process.env.LAVALINK_PASSWORD || '781312113c683e27',
         secure: process.env.LAVALINK_SECURE === 'true',
-        retryAmount: 5,
+        retryAmount: 10,
         retryDelay: 3000
+      },
+      {
+        id: 'lavalink-fallback',
+        host: 'lavalink.jirayu.net',
+        port: 443,
+        authorization: 'youshallnotpass',
+        secure: true,
+        retryAmount: 5,
+        retryDelay: 5000
       }
     ],
     sendToShard: (guildId, payload) => {
@@ -25,7 +34,7 @@ function initLavalink(client) {
     autoSkip: true,
     autoSkipOnResolveError: true,
     playerOptions: {
-      defaultSearchPlatform: 'spsearch',
+      defaultSearchPlatform: 'ytmsearch',
       applyVolumeAsFilter: false,
       onDisconnect: {
         autoReconnect: true,
@@ -38,7 +47,7 @@ function initLavalink(client) {
   });
 
   lavalink.nodeManager.on('connect', (node) => {
-    console.log(`🎵 [Lavalink] Connected to Synn Lavalink node: ${node.id} (${node.options.host}:${node.options.port})`);
+    console.log(`🎵 [Lavalink] Connected to Lavalink node: ${node.id} (${node.options.host}:${node.options.port})`);
   });
 
   lavalink.nodeManager.on('disconnect', (node, reason) => {
@@ -53,18 +62,13 @@ function initLavalink(client) {
     console.log(`⚠️ [Lavalink] Node error on ${node.id}:`, error?.message || error);
   });
 
-  // CRITICAL: Forward raw gateway voice packets to Lavalink
+  // Forward raw gateway voice packets to Lavalink
   client.on('raw', (d) => {
     try {
       lavalink.sendRawData(d);
     } catch (e) {}
   });
 
-  try {
-    lavalink.init(client.user);
-  } catch (err) {
-    console.error('Lavalink init error caught:', err.message);
-  }
   return lavalink;
 }
 
@@ -72,4 +76,7 @@ function getLavalink() {
   return lavalink;
 }
 
-module.exports = { initLavalink, getLavalink };
+module.exports = {
+  initLavalink,
+  getLavalink
+};
