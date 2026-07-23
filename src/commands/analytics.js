@@ -42,23 +42,33 @@ function buildTimeframeEmbed(guild, timeframeLabel, windowMs, author, clientUser
 
 module.exports = {
   name: 'analytics',
-  description: 'Track Chat timing, Voice timing, Invites, Server Joins/Leaves, Commands & Tickets across 1d, 7d, 14d, 30d & Lifetime',
+  description: 'Dedicated category & timeframe analytics viewing suite: messages, voice, invites, joins/leaves, commands & tickets',
   aliases: [
     'tracker', 'userstats', 'serverstats', 'serveranalytics', 'useranalytics',
     '1d', '7d', '14d', '30d', 'overall', 'lifetime',
-    'analytics1d', 'analytics7d', 'analytics14d', 'analytics30d', 'overallanalytics'
+    'analytics1d', 'analytics7d', 'analytics14d', 'analytics30d', 'overallanalytics',
+    'topmessages', 'msgstats', 'topvoice', 'voicestats', 'vctiming',
+    'topinvites', 'invitestats', 'joinsleaves', 'memberflow', 'joinleavestats',
+    'topcommands', 'commandstats', 'ticketstats', 'ticketanalytics'
   ],
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
     let sub = args[0]?.toLowerCase();
 
-    // Map alias direct commands (.1d, .7d, .14d, .30d, .overall, .lifetime)
+    // Direct Command Alias Mappings
     if (invoked === '1d' || invoked === 'analytics1d') sub = '1d';
     if (invoked === '7d' || invoked === 'analytics7d') sub = '7d';
     if (invoked === '14d' || invoked === 'analytics14d') sub = '14d';
     if (invoked === '30d' || invoked === 'analytics30d') sub = '30d';
     if (invoked === 'overall' || invoked === 'lifetime' || invoked === 'overallanalytics') sub = 'lifetime';
+
+    if (['topmessages', 'msgstats', 'messages', 'chat'].includes(invoked)) sub = 'messages';
+    if (['topvoice', 'voicestats', 'vctiming', 'voice'].includes(invoked)) sub = 'voice';
+    if (['topinvites', 'invitestats', 'invites'].includes(invoked)) sub = 'invites';
+    if (['joinsleaves', 'memberflow', 'joinleavestats', 'joins', 'leaves'].includes(invoked)) sub = 'joins';
+    if (['topcommands', 'commandstats', 'commands'].includes(invoked)) sub = 'commands';
+    if (['ticketstats', 'ticketanalytics', 'tickets'].includes(invoked)) sub = 'tickets';
 
     const author = message.author;
     const guild = message.guild;
@@ -68,7 +78,127 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // 1. TIMEFRAME SPECIFIC COMMANDS (.1d, .7d, .14d, .30d, .overall)
+    const g1d = db.getAnalyticsStats(guild.id, WINDOWS['1d']);
+    const g7d = db.getAnalyticsStats(guild.id, WINDOWS['7d']);
+    const g14d = db.getAnalyticsStats(guild.id, WINDOWS['14d']);
+    const g30d = db.getAnalyticsStats(guild.id, WINDOWS['30d']);
+    const gLife = db.getAnalyticsStats(guild.id, WINDOWS['lifetime']);
+
+    // 1. CATEGORY: MESSAGES ANALYTICS (.topmessages / .analytics messages)
+    if (sub === 'messages' || sub === 'msg' || sub === 'chat') {
+      const embed = createStyledEmbed({
+        title: `💬 Chat Messages Analytics — ${guild.name}`,
+        subtitle: `Timeframe Message Volume Breakdown`,
+        fields: [
+          { name: '⚡ 1 Day (24h)', value: `\`${g1d.messages}\` msgs`, inline: true },
+          { name: '📅 7 Days (1w)', value: `\`${g7d.messages}\` msgs`, inline: true },
+          { name: '🗓️ 14 Days (2w)', value: `\`${g14d.messages}\` msgs`, inline: true },
+          { name: '📊 30 Days (1m)', value: `\`${g30d.messages}\` msgs`, inline: true },
+          { name: '🌐 Lifetime', value: `\`${gLife.messages}\` msgs`, inline: true }
+        ],
+        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 2. CATEGORY: VOICE TIMING ANALYTICS (.topvoice / .analytics voice)
+    if (sub === 'voice' || sub === 'vctiming' || sub === 'voicestats') {
+      const embed = createStyledEmbed({
+        title: `🔊 Voice Channel Timing Analytics — ${guild.name}`,
+        subtitle: `Timeframe Active Voice Duration Logged`,
+        fields: [
+          { name: '⚡ 1 Day (24h)', value: `\`${formatDuration(g1d.voiceSeconds)}\``, inline: true },
+          { name: '📅 7 Days (1w)', value: `\`${formatDuration(g7d.voiceSeconds)}\``, inline: true },
+          { name: '🗓️ 14 Days (2w)', value: `\`${formatDuration(g14d.voiceSeconds)}\``, inline: true },
+          { name: '📊 30 Days (1m)', value: `\`${formatDuration(g30d.voiceSeconds)}\``, inline: true },
+          { name: '🌐 Lifetime', value: `\`${formatDuration(gLife.voiceSeconds)}\``, inline: true }
+        ],
+        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 3. CATEGORY: INVITES ANALYTICS (.topinvites / .analytics invites)
+    if (sub === 'invites' || sub === 'invitestats' || sub === 'topinvites') {
+      const embed = createStyledEmbed({
+        title: `📨 Server Invites Analytics — ${guild.name}`,
+        subtitle: `Timeframe Member Invite Growth`,
+        fields: [
+          { name: '⚡ 1 Day (24h)', value: `\`${g1d.invites}\` joins via invite`, inline: true },
+          { name: '📅 7 Days (1w)', value: `\`${g7d.invites}\` joins via invite`, inline: true },
+          { name: '🗓️ 14 Days (2w)', value: `\`${g14d.invites}\` joins via invite`, inline: true },
+          { name: '📊 30 Days (1m)', value: `\`${g30d.invites}\` joins via invite`, inline: true },
+          { name: '🌐 Lifetime', value: `\`${gLife.invites}\` joins via invite`, inline: true }
+        ],
+        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 4. CATEGORY: JOINS & LEAVES ANALYTICS (.joinsleaves / .analytics joins)
+    if (sub === 'joins' || sub === 'leaves' || sub === 'memberflow' || sub === 'joinleavestats') {
+      const embed = createStyledEmbed({
+        title: `📥 Joins & 📤 Leaves Analytics — ${guild.name}`,
+        subtitle: `Timeframe Member Growth & Retention Flow`,
+        fields: [
+          { name: '⚡ 1 Day (24h)', value: `📥 \`+${g1d.joins}\` | 📤 \`-${g1d.leaves}\` (Net: \`${g1d.joins - g1d.leaves}\`)`, inline: false },
+          { name: '📅 7 Days (1w)', value: `📥 \`+${g7d.joins}\` | 📤 \`-${g7d.leaves}\` (Net: \`${g7d.joins - g7d.leaves}\`)`, inline: false },
+          { name: '🗓️ 14 Days (2w)', value: `📥 \`+${g14d.joins}\` | 📤 \`-${g14d.leaves}\` (Net: \`${g14d.joins - g14d.leaves}\`)`, inline: false },
+          { name: '📊 30 Days (1m)', value: `📥 \`+${g30d.joins}\` | 📤 \`-${g30d.leaves}\` (Net: \`${g30d.joins - g30d.leaves}\`)`, inline: false },
+          { name: '🌐 Lifetime', value: `📥 \`+${gLife.joins}\` | 📤 \`-${gLife.leaves}\` (Net: \`${gLife.joins - gLife.leaves}\`)`, inline: false }
+        ],
+        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 5. CATEGORY: COMMANDS EXECUTED ANALYTICS (.topcommands / .analytics commands)
+    if (sub === 'commands' || sub === 'topcommands' || sub === 'commandstats') {
+      const embed = createStyledEmbed({
+        title: `⚡ Bot Command Execution Analytics — ${guild.name}`,
+        subtitle: `Timeframe Bot Usage & Automation Activity`,
+        fields: [
+          { name: '⚡ 1 Day (24h)', value: `\`${g1d.commands}\` commands`, inline: true },
+          { name: '📅 7 Days (1w)', value: `\`${g7d.commands}\` commands`, inline: true },
+          { name: '🗓️ 14 Days (2w)', value: `\`${g14d.commands}\` commands`, inline: true },
+          { name: '📊 30 Days (1m)', value: `\`${g30d.commands}\` commands`, inline: true },
+          { name: '🌐 Lifetime', value: `\`${gLife.commands}\` commands`, inline: true }
+        ],
+        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 6. CATEGORY: TICKETS ANALYTICS (.ticketstats / .analytics tickets)
+    if (sub === 'tickets' || sub === 'ticketstats' || sub === 'ticketanalytics') {
+      const embed = createStyledEmbed({
+        title: `🎟️ Ticket System Analytics — ${guild.name}`,
+        subtitle: `Timeframe Ticket Volume & Resolution Audit`,
+        fields: [
+          { name: '⚡ 1 Day (24h)', value: `🟢 Opened: \`${g1d.ticketsCreated}\` | 🔴 Closed: \`${g1d.ticketsClosed}\``, inline: false },
+          { name: '📅 7 Days (1w)', value: `🟢 Opened: \`${g7d.ticketsCreated}\` | 🔴 Closed: \`${g7d.ticketsClosed}\``, inline: false },
+          { name: '🗓️ 14 Days (2w)', value: `🟢 Opened: \`${g14d.ticketsCreated}\` | 🔴 Closed: \`${g14d.ticketsClosed}\``, inline: false },
+          { name: '📊 30 Days (1m)', value: `🟢 Opened: \`${g30d.ticketsCreated}\` | 🔴 Closed: \`${g30d.ticketsClosed}\``, inline: false },
+          { name: '🌐 Lifetime', value: `🟢 Opened: \`${gLife.ticketsCreated}\` | 🔴 Closed: \`${gLife.ticketsClosed}\``, inline: false }
+        ],
+        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 7. TIMEFRAME SPECIFIC COMMANDS (.1d, .7d, .14d, .30d, .overall)
     if (sub === '1d' || sub === '1day' || sub === '24h') {
       const embed = buildTimeframeEmbed(guild, '1-Day (24 Hours)', WINDOWS['1d'], author, clientUser);
       return message.channel.send({ embeds: [embed] });
@@ -94,7 +224,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 2. TARGETED USER ANALYTICS (.analytics user @user / .userstats @user)
+    // 8. TARGETED USER ANALYTICS (.analytics user @user / .userstats @user)
     const targetUser = message.mentions.users.first() || (args[1] ? message.client.users.cache.get(args[1]) : null) || (sub === 'user' ? author : null);
 
     if (sub === 'user' || targetUser) {
@@ -157,13 +287,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 3. FULL COMPARISON DASHBOARD (.analytics)
-    const g1d = db.getAnalyticsStats(guild.id, WINDOWS['1d']);
-    const g7d = db.getAnalyticsStats(guild.id, WINDOWS['7d']);
-    const g14d = db.getAnalyticsStats(guild.id, WINDOWS['14d']);
-    const g30d = db.getAnalyticsStats(guild.id, WINDOWS['30d']);
-    const gLife = db.getAnalyticsStats(guild.id, WINDOWS['lifetime']);
-
+    // 9. FULL COMPARISON DASHBOARD (.analytics)
     const embed = createStyledEmbed({
       title: `📊 Server Activity Analytics — ${guild.name}`,
       subtitle: `Realtime Audit & Performance Comparison (1d / 7d / 14d / 30d / Lifetime)`,
