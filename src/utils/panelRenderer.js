@@ -13,8 +13,8 @@ const CATEGORIES = [
     label: 'Bot Owner Suite',
     value: 'owner',
     description: 'Executive Control: No-Prefix, Premium, BotLock, ExtraOwner & PanicMode',
-    emojiObj: { name: '👑' },
-    heading: '👑 Bot Owner Executive Commands',
+    emojiObj: { name: 'emoji_owner_crown', id: '1529910236062810142' },
+    heading: `${emojis.OWNER_CROWN} Bot Owner Executive Commands`,
     commands: [
       'owner', 'ownermenu',
       'noprefix add', 'noprefix remove', 'noprefix list',
@@ -29,8 +29,8 @@ const CATEGORIES = [
     label: 'Analytics & Tracking',
     value: 'analytics',
     description: 'Track chat, voice timing, invites, joins/leaves, commands & tickets',
-    emojiObj: emojis.OBJ_ZAP || { name: '📊' },
-    heading: '📊 Analytics Commands',
+    emojiObj: emojis.OBJ_ZAP,
+    heading: `${emojis.ANALYTICS_ZAP} Analytics Commands`,
     commands: [
       'analytics', '1d', '7d', '14d', '30d', 'overall',
       'topmessages', 'topvoice', 'topinvites', 'joinsleaves',
@@ -41,8 +41,8 @@ const CATEGORIES = [
     label: 'ModMail System',
     value: 'modmail',
     description: 'DM ModMail support threads, staff replies & HTML transcripts',
-    emojiObj: { name: '📬' },
-    heading: '📬 ModMail Commands',
+    emojiObj: { name: 'emoji_modmail_envelope', id: '1529910230534586449' },
+    heading: `${emojis.MODMAIL_ENVELOPE} ModMail Commands`,
     commands: [
       'modmail setup', 'r <message>', 'close [reason]',
       'modmail', 'modmailtranscript'
@@ -52,8 +52,8 @@ const CATEGORIES = [
     label: 'No-Prefix & Premium',
     value: 'noprefix',
     description: 'No-prefix authorization, server premium & user VIP management',
-    emojiObj: emojis.OBJ_PREMIUM || { name: '💎' },
-    heading: '💎 Premium Commands',
+    emojiObj: emojis.OBJ_PREMIUM,
+    heading: `${emojis.PREMIUM} Premium Commands`,
     commands: [
       'noprefix add', 'noprefix remove', 'noprefix list',
       'premium activate', 'premium revoke', 'premium adduser',
@@ -185,8 +185,8 @@ const CATEGORIES = [
     label: 'Naruto RPG',
     value: 'ninja',
     description: 'Jutsu, Chakra, Quests, Leaderboards & Shinobi Profile',
-    emojiObj: { name: '🍥' },
-    heading: '🍥 Naruto RPG Commands',
+    emojiObj: { name: 'emoji_rpg_rasengan', id: '1529910238684119171' },
+    heading: `${emojis.NINJUTSU} Naruto RPG Commands`,
     commands: [
       'ninja profile',
       'ninja jutsu',
@@ -201,7 +201,7 @@ const CATEGORIES = [
     label: 'Channel Moderation',
     value: 'channel',
     description: 'Lock, unlock, hide and mass lockdown channels',
-    emojiObj: emojis.OBJ_TOOLS || { name: '🔧' },
+    emojiObj: emojis.OBJ_TOOLS,
     heading: `${emojis.TOOLS} Channel Moderation`,
     commands: [
       'lock', 'unlock',
@@ -214,7 +214,7 @@ const CATEGORIES = [
     label: 'Automations & Autorole',
     value: 'autorole',
     description: 'Auto-role rules & massrole assignment',
-    emojiObj: emojis.OBJ_GEAR || { name: '⚙️' },
+    emojiObj: emojis.OBJ_GEAR,
     heading: `${emojis.GEAR} Automations Commands`,
     commands: [
       'autorole config', 'massrole add',
@@ -225,7 +225,7 @@ const CATEGORIES = [
     label: 'Autoresponder & React',
     value: 'autoresponder',
     description: 'Custom trigger replies & auto-reactions',
-    emojiObj: emojis.OBJ_AUTORESPOND || { name: '💬' },
+    emojiObj: emojis.OBJ_AUTORESPOND,
     heading: `${emojis.AUTORESPOND} Autoresponder Commands`,
     commands: [
       'autoresponder config',
@@ -238,7 +238,7 @@ const CATEGORIES = [
     label: 'AutoMod & AntiBot',
     value: 'automod',
     description: 'Security filters & bot join whitelist',
-    emojiObj: emojis.OBJ_SHIELD || { name: '🛡️' },
+    emojiObj: emojis.OBJ_SHIELD,
     heading: `${emojis.SHIELD} AutoMod Commands`,
     commands: [
       'automod config', 'antibot config',
@@ -249,7 +249,7 @@ const CATEGORIES = [
     label: 'Priority AI',
     value: 'priority',
     description: 'AI text answers & coding assistant',
-    emojiObj: emojis.OBJ_PRIORITY || { name: '🤖' },
+    emojiObj: emojis.OBJ_PRIORITY,
     heading: `${emojis.PRIORITY} Priority AI Commands`,
     commands: [
       'priority',
@@ -374,12 +374,12 @@ function buildNavigationButtons() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('help_home')
-      .setEmoji('🏠')
+      .setEmoji({ name: 'emoji_owner_crown', id: '1529910236062810142' })
       .setLabel('Home')
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('help_delete')
-      .setEmoji('🗑️')
+      .setEmoji({ name: 'emoji_REMOVE', id: '1529377741252595802' })
       .setLabel('Delete')
       .setStyle(ButtonStyle.Danger)
   );
@@ -414,7 +414,7 @@ async function renderModuleHelpPanel(message, categoryValue) {
   collector.on('collect', async (interaction) => {
     if (interaction.user.id !== author.id) {
       return interaction.reply({
-        content: '❌ Only the user who executed the command can interact with this panel.',
+        content: `${emojis.DISABLED} Only the user who executed the command can interact with this panel.`,
         flags: 64
       });
     }
