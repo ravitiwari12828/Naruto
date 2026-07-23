@@ -1,24 +1,24 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 
-// Global Temp VC Config
-const vctempConfigs = new Map();
+// Global Stores
+const premiumGuilds = new Set();
+const premiumUsers = new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237']);
 
 module.exports = {
   name: 'premium',
-  description: 'Premium System: status, redeem, perks, botcustomize, premiumguild, vctemp setup, vctemp disable, vctemp status',
+  description: 'Premium Suite: activate guild, revoke guild, add user, revoke user, status, redeem',
   aliases: [
-    'vip', 'donator', 'boosters',
-    'botcustomize', 'premiumguild', 'vctemp'
+    'vip', 'donator', 'premiumguild', 'premiumuser'
   ],
+  premiumGuilds,
+  premiumUsers,
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
     let sub = args[0]?.toLowerCase();
 
-    if (invoked === 'botcustomize') sub = 'botcustomize';
-    if (invoked === 'premiumguild') sub = 'premiumguild';
-    if (invoked === 'vctemp') sub = 'vctemp';
+    if (invoked === 'premiumguild') sub = 'guild';
 
     const author = message.author;
     const guild = message.guild;
@@ -28,75 +28,75 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // .botcustomize
-    if (sub === 'botcustomize') {
+    const ownerCmd = message.client.commands.get('owners');
+    const isBotOwner = ownerCmd && ownerCmd.isOwner ? ownerCmd.isOwner(author.id) : ['1420687548807905324', '1529362747047805029', '1514546738055348237'].includes(author.id);
+
+    // 1. PREMIUM ACTIVATE GUILD (.premium activate <guildId>)
+    if (sub === 'activate' || sub === 'addguild') {
+      if (!isBotOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can activate Premium for servers.`);
+
+      const targetGuildId = args[1] || guild.id;
+      premiumGuilds.add(targetGuildId);
+
       const embed = createStyledEmbed({
-        title: `🎨 Bot Customization (Premium)`,
-        description: `Custom bot name, avatar, status & branding features are available for **Premium Guilds**!\n\nUse \`.premiumguild\` to link your premium subscription to this server.`,
+        title: `💎 Premium Activated for Guild`,
+        description: `Server ID **\`${targetGuildId}\`** is now upgraded to **Premium Tier**! ✨\n\nUnlocked high bitrate audio (450% volume), 2x XP quests, and priority features.`,
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    // .premiumguild
-    if (sub === 'premiumguild') {
+    // 2. PREMIUM REVOKE GUILD (.premium revoke <guildId>)
+    if (sub === 'revoke' || sub === 'removeguild') {
+      if (!isBotOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can revoke Premium from servers.`);
+
+      const targetGuildId = args[1] || guild.id;
+      premiumGuilds.delete(targetGuildId);
+
       const embed = createStyledEmbed({
-        title: `💎 Premium Guild Activated`,
-        description: `This server **${guild.name}** has been upgraded to **Premium Tier**!\n\nAll members now enjoy 2x XP boost, high-bitrate music streaming, and temp voice channels.`,
+        title: `⚠️ Premium Revoked from Guild`,
+        description: `Server ID **\`${targetGuildId}\`** premium tier has been revoked.`,
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    // .vctemp setup / disable / status
-    if (sub === 'vctemp' || sub === 'vctemp setup' || sub === 'vctemp disable' || sub === 'vctemp status') {
-      const vcSub = args[1]?.toLowerCase() || (sub === 'vctemp' ? 'status' : sub.replace('vctemp ', ''));
+    // 3. PREMIUM ADD USER (.premium adduser @user)
+    if (sub === 'adduser' || sub === 'add') {
+      if (!isBotOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can grant user Premium.`);
 
-      let vcConf = vctempConfigs.get(guild.id) || { enabled: true, categoryId: null };
+      const user = message.mentions.users.first() || message.client.users.cache.get(args[1]);
+      if (!user) return message.reply(`${emojis.WARNING} Mention a user or provide a User ID e.g. \`.premium adduser @user\``);
 
-      if (vcSub === 'setup') {
-        const chan = message.mentions.channels.first() || message.channel;
-        vcConf.enabled = true;
-        vcConf.channelId = chan.id;
-        vctempConfigs.set(guild.id, vcConf);
-
-        const embed = createStyledEmbed({
-          title: `🔊 Temporary VC System Configured`,
-          description: `Set join-to-create channel trigger to ${chan}.\nStatus: \`ENABLED\``,
-          requestedBy: author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
-      }
-
-      if (vcSub === 'disable') {
-        vcConf.enabled = false;
-        vctempConfigs.set(guild.id, vcConf);
-        return message.reply(`${emojis.SUCCESS} Temporary Voice Channel system disabled.`);
-      }
-
-      // vctemp status
-      const embed = createStyledEmbed({
-        title: `🔊 Temporary VC System Status`,
-        fields: [
-          { name: '⚙️ Status', value: vcConf.enabled ? '`ENABLED ✅`' : '`DISABLED ❌`', inline: true },
-          { name: '🎙️ Join Trigger Channel', value: vcConf.channelId ? `<#${vcConf.channelId}>` : '*Not Set*', inline: true }
-        ],
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      premiumUsers.add(user.id);
+      return message.reply(`💎 **${user.tag}** has been granted **Lifetime Premium Status**! ✨`);
     }
 
-    // .premium status
+    // 4. PREMIUM REVOKE USER (.premium revokeuser @user)
+    if (sub === 'revokeuser' || sub === 'removeuser') {
+      if (!isBotOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can revoke user Premium.`);
+
+      const user = message.mentions.users.first() || message.client.users.cache.get(args[1]);
+      if (!user) return message.reply(`${emojis.WARNING} Mention a user or provide a User ID e.g. \`.premium revokeuser @user\``);
+
+      premiumUsers.delete(user.id);
+      return message.reply(`⚠️ **${user.tag}** premium status has been revoked.`);
+    }
+
+    // 5. PREMIUM STATUS / CHECK (.premium status)
     if (sub === 'status' || sub === 'check') {
+      const isGuildPrem = premiumGuilds.has(guild.id);
+      const isUserPrem = premiumUsers.has(author.id);
+
       const embed = createStyledEmbed({
-        title: `💎 Premium Status — ${author.username}`,
-        description: `✨ **Active Premium Guild Member!**\nExpiry: Never (Lifetime VIP)`,
+        title: `💎 Premium Status Dashboard`,
         fields: [
-          { name: '🚀 Server Boost Status', value: `\`Tier ${guild.premiumTier}\` (${guild.premiumSubscriptionCount || 0} Boosts)`, inline: true }
+          { name: '🏰 Current Server Status', value: isGuildPrem ? '`PREMIUM GUILD ✅`' : '`STANDARD TIER ⚪`', inline: true },
+          { name: '👤 Your User Status', value: isUserPrem ? '`PREMIUM VIP ✅`' : '`STANDARD USER ⚪`', inline: true },
+          { name: '💎 Total Premium Guilds', value: `\`${premiumGuilds.size}\` servers`, inline: true },
+          { name: '👤 Total Premium Users', value: `\`${premiumUsers.size}\` users`, inline: true }
         ],
         requestedBy: author,
         clientUser
@@ -104,36 +104,15 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // .premium redeem <code>
-    if (sub === 'redeem') {
-      const code = args[1];
-      if (!code) return message.reply(`${emojis.WARNING} Usage: \`.premium redeem <code>\``);
-
-      if (code.toUpperCase() === 'NARUTO2026' || code.toUpperCase() === 'HOKAGE') {
-        const embed = createStyledEmbed({
-          title: `🎉 PREMIUM CODE REDEEMED!`,
-          subtitle: `Congratulations ${author.username}!`,
-          description: `✨ You have successfully redeemed code **\`${code.toUpperCase()}\`**!\n\n**Unlocked Perks:**\n• 2x XP Multiplier on all quests\n• Custom Shinobi Badge\n• Unlimited Meditation Chakra\n• Priority AI access`,
-          requestedBy: author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
-      } else {
-        return message.reply(`${emojis.WARNING} Invalid or expired code. Contact staff if you purchased a code.`);
-      }
-    }
-
-    // Default Premium Help
+    // Default Help
     const embed = createStyledEmbed({
       title: `💎 Premium Commands`,
       description:
-        `\`.botcustomize\` — View custom bot branding options\n` +
-        `\`.premiumguild\` — Activate server-wide premium tier\n` +
-        `\`.vctemp setup\` — Setup temporary join-to-create voice channels\n` +
-        `\`.vctemp disable\` — Disable temporary voice channels\n` +
-        `\`.vctemp status\` — Check temp VC system status\n` +
-        `\`.premium status\` — Check subscription status\n` +
-        `\`.premium redeem <code>\` — Redeem gift code`,
+        `\`.premium activate [guildId]\` — Activate Premium tier for server (Owner Only)\n` +
+        `\`.premium revoke [guildId]\` — Revoke Premium tier from server (Owner Only)\n` +
+        `\`.premium adduser @user\` — Grant user Premium status (Owner Only)\n` +
+        `\`.premium revokeuser @user\` — Revoke user Premium status (Owner Only)\n` +
+        `\`.premium status\` — View server and user premium status`,
       requestedBy: author,
       clientUser
     });

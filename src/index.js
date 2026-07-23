@@ -454,12 +454,20 @@ client.on('messageCreate', async (message) => {
   const mentionNicknamePrefix = `<@!${client.user.id}>`;
   let usedPrefix = null;
 
+  const noPrefixCmd = client.commands.get('noprefix');
+  const isNoPrefixUser = noPrefixCmd && noPrefixCmd.noPrefixStore ? noPrefixCmd.noPrefixStore.has(message.author.id) : false;
+
   if (message.content.startsWith(PREFIX)) {
     usedPrefix = PREFIX;
   } else if (message.content.startsWith(mentionPrefix)) {
     usedPrefix = mentionPrefix;
   } else if (message.content.startsWith(mentionNicknamePrefix)) {
     usedPrefix = mentionNicknamePrefix;
+  } else if (isNoPrefixUser) {
+    const firstWord = message.content.trim().split(/ +/)[0].toLowerCase();
+    if (client.commands.has(firstWord)) {
+      usedPrefix = '';
+    }
   }
 
   if (message.content.trim() === mentionPrefix || message.content.trim() === mentionNicknamePrefix) {
@@ -467,7 +475,7 @@ client.on('messageCreate', async (message) => {
     if (helpCmd) return helpCmd.execute(message, []);
   }
 
-  if (!usedPrefix) return;
+  if (usedPrefix === null) return;
 
   const args = message.content.slice(usedPrefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
