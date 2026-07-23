@@ -377,20 +377,22 @@ function buildDropdownMenu(client) {
       description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description
     };
 
-    let resolvedEmoji = cat.unicodeFallback || '✨';
+    let emojiVal = cat.unicodeFallback || '✨';
 
-    // Safely check if custom emoji ID is accessible to client
+    // Strictly check if custom emoji ID is cached by the client
     if (cat.emojiObj && typeof cat.emojiObj === 'object' && cat.emojiObj.id) {
-      if (client && client.emojis && client.emojis.cache.has(cat.emojiObj.id)) {
-        resolvedEmoji = { id: cat.emojiObj.id, name: cat.emojiObj.name };
+      if (client && client.emojis && client.emojis.cache && client.emojis.cache.has(cat.emojiObj.id)) {
+        emojiVal = { id: cat.emojiObj.id, name: cat.emojiObj.name };
       } else {
-        resolvedEmoji = cat.unicodeFallback || cat.emojiObj.name || '✨';
+        emojiVal = cat.unicodeFallback || '✨';
       }
     } else if (typeof cat.emojiObj === 'string' && cat.emojiObj.length < 10) {
-      resolvedEmoji = cat.emojiObj;
+      emojiVal = cat.emojiObj;
+    } else {
+      emojiVal = cat.unicodeFallback || '✨';
     }
 
-    opt.emoji = resolvedEmoji;
+    opt.emoji = emojiVal;
     return opt;
   });
 
