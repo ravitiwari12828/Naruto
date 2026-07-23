@@ -1,5 +1,6 @@
 const { PermissionsBitField } = require('discord.js');
 const { isBotOwner } = require('../utils/owners');
+const emojis = require('../utils/emojis');
 
 // Global Quarantine Config Store (guildId -> { enabled, days: 15, bypassUsers: Set, bypassRoles: Set })
 const quarantineConfigs = new Map();
