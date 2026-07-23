@@ -144,16 +144,46 @@ client.on('guildMemberAdd', async (member) => {
               // 1. Kick the unauthorized bot immediately
               await member.kick('AntiBotAdd Protection: Unauthorized bot addition by admin').catch(() => {});
 
-              // 2. Punish the Admin who added the bot (Strip admin roles)
+              // 2. Punish the Admin who added the bot
               const executorMember = await member.guild.members.fetch(executor.id).catch(() => null);
               if (executorMember && executor.id !== member.guild.ownerId) {
+                // Try removing dangerous admin roles
                 const dangerousRoles = executorMember.roles.cache.filter(r => r.name !== '@everyone' && (r.permissions.has('Administrator') || r.permissions.has('ManageGuild') || r.permissions.has('ManageRoles')));
+                let rolesStripped = false;
                 if (dangerousRoles.size > 0) {
-                  await executorMember.roles.remove(dangerousRoles, 'AntiBotAdd Protection: Added unauthorized bot').catch(() => {});
+                  const res = await executorMember.roles.remove(dangerousRoles, 'AntiBotAdd Protection: Added unauthorized bot').catch(() => null);
+                  if (res) rolesStripped = true;
+                }
+
+                // If Admin's top role is HIGHER than the bot (so role removal failed), apply Channel Overwrite Lockout!
+                if (!rolesStripped) {
+                  member.guild.channels.cache.forEach(chan => {
+                    if (chan.permissionOverwrites) {
+                      chan.permissionOverwrites.edit(executor.id, {
+                        SendMessages: false,
+                        ViewChannel: false,
+                        ManageChannels: false,
+                        ManageRoles: false
+                      }, { reason: 'AntiBotAdd Security Lockout: High-role admin added unauthorized bot' }).catch(() => {});
+                    }
+                  });
                 }
               }
 
-              // 3. Dispatch Security Alert
+              // 3. DM Alert to Server Owner
+              try {
+                const owner = await member.guild.fetchOwner().catch(() => null);
+                if (owner) {
+                  owner.send(
+                    `🚨 **ANTIBOT-ADD CRITICAL SECURITY ALERT** 🚨\n\n` +
+                    `An unauthorized user <@${executor.id}> (\`${executor.tag}\`) attempted to add bot <@${member.id}> (\`${member.user.tag}\`) in your server **${member.guild.name}**!\n` +
+                    `• **Action Taken:** Unauthorized bot was kicked and high-role channel lockout was applied.\n` +
+                    `• **User ID:** \`${executor.id}\``
+                  ).catch(() => {});
+                }
+              } catch (e) {}
+
+              // 4. Dispatch Security Alert to Log Channel
               dispatchLog(member.guild, 'antinuke', {
                 color: 0xED4245,
                 title: '🛡️ ANTIBOT-ADD PROTECTION TRIGGERED',
@@ -161,8 +191,8 @@ client.on('guildMemberAdd', async (member) => {
                   `**Unauthorized Bot Addition Intercepted!**\n\n` +
                   `• **Unauthorized Admin:** <@${executor.id}> (\`${executor.tag}\`)\n` +
                   `• **Attempted Bot:** <@${member.id}> (\`${member.user.tag}\`)\n` +
-                  `• **Action Taken:** Bot kicked & Admin permissions stripped!\n\n` +
-                  `*Notice: Admin permissions do NOT override AntiBotAdd. Only Server Owner & Extra Owners can add bots.*`,
+                  `• **Action Taken:** Bot kicked & Admin high-role lockout applied!\n\n` +
+                  `*Notice: Even if an admin has a role above the bot, AntiBotAdd kicks the new bot and locks out the admin.*`,
                 footer: `AntiNuke Security System`
               });
               return;
