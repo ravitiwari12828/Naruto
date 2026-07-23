@@ -123,12 +123,20 @@ client.on('guildMemberAdd', async (member) => {
   const welcomeCmd = client.commands.get('welcome');
   if (welcomeCmd && welcomeCmd.getOrCreateWelcomeConfig) {
     const config = welcomeCmd.getOrCreateWelcomeConfig(member.guild.id);
+
+    // 1. Channel Welcome Card
     if (config.enabled && config.channelId) {
       const chan = member.guild.channels.cache.get(config.channelId);
       if (chan && chan.isTextBased()) {
         const payload = welcomeCmd.buildWelcomeCard(config, member);
         await chan.send(payload).catch(() => {});
       }
+    }
+
+    // 2. Member Join DM Message
+    if (config.joinDmEnabled && config.joinDmText) {
+      const joinDmText = welcomeCmd.parsePlaceholders(config.joinDmText, member);
+      await member.send({ content: joinDmText }).catch(() => {});
     }
   }
 
@@ -271,8 +279,19 @@ client.on('messageUpdate', (oldMsg, newMsg) => {
 });
 
 // Member Leave Listener
-client.on('guildMemberRemove', (member) => {
+client.on('guildMemberRemove', async (member) => {
   db.recordAnalyticsEvent(member.guild.id, member.id, 'leave', 1);
+
+  const welcomeCmd = client.commands.get('welcome');
+  if (welcomeCmd && welcomeCmd.getOrCreateWelcomeConfig) {
+    const config = welcomeCmd.getOrCreateWelcomeConfig(member.guild.id);
+
+    // Member Leave DM Message
+    if (config.leaveDmEnabled && config.leaveDmText) {
+      const leaveDmText = welcomeCmd.parsePlaceholders(config.leaveDmText, member);
+      await member.user.send({ content: leaveDmText }).catch(() => {});
+    }
+  }
 
   dispatchLog(member.guild, 'joinleave', {
     color: 0xED4245,
@@ -280,6 +299,33 @@ client.on('guildMemberRemove', (member) => {
     description: `**User:** ${member.user.tag} (${member.id})\n**Joined Server:** <t:${Math.floor(member.joinedTimestamp / 1000)}:R>`,
     footer: `Total Members: ${member.guild.memberCount}`
   });
+});
+
+// Member Update Listener — Server Boost Event Detection
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  const isBoost = !oldMember.premiumSince && newMember.premiumSince;
+  if (isBoost) {
+    const welcomeCmd = client.commands.get('welcome');
+    if (welcomeCmd && welcomeCmd.getOrCreateWelcomeConfig) {
+      const config = welcomeCmd.getOrCreateWelcomeConfig(newMember.guild.id);
+      if (config.boostEnabled) {
+        const targetChanId = config.boostChannelId || config.channelId;
+        if (targetChanId) {
+          const chan = newMember.guild.channels.cache.get(targetChanId);
+          if (chan && chan.isTextBased()) {
+            const boostText = welcomeCmd.parsePlaceholders(config.boostText, newMember);
+            const boostEmbed = createStyledEmbed({
+              title: `🚀 SERVER BOOST!`,
+              description: boostText,
+              requestedBy: newMember.user,
+              clientUser: client.user
+            });
+            await chan.send({ content: `<@${newMember.id}>`, embeds: [boostEmbed] }).catch(() => {});
+          }
+        }
+      }
+    }
+  }
 });
 
 // Channel Created / Deleted Listeners
