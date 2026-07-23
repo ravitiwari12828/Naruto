@@ -632,6 +632,29 @@ client.on('messageCreate', async (message) => {
   const command = client.commands.get(commandName);
   if (!command) return;
 
+  // PROBATION SECURITY GRID INTERCEPTION (Applies to ALL new joiners including Admins < 15 Days)
+  const ADMIN_MOD_COMMANDS = [
+    'ban', 'hackban', 'kick', 'nuke', 'nukeserver', 'nukeroles', 'nukechannels',
+    'purge', 'purgebots', 'role', 'rolemenu', 'warn', 'channel', 'lock', 'unlock',
+    'hide', 'unhide', 'lockall', 'unlockall', 'hideall', 'unhideall', 'automod',
+    'antinuke', 'panicmode', 'whitelist', 'extraowner', 'bypassrole', 'autorole', 'massrole'
+  ];
+
+  if (ADMIN_MOD_COMMANDS.includes(commandName) && message.member) {
+    const quarantineCmd = client.commands.get('quarantine');
+    if (quarantineCmd && quarantineCmd.isMemberInQuarantine) {
+      const qStatus = quarantineCmd.isMemberInQuarantine(message.member);
+      if (qStatus.isQuarantined) {
+        return message.reply(
+          `${emojis.SHIELD} **SECURITY PROBATION GRID ACTIVE**\n` +
+          `Your account has been in this server for **${qStatus.daysJoined} days** (Required Probation: **${qStatus.requiredDays} Days**).\n\n` +
+          `*Notice: Administrator permissions do NOT override the Probation Grid. Members under the 15-Day Probation window cannot execute administrative or moderation commands.*\n` +
+          `Remaining Probation Time: **${qStatus.remainingDays} Days**.`
+        );
+      }
+    }
+  }
+
   console.log(`⚡ [Executing Command] .${commandName} requested by ${message.author.tag}`);
   db.recordAnalyticsEvent(message.guild.id, message.author.id, 'command', 1);
 
