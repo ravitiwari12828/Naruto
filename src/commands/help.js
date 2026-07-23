@@ -24,15 +24,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
       `\`\`\`\n\n` +
       `**📦 All Modules**\n` +
       CATEGORIES.map(cat => {
-        let emojiStr = '✨';
-        if (typeof cat.emojiObj === 'string') {
-          emojiStr = cat.emojiObj;
-        } else if (cat.emojiObj && cat.emojiObj.id) {
-          emojiStr = `<:${cat.emojiObj.name}:${cat.emojiObj.id}>`;
-        } else if (cat.emojiObj && cat.emojiObj.name) {
-          emojiStr = cat.emojiObj.name;
-        }
-        return `${emojiStr} » **${cat.label}**`;
+        return `${cat.unicodeFallback || '✨'} » **${cat.label}**`;
       }).join('\n') +
       `\n\n**Links**\n` +
       `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands) | [Support Server](https://discord.gg/) | [Vote](https://top.gg/bot/${message.client.user.id})`
@@ -69,13 +61,13 @@ module.exports = {
         const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
         return message.channel.send({
           embeds: [catEmbed],
-          components: [buildDropdownMenu(message.client), buildNavigationButtons()]
+          components: [buildDropdownMenu(), buildNavigationButtons()]
         });
       }
     }
 
     const mainEmbed = buildMainEmbed(message, botUser, botAvatar, devPortalBanner);
-    const dropdownRow = buildDropdownMenu(message.client);
+    const dropdownRow = buildDropdownMenu();
     const navRow = buildNavigationButtons();
 
     const helpMessage = await message.channel.send({
@@ -100,7 +92,7 @@ module.exports = {
       if (interaction.customId === 'help_home') {
         return helpMessage.edit({
           embeds: [buildMainEmbed(message, botUser, botAvatar, devPortalBanner)],
-          components: [buildDropdownMenu(message.client), buildNavigationButtons()]
+          components: [buildDropdownMenu(), buildNavigationButtons()]
         });
       }
 
@@ -116,7 +108,7 @@ module.exports = {
           const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
           return helpMessage.edit({
             embeds: [catEmbed],
-            components: [buildDropdownMenu(message.client), buildNavigationButtons()]
+            components: [buildDropdownMenu(), buildNavigationButtons()]
           });
         }
       }

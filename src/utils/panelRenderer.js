@@ -13,7 +13,6 @@ const CATEGORIES = [
     label: 'Bot Owner Suite',
     value: 'owner',
     description: 'Executive Control: No-Prefix, Premium, BotLock, ExtraOwner & PanicMode',
-    emojiObj: { name: 'emoji_owner_crown', id: '1529910236062810142' },
     unicodeFallback: '👑',
     heading: `${emojis.OWNER_CROWN || '👑'} Bot Owner Executive Commands`,
     commands: [
@@ -30,7 +29,6 @@ const CATEGORIES = [
     label: 'Analytics & Tracking',
     value: 'analytics',
     description: 'Track chat, voice timing, invites, joins/leaves, commands & tickets',
-    emojiObj: emojis.OBJ_ZAP,
     unicodeFallback: '📊',
     heading: `${emojis.ANALYTICS_ZAP || '📊'} Analytics Commands`,
     commands: [
@@ -43,7 +41,6 @@ const CATEGORIES = [
     label: 'ModMail System',
     value: 'modmail',
     description: 'DM ModMail support threads, staff replies & HTML transcripts',
-    emojiObj: { name: 'emoji_modmail_envelope', id: '1529910230534586449' },
     unicodeFallback: '📬',
     heading: `${emojis.MODMAIL_ENVELOPE || '📬'} ModMail Commands`,
     commands: [
@@ -55,7 +52,6 @@ const CATEGORIES = [
     label: 'No-Prefix & Premium',
     value: 'noprefix',
     description: 'No-prefix authorization, server premium & user VIP management',
-    emojiObj: emojis.OBJ_PREMIUM,
     unicodeFallback: '💎',
     heading: `${emojis.PREMIUM || '💎'} Premium Commands`,
     commands: [
@@ -68,7 +64,6 @@ const CATEGORIES = [
     label: 'Tickets',
     value: 'ticket',
     description: 'Support ticket system: setup, category, claim, close, transcript',
-    emojiObj: emojis.OBJ_TICKETS,
     unicodeFallback: '🎟️',
     heading: `${emojis.TICKETS || '🎟️'} Ticket Commands`,
     commands: [
@@ -83,7 +78,6 @@ const CATEGORIES = [
     label: 'Voice & VoiceMaster',
     value: 'voice',
     description: 'Voice admin, join-to-create temp VCs & VoiceMaster control panel',
-    emojiObj: emojis.OBJ_VOICE,
     unicodeFallback: '🔊',
     heading: `${emojis.VOICE || '🔊'} Voice Commands`,
     commands: [
@@ -97,7 +91,6 @@ const CATEGORIES = [
     label: 'Music Suite',
     value: 'music',
     description: 'Lavalink music player: seek, equalizer, multi-filters, 24/7 AFK mode',
-    emojiObj: emojis.OBJ_MUSIC,
     unicodeFallback: '🎶',
     heading: `${emojis.MUSIC || '🎶'} Music Commands`,
     commands: [
@@ -110,7 +103,6 @@ const CATEGORIES = [
     label: 'AntiNuke & Security',
     value: 'antinuke',
     description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, BypassRole & 21 Security Filters',
-    emojiObj: emojis.OBJ_ANTINUKE,
     unicodeFallback: '🛡️',
     heading: `${emojis.ANTINUKE || '🛡️'} Antinuke Commands`,
     commands: [
@@ -124,7 +116,6 @@ const CATEGORIES = [
     label: 'Levels',
     value: 'level',
     description: 'level rank, leaderboard, setup, disable, status, refresh',
-    emojiObj: emojis.OBJ_LEVEL,
     unicodeFallback: '⭐',
     heading: `${emojis.LEVEL || '⭐'} Level Commands`,
     commands: [
@@ -137,7 +128,6 @@ const CATEGORIES = [
     label: 'Fun',
     value: 'fun',
     description: 'Naruto-themed fun: truth, dare, vibecheck, rizzmeter & more',
-    emojiObj: emojis.OBJ_FUN,
     unicodeFallback: '🎉',
     heading: `${emojis.FUN || '🎉'} Fun Commands`,
     commands: [
@@ -154,7 +144,6 @@ const CATEGORIES = [
     label: 'Giveaway',
     value: 'giveaway',
     description: 'Host and manage server giveaways',
-    emojiObj: emojis.OBJ_GIVEAWAY,
     unicodeFallback: '🎁',
     heading: `${emojis.GIVEAWAY || '🎁'} Giveaway Commands`,
     commands: [
@@ -168,7 +157,6 @@ const CATEGORIES = [
     label: 'Utility & Logs',
     value: 'info',
     description: 'activity, afk, advlogsetup, logsetup, serverbanner, snipe',
-    emojiObj: emojis.OBJ_INFO,
     unicodeFallback: '📈',
     heading: `${emojis.STATS_NEW || '📈'} Utility Commands`,
     commands: [
@@ -181,7 +169,6 @@ const CATEGORIES = [
     label: 'Moderation',
     value: 'mod',
     description: 'Ban, kick, mute, purge, nuke, roles & more',
-    emojiObj: emojis.OBJ_MOD,
     unicodeFallback: '🔨',
     heading: `${emojis.MOD || '🔨'} Moderation Commands`,
     commands: [
@@ -198,7 +185,6 @@ const CATEGORIES = [
     label: 'Naruto RPG',
     value: 'ninja',
     description: 'Jutsu, Chakra, Quests, Leaderboards & Shinobi Profile',
-    emojiObj: { name: 'emoji_rpg_rasengan', id: '1529910238684119171' },
     unicodeFallback: '🍥',
     heading: `${emojis.NINJUTSU || '🍥'} Naruto RPG Commands`,
     commands: [
@@ -215,7 +201,6 @@ const CATEGORIES = [
     label: 'Channel Moderation',
     value: 'channel',
     description: 'Lock, unlock, hide and mass lockdown channels',
-    emojiObj: emojis.OBJ_TOOLS,
     unicodeFallback: '🔧',
     heading: `${emojis.TOOLS || '🔧'} Channel Moderation`,
     commands: [
@@ -229,7 +214,6 @@ const CATEGORIES = [
     label: 'Automations & Autorole',
     value: 'autorole',
     description: 'Auto-role rules & massrole assignment',
-    emojiObj: emojis.OBJ_GEAR,
     unicodeFallback: '⚙️',
     heading: `${emojis.GEAR || '⚙️'} Automations Commands`,
     commands: [
@@ -241,7 +225,6 @@ const CATEGORIES = [
     label: 'Autoresponder & React',
     value: 'autoresponder',
     description: 'Custom trigger replies & auto-reactions',
-    emojiObj: emojis.OBJ_AUTORESPOND,
     unicodeFallback: '💬',
     heading: `${emojis.AUTORESPOND || '💬'} Autoresponder Commands`,
     commands: [
@@ -255,7 +238,6 @@ const CATEGORIES = [
     label: 'AutoMod & AntiBot',
     value: 'automod',
     description: 'Security filters & bot join whitelist',
-    emojiObj: emojis.OBJ_SHIELD,
     unicodeFallback: '🛡️',
     heading: `${emojis.SHIELD || '🛡️'} AutoMod Commands`,
     commands: [
@@ -267,7 +249,6 @@ const CATEGORIES = [
     label: 'Priority AI',
     value: 'priority',
     description: 'AI text answers & coding assistant',
-    emojiObj: emojis.OBJ_PRIORITY,
     unicodeFallback: '🤖',
     heading: `${emojis.PRIORITY || '🤖'} Priority AI Commands`,
     commands: [
@@ -281,7 +262,6 @@ const CATEGORIES = [
     label: 'Reaction Roles',
     value: 'reactionrole',
     description: 'Reaction role binding: add, remove, list, reset',
-    emojiObj: emojis.OBJ_REACTIONROLES,
     unicodeFallback: '🎭',
     heading: `${emojis.REACTIONROLES || '🎭'} Reaction Role Commands`,
     commands: [
@@ -295,7 +275,6 @@ const CATEGORIES = [
     label: 'Sticky Notes',
     value: 'stickynote',
     description: 'Auto-reposting sticky notes in channels',
-    emojiObj: emojis.OBJ_STICKY,
     unicodeFallback: '📌',
     heading: `${emojis.STICKY || '📌'} Sticky Commands`,
     commands: [
@@ -308,7 +287,6 @@ const CATEGORIES = [
     label: 'Profile & Avatars',
     value: 'profile',
     description: 'Custom bio, anime PFPs, banners & matching couples',
-    emojiObj: emojis.OBJ_PROFILE,
     unicodeFallback: '🖼️',
     heading: `${emojis.PROFILE || '🖼️'} Profile Commands`,
     commands: [
@@ -321,7 +299,6 @@ const CATEGORIES = [
     label: 'Special Roles',
     value: 'roles',
     description: 'Friend, girl, guest, official, vip, invcrole & autonick',
-    emojiObj: emojis.OBJ_ROLES,
     unicodeFallback: '🏷️',
     heading: `${emojis.ROLES || '🏷️'} Role Commands`,
     commands: [
@@ -334,7 +311,6 @@ const CATEGORIES = [
     label: 'Welcome',
     value: 'welcome',
     description: 'welcome setup <#channel> [avatar/imageURL] [text], welcometest, welcomereset',
-    emojiObj: emojis.OBJ_WELCOME,
     unicodeFallback: '👋',
     heading: `${emojis.WELCOME || '👋'} Welcome Commands`,
     commands: [
@@ -369,31 +345,14 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   return embed;
 }
 
-function buildDropdownMenu(client) {
+function buildDropdownMenu() {
   const options = CATEGORIES.map(cat => {
-    const opt = {
+    return {
       label: cat.label,
       value: cat.value,
-      description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description
+      description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description,
+      emoji: cat.unicodeFallback || '✨'
     };
-
-    let emojiVal = cat.unicodeFallback || '✨';
-
-    // Strictly check if custom emoji ID is cached by the client
-    if (cat.emojiObj && typeof cat.emojiObj === 'object' && cat.emojiObj.id) {
-      if (client && client.emojis && client.emojis.cache && client.emojis.cache.has(cat.emojiObj.id)) {
-        emojiVal = { id: cat.emojiObj.id, name: cat.emojiObj.name };
-      } else {
-        emojiVal = cat.unicodeFallback || '✨';
-      }
-    } else if (typeof cat.emojiObj === 'string' && cat.emojiObj.length < 10) {
-      emojiVal = cat.emojiObj;
-    } else {
-      emojiVal = cat.unicodeFallback || '✨';
-    }
-
-    opt.emoji = emojiVal;
-    return opt;
   });
 
   return new ActionRowBuilder().addComponents(
@@ -433,7 +392,7 @@ async function renderModuleHelpPanel(message, categoryValue) {
   const cat = CATEGORIES.find(c => c.value === categoryValue || c.label.toLowerCase() === categoryValue.toLowerCase()) || CATEGORIES.find(c => c.value === 'welcome');
 
   const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
-  const dropdownRow = buildDropdownMenu(message.client);
+  const dropdownRow = buildDropdownMenu();
   const navRow = buildNavigationButtons();
 
   const msg = await message.channel.send({
@@ -472,7 +431,7 @@ async function renderModuleHelpPanel(message, categoryValue) {
         const newEmbed = buildCategoryEmbed(message, selectedCat, botUser, botAvatar, devPortalBanner);
         return msg.edit({
           embeds: [newEmbed],
-          components: [buildDropdownMenu(message.client), buildNavigationButtons()]
+          components: [buildDropdownMenu(), buildNavigationButtons()]
         });
       }
     }
