@@ -310,14 +310,11 @@ const CATEGORIES = [
   {
     label: 'Welcome',
     value: 'welcome',
-    description: 'welcome, welcomechannel, welcomemessage, welcomeimage, welcometest',
+    description: 'welcome setup <#channel> [avatar/imageURL] [text], welcometest, welcomereset',
     emojiObj: emojis.OBJ_WELCOME,
     heading: `${emojis.WELCOME} Welcome Commands`,
     commands: [
-      'welcome',
-      'welcomechannel',
-      'welcomemessage',
-      'welcomeimage',
+      'welcome setup <#channel> [avatar/imageURL] [text]',
       'welcometest',
       'welcomereset'
     ]

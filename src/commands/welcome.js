@@ -69,9 +69,9 @@ function buildWelcomeCard(config, member) {
 
 module.exports = {
   name: 'welcome',
-  description: 'Picture & Embed Welcome Suite matching screenshot 1: welcomechannel, welcomemessage, welcomeimage, welcometest',
+  description: '1-Step Single-Command Welcome Setup: .welcome setup <#channel> [avatar / imageURL] [messageText]',
   aliases: [
-    'welcomechannel', 'welcomemessage', 'welcomeimage', 'welcomeembed', 'welcomereset', 'welcometest'
+    'welcomechannel', 'welcomemessage', 'welcomeimage', 'welcomesetup', 'welcomereset', 'welcometest'
   ],
   welcomeConfigs,
   getOrCreateWelcomeConfig,
@@ -81,10 +81,7 @@ module.exports = {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
     let sub = args[0]?.toLowerCase();
 
-    if (invoked === 'welcomechannel') sub = 'channel';
-    if (invoked === 'welcomemessage') sub = 'message';
-    if (invoked === 'welcomeimage') sub = 'image';
-    if (invoked === 'welcomeembed') sub = 'embed';
+    if (invoked === 'welcomesetup') sub = 'setup';
     if (invoked === 'welcomereset') sub = 'reset';
     if (invoked === 'welcometest') sub = 'test';
 
@@ -97,48 +94,54 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // 1. .welcomechannel <#channel>
-    if (sub === 'channel' || sub === 'setchannel') {
-      const chan = message.mentions.channels.first() || message.channel;
+    // 1. SINGLE-COMMAND SETUP (.welcome setup <#channel> [imageURL/avatar] [text])
+    if (sub === 'setup' || sub === 'set' || sub === 'channel' || sub === 'config') {
+      const chan = message.mentions.channels.first() || guild.channels.cache.get(args[1]) || message.channel;
       config.channelId = chan.id;
       config.enabled = true;
-      welcomeConfigs.set(guild.id, config);
-      return message.reply(`👋 Welcome greetings channel set to ${chan}!`);
-    }
 
-    // 2. .welcomemessage <text>
-    if (sub === 'message' || sub === 'setmessage') {
-      const template = (invoked === 'welcomemessage' ? args : args.slice(1)).join(' ');
-      if (!template) {
-        return message.reply(`${emojis.WARNING} Usage: \`.welcomemessage <text>\`\nPlaceholders: \`{user}\`, \`{server}\`, \`{membercount}\``);
+      // Extract image & text arguments from remaining args
+      const remainingArgs = args.slice(1).filter(arg => !arg.startsWith('<#') && !arg.endsWith('>'));
+
+      if (remainingArgs.length > 0) {
+        const firstArg = remainingArgs[0];
+        if (firstArg.toLowerCase() === 'avatar') {
+          config.useAvatarThumbnail = true;
+          config.imageUrl = null;
+          remainingArgs.shift();
+        } else if (firstArg.startsWith('http://') || firstArg.startsWith('https://')) {
+          config.useAvatarThumbnail = false;
+          config.imageUrl = firstArg;
+          remainingArgs.shift();
+        }
       }
-      config.description = template;
-      welcomeConfigs.set(guild.id, config);
-      return message.reply(`✅ Welcome message description updated.`);
-    }
 
-    // 3. .welcomeimage <url / avatar / reset>
-    if (sub === 'image') {
-      const url = args[1];
-      if (url === 'avatar' || !url) {
-        config.useAvatarThumbnail = true;
-        config.imageUrl = null;
-        welcomeConfigs.set(guild.id, config);
-        return message.reply(`🖼️ Welcome card set to use member avatar thumbnail!`);
+      if (remainingArgs.length > 0) {
+        config.description = remainingArgs.join(' ');
       }
-      config.useAvatarThumbnail = false;
-      config.imageUrl = url;
+
       welcomeConfigs.set(guild.id, config);
-      return message.reply(`🖼️ Welcome card background/image set to: ${url}`);
+
+      const embed = createStyledEmbed({
+        title: `👋 Welcome System Configured!`,
+        description:
+          `• **Channel**: ${chan}\n` +
+          `• **Image**: ${config.useAvatarThumbnail ? '`Member Avatar Thumbnail`' : `\`${config.imageUrl}\``}\n` +
+          `• **Message Description**:\n> *${config.description}*\n\n` +
+          `*Run \`.welcometest\` to preview the card!*`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
     }
 
-    // 4. .welcometest
+    // 2. PREVIEW TEST (.welcometest)
     if (sub === 'test') {
       const payload = buildWelcomeCard(config, message.member);
       return message.channel.send(payload);
     }
 
-    // 5. .welcomereset
+    // 3. RESET (.welcomereset)
     if (sub === 'reset') {
       welcomeConfigs.delete(guild.id);
       return message.reply(`✅ Welcome configuration reset to default.`);
