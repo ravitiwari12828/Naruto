@@ -18,12 +18,48 @@ function formatDuration(seconds) {
   return `${mins}m`;
 }
 
+function buildTimeframeEmbed(guild, timeframeLabel, windowMs, author, clientUser) {
+  const stats = db.getAnalyticsStats(guild.id, windowMs);
+
+  return createStyledEmbed({
+    title: `📊 ${timeframeLabel} Server Analytics — ${guild.name}`,
+    subtitle: `Activity Audit Report for timeframe [${timeframeLabel}]`,
+    fields: [
+      { name: '💬 Chat Messages', value: `\`${stats.messages}\` messages`, inline: true },
+      { name: '🔊 Voice Time Logged', value: `\`${formatDuration(stats.voiceSeconds)}\``, inline: true },
+      { name: '📨 Invites Created', value: `\`${stats.invites}\` joins`, inline: true },
+      { name: '📥 Member Joins', value: `\`+${stats.joins}\` members`, inline: true },
+      { name: '📤 Member Leaves', value: `\`-${stats.leaves}\` members`, inline: true },
+      { name: '⚡ Commands Executed', value: `\`${stats.commands}\` commands`, inline: true },
+      { name: '🎟️ Tickets Opened', value: `\`${stats.ticketsCreated}\` tickets`, inline: true },
+      { name: '🔒 Tickets Closed', value: `\`${stats.ticketsClosed}\` tickets`, inline: true }
+    ],
+    thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+    requestedBy: author,
+    clientUser
+  });
+}
+
 module.exports = {
   name: 'analytics',
   description: 'Track Chat timing, Voice timing, Invites, Server Joins/Leaves, Commands & Tickets across 1d, 7d, 14d, 30d & Lifetime',
-  aliases: ['tracker', 'userstats', 'serverstats', 'serveranalytics', 'useranalytics'],
+  aliases: [
+    'tracker', 'userstats', 'serverstats', 'serveranalytics', 'useranalytics',
+    '1d', '7d', '14d', '30d', 'overall', 'lifetime',
+    'analytics1d', 'analytics7d', 'analytics14d', 'analytics30d', 'overallanalytics'
+  ],
 
   async execute(message, args) {
+    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    let sub = args[0]?.toLowerCase();
+
+    // Map alias direct commands (.1d, .7d, .14d, .30d, .overall, .lifetime)
+    if (invoked === '1d' || invoked === 'analytics1d') sub = '1d';
+    if (invoked === '7d' || invoked === 'analytics7d') sub = '7d';
+    if (invoked === '14d' || invoked === 'analytics14d') sub = '14d';
+    if (invoked === '30d' || invoked === 'analytics30d') sub = '30d';
+    if (invoked === 'overall' || invoked === 'lifetime' || invoked === 'overallanalytics') sub = 'lifetime';
+
     const author = message.author;
     const guild = message.guild;
 
@@ -32,10 +68,35 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const sub = args[0]?.toLowerCase();
+    // 1. TIMEFRAME SPECIFIC COMMANDS (.1d, .7d, .14d, .30d, .overall)
+    if (sub === '1d' || sub === '1day' || sub === '24h') {
+      const embed = buildTimeframeEmbed(guild, '1-Day (24 Hours)', WINDOWS['1d'], author, clientUser);
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    if (sub === '7d' || sub === '7days' || sub === '1week') {
+      const embed = buildTimeframeEmbed(guild, '7-Day (1 Week)', WINDOWS['7d'], author, clientUser);
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    if (sub === '14d' || sub === '14days' || sub === '2weeks') {
+      const embed = buildTimeframeEmbed(guild, '14-Day (2 Weeks)', WINDOWS['14d'], author, clientUser);
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    if (sub === '30d' || sub === '30days' || sub === '1month') {
+      const embed = buildTimeframeEmbed(guild, '30-Day (1 Month)', WINDOWS['30d'], author, clientUser);
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    if (sub === 'overall' || sub === 'lifetime' || sub === 'all') {
+      const embed = buildTimeframeEmbed(guild, 'Overall (Lifetime)', WINDOWS['lifetime'], author, clientUser);
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 2. TARGETED USER ANALYTICS (.analytics user @user / .userstats @user)
     const targetUser = message.mentions.users.first() || (args[1] ? message.client.users.cache.get(args[1]) : null) || (sub === 'user' ? author : null);
 
-    // 1. TARGETED USER ANALYTICS (.analytics user @user / .userstats @user)
     if (sub === 'user' || targetUser) {
       const user = targetUser || author;
 
@@ -96,7 +157,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 2. SERVER WIDE ANALYTICS OVERVIEW (.analytics / .serveranalytics)
+    // 3. FULL COMPARISON DASHBOARD (.analytics)
     const g1d = db.getAnalyticsStats(guild.id, WINDOWS['1d']);
     const g7d = db.getAnalyticsStats(guild.id, WINDOWS['7d']);
     const g14d = db.getAnalyticsStats(guild.id, WINDOWS['14d']);
