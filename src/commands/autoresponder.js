@@ -1,31 +1,30 @@
-const { createStyledEmbed, formatCodePills } = require('../utils/embedBuilder');
+const { createStyledEmbed } = require('../utils/embedBuilder');
 const db = require('../database/db');
 const emojis = require('../utils/emojis');
 
 module.exports = {
   name: 'autoresponder',
-  description: 'Manage automated message responses and emoji reactions',
+  description: 'Manage automated message responses and emoji reactions with placeholders',
   aliases: ['ar', 'react', 'autoreact'],
 
   async execute(message, args) {
-    const isReact = message.content.toLowerCase().startsWith('.react');
+    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const isReact = invoked === 'react' || invoked === 'autoreact';
     const sub = args[0] ? args[0].toLowerCase() : null;
+
+    let clientUser = message.client.user;
+    try {
+      clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
+    } catch (e) {}
 
     if (isReact) {
       if (!sub || sub === 'help') {
-        const commandsList = ['.react', '.react add', '.react remove', '.react list', '.react reset'];
-        const embed = createStyledEmbed({
-          title: 'Naruto Help Menu',
-          subtitle: `${emojis.AUTOREACT} Autoresponder: Autoreact`,
-          description: `**Autoreact**\n` + formatCodePills(commandsList),
-          requestedBy: message.author,
-          footerText: 'Autoreact overview'
-        });
-        return message.channel.send({ embeds: [embed] });
+        const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+        return renderModuleHelpPanel(message, 'autoresponder');
       }
 
       if (sub === 'add') {
-        const trigger = args[1];
+        const trigger = args[1]?.toLowerCase();
         const emoji = args[2];
         if (!trigger || !emoji) {
           return message.reply(`${emojis.WARNING} Usage: \`.react add <triggerWord> <emoji>\``);
@@ -35,13 +34,13 @@ module.exports = {
       }
 
       if (sub === 'remove') {
-        const triggerOrId = args[1];
+        const triggerOrId = args[1]?.toLowerCase();
         if (!triggerOrId) return message.reply(`${emojis.WARNING} Usage: \`.react remove <triggerWord>\``);
         const removed = db.removeAutoreact(message.guild.id, triggerOrId);
         return message.reply(removed ? `${emojis.REMOVE} Removed autoreact for \`${triggerOrId}\`.` : `${emojis.WARNING} Autoreact not found.`);
       }
 
-      if (sub === 'list') {
+      if (sub === 'list' || sub === 'config') {
         const list = db.getAutoreacts(message.guild.id);
         if (list.length === 0) return message.reply(`${emojis.INFO} No autoreacts configured yet.`);
         const desc = list.map((item, idx) => `**${idx + 1}.** \`${item.trigger}\` ➔ ${item.emoji}`).join('\n');
@@ -49,7 +48,8 @@ module.exports = {
           title: 'Autoreact List',
           subtitle: `${emojis.AUTOREACT} Guild Autoreacts (${list.length})`,
           description: desc,
-          requestedBy: message.author
+          requestedBy: message.author,
+          clientUser
         });
         return message.channel.send({ embeds: [embed] });
       }
@@ -60,39 +60,25 @@ module.exports = {
       }
     }
 
-    // Standard Autoresponder commands (.autoresponder, create, delete, edit, config)
+    // Standard Autoresponder commands (.autoresponder create, delete, list, config)
     if (!sub || sub === 'help') {
-      const arCommands = [
-        '.autoresponder', '.autoresponder create',
-        '.autoresponder delete', '.autoresponder edit',
-        '.autoresponder config'
-      ];
-      const reactCommands = ['.react', '.react add', '.react remove', '.react list', '.react reset'];
-
-      const embed = createStyledEmbed({
-        title: 'Naruto Help Menu',
-        subtitle: `${emojis.AUTORESPOND} Autoresponder & Autoreact System`,
-        description: `**Autoresponder**\n` + formatCodePills(arCommands) + `\n\n` +
-          `**Autoreact**\n` + formatCodePills(reactCommands),
-        requestedBy: message.author,
-        footerText: 'Autoresponder overview'
-      });
-      return message.channel.send({ embeds: [embed] });
+      const { renderModuleHelpPanel } = require('../utils/panelRenderer');
+      return renderModuleHelpPanel(message, 'autoresponder');
     }
 
-    if (sub === 'create') {
-      const trigger = args[1];
+    if (sub === 'create' || sub === 'add') {
+      const trigger = args[1]?.toLowerCase();
       const responseText = args.slice(2).join(' ');
       if (!trigger || !responseText) {
-        return message.reply(`${emojis.WARNING} Usage: \`.autoresponder create <triggerWord> <reply message>\``);
+        return message.reply(`${emojis.WARNING} Usage: \`.ar add <triggerWord> <reply message>\`\n*Placeholders supported:* \`{user}\`, \`{username}\`, \`{server}\`, \`{membercount}\``);
       }
       const item = db.addAutoresponse(message.guild.id, trigger, responseText);
       return message.reply(`${emojis.SUCCESS} Created autoresponder \`[ID: ${item.id}]\` for trigger \`${trigger}\`!`);
     }
 
-    if (sub === 'delete') {
-      const triggerOrId = args[1];
-      if (!triggerOrId) return message.reply(`${emojis.WARNING} Usage: \`.autoresponder delete <triggerWord|id>\``);
+    if (sub === 'delete' || sub === 'remove') {
+      const triggerOrId = args[1]?.toLowerCase();
+      if (!triggerOrId) return message.reply(`${emojis.WARNING} Usage: \`.ar remove <triggerWord|id>\``);
       const removed = db.deleteAutoresponse(message.guild.id, triggerOrId);
       return message.reply(removed ? `${emojis.REMOVE} Deleted autoresponse for \`${triggerOrId}\`.` : `${emojis.WARNING} Autoresponse not found.`);
     }
@@ -105,7 +91,8 @@ module.exports = {
         title: 'Autoresponder Configuration',
         subtitle: `${emojis.MESSAGES} Active Triggers (${responses.length})`,
         description: desc,
-        requestedBy: message.author
+        requestedBy: message.author,
+        clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
