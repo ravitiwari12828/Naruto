@@ -1,6 +1,6 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
-const { version: djsVersion } = require('discord.js');
+const { EmbedBuilder, version: djsVersion } = require('discord.js');
 const os = require('os');
 const db = require('../database/db');
 
