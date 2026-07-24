@@ -1,3 +1,4 @@
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 
@@ -139,12 +140,105 @@ function isUserWhitelistedForFeature(config, userId, featureName) {
   return false;
 }
 
+function renderAntinukeDashboard(config, author, clientUser) {
+  const f = config.filters;
+  const filterStatusText =
+    `• **Anti Ban**: ${f.antiBan ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+    `• **Anti Kick**: ${f.antiKick ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+    `• **Anti Bot Add**: ${f.antiBotAdd ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+    `• **Anti Channel**: ${f.antiChannelCreate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+    `• **Anti Role**: ${f.antiRoleCreate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+    `• **Anti Webhook**: ${f.antiWebhookCreate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+    `• **Anti Server Update**: ${f.antiGuildUpdate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+    `• **Anti Spam**: ${f.antiSpam ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+    `• **Anti Raid**: ${f.antiRaid ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
+    `• **Anti Mass Ping**: ${f.antiEveryone ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}`;
+
+  return createStyledEmbed({
+    title: `${emojis.SHIELD} AntiNuke Security Dashboard`,
+    subtitle: `Security Status & Interactive Filter Controls`,
+    fields: [
+      { name: `${emojis.GEAR} Main Shield`, value: config.enabled ? `\`ENABLED\` ${emojis.ENABLED}` : `\`DISABLED\` ${emojis.DISABLED}`, inline: true },
+      { name: `${emojis.ANTINUKE} Panic Mode`, value: config.panicmode ? `\`ACTIVE (Level ${config.panicLevel})\` 🚨` : `\`NORMAL\` ${emojis.ENABLED}`, inline: true },
+      { name: `${emojis.SCROLL} Protection Filters`, value: filterStatusText, inline: false },
+      { name: `${emojis.OWNER_CROWN} AntiNuke Commands`, value: `\`\`\`\n.antinuke enable\n.antinuke disable\n.panicmode enable / disable / set <1-3>\n.whitelist add @user\n.whitelist perms @user +ban -role\n.extraowner add @user\n.bypassrole add @role\n\`\`\``, inline: false }
+    ],
+    requestedBy: author,
+    clientUser
+  });
+}
+
+function renderPanicComponents(config) {
+  const f = config.filters;
+
+  // Row 1: Executive Master Controls
+  const row1 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('toggle_panic')
+      .setLabel(config.panicmode ? 'Panic Mode: ACTIVE 🚨' : 'Panic Mode: NORMAL 🟢')
+      .setStyle(config.panicmode ? ButtonStyle.Danger : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('toggle_shield')
+      .setLabel(config.enabled ? 'Main Shield: ON 🛡️' : 'Main Shield: OFF ❌')
+      .setStyle(config.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
+  );
+
+  // Row 2: Filter Perms Group 1
+  const row2 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('toggle_ban')
+      .setLabel(`Anti Ban: ${f.antiBan ? 'ON 🟢' : 'OFF ❌'}`)
+      .setStyle(f.antiBan ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('toggle_kick')
+      .setLabel(`Anti Kick: ${f.antiKick ? 'ON 🟢' : 'OFF ❌'}`)
+      .setStyle(f.antiKick ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('toggle_bot')
+      .setLabel(`Anti Bot: ${f.antiBotAdd ? 'ON 🟢' : 'OFF ❌'}`)
+      .setStyle(f.antiBotAdd ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('toggle_channel')
+      .setLabel(`Anti Channel: ${f.antiChannelCreate ? 'ON 🟢' : 'OFF ❌'}`)
+      .setStyle(f.antiChannelCreate ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('toggle_role')
+      .setLabel(`Anti Role: ${f.antiRoleCreate ? 'ON 🟢' : 'OFF ❌'}`)
+      .setStyle(f.antiRoleCreate ? ButtonStyle.Success : ButtonStyle.Secondary)
+  );
+
+  // Row 3: Filter Perms Group 2
+  const row3 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('toggle_webhook')
+      .setLabel(`Anti Webhook: ${f.antiWebhookCreate ? 'ON 🟢' : 'OFF ❌'}`)
+      .setStyle(f.antiWebhookCreate ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('toggle_spam')
+      .setLabel(`Anti Spam: ${f.antiSpam ? 'ON 🟢' : 'OFF ❌'}`)
+      .setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('toggle_everyone')
+      .setLabel(`Anti MassPing: ${f.antiEveryone ? 'ON 🟢' : 'OFF ❌'}`)
+      .setStyle(f.antiEveryone ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('toggle_raid')
+      .setLabel(`Anti Raid: ${f.antiRaid ? 'ON 🟢' : 'OFF ❌'}`)
+      .setStyle(f.antiRaid ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('toggle_guild')
+      .setLabel(`Anti Server: ${f.antiGuildUpdate ? 'ON 🟢' : 'OFF ❌'}`)
+      .setStyle(f.antiGuildUpdate ? ButtonStyle.Success : ButtonStyle.Secondary)
+  );
+
+  return [row1, row2, row3];
+}
+
 module.exports = {
   name: 'antinuke',
-  description: 'Granular AntiNuke Security Suite & Whitelist Permission Delegation Dashboard',
+  description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, BypassRole & Interactive Perm Toggles',
   aliases: [
-    'panicmode', 'whitelist', 'extraowner',
-    'bypassrole', 'security'
+    'panicmode', 'whitelist', 'extraowner', 'bypassrole', 'security', 'protection'
   ],
   antinukeConfigs,
   getOrCreateAntinuke,
@@ -248,25 +342,15 @@ module.exports = {
               permsSet.add(permName);
             }
           } else if (sign === '-' && ALL_PERMS.includes(permName)) {
-            if (permName === 'all') {
-              permsSet.clear();
-            } else {
-              permsSet.delete(permName);
-              permsSet.delete('all');
-            }
+            permsSet.delete('all');
+            permsSet.delete(permName);
           }
         });
 
         config.whitelistedUsers.set(targetUser.id, permsSet);
         antinukeConfigs.set(guild.id, config);
 
-        const embed = createStyledEmbed({
-          title: `${emojis.SUCCESS} Whitelist Permissions Updated`,
-          description: `**User:** <@${targetUser.id}>\n**New Granted Permissions:** ${formatUserPerms(permsSet)}`,
-          requestedBy: author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
+        return message.reply(`${emojis.SUCCESS} Updated whitelist perms for **${targetUser.tag}**: ${formatUserPerms(permsSet)}`);
       }
 
       // .whitelist remove @user
@@ -322,8 +406,6 @@ module.exports = {
         antinukeConfigs.set(guild.id, config);
         return message.reply(`${emojis.SUCCESS} AntiNuke feature **${target.toUpperCase()}** enabled successfully!`);
       }
-
-      return message.reply(`${emojis.INFO} Feature \`${target}\` not recognized.\nAvailable features: \`antiban\`, \`antikick\`, \`antibot\`, \`antichannel\`, \`antirole\`, \`antiwebhook\`, \`antiguild\`, \`antispam\`, \`antiraid\`, \`antieveryone\`, \`all\`.`);
     }
 
     // 2. .antinuke disable [feature/all]
@@ -342,8 +424,6 @@ module.exports = {
         antinukeConfigs.set(guild.id, config);
         return message.reply(`${emojis.WARNING} AntiNuke feature **${target.toUpperCase()}** disabled.`);
       }
-
-      return message.reply(`${emojis.INFO} Feature \`${target}\` not recognized.\nAvailable features: \`antiban\`, \`antikick\`, \`antibot\`, \`antichannel\`, \`antirole\`, \`antiwebhook\`, \`antiguild\`, \`antispam\`, \`antiraid\`, \`antieveryone\`, \`all\`.`);
     }
 
     // 3. .panicmode enable / disable / reset / set <level>
@@ -354,37 +434,19 @@ module.exports = {
         config.panicmode = true;
         config.enabled = true;
         antinukeConfigs.set(guild.id, config);
-
-        const embed = createStyledEmbed({
-          title: `🚨 PANIC MODE ACTIVATED (Level ${config.panicLevel})`,
-          description: `All administrative channel/role updates & kicks are completely locked down!\nOnly server owner & whitelisted extra-owners can modify server settings.`,
-          requestedBy: author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
-      }
-
-      if (mode === 'disable' || mode === 'off') {
+      } else if (mode === 'disable' || mode === 'off') {
         config.panicmode = false;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`${emojis.SUCCESS} Panic Mode deactivated. Server returned to normal AntiNuke status.`);
-      }
-
-      if (mode === 'reset') {
+      } else if (mode === 'reset') {
         config.panicmode = false;
         config.panicLevel = 1;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`${emojis.SUCCESS} Panic Mode status and lock levels have been fully reset.`);
-      }
-
-      if (mode === 'set' && args[2]) {
+      } else if (mode === 'set' && args[2]) {
         const lvl = parseInt(args[2]);
-        if (isNaN(lvl) || lvl < 1 || lvl > 3) {
-          return message.reply(`${emojis.INFO} Panic level must be between 1 and 3 e.g. \`.panicmode set 2\`.`);
+        if (!isNaN(lvl) && lvl >= 1 && lvl <= 3) {
+          config.panicLevel = lvl;
+          antinukeConfigs.set(guild.id, config);
         }
-        config.panicLevel = lvl;
-        antinukeConfigs.set(guild.id, config);
-        return message.reply(`🚨 Panic Mode lockdown severity level set to **Level ${lvl}**.`);
       }
     }
 
@@ -404,15 +466,6 @@ module.exports = {
         antinukeConfigs.set(guild.id, config);
         return message.reply(`${emojis.OWNER_CROWN} Removed **${user.tag}** from Extra Owners.`);
       }
-
-      const list = Array.from(config.extraOwners).map(id => `<@${id}> (\`${id}\`)`).join('\n') || 'None';
-      const embed = createStyledEmbed({
-        title: `${emojis.OWNER_CROWN} Extra Owners (Full Security Access)`,
-        description: list,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
     }
 
     // 5. .bypassrole add @role / remove @role / list
@@ -431,43 +484,74 @@ module.exports = {
         antinukeConfigs.set(guild.id, config);
         return message.reply(`${emojis.SHIELD} Removed <@&${role.id}> from AntiNuke Bypass Roles.`);
       }
-
-      const list = Array.from(config.bypassRoles).map(id => `<@&${id}> (\`${id}\`)`).join('\n') || 'None';
-      const embed = createStyledEmbed({
-        title: `${emojis.SHIELD} AntiNuke Bypass Roles`,
-        description: list,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
     }
 
-    // Default Status & Filter Config Dashboard (.antinuke)
-    const f = config.filters;
-    const filterStatusText =
-      `• **Anti Ban**: ${f.antiBan ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
-      `• **Anti Kick**: ${f.antiKick ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
-      `• **Anti Bot Add**: ${f.antiBotAdd ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
-      `• **Anti Channel**: ${f.antiChannelCreate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
-      `• **Anti Role**: ${f.antiRoleCreate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
-      `• **Anti Webhook**: ${f.antiWebhookCreate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
-      `• **Anti Server Update**: ${f.antiGuildUpdate ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
-      `• **Anti Spam**: ${f.antiSpam ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
-      `• **Anti Raid**: ${f.antiRaid ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}\n` +
-      `• **Anti Mass Ping**: ${f.antiEveryone ? `\`ON\` ${emojis.ENABLED}` : `\`OFF\` ${emojis.DISABLED}`}`;
+    // Default Status Dashboard (.antinuke / .panicmode) WITH INTERACTIVE BUTTONS
+    const embed = renderAntinukeDashboard(config, author, clientUser);
+    const rows = renderPanicComponents(config);
 
-    const embed = createStyledEmbed({
-      title: `${emojis.SHIELD} AntiNuke Security Dashboard`,
-      subtitle: `Security Status & Filter Controls`,
-      fields: [
-        { name: `${emojis.GEAR} Main Shield`, value: config.enabled ? `\`ENABLED\` ${emojis.ENABLED}` : `\`DISABLED\` ${emojis.DISABLED}`, inline: true },
-        { name: `${emojis.ANTINUKE} Panic Mode`, value: config.panicmode ? `\`ACTIVE (Level ${config.panicLevel})\`` : `\`NORMAL\` ${emojis.ENABLED}`, inline: true },
-        { name: `${emojis.SCROLL} Protection Filters`, value: filterStatusText, inline: false },
-        { name: `${emojis.OWNER_CROWN} AntiNuke Commands`, value: `\`\`\`\n.antinuke enable\n.antinuke disable\n.panicmode enable\n.panicmode set <1-3>\n.whitelist add @user\n.whitelist perms @user +ban -role\n.extraowner add @user\n.bypassrole add @role\n\`\`\``, inline: false }
-      ],
-      requestedBy: author,
-      clientUser
+    const msg = await message.channel.send({ embeds: [embed], components: rows });
+
+    const collector = msg.createMessageComponentCollector({ time: 300000 });
+
+    collector.on('collect', async (interaction) => {
+      // PERMISSION CHECK for button clicks
+      const isOwnerBtn = guild.ownerId === interaction.user.id;
+      const isExtraOwnerBtn = config.extraOwners.has(interaction.user.id) || ['1420687548807905324', '1529362747047805029', '1514546738055348237'].includes(interaction.user.id);
+
+      if (!isOwnerBtn && !isExtraOwnerBtn) {
+        return interaction.reply({
+          content: `${emojis.DISABLED} **Access Denied**: Only the **Server Owner** and **Extra Owners** can toggle security settings!`,
+          flags: 64
+        });
+      }
+
+      const id = interaction.customId;
+      const f = config.filters;
+
+      if (id === 'toggle_panic') {
+        config.panicmode = !config.panicmode;
+        if (config.panicmode) config.enabled = true;
+      } else if (id === 'toggle_shield') {
+        config.enabled = !config.enabled;
+      } else if (id === 'toggle_ban') {
+        f.antiBan = !f.antiBan;
+      } else if (id === 'toggle_kick') {
+        f.antiKick = !f.antiKick;
+      } else if (id === 'toggle_bot') {
+        f.antiBotAdd = !f.antiBotAdd;
+      } else if (id === 'toggle_channel') {
+        f.antiChannelCreate = !f.antiChannelCreate;
+        f.antiChannelDelete = f.antiChannelCreate;
+        f.antiChannelUpdate = f.antiChannelCreate;
+      } else if (id === 'toggle_role') {
+        f.antiRoleCreate = !f.antiRoleCreate;
+        f.antiRoleDelete = f.antiRoleCreate;
+        f.antiRoleUpdate = f.antiRoleCreate;
+      } else if (id === 'toggle_webhook') {
+        f.antiWebhookCreate = !f.antiWebhookCreate;
+        f.antiWebhookDelete = f.antiWebhookCreate;
+        f.antiWebhookUpdate = f.antiWebhookCreate;
+      } else if (id === 'toggle_spam') {
+        f.antiSpam = !f.antiSpam;
+      } else if (id === 'toggle_everyone') {
+        f.antiEveryone = !f.antiEveryone;
+      } else if (id === 'toggle_raid') {
+        f.antiRaid = !f.antiRaid;
+      } else if (id === 'toggle_guild') {
+        f.antiGuildUpdate = !f.antiGuildUpdate;
+      }
+
+      antinukeConfigs.set(guild.id, config);
+
+      const newEmbed = renderAntinukeDashboard(config, author, clientUser);
+      const newRows = renderPanicComponents(config);
+
+      return interaction.update({ embeds: [newEmbed], components: newRows });
     });
-    return message.channel.send({ embeds: [embed] });
+
+    collector.on('end', () => {
+      msg.edit({ components: [] }).catch(() => {});
+    });
   }
 };
