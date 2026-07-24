@@ -86,32 +86,7 @@ function buildPaginationRow(currentPage, totalPages) {
   );
 }
 
-// 📊 1. DEDICATED TIMEFRAME PANEL (.1d, .7d, .14d, .30d, .overall)
-function renderTimeframePanel(guild, timeframeKey, author, clientUser) {
-  const windowMs = WINDOWS[timeframeKey];
-  const stats = db.getAnalyticsStats(guild.id, windowMs);
-  const label = TIMEFRAME_NAMES[timeframeKey];
-
-  return createStyledEmbed({
-    title: `${emojis.STATS} ${label} Server Analytics — ${guild.name}`,
-    subtitle: `Dedicated Audit Report for [${label}]`,
-    fields: [
-      { name: '💬 Chat Messages', value: `\`${stats.messages.toLocaleString()}\` msgs`, inline: true },
-      { name: '🔊 Voice Time', value: `\`${formatDuration(stats.voiceSeconds)}\``, inline: true },
-      { name: '📨 Invites Created', value: `\`${stats.invites.toLocaleString()}\` joins`, inline: true },
-      { name: '📥 Member Joins', value: `\`+${stats.joins.toLocaleString()}\` members`, inline: true },
-      { name: '📤 Member Leaves', value: `\`-${stats.leaves.toLocaleString()}\` members`, inline: true },
-      { name: '⚡ Commands Used', value: `\`${stats.commands.toLocaleString()}\` cmds`, inline: true },
-      { name: '🎟️ Tickets Opened', value: `\`${stats.ticketsCreated.toLocaleString()}\` tickets`, inline: true },
-      { name: '🔒 Tickets Closed', value: `\`${stats.ticketsClosed.toLocaleString()}\` tickets`, inline: true }
-    ],
-    thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    requestedBy: author,
-    clientUser
-  });
-}
-
-// 💬 2. TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
+// 💬 1. TOP MESSAGES LEADERBOARD (.serverstats / .topmessages / .msgstats)
 function renderMessagesLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
@@ -153,7 +128,7 @@ function renderMessagesLeaderboard(guild, timeframeKey, page = 1, author, client
   return { embed, currentPage, totalPages };
 }
 
-// 🔊 3. TOP VOICE LEADERBOARD (.topvoice / .voicestats)
+// 🔊 2. TOP VOICE LEADERBOARD (.topvoice / .voicestats)
 function renderVoiceLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
@@ -195,7 +170,7 @@ function renderVoiceLeaderboard(guild, timeframeKey, page = 1, author, clientUse
   return { embed, currentPage, totalPages };
 }
 
-// 📨 4. TOP INVITES LEADERBOARD (.topinvites / .invitestats)
+// 📨 3. TOP INVITES LEADERBOARD (.topinvites / .invitestats)
 function renderInvitesLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
@@ -237,7 +212,7 @@ function renderInvitesLeaderboard(guild, timeframeKey, page = 1, author, clientU
   return { embed, currentPage, totalPages };
 }
 
-// 📥 5. JOINS & LEAVES FLOW (.joinsleaves / .memberflow)
+// 📥 4. JOINS & LEAVES FLOW (.joinsleaves / .memberflow)
 function renderJoinsLeavesPanel(guild, timeframeKey, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
@@ -258,7 +233,7 @@ function renderJoinsLeavesPanel(guild, timeframeKey, author, clientUser) {
   });
 }
 
-// ⚡ 6. TOP COMMANDS (.topcommands / .commandstats)
+// ⚡ 5. TOP COMMANDS (.topcommands / .commandstats)
 function renderTopCommandsPanel(guild, timeframeKey, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
@@ -277,7 +252,7 @@ function renderTopCommandsPanel(guild, timeframeKey, author, clientUser) {
   });
 }
 
-// 🎟️ 7. TICKET STATS (.ticketstats / .ticketanalytics)
+// 🎟️ 6. TICKET STATS (.ticketstats / .ticketanalytics)
 function renderTicketStatsPanel(guild, timeframeKey, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
@@ -312,14 +287,13 @@ module.exports = {
     let sub = args[0]?.toLowerCase();
 
     // Category direct aliases
-    if (['topmessages', 'msgstats', 'messages', 'chat'].includes(invoked)) sub = 'messages';
+    if (['topmessages', 'msgstats', 'messages', 'chat', 'serverstats', 'serveranalytics', 'server', 'analytics', 'tracker'].includes(invoked)) sub = 'messages';
     if (['topvoice', 'voicestats', 'vctiming', 'voice'].includes(invoked)) sub = 'voice';
     if (['topinvites', 'invitestats', 'invites'].includes(invoked)) sub = 'invites';
     if (['joinsleaves', 'memberflow', 'joinleavestats', 'joins', 'leaves'].includes(invoked)) sub = 'joins';
     if (['topcommands', 'commandstats', 'commands'].includes(invoked)) sub = 'commands';
     if (['ticketstats', 'ticketanalytics', 'tickets'].includes(invoked)) sub = 'tickets';
     if (['userstats', 'useranalytics', 'user'].includes(invoked)) sub = 'user';
-    if (['serverstats', 'serveranalytics', 'server'].includes(invoked)) sub = 'server';
 
     const author = message.author;
     const guild = message.guild;
@@ -329,28 +303,9 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // A. DEDICATED TIMEFRAME PANELS (.analytics 1d / 7d / 14d / 30d / overall)
-    if (['1d', '7d', '14d', '30d', 'lifetime', 'overall'].includes(sub)) {
-      const key = sub === 'overall' ? 'lifetime' : sub;
-      const embed = renderTimeframePanel(guild, key, author, clientUser);
-      const row = buildTimeframeRow(key);
-      const msg = await message.channel.send({ embeds: [embed], components: [row] });
-
-      const collector = msg.createMessageComponentCollector({ time: 300000 });
-      collector.on('collect', async (i) => {
-        if (!i.customId.startsWith('tf_')) return;
-        const newKey = i.customId.replace('tf_', '');
-        const newEmbed = renderTimeframePanel(guild, newKey, author, clientUser);
-        const newRow = buildTimeframeRow(newKey);
-        return i.update({ embeds: [newEmbed], components: [newRow] });
-      });
-      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
-      return;
-    }
-
-    // B. DEDICATED TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
-    if (sub === 'messages') {
-      let activeKey = args[1]?.toLowerCase();
+    // B. DEDICATED TOP MESSAGES LEADERBOARD (.serverstats / .topmessages / .msgstats)
+    if (sub === 'messages' || !sub) {
+      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
       let page = 1;
 
@@ -387,7 +342,7 @@ module.exports = {
 
     // C. DEDICATED TOP VOICE LEADERBOARD (.topvoice / .voicestats)
     if (sub === 'voice') {
-      let activeKey = args[1]?.toLowerCase();
+      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
       let page = 1;
 
@@ -424,7 +379,7 @@ module.exports = {
 
     // D. DEDICATED TOP INVITES LEADERBOARD (.topinvites / .invitestats)
     if (sub === 'invites') {
-      let activeKey = args[1]?.toLowerCase();
+      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
       let page = 1;
 
@@ -461,7 +416,7 @@ module.exports = {
 
     // E. DEDICATED JOINS & LEAVES FLOW (.joinsleaves)
     if (sub === 'joins' || sub === 'leaves') {
-      let activeKey = args[1]?.toLowerCase();
+      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
 
       const embed = renderJoinsLeavesPanel(guild, activeKey, author, clientUser);
@@ -482,7 +437,7 @@ module.exports = {
 
     // F. DEDICATED TOP COMMANDS (.topcommands)
     if (sub === 'commands') {
-      let activeKey = args[1]?.toLowerCase();
+      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
 
       const embed = renderTopCommandsPanel(guild, activeKey, author, clientUser);
@@ -503,7 +458,7 @@ module.exports = {
 
     // G. DEDICATED TICKET STATS (.ticketstats)
     if (sub === 'tickets') {
-      let activeKey = args[1]?.toLowerCase();
+      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
 
       const embed = renderTicketStatsPanel(guild, activeKey, author, clientUser);
@@ -545,44 +500,5 @@ module.exports = {
       });
       return message.channel.send({ embeds: [embed] });
     }
-
-    // I. DEDICATED SERVER STATS CARD (.serverstats)
-    if (sub === 'server') {
-      const owner = await guild.fetchOwner().catch(() => null);
-      const bots = guild.members.cache.filter(m => m.user.bot).size;
-      const humans = guild.memberCount - bots;
-
-      const embed = createStyledEmbed({
-        title: `🏰 Server Overview Stats — ${guild.name}`,
-        subtitle: `Guild Structure & Performance Metrics`,
-        fields: [
-          { name: '👑 Server Owner', value: owner ? `<@${owner.id}> (\`${owner.user.tag}\`)` : '`Unknown`', inline: true },
-          { name: '👥 Member Count', value: `\`${guild.memberCount}\` Total (\`${humans}\` Humans | \`${bots}\` Bots)`, inline: true },
-          { name: '📁 Channels & Roles', value: `\`${guild.channels.cache.size}\` Channels | \`${guild.roles.cache.size}\` Roles`, inline: true },
-          { name: '🚀 Boost Tier', value: `\`Tier ${guild.premiumTier}\` (${guild.premiumSubscriptionCount || 0} Boosts)`, inline: true },
-          { name: '🔒 Verification Level', value: `\`Level ${guild.verificationLevel}\``, inline: true },
-          { name: '🗓️ Created On', value: `<t:${Math.floor(guild.createdTimestamp / 1000)}:R>`, inline: true }
-        ],
-        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // DEFAULT GENERAL SERVER ANALYTICS DASHBOARD (.analytics)
-    const embed = renderTimeframePanel(guild, '1d', author, clientUser);
-    const row = buildTimeframeRow('1d');
-    const msg = await message.channel.send({ embeds: [embed], components: [row] });
-
-    const collector = msg.createMessageComponentCollector({ time: 300000 });
-    collector.on('collect', async (i) => {
-      if (!i.customId.startsWith('tf_')) return;
-      const newKey = i.customId.replace('tf_', '');
-      const newEmbed = renderTimeframePanel(guild, newKey, author, clientUser);
-      const newRow = buildTimeframeRow(newKey);
-      return i.update({ embeds: [newEmbed], components: [newRow] });
-    });
-    collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
   }
 };
