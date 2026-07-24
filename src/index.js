@@ -1347,6 +1347,32 @@ client.on('interactionCreate', async (interaction) => {
 
   if (!interaction.isButton()) return;
 
+  // GIVEAWAY ENTER BUTTON
+  if (interaction.customId.startsWith('gw_enter_')) {
+    const gwId = interaction.customId.replace('gw_enter_', '');
+    const giveawayCmd = client.commands.get('giveaway');
+    const gw = giveawayCmd ? giveawayCmd.giveaways.get(gwId) : null;
+
+    if (!gw) {
+      return interaction.reply({ content: `⚠️ This giveaway is no longer active!`, flags: 64 }).catch(() => {});
+    }
+
+    if (gw.ended) {
+      return interaction.reply({ content: `⚠️ This giveaway has already ended!`, flags: 64 }).catch(() => {});
+    }
+
+    if (!gw.entries) gw.entries = new Set();
+
+    if (gw.entries.has(interaction.user.id)) {
+      return interaction.reply({ content: `🎉 You have already entered giveaway **${gwId}**!`, flags: 64 }).catch(() => {});
+    }
+
+    gw.entries.add(interaction.user.id);
+    giveawayCmd.giveaways.set(gwId, gw);
+
+    return interaction.reply({ content: `🎉 **Entry Confirmed!** You entered giveaway **${gwId}** for prize: **${gw.prize}**! Good luck! 🍀`, flags: 64 }).catch(() => {});
+  }
+
   // 3. CALL STAFF BUTTON
   if (interaction.customId === 'ticket_callstaff_btn') {
     const user = interaction.user;
