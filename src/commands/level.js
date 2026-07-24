@@ -19,18 +19,21 @@ function getOrCreateLevelConfig(guildId) {
 
 module.exports = {
   name: 'level',
-  description: 'Level System: level rank, level leaderboard, level setup, level disable, level status, leaderboard setup, leaderboard refresh',
+  description: 'Level System: level rank, level leaderboard, level setup, level disable, level status',
   aliases: [
     'levels', 'lvl', 'xp',
-    'leaderboard', 'rank'
+    'leaderboard', 'rank', 'lb'
   ],
+  levelConfigs,
+  getOrCreateLevelConfig,
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
     if (invoked === 'rank') sub = 'rank';
-    if (invoked === 'leaderboard') sub = 'leaderboard';
+    if (invoked === 'leaderboard' || invoked === 'lb') sub = 'leaderboard';
 
     const author = message.author;
     const guildId = message.guild.id;
@@ -41,8 +44,8 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // .level setup <#channel>
-    if (sub === 'setup' || (invoked === 'leaderboard' && sub === 'setup')) {
+    // 1. .level setup <#channel>
+    if (sub === 'setup') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can run level setup.`);
       }
@@ -54,14 +57,14 @@ module.exports = {
 
       const embed = createStyledEmbed({
         title: `${emojis.LEVEL} Leveling System Configured`,
-        description: `Level up announcement notifications set to ${chan}.\nLevel system status: \`ENABLED\``,
+        description: `• Announcement Channel: <#${chan.id}>\n• Status: **ENABLED ✅**`,
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    // .level disable
+    // 2. .level disable
     if (sub === 'disable') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can disable leveling.`);
@@ -73,13 +76,13 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} Leveling system disabled on this server.`);
     }
 
-    // .level status
+    // 3. .level status
     if (sub === 'status') {
       const embed = createStyledEmbed({
         title: `${emojis.LEVEL} Leveling System Status`,
         fields: [
-          { name: '⚙️ Status', value: config.enabled ? '`ENABLED ✅`' : '`DISABLED ❌`', inline: true },
-          { name: '📢 Announce Channel', value: config.channelId ? `<#${config.channelId}>` : '*Current Channel*', inline: true }
+          { name: `${emojis.GEAR} Status`, value: config.enabled ? '`ENABLED ✅`' : '`DISABLED ❌`', inline: true },
+          { name: `${emojis.MESSAGES} Announcement Channel`, value: config.channelId ? `<#${config.channelId}>` : '*Current Channel*', inline: true }
         ],
         requestedBy: author,
         clientUser
@@ -87,13 +90,13 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // .level leaderboard / .ninja lb level / leaderboard refresh
-    if (sub === 'leaderboard' || sub === 'lb' || sub === 'refresh') {
+    // 4. .level leaderboard / .ninja lb level / .lb
+    if (sub === 'leaderboard' || sub === 'lb' || sub === 'top') {
       const top10 = db.getTopUsers('xp', 10);
       const lines = top10.map((u, i) => `\`#${i + 1}\` **<@${u.userId}>** — Level \`${u.level}\` (\`${u.xp} XP\`) • Rank: *${u.rank}*`);
 
       const embed = createStyledEmbed({
-        title: `📊 Shinobi Level Leaderboard`,
+        title: `${emojis.STAR} Shinobi Level Leaderboard`,
         description: lines.join('\n') || '*No leveling data available yet.*',
         requestedBy: author,
         clientUser
@@ -101,7 +104,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // .level addxp @user <amount>
+    // 5. .level addxp @user <amount>
     if (sub === 'addxp' || sub === 'givexp') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can add XP.`);
@@ -114,10 +117,10 @@ module.exports = {
       }
 
       db.updateUser(target.id, (u) => { u.xp += amount; });
-      return message.reply(`✅ Added \`+${amount} XP\` to ${target.user.username}.`);
+      return message.reply(`${emojis.SUCCESS} Added \`+${amount} XP\` to ${target.user.username}.`);
     }
 
-    // .level setlevel @user <level>
+    // 6. .level setlevel @user <level>
     if (sub === 'setlevel' || sub === 'setlvl') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can set levels.`);
@@ -130,10 +133,10 @@ module.exports = {
       }
 
       db.updateUser(target.id, (u) => { u.level = newLvl; });
-      return message.reply(`✅ Set ${target.user.username}'s level to **Level ${newLvl}**.`);
+      return message.reply(`${emojis.SUCCESS} Set ${target.user.username}'s level to **Level ${newLvl}**.`);
     }
 
-    // .level rank [@user]
+    // 7. .level rank [@user]
     if (!sub || sub === 'rank' || sub === 'card') {
       const targetUser = message.mentions.users.first() || author;
       const userData = db.getUser(targetUser.id);
@@ -145,10 +148,10 @@ module.exports = {
         title: `${emojis.LEVEL} Shinobi Rank Card — ${targetUser.username}`,
         subtitle: `${emojis.NINJA_RANK} ${userData.rank}`,
         fields: [
-          { name: '🎖️ Level', value: `\`Level ${userData.level}\``, inline: true },
-          { name: '✨ Total XP', value: `\`${userData.xp} XP\``, inline: true },
-          { name: '✉️ Messages Sent', value: `\`${userData.messages}\``, inline: true },
-          { name: '📈 Level Progress', value: `\`${userData.xp} / ${nextLvlXp} XP\` (${progress}%)\n\`${bar}\``, inline: false }
+          { name: `${emojis.STAR} Level`, value: `\`Level ${userData.level}\``, inline: true },
+          { name: `${emojis.ZAP} Total XP`, value: `\`${userData.xp} XP\``, inline: true },
+          { name: `${emojis.MESSAGES} Messages Sent`, value: `\`${userData.messages}\``, inline: true },
+          { name: `${emojis.LEVEL} Level Progress`, value: `\`${userData.xp} / ${nextLvlXp} XP\` (${progress}%)\n\`${bar}\``, inline: false }
         ],
         requestedBy: author,
         clientUser
@@ -156,7 +159,6 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Default Level Help Panel matching screenshot
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
     return renderModuleHelpPanel(message, 'level');
   }

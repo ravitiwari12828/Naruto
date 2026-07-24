@@ -122,14 +122,13 @@ const CATEGORIES = [
   {
     label: 'Levels',
     value: 'level',
-    description: 'level rank, leaderboard, setup, disable, status, refresh',
+    description: 'Level System: rank, leaderboard, setup, disable & status',
     customEmoji: emojis.OBJ_LEVEL,
     unicodeFallback: '⭐',
     heading: `${emojis.LEVEL || '⭐'} Level Commands`,
     commands: [
       'level rank', 'level leaderboard', 'level setup',
-      'level disable', 'level status', '/level rank',
-      '/level leaderboard', '/level setup', '/level disable'
+      'level disable', 'level status'
     ]
   },
   {
