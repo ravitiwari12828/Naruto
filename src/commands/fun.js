@@ -85,22 +85,98 @@ const FORTUNES = [
 ];
 
 const VIBES = ['🔥 Chaotic Shinobi', '😤 Revenge Arc Energy', '✨ Main Character Aura', '🌸 Sakura Useless Energy', '🦊 Nine-Tails Unleashed', '😴 Shikamaru Mode (Too Troublesome)', '😤 Sasuke Uchiha Cold Energy', '🌀 Rasengan Gyaat', '🍜 Ramen-Powered', '🥹 Emotional Backstory Incoming'];
-const MOODS   = ['⚡ Ready to take on the Akatsuki', '😴 Shikamaru-level lazy today', '🔥 Full Might Guy Eight Gates mode', '🍜 Just hungry for Ichiraku ramen', '😤 Full Sasuke brooding mode', '🌸 Cherry blossom chill vibes', '🦊 Nine-Tails chakra leaking slightly', '🧘 Sage mode meditation energy', '😂 Naruto laughing at his own jokes', '💀 Rock Lee without his weights energy'];
+const MOODS   = ['⚡ Ready to take on the Akatsuki', '😴 Shikamaru-level lazy today', '🔥 Full Might Guy Eight Gates mode', '🍜 Just hungry for Ichiraku ramen', '😤 Full Sasuke brooding mode', '🌸 Cherry blossom chill vibes', '🦊 Nine-Tails chakra leaking slightly', '🧘 Sage mode meditation energy', '😂 Naruto laughing at his own jokes', '💀 Rock Lee without his eyebrows energy'];
 const SMART   = ['Super Genius — Shikamaru IQ: 200+', 'Above Average — Kakashi-level reading speed', 'Street Smart — Naruto\'s pure instinct', 'You\'d pass the Chunin Exams on charm alone', 'Barely Passing — but you make it look good', 'Galaxy Brain — Minato-level tactical thinking', 'Book Smart — could rival Sakura\'s medical knowledge', 'Dense as a Rock — Might Guy doesn\'t need brains!'];
 const RIZO    = ['0% — Naruto before Hinata noticed him', '20% — You tried. Lee acknowledges the effort.', '40% — Solid Chunin-level rizz', '60% — Kakashi-tier mysterious appeal', '80% — Sasuke dark aura rizz activated', '99% — Full Minato Yellow Flash charm unlocked', '100% — Even the Nine-Tails would blush'];
 
+// MEME TEMPLATES MAP
+const MEMES_MAP = {
+  spongebobchicken: { title: '🐔 Mocking Spongebob Meme', template: 'sb' },
+  slapcar: { title: '🚗 Slaps Roof of Car Meme', template: 'slap' },
+  isthisa: { title: '🦋 Is This a Pigeon? Meme', template: 'pigeon' },
+  drake: { title: '👔 Drake Hotline Bling Meme', template: 'drake' },
+  distractedbf: { title: '👀 Distracted Boyfriend Meme', template: 'disastergirl' },
+  communismcat: { title: '☭ Our Communism Meme', template: 'cat' },
+  eject: { title: '🚀 Among Us Eject Meme', template: 'eject' },
+  emergencymeeting: { title: '🚨 Emergency Meeting Meme', template: 'meeting' },
+  headpat: { title: '✋ Headpat Anime Meme', template: 'pat' },
+  tradeoffer: { title: '🤝 Trade Offer Meme', template: 'trade' },
+  waddle: { title: '🦆 Duck Waddle Meme', template: 'duck' }
+};
+
+// EMOTES MAP
+const EMOTES_MAP = {
+  blush: '😳 *blushes brightly*',
+  cry: '😭 *crying tears of emotion*',
+  dance: '💃 *dances enthusiastically*',
+  lewd: '😏 *looking suspiciously lewd*',
+  pout: '😤 *pouts angrily*',
+  shrug: '🤷 *shrugs indifferent*',
+  sleepy: '😴 *yawns and gets sleepy*',
+  smile: '😊 *smiles warmly*',
+  smug: '😏 *smug anime grin*',
+  thumbsup: '👍 *gives a big thumbs up!*',
+  wag: '🐕 *wags tail excitedly*',
+  thinking: '🤔 *thinks intensely*',
+  triggered: '🤬 *GETS TRIGGERED!*',
+  teehee: '🤭 *teehee giggles*',
+  deredere: '😍 *deredere in love mode*',
+  thonking: '🧐 *thonking deeply*',
+  scoff: '😒 *scoffs in disbelief*',
+  happy: '😄 *super happy vibes*',
+  thumbs: '👍 *thumbs up*',
+  grin: '😁 *big cheerful grin*'
+};
+
+// ACTIONS MAP
+const ACTIONS_MAP = {
+  cuddle: '🤗 cuddled',
+  hug: '🫂 gave a warm hug to',
+  kiss: '💋 kissed',
+  lick: '👅 licked',
+  nom: '😋 nommed on',
+  pat: '✋ patted the head of',
+  poke: '👉 poked',
+  slap: '🖐️ slapped',
+  stare: '👀 stared intensely at',
+  highfive: '🙌 gave a high five to',
+  bite: '🦷 bit',
+  greet: '👋 greeted',
+  punch: '👊 punched',
+  handholding: '🤝 held hands with',
+  tickle: '👉 tickled',
+  kill: '⚔️ executed jutsu on',
+  hold: '🤲 held',
+  pats: '✋ patted',
+  wave: '👋 waved at',
+  boop: '👉 booped the nose of',
+  snuggle: '🤗 snuggled with',
+  bully: '👿 playfully bullied'
+};
+
 module.exports = {
   name: 'fun',
-  description: 'Fun Naruto-themed commands: eightball, truth, dare, vibecheck, shipname, fortune & more!',
+  description: 'Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore',
   aliases: [
     '8ball', 'eightball', 'truth', 'dare', 'wouldyourather', 'wyr',
     'pickup', 'fortune', 'vibecheck', 'mood', 'smartrate', 'rizzmeter',
-    'shipname', 'poke', 'bonk', 'cuddle', 'highfive', 'wave',
-    'wanted', 'wasted', 'powerlevel', 'coolrate'
+    'shipname', 'wanted', 'wasted', 'powerlevel', 'coolrate',
+    // Memes
+    'spongebobchicken', 'slapcar', 'isthisa', 'drake', 'distractedbf',
+    'communismcat', 'eject', 'emergencymeeting', 'headpat', 'tradeoffer', 'waddle',
+    // Emotes
+    'blush', 'cry', 'dance', 'lewd', 'pout', 'shrug', 'sleepy', 'smile',
+    'smug', 'thumbsup', 'wag', 'thinking', 'triggered', 'teehee', 'deredere',
+    'thonking', 'scoff', 'happy', 'thumbs', 'grin',
+    // Actions
+    'cuddle', 'hug', 'kiss', 'lick', 'nom', 'pat', 'poke', 'slap', 'stare',
+    'highfive', 'bite', 'greet', 'punch', 'handholding', 'tickle', 'kill',
+    'hold', 'pats', 'wave', 'boop', 'snuggle', 'bully'
   ],
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     const target = message.mentions.members?.first() || message.member;
     const targetUser = target?.user || message.author;
     const author = message.author;
@@ -109,6 +185,50 @@ module.exports = {
     try {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
+
+    // 1. MEME GENERATION COMMANDS
+    if (MEMES_MAP[invoked]) {
+      const memeInfo = MEMES_MAP[invoked];
+      const text1 = encodeURIComponent(args[0] || 'When you run');
+      const text2 = encodeURIComponent(args.slice(1).join(' ') || 'Naruto Bot commands!');
+      const memeUrl = `https://api.memegen.link/images/${memeInfo.template}/${text1}/${text2}.png`;
+
+      const embed = createStyledEmbed({
+        title: `😂 ${memeInfo.title}`,
+        subtitle: `Generated by ${author.username}`,
+        requestedBy: author,
+        clientUser
+      });
+      embed.setImage(memeUrl);
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 2. EMOTES COMMANDS
+    if (EMOTES_MAP[invoked]) {
+      const actionText = EMOTES_MAP[invoked];
+      const embed = createStyledEmbed({
+        title: `😃 ${author.username} ${invoked}!`,
+        description: `**${author.username}** ${actionText}`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 3. ACTIONS COMMANDS
+    if (ACTIONS_MAP[invoked]) {
+      const verb = ACTIONS_MAP[invoked];
+      const isSelf = targetUser.id === author.id;
+      const targetText = isSelf ? 'themselves! *Awkward...*' : `<@${targetUser.id}>!`;
+
+      const embed = createStyledEmbed({
+        title: `🤗 ${invoked.toUpperCase()}!`,
+        description: `**<@${author.id}>** ${verb} ${targetText}`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
 
     // 🎱 Eight Ball
     if (['8ball', 'eightball'].includes(invoked)) {
@@ -251,61 +371,6 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 👉 Poke
-    if (invoked === 'poke') {
-      const embed = createStyledEmbed({
-        title: `👉 Poke!`,
-        description: `${author.username} poked ${targetUser.username}! *They flinch like they got hit by a kunai.*`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // 🔨 Bonk
-    if (invoked === 'bonk') {
-      const embed = createStyledEmbed({
-        title: `🔨 BONK!`,
-        description: `${author.username} bonked ${targetUser.username} on the head with a chakra-charged scroll. **Go to horny jail.** 👮`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // 🤗 Cuddle
-    if (invoked === 'cuddle') {
-      const embed = createStyledEmbed({
-        title: `🤗 Shinobi Cuddle`,
-        description: `${author.username} pulled ${targetUser.username} in for a warm Konoha hug. *Even Sasuke felt something.* 🍃`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // 🙌 High Five
-    if (invoked === 'highfive') {
-      const embed = createStyledEmbed({
-        title: `🙌 High Five!`,
-        description: `${author.username} gave ${targetUser.username} a chakra-enhanced high five! The shockwave knocked over three Academy students.`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // 👋 Wave
-    if (invoked === 'wave') {
-      const embed = createStyledEmbed({
-        title: `👋 Greetings, Shinobi!`,
-        description: `${author.username} waves at ${targetUser.username} with Naruto-level enthusiasm. *BELIEVE IT!* 🍥`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
     // 🤠 Wanted Poster
     if (invoked === 'wanted') {
       const bounty = rng(1000, 9999999).toLocaleString();
@@ -360,7 +425,6 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Default Fun Help Panel matching screenshot
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
     return renderModuleHelpPanel(message, 'fun');
   }

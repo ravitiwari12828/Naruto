@@ -346,6 +346,30 @@ const CATEGORIES = [
 function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   const botAvatarURL = botAvatar || botUser.displayAvatarURL({ dynamic: true, size: 512 });
 
+  if (cat.value === 'fun') {
+    const embed = new EmbedBuilder()
+      .setColor(0x00E5FF)
+      .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
+      .setThumbnail(botAvatarURL)
+      .setTitle(`${cat.heading}`)
+      .setDescription(
+        `Below is the complete list of commands for **${cat.label}**.\n\n` +
+        `😂 **Meme Generation**\n` +
+        `\`spongebobchicken\` \`slapcar\` \`isthisa\` \`drake\` \`distractedbf\` \`communismcat\` \`eject\` \`emergencymeeting\` \`headpat\` \`tradeoffer\` \`waddle\`\n\n` +
+        `😃 **Emotes**\n` +
+        `\`blush\` \`cry\` \`dance\` \`lewd\` \`pout\` \`shrug\` \`sleepy\` \`smile\` \`smug\` \`thumbsup\` \`wag\` \`thinking\` \`triggered\` \`teehee\` \`deredere\` \`thonking\` \`scoff\` \`happy\` \`thumbs\` \`grin\`\n\n` +
+        `🤗 **Actions**\n` +
+        `\`cuddle\` \`hug\` \`kiss\` \`lick\` \`nom\` \`pat\` \`poke\` \`slap\` \`stare\` \`highfive\` \`bite\` \`greet\` \`punch\` \`handholding\` \`tickle\` \`kill\` \`hold\` \`pats\` \`wave\` \`boop\` \`snuggle\` \`bully\``
+      )
+      .setFooter({
+        text: `Requested by ${message.author.username} • Total 44 commands`,
+        iconURL: message.author.displayAvatarURL({ dynamic: true })
+      });
+
+    if (devPortalBanner) embed.setImage(devPortalBanner);
+    return embed;
+  }
+
   const embed = new EmbedBuilder()
     .setColor(0x00E5FF)
     .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
