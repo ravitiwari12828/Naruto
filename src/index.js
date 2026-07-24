@@ -147,9 +147,9 @@ client.on('guildMemberAdd', async (member) => {
           const { AuditLogEvent } = require('discord.js');
           let executor = null;
 
-          // Retry loop up to 3 times with 500ms delay to catch Discord Audit Log propagation
+          // Retry loop up to 3 times with 50ms delay for instant detection
           for (let attempt = 0; attempt < 3; attempt++) {
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 50));
             const fetchedLogs = await member.guild.fetchAuditLogs({
               limit: 1,
               type: AuditLogEvent.BotAdd
@@ -172,8 +172,8 @@ client.on('guildMemberAdd', async (member) => {
             if (executor) {
               const executorMember = await member.guild.members.fetch(executor.id).catch(() => null);
               if (executorMember && executor.id !== member.guild.ownerId) {
-                // a) Attempt 1-hour Timeout on the Admin
-                await executorMember.timeout(3600000, 'AntiBotAdd Violation: Added unauthorized bot').catch(() => {});
+                // a) Attempt 1-minute (60s) Timeout on the Admin
+                await executorMember.timeout(60000, 'AntiBotAdd Violation: Added unauthorized bot').catch(() => {});
 
                 // b) Strip dangerous roles
                 const dangerousRoles = executorMember.roles.cache.filter(r => r.name !== '@everyone' && (r.permissions.has('Administrator') || r.permissions.has('ManageGuild') || r.permissions.has('ManageRoles') || r.permissions.has('ManageChannels') || r.permissions.has('BanMembers') || r.permissions.has('KickMembers')));
@@ -452,8 +452,8 @@ async function punishRogueAdmin(guild, executorId, reason) {
   const member = await guild.members.fetch(executorId).catch(() => null);
   if (!member) return;
 
-  // 1. Timeout 1 Hour
-  await member.timeout(3600000, `AntiNuke Security Violation: ${reason}`).catch(() => {});
+  // 1. Timeout 1 Minute (60s)
+  await member.timeout(60000, `AntiNuke Security Violation: ${reason}`).catch(() => {});
 
   // 2. Strip dangerous roles
   const dangerousRoles = member.roles.cache.filter(r => r.name !== '@everyone' && (
@@ -836,7 +836,7 @@ client.on('messageCreate', async (message) => {
 
           // 2. TIMEOUT / LOCKOUT SENDER (User or Bot)
           if (message.member) {
-            await message.member.timeout(3600000, 'AntiEveryone Protection: Unauthorized mass ping').catch(() => {});
+            await message.member.timeout(60000, 'AntiEveryone Protection: Unauthorized mass ping').catch(() => {});
 
             if (message.channel && message.channel.permissionOverwrites) {
               message.channel.permissionOverwrites.edit(message.author.id, {
