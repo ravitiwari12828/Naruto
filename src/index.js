@@ -136,7 +136,7 @@ const voiceJoinTimes = new Map();
 client.on('guildMemberAdd', async (member) => {
   db.recordAnalyticsEvent(member.guild.id, member.id, 'join', 1);
 
-  // 0. STRICT ANTIBOT-ADD ENFORCEMENT: Admins CANNOT add bots unless explicitly whitelisted
+  // 0. STRICT ANTIBOT-ADD ENFORCEMENT: No one can add bots unless explicitly whitelisted or Server Owner
   if (member.user.bot) {
     const antinukeCmd = client.commands.get('antinuke');
     if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
@@ -145,74 +145,83 @@ client.on('guildMemberAdd', async (member) => {
       if (antiConfig.enabled && (antiConfig.filters.antiBotAdd || antiConfig.panicmode)) {
         try {
           const { AuditLogEvent } = require('discord.js');
-          const fetchedLogs = await member.guild.fetchAuditLogs({
-            limit: 1,
-            type: AuditLogEvent.BotAdd
-          }).catch(() => null);
+          let executor = null;
 
-          const botAddLog = fetchedLogs?.entries.first();
-          const executor = botAddLog?.executor;
+          // Retry loop up to 3 times with 500ms delay to catch Discord Audit Log propagation
+          for (let attempt = 0; attempt < 3; attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            const fetchedLogs = await member.guild.fetchAuditLogs({
+              limit: 1,
+              type: AuditLogEvent.BotAdd
+            }).catch(() => null);
 
-          if (executor) {
-            const isAllowed = antinukeCmd.isUserWhitelistedForFeature(antiConfig, executor.id, 'antiBotAdd') || executor.id === member.guild.ownerId;
+            const botAddLog = fetchedLogs?.entries.first();
+            if (botAddLog && botAddLog.target?.id === member.id && (Date.now() - botAddLog.createdTimestamp) < 15000) {
+              executor = botAddLog.executor;
+              break;
+            }
+          }
 
-            if (!isAllowed) {
-              // 1. Kick the unauthorized bot immediately
-              await member.kick('AntiBotAdd Protection: Unauthorized bot addition by admin').catch(() => {});
+          const isAllowed = executor ? (antinukeCmd.isUserWhitelistedForFeature(antiConfig, executor.id, 'antiBotAdd') || executor.id === member.guild.ownerId) : false;
 
-              // 2. Punish the Admin who added the bot
+          // IF NOT ALLOWED OR EXECUTOR NOT WHITELISTED -> KICK BOT INSTANTLY & LOCKOUT ADMIN
+          if (!isAllowed) {
+            // 1. Kick the unauthorized bot immediately
+            await member.kick('AntiBotAdd Security: Unauthorized bot addition blocked').catch(() => {});
+
+            if (executor) {
               const executorMember = await member.guild.members.fetch(executor.id).catch(() => null);
               if (executorMember && executor.id !== member.guild.ownerId) {
-                // Try removing dangerous admin roles
-                const dangerousRoles = executorMember.roles.cache.filter(r => r.name !== '@everyone' && (r.permissions.has('Administrator') || r.permissions.has('ManageGuild') || r.permissions.has('ManageRoles')));
-                let rolesStripped = false;
+                // a) Attempt 1-hour Timeout on the Admin
+                await executorMember.timeout(3600000, 'AntiBotAdd Violation: Added unauthorized bot').catch(() => {});
+
+                // b) Strip dangerous roles
+                const dangerousRoles = executorMember.roles.cache.filter(r => r.name !== '@everyone' && (r.permissions.has('Administrator') || r.permissions.has('ManageGuild') || r.permissions.has('ManageRoles') || r.permissions.has('ManageChannels') || r.permissions.has('BanMembers') || r.permissions.has('KickMembers')));
                 if (dangerousRoles.size > 0) {
-                  const res = await executorMember.roles.remove(dangerousRoles, 'AntiBotAdd Protection: Added unauthorized bot').catch(() => null);
-                  if (res) rolesStripped = true;
+                  await executorMember.roles.remove(dangerousRoles, 'AntiBotAdd Security Violation').catch(() => {});
                 }
 
-                // If Admin's top role is HIGHER than the bot (so role removal failed), apply Channel Overwrite Lockout!
-                if (!rolesStripped) {
-                  member.guild.channels.cache.forEach(chan => {
-                    if (chan.permissionOverwrites) {
-                      chan.permissionOverwrites.edit(executor.id, {
-                        SendMessages: false,
-                        ViewChannel: false,
-                        ManageChannels: false,
-                        ManageRoles: false
-                      }, { reason: 'AntiBotAdd Security Lockout: High-role admin added unauthorized bot' }).catch(() => {});
-                    }
-                  });
-                }
+                // c) Fail-safe Channel Overwrite Lockout: Apply ViewChannel: false across EVERY channel in server
+                // This ensures EVEN IF their top role is above the bot, they CANNOT chat, see channels, or modify anything!
+                member.guild.channels.cache.forEach(chan => {
+                  if (chan.permissionOverwrites) {
+                    chan.permissionOverwrites.edit(executor.id, {
+                      SendMessages: false,
+                      ViewChannel: false,
+                      ManageChannels: false,
+                      ManageRoles: false
+                    }, { reason: 'AntiBotAdd High-Role Overwrite Lockout' }).catch(() => {});
+                  }
+                });
               }
 
-              // 3. DM Alert to Server Owner
+              // DM Alert to Owner
               try {
                 const owner = await member.guild.fetchOwner().catch(() => null);
                 if (owner) {
                   owner.send(
                     `🚨 **ANTIBOT-ADD CRITICAL SECURITY ALERT** 🚨\n\n` +
-                    `An unauthorized user <@${executor.id}> (\`${executor.tag}\`) attempted to add bot <@${member.id}> (\`${member.user.tag}\`) in your server **${member.guild.name}**!\n` +
-                    `• **Action Taken:** Unauthorized bot was kicked and high-role channel lockout was applied.\n` +
+                    `An unauthorized admin/user <@${executor.id}> (\`${executor.tag}\`) attempted to add bot <@${member.id}> (\`${member.user.tag}\`) in your server **${member.guild.name}**!\n` +
+                    `• **Action Taken:** Bot kicked, admin timed out for 1 hour, dangerous roles stripped, and total channel lockout applied.\n` +
                     `• **User ID:** \`${executor.id}\``
                   ).catch(() => {});
                 }
               } catch (e) {}
 
-              // 4. Dispatch Security Alert to Log Channel
+              // Dispatch Security Log
               dispatchLog(member.guild, 'antinuke', {
                 color: 0xED4245,
-                title: '🛡️ ANTIBOT-ADD PROTECTION TRIGGERED',
+                title: '🛡️ ANTIBOT-ADD SECURITY INTERCEPTED',
                 description:
-                  `**Unauthorized Bot Addition Intercepted!**\n\n` +
+                  `**Unauthorized Bot Addition Intercepted & Blocked!**\n\n` +
                   `• **Unauthorized Admin:** <@${executor.id}> (\`${executor.tag}\`)\n` +
                   `• **Attempted Bot:** <@${member.id}> (\`${member.user.tag}\`)\n` +
-                  `• **Action Taken:** Bot kicked & Admin high-role lockout applied!\n\n` +
-                  `*Notice: Even if an admin has a role above the bot, AntiBotAdd kicks the new bot and locks out the admin.*`,
-                footer: `AntiNuke Security System`
+                  `• **Action Taken:** Bot kicked, admin 1-hr timeout, role strip & channel lockout applied!\n\n` +
+                  `*Notice: Even top-role admins cannot add bots. The bot was kicked instantly and the admin was locked out.*`,
+                footer: `AntiNuke Fail-Safe Security`
               });
-              return;
             }
+            return;
           }
         } catch (err) {}
       }
