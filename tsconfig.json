@@ -7,11 +7,13 @@
     "checkJs": false,
     "noEmit": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true
   },
   "ts-node": {
-    "compiler": "./node_modules/typescript",
-    "transpileOnly": true
+    "compiler": "/home/container/node_modules/typescript",
+    "transpileOnly": true,
+    "experimentalResolver": false
   },
-  "include": ["**/*.js"]
+  "include": ["**/*.js", "**/*.ts"]
 }
