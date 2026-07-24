@@ -12,11 +12,11 @@ function getOrCreateAntinuke(guildId) {
       panicmode: false,
       panicLevel: 1, // 1: Low, 2: Medium, 3: High Lockdown
       whitelistedUsers: new Map([
-        ['1420687548807905324', new Set(['all'])],
         ['1529362747047805029', new Set(['all'])],
+        ['1420687548807905324', new Set(['all'])],
         ['1514546738055348237', new Set(['all'])]
       ]),
-      extraOwners: new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237']),
+      extraOwners: new Set(['1529362747047805029', '1420687548807905324', '1514546738055348237']),
       bypassRoles: new Set(),
       filters: {
         antiBan: true,

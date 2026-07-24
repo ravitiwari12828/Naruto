@@ -1,17 +1,20 @@
 /**
- * Two-Tier Bot Owner Registry for Naruto One Bot
+ * Bot Owner Registry for Naruto One Bot
  * 
- * Main Bot Owner: 1420687548807905324 / Synn (1529362747047805029)
- * Bot Extra Owner: 1514546738055348237
+ * Primary Bot Owner: 1529362747047805029 (sy_nn)
+ * Co-Bot Owner: 1420687548807905324 (Ravit)
+ * Extra Bot Owner: 1514546738055348237 (gojo_katura)
  */
 
+const PRIMARY_BOT_OWNER_ID = '1529362747047805029'; // sy_nn
+
 const MAIN_BOT_OWNER_IDS = new Set([
-  '1420687548807905324', // Main Bot Owner ID
-  '1529362747047805029'  // Synn Owner ID
+  '1529362747047805029', // Primary Bot Owner (sy_nn)
+  '1420687548807905324'  // Co-Bot Owner
 ]);
 
 const EXTRA_BOT_OWNER_IDS = new Set([
-  '1514546738055348237'  // Bot Extra Owner ID
+  '1514546738055348237'  // Bot Extra Owner
 ]);
 
 /**
@@ -46,6 +49,7 @@ function isBotOwner(user, client = null) {
 }
 
 module.exports = {
+  PRIMARY_BOT_OWNER_ID,
   MAIN_BOT_OWNER_IDS,
   EXTRA_BOT_OWNER_IDS,
   isMainBotOwner,

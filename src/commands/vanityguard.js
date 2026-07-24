@@ -33,7 +33,7 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const extraOwners = ['1420687548807905324', '1529362747047805029', '1514546738055348237'];
+    const extraOwners = ['1529362747047805029', '1420687548807905324', '1514546738055348237'];
     const isOwner = author.id === guild.ownerId || extraOwners.includes(author.id);
 
     if (!isOwner) {

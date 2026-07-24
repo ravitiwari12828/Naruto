@@ -423,7 +423,7 @@ async function punishRogueAdmin(guild, executorId, reason) {
   const antinukeCmd = client.commands.get('antinuke');
   if (antinukeCmd) {
     const config = antinukeCmd.getOrCreateAntinuke(guild.id);
-    if (config.extraOwners.has(executorId) || ['1420687548807905324', '1529362747047805029', '1514546738055348237'].includes(executorId)) {
+    if (config.extraOwners.has(executorId) || ['1529362747047805029', '1420687548807905324', '1514546738055348237'].includes(executorId)) {
       return; // Extra Owners & Bot Developers bypassed
     }
   }

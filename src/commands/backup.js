@@ -4,7 +4,7 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionsBi
 const db = require('../database/db');
 
 function isOwner(authorId, guildOwnerId) {
-  const extraOwners = ['1420687548807905324', '1529362747047805029', '1514546738055348237'];
+  const extraOwners = ['1529362747047805029', '1420687548807905324', '1514546738055348237'];
   return authorId === guildOwnerId || extraOwners.includes(authorId);
 }
 
