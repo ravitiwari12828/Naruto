@@ -28,46 +28,42 @@ function getOrCreateVMConfig(guildId) {
 }
 
 /**
- * Builds the exact VoiceMaster Interface Control Center embed matching screenshot 1.
+ * Builds the exact VoiceMaster Interface Control Center embed with 3D aesthetic emojis.
  */
 function buildVoiceMasterInterfaceEmbed() {
   return new EmbedBuilder()
     .setColor(0x2B2D31)
-    .setTitle(`VoiceMaster Interface`)
+    .setTitle(`${emojis.VOICE} VoiceMaster Interface Control Center`)
     .setDescription(
-      `🔲 **VoiceMaster Hub**\n` +
-      `:Playing: Join **Create Pvt** to create and control your own temporary voice room.\n` +
-      `:home: Everything below is your control panel for private channels.\n\n` +
-      `🔲 **VoiceMaster Control Center**\n` +
-      `:Playing: Use the buttons below to manage your voice channel.\n\n` +
-      `⚽ **Control Buttons**\n` +
-      `• 🔒 **Lock** your voice channel\n` +
-      `• 🔓 **Unlock** your voice channel\n` +
-      `• 👁️ **Hide** your voice channel\n` +
-      `• 📖 **Reveal** your voice channel\n` +
-      `• 📝 **Rename** your voice channel\n` +
-      `• 👥 **Limit** your voice channel user limit\n` +
-      `• 🔇 **Mute** a user\n` +
-      `• 🔊 **Unmute** a user\n` +
-      `• 🔕 **Deafen** a user\n` +
-      `• 🔔 **Undeafen** a user\n` +
-      `• 🛡️ **Permit** a user\n` +
-      `• 🚫 **Ban** a user\n` +
-      `• 🔄 **Transfer** ownership\n` +
-      `• 👑 **Claim** ownership\n` +
-      `• 🌐 **Region** change channel region\n` +
-      `• ⚡ **Bitrate** set voice quality`
+      `**${emojis.STAR} VoiceMaster Hub**\n` +
+      `Join **➕ Join to Create** to create and control your own temporary voice room.\n` +
+      `Everything below is your control panel for private voice channels.\n\n` +
+      `**${emojis.GEAR} Control Buttons Matrix**\n` +
+      `• ${emojis.LOCK} **Lock** — Lock your voice channel\n` +
+      `• ${emojis.UNLOCK} **Unlock** — Unlock your voice channel\n` +
+      `• ${emojis.HIDE} **Hide** — Hide your voice channel\n` +
+      `• 📖 **Reveal** — Reveal your voice channel\n` +
+      `• 📝 **Rename** — Rename your voice channel\n` +
+      `• 👥 **Limit** — Change user capacity limit\n` +
+      `• 🔇 **Mute** — Server mute members in VC\n` +
+      `• 🎙️ **Unmute** — Server unmute members in VC\n` +
+      `• 🔕 **Deafen** — Server deafen members in VC\n` +
+      `• 🎧 **Undeafen** — Server undeafen members in VC\n` +
+      `• ${emojis.SHIELD} **Permit** — Permit a user to join\n` +
+      `• ${emojis.REMOVE} **Ban** — Ban & kick a user from room\n` +
+      `• 🔄 **Transfer** — Transfer room ownership\n` +
+      `• ${emojis.OWNER_CROWN} **Claim** — Claim empty room ownership`
     )
-    .setFooter({ text: 'Powered by Konoha Priority Development' });
+    .setFooter({ text: 'Naruto Priority Development • VoiceMaster Core' });
 }
 
 /**
- * Builds the interactive button grid matching screenshot 1.
+ * Builds the interactive button grid with 3D aesthetic emojis.
  */
 function buildVoiceMasterActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_lock').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unlock').setEmoji('🔓').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_lock').setEmoji(emojis.OBJ_SHIELD).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unlock').setEmoji(emojis.OBJ_TOOLS).setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_hide').setEmoji('👁️').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_reveal').setEmoji('📖').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_rename').setEmoji('📝').setStyle(ButtonStyle.Secondary)
@@ -76,16 +72,16 @@ function buildVoiceMasterActionRows() {
   const row2 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('vm_limit').setEmoji('👥').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_mute').setEmoji('🔇').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unmute').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unmute').setEmoji('🎙️').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_deafen').setEmoji('🔕').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_undeafen').setEmoji('🔔').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('vm_undeafen').setEmoji('🎧').setStyle(ButtonStyle.Secondary)
   );
 
   const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_permit').setEmoji('🛡️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_ban').setEmoji('🚫').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_permit').setEmoji(emojis.OBJ_TOOLS).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_ban').setEmoji(emojis.OBJ_REMOVE).setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_transfer').setEmoji('🔄').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_claim').setEmoji('👑').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_claim').setEmoji(emojis.OBJ_OWNER).setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_region').setEmoji('🌐').setStyle(ButtonStyle.Secondary)
   );
 
@@ -102,7 +98,8 @@ module.exports = {
   buildVoiceMasterActionRows,
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
     if (['setupvc', 'vcsetup'].includes(invoked)) sub = 'setup';
@@ -157,7 +154,7 @@ module.exports = {
       return message.reply({
         embeds: [
           createStyledEmbed({
-            title: `🎙️ VoiceMaster Setup Complete!`,
+            title: `${emojis.VOICE} VoiceMaster Setup Complete!`,
             description:
               `• **Join to Create Voice Channel**: <#${triggerChan.id}>\n` +
               `• **VoiceMaster Interface Panel**: Deployed in <#${interfaceChan.id}>\n\n` +
@@ -185,10 +182,9 @@ module.exports = {
 
       config.inVcRoleId = role.id;
       voicemasterConfigs.set(guild.id, config);
-      return message.reply(`✅ In-VC Auto Role set to <@&${role.id}>!`);
+      return message.reply(`${emojis.SUCCESS} In-VC Auto Role set to <@&${role.id}>!`);
     }
 
-    // Default VoiceMaster Help Panel matching screenshot
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
     return renderModuleHelpPanel(message, 'voice');
   }
