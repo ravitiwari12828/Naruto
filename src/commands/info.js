@@ -1,6 +1,6 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
-const { EmbedBuilder, version: djsVersion } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, version: djsVersion } = require('discord.js');
 const os = require('os');
 const db = require('../database/db');
 
@@ -9,6 +9,135 @@ const afkStore = new Map();
 
 // Global Snipe store (channelId -> { author, content, image, timestamp })
 const snipeStore = new Map();
+
+function buildServerInfoMainEmbed(guild, owner, author, clientUser) {
+  const createdAt = `<t:${Math.floor(guild.createdAt.getTime() / 1000)}:F>`;
+  const channels = guild.channels.cache;
+  const textChannels = channels.filter(c => c.type === 0).size;
+  const voiceChannels = channels.filter(c => c.type === 2).size;
+  const categoryChannels = channels.filter(c => c.type === 4).size;
+  const forumChannels = channels.filter(c => c.type === 15).size;
+
+  const regularEmojis = guild.emojis.cache.filter(e => !e.animated).size;
+  const animatedEmojis = guild.emojis.cache.filter(e => e.animated).size;
+  const totalEmojis = guild.emojis.cache.size;
+
+  const roleCount = Math.max(0, guild.roles.cache.size - 1);
+  const rolesList = guild.roles.cache
+    .filter(r => r.name !== '@everyone')
+    .sort((a, b) => b.position - a.position)
+    .map(r => `${r}`)
+    .slice(0, 10)
+    .join('\n') || '*None*';
+
+  const remainingRoles = Math.max(0, roleCount - 10);
+  const rolesFooter = remainingRoles > 0 ? `\n*...and ${remainingRoles} more*` : '';
+
+  const featuresList = guild.features && guild.features.length > 0
+    ? guild.features.slice(0, 12).map(f => `\`${f.replace(/_/g, ' ')}\``).join(' • ')
+    : '`STANDARD`';
+
+  const banner = guild.bannerURL({ dynamic: true, size: 1024 });
+
+  const embed = new EmbedBuilder()
+    .setColor(0x00E5FF)
+    .setAuthor({ name: `ℹ️ ${guild.name} • Server Information`, iconURL: guild.iconURL({ dynamic: true }) || clientUser.displayAvatarURL({ dynamic: true }) })
+    .setThumbnail(guild.iconURL({ dynamic: true, size: 512 }) || clientUser.displayAvatarURL({ dynamic: true }))
+    .setDescription(
+      `**ℹ️ About**\n` +
+      `• **Name:** ${guild.name}\n` +
+      `• **ID:** \`${guild.id}\`\n` +
+      `• **Owner ${emojis.OWNER_CROWN || '👑'} :** ${owner ? owner.user.username : 'Unknown'} (<@${guild.ownerId}>)\n` +
+      `• **Created At:** ${createdAt}\n` +
+      `• **Members:** **${guild.memberCount.toLocaleString()}**\n\n` +
+      (guild.description ? `**📝 Description**\n${guild.description}\n\n` : '') +
+      `──────────────────────────────────────────\n\n` +
+      `**⚙️ General Stats**\n` +
+      `• **Verification Level:** \`${guild.verificationLevel || 'None'}\`\n` +
+      `• **Channels:** \`${channels.size}\` | **Roles:** \`${roleCount}\` | **Emojis:** \`${totalEmojis}\`\n` +
+      `• **Boost Status:** Level ${guild.premiumTier} (${guild.premiumSubscriptionCount || 0} Boosts)\n\n` +
+      `──────────────────────────────────────────\n\n` +
+      `**📁 Channels**\n` +
+      `• **Total:** \`${channels.size}\` (${textChannels} text, ${voiceChannels} voice, ${categoryChannels} categories, ${forumChannels} forum)\n\n` +
+      `──────────────────────────────────────────\n\n` +
+      `**🎨 Emoji Info**\n` +
+      `• Regular: \`${regularEmojis}/250\` | Animated: \`${animatedEmojis}/250\` | Total Emoji: \`${totalEmojis}/500\`\n\n` +
+      `──────────────────────────────────────────\n\n` +
+      `**🚀 Boost Status**\n` +
+      `• Level: \`${guild.premiumTier}\` [ \`${guild.premiumSubscriptionCount || 0}\` boosts ]\n\n` +
+      `──────────────────────────────────────────\n\n` +
+      `**🛡️ Guild Features**\n` +
+      `${featuresList}\n\n` +
+      `──────────────────────────────────────────\n\n` +
+      `**🎭 Server Roles [ ${roleCount} ]**\n` +
+      `${rolesList}${rolesFooter}`
+    )
+    .setFooter({
+      text: `Requested By ${author.username} • Realtime Server Info`,
+      iconURL: author.displayAvatarURL({ dynamic: true })
+    })
+    .setTimestamp();
+
+  if (banner) embed.setImage(banner);
+  return embed;
+}
+
+function buildServerInfoRow1(activeTab = 'overview') {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('sinfo_overview')
+      .setLabel('Overview')
+      .setEmoji(emojis.OBJ_STATS || 'ℹ️')
+      .setStyle(activeTab === 'overview' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('sinfo_channels')
+      .setLabel('Channels')
+      .setEmoji(emojis.OBJ_TOOLS || '📁')
+      .setStyle(activeTab === 'channels' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('sinfo_emojis')
+      .setLabel('Emojis')
+      .setEmoji(emojis.OBJ_REACTIONROLES || '🎨')
+      .setStyle(activeTab === 'emojis' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('sinfo_features')
+      .setLabel('Features')
+      .setEmoji(emojis.OBJ_SHIELD || '🛡️')
+      .setStyle(activeTab === 'features' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('sinfo_roles')
+      .setLabel('Roles')
+      .setEmoji(emojis.OBJ_ROLES || '🎭')
+      .setStyle(activeTab === 'roles' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+  );
+}
+
+function buildServerInfoRow2(guild) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('sinfo_icon')
+      .setLabel('Server Icon')
+      .setEmoji('🖼️')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('sinfo_banner')
+      .setLabel('Server Banner')
+      .setEmoji('🌆')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(!guild.bannerURL()),
+    new ButtonBuilder()
+      .setCustomId('sinfo_splash')
+      .setLabel('Invite Splash')
+      .setEmoji('🎨')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(!guild.splashURL()),
+    new ButtonBuilder()
+      .setCustomId('sinfo_refresh')
+      .setLabel('Refresh')
+      .setEmoji('🔄')
+      .setStyle(ButtonStyle.Success)
+  );
+}
 
 module.exports = {
   name: 'info',
@@ -51,66 +180,54 @@ module.exports = {
     // 🏠 SERVERINFO / SERVER / SI
     if (['serverinfo', 'server', 'si'].includes(invoked)) {
       const owner = await guild.fetchOwner().catch(() => null);
-      const createdAt = `<t:${Math.floor(guild.createdAt.getTime() / 1000)}:F>`;
-      const channels = guild.channels.cache;
-      const textChannels = channels.filter(c => c.type === 0).size;
-      const voiceChannels = channels.filter(c => c.type === 2).size;
-      const categoryChannels = channels.filter(c => c.type === 4).size;
+      let activeTab = 'overview';
 
-      const regularEmojis = guild.emojis.cache.filter(e => !e.animated).size;
-      const animatedEmojis = guild.emojis.cache.filter(e => e.animated).size;
-      const totalEmojis = guild.emojis.cache.size;
+      let embed = buildServerInfoMainEmbed(guild, owner, author, clientUser);
+      let row1 = buildServerInfoRow1(activeTab);
+      let row2 = buildServerInfoRow2(guild);
 
-      const rolesList = guild.roles.cache
-        .filter(r => r.name !== '@everyone')
-        .sort((a, b) => b.position - a.position)
-        .map(r => `${r}`)
-        .slice(0, 10)
-        .join('\n') || '*None*';
+      const msg = await message.channel.send({ embeds: [embed], components: [row1, row2] });
 
-      const roleCount = Math.max(0, guild.roles.cache.size - 1);
+      const collector = msg.createMessageComponentCollector({ time: 300000 });
+      collector.on('collect', async (i) => {
+        if (i.customId === 'sinfo_icon') {
+          const icon = guild.iconURL({ dynamic: true, size: 1024 });
+          const iconEmbed = createStyledEmbed({
+            title: `🖼️ ${guild.name} — Server Icon`,
+            bannerUrl: icon,
+            requestedBy: author,
+            clientUser
+          });
+          return i.reply({ embeds: [iconEmbed], ephemeral: true });
+        } else if (i.customId === 'sinfo_banner') {
+          const banner = guild.bannerURL({ dynamic: true, size: 1024 });
+          const bannerEmbed = createStyledEmbed({
+            title: `🖼️ ${guild.name} — Server Banner`,
+            bannerUrl: banner,
+            requestedBy: author,
+            clientUser
+          });
+          return i.reply({ embeds: [bannerEmbed], ephemeral: true });
+        } else if (i.customId === 'sinfo_splash') {
+          const splash = guild.splashURL({ dynamic: true, size: 1024 });
+          const splashEmbed = createStyledEmbed({
+            title: `🖼️ ${guild.name} — Invite Splash`,
+            bannerUrl: splash,
+            requestedBy: author,
+            clientUser
+          });
+          return i.reply({ embeds: [splashEmbed], ephemeral: true });
+        } else if (i.customId.startsWith('sinfo_')) {
+          activeTab = i.customId.replace('sinfo_', '');
+          const newEmbed = buildServerInfoMainEmbed(guild, owner, author, clientUser);
+          const newRow1 = buildServerInfoRow1(activeTab);
+          const newRow2 = buildServerInfoRow2(guild);
+          return i.update({ embeds: [newEmbed], components: [newRow1, newRow2] });
+        }
+      });
 
-      const embed = new EmbedBuilder()
-        .setColor(0x2B2D31)
-        .setAuthor({ name: `ℹ️ ${guild.name} • Server Information`, iconURL: guild.iconURL({ dynamic: true }) || clientUser.displayAvatarURL({ dynamic: true }) })
-        .setThumbnail(guild.iconURL({ dynamic: true, size: 512 }) || clientUser.displayAvatarURL({ dynamic: true }))
-        .setDescription(
-          `**About**\n` +
-          `**Name:** ${guild.name}\n` +
-          `**ID:** \`${guild.id}\`\n` +
-          `**Owner 👑 :** ${owner ? owner.user.username : 'Unknown'} (<@${guild.ownerId}>)\n` +
-          `**Created At:** ${createdAt}\n` +
-          `**Members:** ${guild.memberCount}\n\n` +
-          `──────────────────────────────────────────\n\n` +
-          `**General Stats**\n` +
-          `**Verification Level:** ${guild.verificationLevel || 'None'}\n` +
-          `**Channels:** ${channels.size}\n` +
-          `**Roles:** ${roleCount}\n` +
-          `**Emojis:** ${totalEmojis}\n` +
-          `**Boost Status:** Level ${guild.premiumTier} (Boosts: ${guild.premiumSubscriptionCount || 0})\n\n` +
-          `──────────────────────────────────────────\n\n` +
-          `**Channels**\n` +
-          `**Total:** ${channels.size}\n` +
-          `Channels: ${textChannels} text, ${voiceChannels} voice, ${categoryChannels} categories\n\n` +
-          `──────────────────────────────────────────\n\n` +
-          `**Emoji Info**\n` +
-          `Regular: ${regularEmojis}/50\n` +
-          `Animated: ${animatedEmojis}/50\n` +
-          `Total Emoji: ${totalEmojis}/100\n\n` +
-          `──────────────────────────────────────────\n\n` +
-          `**Boost Status**\n` +
-          `Level: ${guild.premiumTier} [ ${guild.premiumSubscriptionCount || 0} boosts ]\n\n` +
-          `──────────────────────────────────────────\n\n` +
-          `**Server Roles [ ${roleCount} ]**\n` +
-          `${rolesList}`
-        )
-        .setFooter({
-          text: `Requested By ${author.username}`,
-          iconURL: author.displayAvatarURL({ dynamic: true })
-        })
-        .setTimestamp();
-
-      return message.channel.send({ embeds: [embed] });
+      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
+      return;
     }
 
     // 🖼️ AVATAR / AV [@user]
@@ -199,83 +316,15 @@ module.exports = {
       await sent.delete().catch(() => {});
 
       const embed = createStyledEmbed({
-        title: `🏓 Pong! — Response Speed`,
+        title: `🏓 Pong!`,
         fields: [
-          { name: '⚡ Message Latency', value: `\`${latency}ms\``, inline: true },
-          { name: '🌐 API Latency', value: `\`${apiPing}ms\``, inline: true }
+          { name: '⚡ Bot Latency', value: `\`${latency}ms\``, inline: true },
+          { name: '🌐 Discord API Ping', value: `\`${apiPing}ms\``, inline: true }
         ],
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
-
-    // 🤖 ABOUT
-    if (['about', 'botinfo'].includes(invoked)) {
-      const embed = createStyledEmbed({
-        title: `${emojis.NARUTO} About Naruto Bot`,
-        description: `A feature-rich All-In-One Discord bot built with a Naruto Shinobi theme.`,
-        fields: [
-          { name: '👨‍💻 Developer', value: `Developed with ❤️ by Synn`, inline: true },
-          { name: '🌐 Discord.js', value: `v${djsVersion}`, inline: true },
-          { name: '⚙️ Node.js', value: `${process.version}`, inline: true },
-          { name: '🏠 Servers', value: `\`${message.client.guilds.cache.size}\``, inline: true },
-          { name: '👥 Users', value: `\`${message.client.users.cache.size}\``, inline: true }
-        ],
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // 👤 PROFILE / USERINFO
-    if (['profile', 'userinfo', 'user'].includes(invoked)) {
-      const member = guild.members.cache.get(targetUser.id);
-      const createdAt = `<t:${Math.floor(targetUser.createdAt.getTime() / 1000)}:F>`;
-
-      const embed = createStyledEmbed({
-        title: `👤 ${targetUser.username}'s Profile`,
-        fields: [
-          { name: '🪪 Username', value: `\`${targetUser.tag}\``, inline: true },
-          { name: '🆔 User ID', value: `\`${targetUser.id}\``, inline: true },
-          { name: '📅 Account Created', value: createdAt, inline: false }
-        ],
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // 🏠 SERVERINFO / SERVER
-    if (['serverinfo', 'server'].includes(invoked)) {
-      const embed = createStyledEmbed({
-        title: `🏠 ${guild.name} — Server Info`,
-        fields: [
-          { name: '🆔 Server ID', value: `\`${guild.id}\``, inline: true },
-          { name: '👥 Members', value: `\`${guild.memberCount}\``, inline: true }
-        ],
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // Default Utility Help
-    const embed = createStyledEmbed({
-      title: `${emojis.STATS_NEW} Utility Commands`,
-      description:
-        `\`.activity\` — Server activity stats\n` +
-        `\`.afk [reason]\` — Set AFK status\n` +
-        `\`.avatar [@user]\` — View high-res avatar\n` +
-        `\`.roleinfo <@role>\` — View role details\n` +
-        `\`.serverbanner\` — View server banner\n` +
-        `\`.servericon\` — View server icon\n` +
-        `\`.serverinfo\` — View server information\n` +
-        `\`.snipe\` — Snipe recently deleted message\n` +
-        `\`.userinfo [@user]\` — View user information`,
-      requestedBy: author,
-      clientUser
-    });
-    return message.channel.send({ embeds: [embed] });
   }
 };
