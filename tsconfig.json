@@ -10,10 +10,8 @@
     "skipLibCheck": true
   },
   "ts-node": {
-    "transpileOnly": true,
-    "compilerOptions": {
-      "module": "CommonJS"
-    }
+    "compiler": "./node_modules/typescript",
+    "transpileOnly": true
   },
   "include": ["**/*.js"]
 }
