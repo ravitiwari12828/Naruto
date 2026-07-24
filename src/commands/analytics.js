@@ -329,6 +329,25 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
+    // A. DEDICATED TIMEFRAME PANELS (.analytics 1d / 7d / 14d / 30d / overall)
+    if (['1d', '7d', '14d', '30d', 'lifetime', 'overall'].includes(sub)) {
+      const key = sub === 'overall' ? 'lifetime' : sub;
+      const embed = renderTimeframePanel(guild, key, author, clientUser);
+      const row = buildTimeframeRow(key);
+      const msg = await message.channel.send({ embeds: [embed], components: [row] });
+
+      const collector = msg.createMessageComponentCollector({ time: 300000 });
+      collector.on('collect', async (i) => {
+        if (!i.customId.startsWith('tf_')) return;
+        const newKey = i.customId.replace('tf_', '');
+        const newEmbed = renderTimeframePanel(guild, newKey, author, clientUser);
+        const newRow = buildTimeframeRow(newKey);
+        return i.update({ embeds: [newEmbed], components: [newRow] });
+      });
+      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
+      return;
+    }
+
     // B. DEDICATED TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
     if (sub === 'messages') {
       let activeKey = args[1]?.toLowerCase();
