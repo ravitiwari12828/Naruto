@@ -32,14 +32,13 @@ async function ensureShinobiRolesAndPerks(guild) {
   ];
 
   const perkRolesDef = [
-    { name: 'Leaf Cadet [Lvl 5]', color: 0x00FFBB, minLevel: 5, permissions: [PermissionsBitField.Flags.UseExternalEmojis, PermissionsBitField.Flags.UseExternalStickers, PermissionsBitField.Flags.AttachFiles] },
-    { name: 'Shinobi Specialist [Lvl 10]', color: 0x2ECC71, minLevel: 10, permissions: [PermissionsBitField.Flags.ChangeNickname] },
-    { name: 'Chunin Guardian [Lvl 20]', color: 0x3498DB, minLevel: 20, permissions: [PermissionsBitField.Flags.AddReactions] },
-    { name: 'Shadow Operative [Lvl 30]', color: 0x9B59B6, minLevel: 30, permissions: [PermissionsBitField.Flags.EmbedLinks, PermissionsBitField.Flags.AttachFiles] },
-    { name: 'Sage Master [Lvl 40]', color: 0xE67E22, minLevel: 40, permissions: [PermissionsBitField.Flags.EmbedLinks] },
-    { name: 'S-Rank Shinobi [Lvl 60]', color: 0xE74C3C, minLevel: 60, permissions: [PermissionsBitField.Flags.SendVoiceMessages] },
-    { name: 'Kage Sovereign [Lvl 80]', color: 0xF1C40F, minLevel: 80, permissions: [PermissionsBitField.Flags.CreatePolls] },
-    { name: 'Will of Fire Supreme [Lvl 100]', color: 0xFF007F, minLevel: 100, permissions: [] }
+    { name: 'Genin Trainee [Lvl 5]', color: 0x00FFBB, minLevel: 5, permissions: [PermissionsBitField.Flags.UseExternalEmojis, PermissionsBitField.Flags.UseExternalStickers, PermissionsBitField.Flags.AttachFiles] },
+    { name: 'Chunin Captain [Lvl 15]', color: 0x3498DB, minLevel: 15, permissions: [PermissionsBitField.Flags.ChangeNickname, PermissionsBitField.Flags.AddReactions] },
+    { name: 'Special Jounin Operative [Lvl 25]', color: 0x9B59B6, minLevel: 25, permissions: [PermissionsBitField.Flags.EmbedLinks, PermissionsBitField.Flags.AttachFiles] },
+    { name: 'Jounin Master [Lvl 40]', color: 0xE67E22, minLevel: 40, permissions: [PermissionsBitField.Flags.EmbedLinks] },
+    { name: 'ANBU Commander [Lvl 60]', color: 0xE74C3C, minLevel: 60, permissions: [PermissionsBitField.Flags.SendVoiceMessages] },
+    { name: 'Sannin Legend [Lvl 75]', color: 0x8E44AD, minLevel: 75, permissions: [PermissionsBitField.Flags.CreatePolls] },
+    { name: 'Hokage Sovereign [Lvl 100]', color: 0xF1C40F, minLevel: 100, permissions: [] }
   ];
 
   const roleMap = new Map();
@@ -94,7 +93,7 @@ async function ensureShinobiRolesAndPerks(guild) {
 
 module.exports = {
   name: 'level',
-  description: 'Level System & Shinobi Level Perks: level rank, level leaderboard, level setup, level perks, level disable, level status',
+  description: 'Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status',
   aliases: [
     'levels', 'lvl', 'xp',
     'leaderboard', 'rank', 'lb', 'perks', 'rewards'
@@ -138,26 +137,25 @@ module.exports = {
 
       const createdSummary = createdRoles.length > 0
         ? `• **Created Roles (${createdRoles.length})**: ${createdRoles.map(r => `\`${r}\``).join(', ')}`
-        : `• **Level & Perk Roles**: All Rank & Shinobi Level Perk roles are active in server!`;
+        : `• **Level & Perk Roles**: All Shinobi Chakra & Clan Perk roles are active in server!`;
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL} Shinobi Leveling & Custom Perks Configured`,
+        title: `${emojis.LEVEL} Shinobi Leveling & Chakra Perks Configured`,
         description:
-          `Successfully configured Naruto Leveling Engine & Custom Shinobi Perks for **${guild.name}**!\n\n` +
+          `Successfully configured Naruto Leveling Engine & Shinobi Chakra Perks for **${guild.name}**!\n\n` +
           `• **Announcement Channel**: <#${chan.id}>\n` +
           `• **System Status**: \`ENABLED ✅\`\n` +
           `${createdSummary}\n\n` +
-          `**🍃 Genin Academy Perks (Lvls 5 – 20)**\n` +
-          `• \`Lvl 5\` ⁞ **Leaf Cadet** — *Chakra Emotes: External Emojis & Stickers + Media Files*\n` +
-          `• \`Lvl 10\` ⁞ **Shinobi Specialist** — *Ninja Identity: Custom Nickname Perms*\n` +
-          `• \`Lvl 20\` ⁞ **Chunin Guardian** — *Scroll Reactions: Unlimited Reactions Everywhere*\n\n` +
-          `**🔥 ANBU & Jounin Veteran Perks (Lvls 30 – 60)**\n` +
-          `• \`Lvl 30\` ⁞ **Shadow Operative** — *Visual Jutsu: Image & Video Media Sharing*\n` +
-          `• \`Lvl 40\` ⁞ **Sage Master** — *Expression Jutsu: GIF Animations Access*\n` +
-          `• \`Lvl 60\` ⁞ **S-Rank Shinobi** — *Voice Note Transmission: Voice Messages in chat*\n\n` +
-          `**⚡ Hokage Legend Perks (Lvls 80 – 100)**\n` +
-          `• \`Lvl 80\` ⁞ **Kage Sovereign** — *Council Polls: Create Custom Server Polls*\n` +
-          `• \`Lvl 100\` ⁞ **Will of Fire Supreme** — *Absolute Jutsu Immunity: Auto-Mute & Security Bypass!*`,
+          `**🍃 Phase 1: Shinobi Trainee (Lvls 5 – 25)**\n` +
+          `• \`Lvl 5\` ⁞ **Genin Trainee** — *Chakra Emotes: External Emojis & Stickers + Media Files*\n` +
+          `• \`Lvl 15\` ⁞ **Chunin Captain** — *Identity Jutsu: Nickname Perms & Reactions*\n` +
+          `• \`Lvl 25\` ⁞ **Special Jounin Operative** — *Visual Transmission: Image & Video Sharing*\n\n` +
+          `**🔥 Phase 2: Ninja Elite & Legend (Lvls 40 – 75)**\n` +
+          `• \`Lvl 40\` ⁞ **Jounin Master** — *Expression Jutsu: GIF Animations Access*\n` +
+          `• \`Lvl 60\` ⁞ **ANBU Commander** — *Voice Note Transmission: Voice Messages in chat*\n` +
+          `• \`Lvl 75\` ⁞ **Sannin Legend** — *Council Polls: Create Custom Server Polls*\n\n` +
+          `**⚡ Phase 3: Hokage Sovereign (Lvl 100)**\n` +
+          `• \`Lvl 100\` ⁞ **Hokage Sovereign** — *Will of Fire Immunity: Auto-Mute & Security Bypass!*`,
         requestedBy: author,
         clientUser
       });
@@ -170,21 +168,20 @@ module.exports = {
       const userLvl = userData.level || 1;
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL} Shinobi Level Perks & Unlockable Rewards`,
+        title: `${emojis.LEVEL} Shinobi Chakra Perks & Unlockable Rewards`,
         subtitle: `Your Current Level: Level ${userLvl} (${userData.rank})`,
         description:
-          `Chat in text channels and hang out in VC to earn XP, level up, and unlock exclusive Shinobi perks!\n\n` +
-          `🍃 **Genin Academy Perks (Lvls 5 – 20)**\n` +
-          `• \`Lvl 5\` ⁞ **Leaf Cadet** — Chakra Emotes (External Emojis & Stickers + Media Files)\n` +
-          `• \`Lvl 10\` ⁞ **Shinobi Specialist** — Ninja Identity (Custom Nickname Perms)\n` +
-          `• \`Lvl 20\` ⁞ **Chunin Guardian** — Scroll Reactions (Add Reactions everywhere freely)\n\n` +
-          `🔥 **ANBU & Jounin Veteran Perks (Lvls 30 – 60)**\n` +
-          `• \`Lvl 30\` ⁞ **Shadow Operative** — Visual Jutsu (Share Images & Videos in chat)\n` +
-          `• \`Lvl 40\` ⁞ **Sage Master** — Expression Jutsu (Send GIFs in conversations)\n` +
-          `• \`Lvl 60\` ⁞ **S-Rank Shinobi** — Voice Note Transmission (Send Voice Messages)\n\n` +
-          `⚡ **Hokage Legend Perks (Lvls 80 – 100)**\n` +
-          `• \`Lvl 80\` ⁞ **Kage Sovereign** — Council Polls & Custom Server Voting\n` +
-          `• \`Lvl 100\` ⁞ **Will of Fire Supreme** — Absolute Jutsu Immunity (Auto-Mute & Security Grid Bypass)!`,
+          `Chat in text channels and hang out in VC to earn XP, level up, and unlock exclusive Shinobi Clan perks!\n\n` +
+          `🍃 **Phase 1: Shinobi Trainee (Lvls 5 – 25)**\n` +
+          `• \`Lvl 5\` ⁞ **Genin Trainee** — Chakra Emotes (External Emojis, Stickers & Media Files)\n` +
+          `• \`Lvl 15\` ⁞ **Chunin Captain** — Identity Jutsu (Nickname Perms & Add Reactions freely)\n` +
+          `• \`Lvl 25\` ⁞ **Special Jounin Operative** — Visual Transmission (Share Images & Videos in chat)\n\n` +
+          `🔥 **Phase 2: Ninja Elite & Legend (Lvls 40 – 75)**\n` +
+          `• \`Lvl 40\` ⁞ **Jounin Master** — Expression Jutsu (Send GIFs in conversations)\n` +
+          `• \`Lvl 60\` ⁞ **ANBU Commander** — Voice Note Transmission (Send Voice Messages)\n` +
+          `• \`Lvl 75\` ⁞ **Sannin Legend** — Council Polls (Create Custom Server Polls)\n\n` +
+          `⚡ **Phase 3: Hokage Sovereign (Lvl 100)**\n` +
+          `• \`Lvl 100\` ⁞ **Hokage Sovereign** — Will of Fire Immunity (Auto-Mute & Security Grid Bypass)!`,
         thumbnailUrl: author.displayAvatarURL({ dynamic: true, size: 256 }),
         requestedBy: author,
         clientUser

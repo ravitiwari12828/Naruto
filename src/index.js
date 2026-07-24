@@ -992,14 +992,13 @@ client.on('messageCreate', async (message) => {
       }
 
       const perkThresholds = [
-        { lvl: 5, key: 'Leaf Cadet' },
-        { lvl: 10, key: 'Shinobi Specialist' },
-        { lvl: 20, key: 'Chunin Guardian' },
-        { lvl: 30, key: 'Shadow Operative' },
-        { lvl: 40, key: 'Sage Master' },
-        { lvl: 60, key: 'S-Rank Shinobi' },
-        { lvl: 80, key: 'Kage Sovereign' },
-        { lvl: 100, key: 'Will of Fire Supreme' }
+        { lvl: 5, key: 'Genin Trainee' },
+        { lvl: 15, key: 'Chunin Captain' },
+        { lvl: 25, key: 'Special Jounin Operative' },
+        { lvl: 40, key: 'Jounin Master' },
+        { lvl: 60, key: 'ANBU Commander' },
+        { lvl: 75, key: 'Sannin Legend' },
+        { lvl: 100, key: 'Hokage Sovereign' }
       ];
 
       for (const perk of perkThresholds) {
