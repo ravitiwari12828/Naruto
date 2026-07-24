@@ -515,20 +515,23 @@ module.exports = {
   description: 'Analytics, Leaderboards, User & Server Metrics Suite',
   aliases: [
     'tracker', 'userstats', 'serverstats', 'serveranalytics', 'useranalytics',
-    'topmessages', 'msgstats', 'topvoice', 'voicestats', 'vctiming',
-    'topinvites', 'invitestats', 'joinsleaves', 'memberflow', 'joinleavestats',
+    'topmessages', 'msgstats', 'messages', 'chat', 'topmsg', 'msgs', 'msg',
+    'topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'vc', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct',
+    'topinvites', 'invitestats', 'invites', 'topinv', 'invs', 'inv',
+    'joinsleaves', 'memberflow', 'joinleavestats',
     'topcommands', 'commandstats', 'ticketstats', 'ticketanalytics'
   ],
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
-    // Category direct aliases
+    // Category direct aliases mapping
     if (['serverstats', 'serveranalytics', 'server', 'analytics', 'tracker'].includes(invoked)) sub = 'server';
-    if (['topmessages', 'msgstats', 'messages', 'chat'].includes(invoked)) sub = 'messages';
-    if (['topvoice', 'voicestats', 'vctiming', 'voice'].includes(invoked)) sub = 'voice';
-    if (['topinvites', 'invitestats', 'invites'].includes(invoked)) sub = 'invites';
+    if (['topmessages', 'msgstats', 'messages', 'chat', 'topmsg', 'msgs', 'msg'].includes(invoked)) sub = 'messages';
+    if (['topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'vc', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct'].includes(invoked)) sub = 'voice';
+    if (['topinvites', 'invitestats', 'invites', 'topinv', 'invs', 'inv'].includes(invoked)) sub = 'invites';
     if (['joinsleaves', 'memberflow', 'joinleavestats', 'joins', 'leaves'].includes(invoked)) sub = 'joins';
     if (['topcommands', 'commandstats', 'commands'].includes(invoked)) sub = 'commands';
     if (['ticketstats', 'ticketanalytics', 'tickets'].includes(invoked)) sub = 'tickets';
