@@ -21,6 +21,7 @@ function getOrCreateLevelConfig(guildId) {
 }
 
 async function ensureShinobiRolesAndPerks(guild) {
+  // Rank Roles ordered from lowest rank to highest rank
   const rankRolesDef = [
     { name: 'Student', color: 0x95A5A6, rankKey: 'Academy Student' },
     { name: 'Genin', color: 0x2ECC71, rankKey: 'Genin' },
@@ -31,6 +32,7 @@ async function ensureShinobiRolesAndPerks(guild) {
     { name: 'Hokage', color: 0xF1C40F, rankKey: 'Hokage' }
   ];
 
+  // Perk Roles ordered from lowest level to highest level
   const perkRolesDef = [
     { name: 'Genin Trainee [Lvl 5]', color: 0x00FFBB, minLevel: 5, permissions: [PermissionsBitField.Flags.UseExternalEmojis, PermissionsBitField.Flags.UseExternalStickers, PermissionsBitField.Flags.AttachFiles] },
     { name: 'Chunin Captain [Lvl 15]', color: 0x3498DB, minLevel: 15, permissions: [PermissionsBitField.Flags.ChangeNickname, PermissionsBitField.Flags.AddReactions] },
@@ -88,6 +90,37 @@ async function ensureShinobiRolesAndPerks(guild) {
     }
   }
 
+  // Explicitly set role positions so Hokage is AT THE TOP (highest position) and Student is AT THE BOTTOM (lowest position)
+  try {
+    const meRole = guild.members.me?.roles.highest;
+    if (meRole && guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
+      const basePos = Math.max(1, meRole.position - 15);
+      const positionsToSet = [];
+
+      // Ranks: Student (lowest position) -> ... -> Hokage (highest position)
+      const orderedRanks = ['Student', 'Genin', 'Chunin', 'Special Jounin', 'Jounin', 'ANBU Black Ops', 'Hokage'];
+      orderedRanks.forEach((rankName, index) => {
+        const roleId = roleMap.get(rankName);
+        if (roleId) {
+          positionsToSet.push({ role: roleId, position: basePos + index });
+        }
+      });
+
+      // Perks: Lvl 5 (lowest position) -> ... -> Lvl 100 (highest position)
+      const orderedPerks = ['lvl_5', 'lvl_15', 'lvl_25', 'lvl_40', 'lvl_60', 'lvl_75', 'lvl_100'];
+      orderedPerks.forEach((perkKey, index) => {
+        const roleId = roleMap.get(perkKey);
+        if (roleId) {
+          positionsToSet.push({ role: roleId, position: basePos + 10 + index });
+        }
+      });
+
+      if (positionsToSet.length > 0) {
+        await guild.roles.setPositions(positionsToSet).catch(e => console.error('Failed to set role positions:', e.message));
+      }
+    }
+  } catch (err) {}
+
   return { roleMap, createdRoles };
 }
 
@@ -137,25 +170,24 @@ module.exports = {
 
       const createdSummary = createdRoles.length > 0
         ? `• **Created Roles (${createdRoles.length})**: ${createdRoles.map(r => `\`${r}\``).join(', ')}`
-        : `• **Level & Perk Roles**: All Shinobi Chakra & Clan Perk roles are active in server!`;
+        : `• **Level & Perk Roles**: All Shinobi Rank & Perk roles are organized in proper hierarchy!`;
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL} Shinobi Leveling & Chakra Perks Configured`,
+        title: `${emojis.LEVEL} Shinobi Leveling & Role Hierarchy Configured`,
         description:
-          `Successfully configured Naruto Leveling Engine & Shinobi Chakra Perks for **${guild.name}**!\n\n` +
+          `Successfully configured Naruto Leveling Engine & Role Hierarchy for **${guild.name}**!\n\n` +
           `• **Announcement Channel**: <#${chan.id}>\n` +
           `• **System Status**: \`ENABLED ✅\`\n` +
           `${createdSummary}\n\n` +
-          `**🍃 Phase 1: Shinobi Trainee (Lvls 5 – 25)**\n` +
-          `• \`Lvl 5\` ⁞ **Genin Trainee** — *Chakra Emotes: External Emojis & Stickers + Media Files*\n` +
-          `• \`Lvl 15\` ⁞ **Chunin Captain** — *Identity Jutsu: Nickname Perms & Reactions*\n` +
-          `• \`Lvl 25\` ⁞ **Special Jounin Operative** — *Visual Transmission: Image & Video Sharing*\n\n` +
-          `**🔥 Phase 2: Ninja Elite & Legend (Lvls 40 – 75)**\n` +
-          `• \`Lvl 40\` ⁞ **Jounin Master** — *Expression Jutsu: GIF Animations Access*\n` +
-          `• \`Lvl 60\` ⁞ **ANBU Commander** — *Voice Note Transmission: Voice Messages in chat*\n` +
-          `• \`Lvl 75\` ⁞ **Sannin Legend** — *Council Polls: Create Custom Server Polls*\n\n` +
-          `**⚡ Phase 3: Hokage Sovereign (Lvl 100)**\n` +
-          `• \`Lvl 100\` ⁞ **Hokage Sovereign** — *Will of Fire Immunity: Auto-Mute & Security Bypass!*`,
+          `**👑 Configured Shinobi Role Hierarchy (Highest ➔ Lowest):**\n` +
+          `👑 **Hokage** (Highest Hierarchy & Top Permissions)\n` +
+          `🚨 **ANBU Black Ops**\n` +
+          `🍊 **Jounin**\n` +
+          `💜 **Special Jounin**\n` +
+          `🔷 **Chunin**\n` +
+          `💚 **Genin**\n` +
+          `🎓 **Student** (Lowest Hierarchy)\n\n` +
+          `*Run \`.level perks\` to view full Level Perk rewards guide!*`,
         requestedBy: author,
         clientUser
       });
