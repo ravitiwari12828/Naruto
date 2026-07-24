@@ -108,5 +108,10 @@ module.exports = {
   OBJ_GEAR: { name: 'emoji_GEAR', id: '1529377705701933066' },
   OBJ_AUTORESPOND: { name: 'emoji_BOT', id: '1529377680892493874' },
   OBJ_SHIELD: { name: 'emoji_antinuke', id: '1529720213120225371' },
-  OBJ_NARUTO: { name: 'orange_white_naruto_swirl', id: '1529377765998989353' }
+  OBJ_NARUTO: { name: 'orange_white_naruto_swirl', id: '1529377765998989353' },
+  OBJ_OWNER: { name: 'emoji_owner_crown', id: '1529910236062810142' },
+  OBJ_MODMAIL: { name: 'emoji_modmail_envelope', id: '1529910230534586449' },
+  OBJ_NINJUTSU: { name: 'emoji_rpg_rasengan', id: '1529910238684119171' },
+  OBJ_HOME: { name: 'orange_leaf_emoji', id: '1529377760693456956' },
+  OBJ_REMOVE: { name: 'emoji_REMOVE', id: '1529377741252595802' }
 };
