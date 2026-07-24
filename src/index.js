@@ -170,29 +170,8 @@ client.on('guildMemberAdd', async (member) => {
             await member.kick('AntiBotAdd Security: Unauthorized bot addition blocked').catch(() => {});
 
             if (executor) {
-              const executorMember = await member.guild.members.fetch(executor.id).catch(() => null);
-              if (executorMember && executor.id !== member.guild.ownerId) {
-                // a) Attempt 1-minute (60s) Timeout on the Admin
-                await executorMember.timeout(60000, 'AntiBotAdd Violation: Added unauthorized bot').catch(() => {});
-
-                // b) Strip dangerous roles
-                const dangerousRoles = executorMember.roles.cache.filter(r => r.name !== '@everyone' && (r.permissions.has('Administrator') || r.permissions.has('ManageGuild') || r.permissions.has('ManageRoles') || r.permissions.has('ManageChannels') || r.permissions.has('BanMembers') || r.permissions.has('KickMembers')));
-                if (dangerousRoles.size > 0) {
-                  await executorMember.roles.remove(dangerousRoles, 'AntiBotAdd Security Violation').catch(() => {});
-                }
-
-                // c) Fail-safe Channel Overwrite Lockout: Apply ViewChannel: false across EVERY channel in server
-                // This ensures EVEN IF their top role is above the bot, they CANNOT chat, see channels, or modify anything!
-                member.guild.channels.cache.forEach(chan => {
-                  if (chan.permissionOverwrites) {
-                    chan.permissionOverwrites.edit(executor.id, {
-                      SendMessages: false,
-                      ViewChannel: false,
-                      ManageChannels: false,
-                      ManageRoles: false
-                    }, { reason: 'AntiBotAdd High-Role Overwrite Lockout' }).catch(() => {});
-                  }
-                });
+              if (executor && executor.id !== member.guild.ownerId) {
+                await punishRogueAdmin(member.guild, executor.id, 'AntiBotAdd Security Violation');
               }
 
               // DM Alert to Owner
@@ -437,7 +416,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
   }
 });
 
-// 🛡️ REUSABLE FAIL-SAFE ROGUE ADMIN PUNISHMENT HELPER
+// 🛡️ REUSABLE FAIL-SAFE ROGUE ADMIN 10-DAY QUARANTINE & JAIL LOCKOUT HELPER
 async function punishRogueAdmin(guild, executorId, reason) {
   if (!guild || !executorId || executorId === guild.ownerId) return;
 
@@ -452,32 +431,63 @@ async function punishRogueAdmin(guild, executorId, reason) {
   const member = await guild.members.fetch(executorId).catch(() => null);
   if (!member) return;
 
-  // 1. Timeout 1 Minute (60s)
-  await member.timeout(60000, `AntiNuke Security Violation: ${reason}`).catch(() => {});
+  const TEN_DAYS_MS = 10 * 24 * 60 * 60 * 1000; // 864,000,000ms = 10 Days
 
-  // 2. Strip dangerous roles
-  const dangerousRoles = member.roles.cache.filter(r => r.name !== '@everyone' && (
-    r.permissions.has(PermissionsBitField.Flags.Administrator) ||
-    r.permissions.has(PermissionsBitField.Flags.ManageGuild) ||
-    r.permissions.has(PermissionsBitField.Flags.ManageRoles) ||
-    r.permissions.has(PermissionsBitField.Flags.ManageChannels) ||
-    r.permissions.has(PermissionsBitField.Flags.BanMembers) ||
-    r.permissions.has(PermissionsBitField.Flags.KickMembers)
-  ));
+  // 1. Apply 10-Day Discord Timeout
+  await member.timeout(TEN_DAYS_MS, `AntiNuke 10-Day Quarantine Lockout: ${reason}`).catch(() => {});
 
-  if (dangerousRoles.size > 0) {
-    await member.roles.remove(dangerousRoles, `AntiNuke Security Violation: ${reason}`).catch(() => {});
+  // 2. Strip ALL Non-@everyone Roles
+  const rolesToStrip = member.roles.cache.filter(r => r.name !== '@everyone');
+  if (rolesToStrip.size > 0) {
+    await member.roles.remove(rolesToStrip, `AntiNuke Security Violation: ${reason}`).catch(() => {});
   }
 
-  // 3. FAIL-SAFE Channel Overwrite Lockout (Works EVEN IF top role is above the bot!)
+  // 3. Find or Create "Quarantined" / "Jailed" Role
+  let quarantineRole = guild.roles.cache.find(r => ['quarantined', 'jailed', 'quarantine', 'jail'].includes(r.name.toLowerCase()));
+  if (!quarantineRole) {
+    try {
+      quarantineRole = await guild.roles.create({
+        name: 'Quarantined',
+        color: 0x2B2D31,
+        permissions: [],
+        hoist: true,
+        reason: 'AntiNuke Security: Auto-created Quarantined Jail Role'
+      });
+    } catch (e) {}
+  }
+
+  if (quarantineRole) {
+    await member.roles.add(quarantineRole, `AntiNuke 10-Day Jail Lockout: ${reason}`).catch(() => {});
+  }
+
+  // 4. Zero-Access Channel Overwrite Lockdown across ALL Channels
+  // Strips ViewChannel, SendMessages, Connect, Speak, AddReactions so user sees NOTHING except server exists
   guild.channels.cache.forEach(chan => {
     if (chan.permissionOverwrites) {
+      // User overwrite
       chan.permissionOverwrites.edit(executorId, {
-        SendMessages: false,
         ViewChannel: false,
-        ManageChannels: false,
-        ManageRoles: false
-      }, { reason: `AntiNuke Overwrite Lockout: ${reason}` }).catch(() => {});
+        SendMessages: false,
+        Connect: false,
+        Speak: false,
+        AddReactions: false,
+        UseApplicationCommands: false,
+        CreatePublicThreads: false,
+        CreatePrivateThreads: false,
+        SendMessagesInThreads: false
+      }, { reason: `AntiNuke 10-Day User Lockdown: ${reason}` }).catch(() => {});
+
+      // Quarantine Role overwrite
+      if (quarantineRole) {
+        chan.permissionOverwrites.edit(quarantineRole.id, {
+          ViewChannel: false,
+          SendMessages: false,
+          Connect: false,
+          Speak: false,
+          AddReactions: false,
+          UseApplicationCommands: false
+        }, { reason: `AntiNuke 10-Day Role Lockdown: ${reason}` }).catch(() => {});
+      }
     }
   });
 }
