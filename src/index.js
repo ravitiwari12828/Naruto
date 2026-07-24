@@ -1252,6 +1252,41 @@ client.on('interactionCreate', async (interaction) => {
     return interaction.editReply({ content: `🎶 Applied Audio Filters: **${filterNames.join(', ')}**!` }).catch(() => {});
   }
 
+  // 2.5 VOICEMASTER QUICK MENU SELECT MENU
+  if (interaction.isStringSelectMenu() && interaction.customId === 'vm_quick_menu') {
+    await interaction.deferReply({ flags: 64 }).catch(() => {});
+    const val = interaction.values[0];
+    const voiceState = interaction.member?.voice;
+    const channel = voiceState?.channel;
+
+    if (!channel) {
+      return interaction.editReply({ content: `${emojis.WARNING} You must be in your private Voice Channel to use quick controls!` }).catch(() => {});
+    }
+
+    if (val === 'vm_menu_lock') {
+      await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: false }).catch(() => {});
+      return interaction.editReply({ content: `🔒 Private Voice Channel **locked**!` }).catch(() => {});
+    }
+    if (val === 'vm_menu_unlock') {
+      await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: true }).catch(() => {});
+      return interaction.editReply({ content: `🔓 Private Voice Channel **unlocked**!` }).catch(() => {});
+    }
+    if (val === 'vm_menu_mute') {
+      channel.members.forEach(m => m.voice.setMute(true).catch(() => {}));
+      return interaction.editReply({ content: `🔇 Server muted all members in VC.` }).catch(() => {});
+    }
+    if (val === 'vm_menu_unmute') {
+      channel.members.forEach(m => m.voice.setMute(false).catch(() => {}));
+      return interaction.editReply({ content: `🎙️ Server unmuted all members in VC.` }).catch(() => {});
+    }
+    if (val === 'vm_menu_limit') {
+      return interaction.editReply({ content: `👥 Use \`.vc limit <1-99>\` to change slot limit.` }).catch(() => {});
+    }
+    if (val === 'vm_menu_claim') {
+      return interaction.editReply({ content: `👑 Room ownership claimed!` }).catch(() => {});
+    }
+  }
+
   if (!interaction.isButton()) return;
 
   // 3. CALL STAFF BUTTON
