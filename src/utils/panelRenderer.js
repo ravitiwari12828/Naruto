@@ -20,10 +20,11 @@ const CATEGORIES = [
       'owner', 'ownermenu',
       'noprefix add', 'noprefix remove', 'noprefix list',
       'premium activate', 'premium revoke', 'premium adduser',
-      'premium revokeuser', 'premium status',
-      'botlock enable', 'botlock add', 'botlock list',
+      'premium revokeuser', 'premium status', 'premium redeem',
+      'botlock enable', 'botlock disable', 'botlock add', 'botlock list',
       'extraowner add', 'extraowner remove',
-      'panicmode enable', 'panicmode set'
+      'panicmode enable', 'panicmode disable', 'panicmode set',
+      'securesetup', 'botstats', 'stat'
     ]
   },
   {
@@ -34,8 +35,9 @@ const CATEGORIES = [
     unicodeFallback: '📊',
     heading: `${emojis.ANALYTICS_ZAP || '📊'} Analytics Commands`,
     commands: [
-      'analytics', 'topmessages', 'topvoice', 'topinvites',
-      'joinsleaves', 'topcommands', 'ticketstats', 'userstats', 'serverstats'
+      'analytics', 'userstats', 'serverstats',
+      'topmessages', 'topvoice', 'topinvites',
+      'joinsleaves', 'topcommands', 'ticketstats'
     ]
   },
   {
@@ -46,21 +48,11 @@ const CATEGORIES = [
     unicodeFallback: '📬',
     heading: `${emojis.MODMAIL_ENVELOPE || '📬'} ModMail Commands`,
     commands: [
-      'modmail setup', 'r <message>', 'close [reason]',
-      'modmail', 'modmailtranscript'
-    ]
-  },
-  {
-    label: 'No-Prefix & Premium',
-    value: 'noprefix',
-    description: 'No-prefix authorization, server premium & user VIP management',
-    customEmoji: emojis.OBJ_PREMIUM,
-    unicodeFallback: '💎',
-    heading: `${emojis.PREMIUM || '💎'} Premium Commands`,
-    commands: [
-      'noprefix add', 'noprefix remove', 'noprefix list',
-      'premium activate', 'premium revoke', 'premium adduser',
-      'premium revokeuser', 'premium status', 'premium redeem'
+      'modmail setup',
+      'r <message>',
+      'close [reason]',
+      'modmail',
+      'modmailtranscript'
     ]
   },
   {
@@ -86,7 +78,8 @@ const CATEGORIES = [
     unicodeFallback: '🔊',
     heading: `${emojis.VOICE || '🔊'} Voice Commands`,
     commands: [
-      'vctemp setup', 'vctemp disable', 'vctemp status', 'setupvc',
+      'vctemp setup', 'vctemp disable', 'vctemp status',
+      'setupvc', 'vcsetup', 'vm',
       'vcdeafen', 'vckick', 'vckickall', 'vclist',
       'vcmoveall', 'vcmute', 'vcmuteall', 'vcpull',
       'vcpullall', 'vcundeafen', 'vcunmute', 'vcunmuteall'
@@ -111,12 +104,18 @@ const CATEGORIES = [
     description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, BypassRole & 21 Security Filters',
     customEmoji: emojis.OBJ_ANTINUKE,
     unicodeFallback: '🛡️',
-    heading: `${emojis.ANTINUKE || '🛡️'} Antinuke Commands`,
+    heading: `${emojis.ANTINUKE || '🛡️'} AntiNuke & Security Commands`,
     commands: [
       'antinuke', 'antinuke enable', 'antinuke disable',
       'panicmode enable', 'panicmode disable', 'panicmode set',
-      'whitelist add', 'whitelist remove', 'extraowner add',
-      'extraowner remove', 'bypassrole add', 'quarantine'
+      'whitelist add', 'whitelist remove',
+      'extraowner add', 'extraowner remove',
+      'bypassrole add', 'bypassrole remove',
+      'quarantine', 'quarantine enable', 'quarantine disable',
+      'quarantine set days <1-30>',
+      'vanityguard enable', 'vanityguard disable',
+      'vanityguard set <vanity>', 'vanityguard status',
+      'disableeveryone', 'stripmentions', 'suppresseveryone'
     ]
   },
   {
@@ -127,8 +126,8 @@ const CATEGORIES = [
     unicodeFallback: '⭐',
     heading: `${emojis.LEVEL || '⭐'} Level Commands`,
     commands: [
-      'level rank', 'level leaderboard', 'level setup',
-      'level disable', 'level status'
+      'level rank', 'level leaderboard',
+      'level setup', 'level disable', 'level status'
     ]
   },
   {
@@ -165,14 +164,15 @@ const CATEGORIES = [
   {
     label: 'Utility & Logs',
     value: 'info',
-    description: 'activity, afk, advlogsetup, logsetup, serverbanner, snipe',
+    description: 'activity, afk, advlogsetup, logsetup, serverbanner, snipe, userinfo',
     customEmoji: emojis.OBJ_ZAP,
     unicodeFallback: '📈',
-    heading: `${emojis.STATS_NEW || '📈'} Utility Commands`,
+    heading: `${emojis.STATS_NEW || '📈'} Utility & Info Commands`,
     commands: [
-      'activity', 'afk', 'avatar', 'advlogsetup',
-      'logsetup', 'roleinfo', 'serverbanner',
-      'servericon', 'serverinfo', 'snipe', 'userinfo'
+      'activity', 'afk', 'avatar',
+      'advlogsetup', 'logsetup',
+      'roleinfo', 'serverbanner', 'servericon', 'serverinfo',
+      'snipe', 'snipe <1-10>', 'userinfo'
     ]
   },
   {
@@ -183,13 +183,15 @@ const CATEGORIES = [
     unicodeFallback: '🔨',
     heading: `${emojis.MOD || '🔨'} Moderation Commands`,
     commands: [
-      'ban', 'hackban',
-      'kick',
+      'ban', 'hackban', 'kick',
       'mute', 'unmute',
       'unban', 'unbanall',
       'purge', 'purgebots',
-      'nuke', 'role',
-      'rolemenu', 'list', 'warn'
+      'nuke', 'role', 'rolemenu',
+      'list', 'warn',
+      'modlimits set', 'modlimits reset', 'modlimits status',
+      'modlimits bypass add @user', 'modlimits disable', 'modlimits enable',
+      'disableeveryone', 'noeveryone', 'fixpings'
     ]
   },
   {
@@ -269,10 +271,7 @@ const CATEGORIES = [
     unicodeFallback: '🤖',
     heading: `${emojis.PRIORITY || '🤖'} Priority AI Commands`,
     commands: [
-      'priority',
-      'ai',
-      'ask',
-      'code'
+      'priority', 'ai', 'ask', 'code'
     ]
   },
   {
@@ -331,7 +330,7 @@ const CATEGORIES = [
   {
     label: 'Welcome',
     value: 'welcome',
-    description: 'welcome setup <#channel> [avatar/imageURL] [text], welcometest, welcomereset',
+    description: 'welcome setup, welcometest, welcomereset',
     customEmoji: emojis.OBJ_WELCOME,
     unicodeFallback: '👋',
     heading: `${emojis.WELCOME || '👋'} Welcome Commands`,
@@ -339,6 +338,23 @@ const CATEGORIES = [
       'welcome setup <#channel> [avatar/imageURL] [text]',
       'welcometest',
       'welcomereset'
+    ]
+  },
+  {
+    label: 'Server Backup & Nuke',
+    value: 'backup',
+    description: 'Backup/restore server data & owner-only nuke commands',
+    customEmoji: emojis.OBJ_TOOLS || '💾',
+    unicodeFallback: '💾',
+    heading: `💾 Server Backup & Nuke Commands`,
+    commands: [
+      'backup list', 'backup save',
+      'backup restore <backupId>',
+      'backup delete <backupId>',
+      'serverbackup', 'bk save', 'bk list',
+      'nukeallroles', 'nukechannels',
+      'nukeall', 'nukeserver',
+      'deleteroles', 'deletechannels'
     ]
   }
 ];

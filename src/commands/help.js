@@ -32,7 +32,11 @@ const EMOJI_MAP = {
   stickynote: emojis.STICKY,
   profile: emojis.PROFILE,
   roles: emojis.ROLES,
-  welcome: emojis.WELCOME
+  welcome: emojis.WELCOME,
+  backup: '💾',
+  nukeserver: '💣',
+  modlimits: '⏱️',
+  vanityguard: '🔐'
 };
 
 function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
