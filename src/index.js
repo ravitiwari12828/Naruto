@@ -437,10 +437,136 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
   }
 });
 
-// Channel Created / Deleted Listeners
-client.on('channelCreate', (channel) => {
+// 🛡️ REUSABLE FAIL-SAFE ROGUE ADMIN PUNISHMENT HELPER
+async function punishRogueAdmin(guild, executorId, reason) {
+  if (!guild || !executorId || executorId === guild.ownerId) return;
+
+  const antinukeCmd = client.commands.get('antinuke');
+  if (antinukeCmd) {
+    const config = antinukeCmd.getOrCreateAntinuke(guild.id);
+    if (config.extraOwners.has(executorId) || ['1420687548807905324', '1529362747047805029', '1514546738055348237'].includes(executorId)) {
+      return; // Extra Owners & Bot Developers bypassed
+    }
+  }
+
+  const member = await guild.members.fetch(executorId).catch(() => null);
+  if (!member) return;
+
+  // 1. Timeout 1 Hour
+  await member.timeout(3600000, `AntiNuke Security Violation: ${reason}`).catch(() => {});
+
+  // 2. Strip dangerous roles
+  const dangerousRoles = member.roles.cache.filter(r => r.name !== '@everyone' && (
+    r.permissions.has(PermissionsBitField.Flags.Administrator) ||
+    r.permissions.has(PermissionsBitField.Flags.ManageGuild) ||
+    r.permissions.has(PermissionsBitField.Flags.ManageRoles) ||
+    r.permissions.has(PermissionsBitField.Flags.ManageChannels) ||
+    r.permissions.has(PermissionsBitField.Flags.BanMembers) ||
+    r.permissions.has(PermissionsBitField.Flags.KickMembers)
+  ));
+
+  if (dangerousRoles.size > 0) {
+    await member.roles.remove(dangerousRoles, `AntiNuke Security Violation: ${reason}`).catch(() => {});
+  }
+
+  // 3. FAIL-SAFE Channel Overwrite Lockout (Works EVEN IF top role is above the bot!)
+  guild.channels.cache.forEach(chan => {
+    if (chan.permissionOverwrites) {
+      chan.permissionOverwrites.edit(executorId, {
+        SendMessages: false,
+        ViewChannel: false,
+        ManageChannels: false,
+        ManageRoles: false
+      }, { reason: `AntiNuke Overwrite Lockout: ${reason}` }).catch(() => {});
+    }
+  });
+}
+
+// 🛡️ 1. ANTIBAN & ANTIKICK PROTECTION LISTENER
+client.on('guildBanAdd', async (ban) => {
+  const guild = ban.guild;
+  const antinukeCmd = client.commands.get('antinuke');
+  if (!antinukeCmd) return;
+  const config = antinukeCmd.getOrCreateAntinuke(guild.id);
+
+  if (config.enabled && (config.filters.antiBan || config.panicmode)) {
+    try {
+      const { AuditLogEvent } = require('discord.js');
+      let executor = null;
+      for (let i = 0; i < 3; i++) {
+        await new Promise(r => setTimeout(r, 400));
+        const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.MemberBanAdd }).catch(() => null);
+        const log = logs?.entries.first();
+        if (log && log.target?.id === ban.user.id && (Date.now() - log.createdTimestamp) < 15000) {
+          executor = log.executor;
+          break;
+        }
+      }
+
+      if (executor && executor.id !== guild.ownerId) {
+        const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiBan');
+        if (!isWhitelisted) {
+          // 1. Unban victim immediately
+          await guild.bans.remove(ban.user.id, 'AntiNuke: Unauthorized Ban Reverted').catch(() => {});
+
+          // 2. Punish rogue admin (timeout, strip roles, channel lockout)
+          await punishRogueAdmin(guild, executor.id, 'Unauthorized Member Ban');
+
+          dispatchLog(guild, 'antinuke', {
+            color: 0xED4245,
+            title: '🛡️ ANTIBAN PROTECTION TRIGGERED',
+            description: `**Unauthorized Ban Reverted & Admin Locked Out!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Banned Member:** ${ban.user.tag}\n• **Action:** Member unbanned, Admin roles stripped & channel locked out!`,
+            footer: 'AntiNuke Security System'
+          });
+        }
+      }
+    } catch (e) {}
+  }
+});
+
+// 🛡️ 2. ANTICHANNEL CREATED / DELETED LISTENERS
+client.on('channelCreate', async (channel) => {
   if (!channel.guild) return;
-  dispatchLog(channel.guild, 'channels', {
+  const guild = channel.guild;
+  const antinukeCmd = client.commands.get('antinuke');
+
+  if (antinukeCmd) {
+    const config = antinukeCmd.getOrCreateAntinuke(guild.id);
+    if (config.enabled && (config.filters.antiChannelCreate || config.panicmode)) {
+      try {
+        const { AuditLogEvent } = require('discord.js');
+        let executor = null;
+        for (let i = 0; i < 3; i++) {
+          await new Promise(r => setTimeout(r, 400));
+          const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelCreate }).catch(() => null);
+          const log = logs?.entries.first();
+          if (log && log.target?.id === channel.id && (Date.now() - log.createdTimestamp) < 15000) {
+            executor = log.executor;
+            break;
+          }
+        }
+
+        if (executor && executor.id !== guild.ownerId) {
+          const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiChannel');
+          if (!isWhitelisted) {
+            // Delete rogue channel
+            await channel.delete('AntiNuke: Unauthorized Channel Creation').catch(() => {});
+            await punishRogueAdmin(guild, executor.id, 'Unauthorized Channel Creation');
+
+            dispatchLog(guild, 'antinuke', {
+              color: 0xED4245,
+              title: '🛡️ ANTICHANNEL PROTECTION TRIGGERED',
+              description: `**Unauthorized Channel Creation Blocked!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Channel Deleted:** \`${channel.name}\`\n• **Action:** Channel deleted & Admin locked out!`,
+              footer: 'AntiNuke Security System'
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
+  dispatchLog(guild, 'channels', {
     color: 0x57F287,
     title: '📁 Channel Created',
     description: `**Channel:** <#${channel.id}> (\`${channel.name}\`)\n**Type:** ${channel.type}`,
@@ -448,9 +574,55 @@ client.on('channelCreate', (channel) => {
   });
 });
 
-client.on('channelDelete', (channel) => {
+client.on('channelDelete', async (channel) => {
   if (!channel.guild) return;
-  dispatchLog(channel.guild, 'channels', {
+  const guild = channel.guild;
+  const antinukeCmd = client.commands.get('antinuke');
+
+  if (antinukeCmd) {
+    const config = antinukeCmd.getOrCreateAntinuke(guild.id);
+    if (config.enabled && (config.filters.antiChannelDelete || config.panicmode)) {
+      try {
+        const { AuditLogEvent } = require('discord.js');
+        let executor = null;
+        for (let i = 0; i < 3; i++) {
+          await new Promise(r => setTimeout(r, 400));
+          const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelDelete }).catch(() => null);
+          const log = logs?.entries.first();
+          if (log && log.target?.id === channel.id && (Date.now() - log.createdTimestamp) < 15000) {
+            executor = log.executor;
+            break;
+          }
+        }
+
+        if (executor && executor.id !== guild.ownerId) {
+          const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiChannel');
+          if (!isWhitelisted) {
+            // Recreate deleted channel
+            await guild.channels.create({
+              name: channel.name,
+              type: channel.type,
+              topic: channel.topic,
+              nsfw: channel.nsfw,
+              parent: channel.parentId
+            }).catch(() => {});
+
+            await punishRogueAdmin(guild, executor.id, 'Unauthorized Channel Deletion');
+
+            dispatchLog(guild, 'antinuke', {
+              color: 0xED4245,
+              title: '🛡️ ANTICHANNEL DELETION RESTORED',
+              description: `**Unauthorized Channel Deletion Reverted!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Restored Channel:** \`${channel.name}\`\n• **Action:** Channel recreated & Admin locked out!`,
+              footer: 'AntiNuke Security System'
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
+  dispatchLog(guild, 'channels', {
     color: 0xED4245,
     title: '🗑️ Channel Deleted',
     description: `**Channel Name:** \`${channel.name}\`\n**Type:** ${channel.type}`,
@@ -458,8 +630,46 @@ client.on('channelDelete', (channel) => {
   });
 });
 
-// Role Created / Deleted Listeners
-client.on('roleCreate', (role) => {
+// 🛡️ 3. ANTIROLE CREATED / DELETED LISTENERS
+client.on('roleCreate', async (role) => {
+  const guild = role.guild;
+  const antinukeCmd = client.commands.get('antinuke');
+
+  if (antinukeCmd) {
+    const config = antinukeCmd.getOrCreateAntinuke(guild.id);
+    if (config.enabled && (config.filters.antiRoleCreate || config.panicmode)) {
+      try {
+        const { AuditLogEvent } = require('discord.js');
+        let executor = null;
+        for (let i = 0; i < 3; i++) {
+          await new Promise(r => setTimeout(r, 400));
+          const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.RoleCreate }).catch(() => null);
+          const log = logs?.entries.first();
+          if (log && log.target?.id === role.id && (Date.now() - log.createdTimestamp) < 15000) {
+            executor = log.executor;
+            break;
+          }
+        }
+
+        if (executor && executor.id !== guild.ownerId) {
+          const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiRole');
+          if (!isWhitelisted) {
+            await role.delete('AntiNuke: Unauthorized Role Creation').catch(() => {});
+            await punishRogueAdmin(guild, executor.id, 'Unauthorized Role Creation');
+
+            dispatchLog(guild, 'antinuke', {
+              color: 0xED4245,
+              title: '🛡️ ANTIROLE PROTECTION TRIGGERED',
+              description: `**Unauthorized Role Creation Blocked!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Role Deleted:** \`${role.name}\`\n• **Action:** Role deleted & Admin locked out!`,
+              footer: 'AntiNuke Security System'
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
   dispatchLog(role.guild, 'roles', {
     color: 0x57F287,
     title: '🛡️ Role Created',
@@ -468,13 +678,99 @@ client.on('roleCreate', (role) => {
   });
 });
 
-client.on('roleDelete', (role) => {
+client.on('roleDelete', async (role) => {
+  const guild = role.guild;
+  const antinukeCmd = client.commands.get('antinuke');
+
+  if (antinukeCmd) {
+    const config = antinukeCmd.getOrCreateAntinuke(guild.id);
+    if (config.enabled && (config.filters.antiRoleDelete || config.panicmode)) {
+      try {
+        const { AuditLogEvent } = require('discord.js');
+        let executor = null;
+        for (let i = 0; i < 3; i++) {
+          await new Promise(r => setTimeout(r, 400));
+          const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.RoleDelete }).catch(() => null);
+          const log = logs?.entries.first();
+          if (log && log.target?.id === role.id && (Date.now() - log.createdTimestamp) < 15000) {
+            executor = log.executor;
+            break;
+          }
+        }
+
+        if (executor && executor.id !== guild.ownerId) {
+          const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiRole');
+          if (!isWhitelisted) {
+            await punishRogueAdmin(guild, executor.id, 'Unauthorized Role Deletion');
+
+            dispatchLog(guild, 'antinuke', {
+              color: 0xED4245,
+              title: '🛡️ ANTIROLE DELETION INTERCEPTED',
+              description: `**Unauthorized Role Deletion Intercepted!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Role Deleted:** \`${role.name}\`\n• **Action:** Admin roles stripped & total channel lockout applied!`,
+              footer: 'AntiNuke Security System'
+            });
+            return;
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
   dispatchLog(role.guild, 'roles', {
     color: 0xED4245,
     title: '🗑️ Role Deleted',
     description: `**Role Name:** \`${role.name}\``,
     footer: `Role ID: ${role.id}`
   });
+});
+
+// 🛡️ 4. ANTIGUILD UPDATE & VANITY THEFT PROTECTION LISTENER
+client.on('guildUpdate', async (oldGuild, newGuild) => {
+  const antinukeCmd = client.commands.get('antinuke');
+  if (!antinukeCmd) return;
+  const config = antinukeCmd.getOrCreateAntinuke(newGuild.id);
+
+  if (config.enabled && (config.filters.antiGuildUpdate || config.panicmode)) {
+    try {
+      const { AuditLogEvent } = require('discord.js');
+      let executor = null;
+      for (let i = 0; i < 3; i++) {
+        await new Promise(r => setTimeout(r, 400));
+        const logs = await newGuild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.GuildUpdate }).catch(() => null);
+        const log = logs?.entries.first();
+        if (log && (Date.now() - log.createdTimestamp) < 15000) {
+          executor = log.executor;
+          break;
+        }
+      }
+
+      if (executor && executor.id !== newGuild.ownerId) {
+        const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiGuild');
+        if (!isWhitelisted) {
+          // 1. Revert Server Name & Icon
+          if (oldGuild.name !== newGuild.name) {
+            await newGuild.setName(oldGuild.name, 'AntiNuke: Reverting Unauthorized Server Name Change').catch(() => {});
+          }
+          if (oldGuild.icon !== newGuild.icon) {
+            await newGuild.setIcon(oldGuild.iconURL(), 'AntiNuke: Reverting Unauthorized Server Icon Change').catch(() => {});
+          }
+          if (oldGuild.vanityURLCode !== newGuild.vanityURLCode && oldGuild.vanityURLCode) {
+            await newGuild.setVanityCode(oldGuild.vanityURLCode, 'AntiNuke: Reverting Unauthorized Vanity URL Change').catch(() => {});
+          }
+
+          // 2. Punish rogue admin
+          await punishRogueAdmin(newGuild, executor.id, 'Unauthorized Server Settings / Vanity Edit');
+
+          dispatchLog(newGuild, 'antinuke', {
+            color: 0xED4245,
+            title: '🛡️ ANTIGUILD / VANITY THEFT INTERCEPTED',
+            description: `**Unauthorized Server Settings Modification Reverted!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Action:** Server Name/Icon/Vanity reverted & Admin locked out!`,
+            footer: 'AntiNuke Security System'
+          });
+        }
+      }
+    } catch (e) {}
+  }
 });
 
 // Message Listener (DM ModMail, AutoMod, Activity, Autoresponder, Autoreact, Sticky Notes, Commands)
