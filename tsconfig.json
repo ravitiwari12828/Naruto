@@ -1,12 +1,19 @@
 {
   "compilerOptions": {
-    "target": "es2022",
-    "module": "commonjs",
+    "target": "ES2022",
+    "module": "CommonJS",
+    "moduleResolution": "node",
     "allowJs": true,
     "checkJs": false,
     "noEmit": true,
-    "skipLibCheck": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
-  "include": ["src/**/*", "index.js"]
+  "ts-node": {
+    "transpileOnly": true,
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  },
+  "include": ["**/*.js"]
 }
