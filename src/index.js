@@ -737,15 +737,23 @@ client.on('roleDelete', async (role) => {
 // 🛡️ 4. ANTIGUILD UPDATE & VANITY THEFT PROTECTION LISTENER
 client.on('guildUpdate', async (oldGuild, newGuild) => {
   const antinukeCmd = client.commands.get('antinuke');
-  if (!antinukeCmd) return;
-  const config = antinukeCmd.getOrCreateAntinuke(newGuild.id);
+  const vanityCmd = client.commands.get('vanityguard');
 
-  if (config.enabled && (config.filters.antiGuildUpdate || config.panicmode)) {
+  const antiConfig = antinukeCmd ? antinukeCmd.getOrCreateAntinuke(newGuild.id) : null;
+  const vanityConfig = vanityCmd ? vanityCmd.getOrCreateVanityConfig(newGuild.id) : null;
+
+  const isVanityChanged = oldGuild.vanityURLCode !== newGuild.vanityURLCode ||
+                          (vanityConfig && vanityConfig.protectedVanity && newGuild.vanityURLCode !== vanityConfig.protectedVanity);
+
+  const shouldProtect = (antiConfig && antiConfig.enabled && (antiConfig.filters.antiGuildUpdate || antiConfig.panicmode)) ||
+                        (vanityConfig && vanityConfig.enabled && isVanityChanged);
+
+  if (shouldProtect) {
     try {
       const { AuditLogEvent } = require('discord.js');
       let executor = null;
       for (let i = 0; i < 3; i++) {
-        await new Promise(r => setTimeout(r, 400));
+        await new Promise(r => setTimeout(r, 50));
         const logs = await newGuild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.GuildUpdate }).catch(() => null);
         const log = logs?.entries.first();
         if (log && (Date.now() - log.createdTimestamp) < 15000) {
@@ -755,7 +763,7 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
       }
 
       if (executor && executor.id !== newGuild.ownerId) {
-        const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiGuild');
+        const isWhitelisted = antinukeCmd ? antinukeCmd.isUserWhitelistedForFeature(antiConfig, executor.id, 'antiGuild') : false;
         if (!isWhitelisted) {
           // 1. Revert Server Name & Icon
           if (oldGuild.name !== newGuild.name) {
@@ -764,18 +772,24 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
           if (oldGuild.icon !== newGuild.icon) {
             await newGuild.setIcon(oldGuild.iconURL(), 'AntiNuke: Reverting Unauthorized Server Icon Change').catch(() => {});
           }
-          if (oldGuild.vanityURLCode !== newGuild.vanityURLCode && oldGuild.vanityURLCode) {
-            await newGuild.setVanityCode(oldGuild.vanityURLCode, 'AntiNuke: Reverting Unauthorized Vanity URL Change').catch(() => {});
+
+          // 2. Revert & Reclaim Vanity URL Code
+          const targetVanity = vanityConfig?.protectedVanity || oldGuild.vanityURLCode;
+          if (targetVanity && newGuild.vanityURLCode !== targetVanity) {
+            await newGuild.setVanityCode(targetVanity, 'VanityGuard: Instant Reversion & Claim').catch(() => {});
           }
 
-          // 2. Punish rogue admin
-          await punishRogueAdmin(newGuild, executor.id, 'Unauthorized Server Settings / Vanity Edit');
+          // 3. 10-Day Quarantine & Jail Lockout for Vanity Thief
+          await punishRogueAdmin(newGuild, executor.id, 'Unauthorized Server Settings / Vanity Theft Attempt');
 
           dispatchLog(newGuild, 'antinuke', {
             color: 0xED4245,
-            title: '🛡️ ANTIGUILD / VANITY THEFT INTERCEPTED',
-            description: `**Unauthorized Server Settings Modification Reverted!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Action:** Server Name/Icon/Vanity reverted & Admin locked out!`,
-            footer: 'AntiNuke Security System'
+            title: '🛡️ VANITYGUARD / SERVER THEFT INTERCEPTED',
+            description: `**Unauthorized Server Settings / Vanity Theft Reverted!**\n\n` +
+                         `• **Rogue Admin:** <@${executor.id}>\n` +
+                         `• **Target Vanity:** \`discord.gg/${targetVanity || 'Reverted'}\`\n` +
+                         `• **Action:** Reverted & 10-Day Quarantine Jail applied!`,
+            footer: 'VanityGuard Security System'
           });
         }
       }
