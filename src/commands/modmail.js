@@ -28,7 +28,7 @@ function getOrCreateModmailConfig(guildId) {
 }
 
 function generateHTMLModmailTranscript(username, messages, closedByTag, reason) {
-  const sorted = messages.sort((a, b) => a.timestamp - b.timestamp);
+  const sorted = (messages || []).sort((a, b) => a.timestamp - b.timestamp);
 
   const messageBlocks = sorted.map(m => {
     const timeStr = new Date(m.timestamp).toUTCString();
@@ -47,7 +47,7 @@ function generateHTMLModmailTranscript(username, messages, closedByTag, reason) 
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Transcript - ${escapeHtml(username)}</title>
+  <title>ModMail Transcript - ${escapeHtml(username)}</title>
   <style>
     body { font-family: 'Segoe UI', Helvetica, Arial, sans-serif; background: #0f0f17; color: #e1e1e6; padding: 25px; margin: 0; }
     .header { background: #161622; border-left: 4px solid #5865f2; border-radius: 8px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
@@ -68,7 +68,7 @@ function generateHTMLModmailTranscript(username, messages, closedByTag, reason) 
   <div class="header">
     <h2>ModMail Transcript - ${escapeHtml(username)}</h2>
     <div class="meta">
-      <div><strong>Closed By:</strong> ${escapeHtml(closedByTag)}</div>
+      <div><strong>Closed By:</strong> ${escapeHtml(closedByTag || 'System')}</div>
       <div><strong>Reason:</strong> ${escapeHtml(reason || 'No reason provided')}</div>
       <div><strong>Total Messages:</strong> ${sorted.length}</div>
     </div>
@@ -90,28 +90,90 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+function buildModmailOverviewEmbed(guild, config, activeCount, author, clientUser) {
+  const category = config.categoryId ? guild.channels.cache.get(config.categoryId) : null;
+  const transcriptChan = config.transcriptChanId ? guild.channels.cache.get(config.transcriptChanId) : null;
+
+  return createStyledEmbed({
+    title: `📬 ModMail System Control & Overview`,
+    subtitle: `Support Suite & Direct Ticket Routing — ${guild.name}`,
+    description:
+      `Welcome to the **ModMail Management Suite**.\n` +
+      `Users can DM the bot directly to open support tickets in real-time!\n\n` +
+      `**⚙️ System Status**\n` +
+      `• **Status:** \`${config.enabled ? '🟢 Active & Listening' : '🔴 Disabled'}\`\n` +
+      `• **ModMail Category:** ${category ? `<#${category.id}>` : '`Not Deployed (Run .modmail setup)`'}\n` +
+      `• **Transcripts Channel:** ${transcriptChan ? `<#${transcriptChan.id}>` : '`Not Deployed`'}\n` +
+      `• **Active Open Tickets:** \`${activeCount}\` active tickets\n\n` +
+      `**📜 ModMail Command Suite**\n` +
+      `\`\`\`\n` +
+      `.modmail setup           • Deploy category & transcript channel\n` +
+      `.r <message>             • Reply to user inside ticket channel\n` +
+      `.close [reason]          • End ticket & generate HTML transcript\n` +
+      `.modmailtranscript       • Generate HTML transcript on demand\n` +
+      `.modmail                 • View this status control dashboard\n` +
+      `\`\`\``,
+    thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+    requestedBy: author,
+    clientUser
+  });
+}
+
+function buildModmailOverviewRow() {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('mm_setup')
+      .setLabel('Deploy Setup')
+      .setEmoji('🛠️')
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId('mm_active')
+      .setLabel('Active Tickets')
+      .setEmoji('📬')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('mm_transcripts')
+      .setLabel('Transcripts')
+      .setEmoji('📜')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('mm_refresh')
+      .setLabel('Refresh')
+      .setEmoji('🔄')
+      .setStyle(ButtonStyle.Success)
+  );
+}
+
 module.exports = {
   name: 'modmail',
-  description: 'Complete ModMail Support System matching screenshot 2/3 with HTML transcripts',
-  aliases: ['r', 'reply', 'close', 'modmailsetup'],
+  description: 'Complete ModMail Support Suite (.modmail setup, .r, .close, .modmailtranscript)',
+  aliases: ['r', 'reply', 'close', 'modmailsetup', 'modmailtranscript', 'transcript', 'transcripts'],
   modmailConfigs,
   activeModmailTickets,
   getOrCreateModmailConfig,
   generateHTMLModmailTranscript,
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
-    if (invoked === 'r' || invoked === 'reply') sub = 'reply';
-    if (invoked === 'close') sub = 'close';
+    if (['r', 'reply'].includes(invoked)) sub = 'reply';
+    if (['close', 'modmailclose'].includes(invoked)) sub = 'close';
+    if (['modmailsetup'].includes(invoked)) sub = 'setup';
+    if (['modmailtranscript', 'transcript', 'transcripts'].includes(invoked)) sub = 'transcript';
 
     const author = message.author;
     const guild = message.guild;
 
+    let clientUser = message.client.user;
+    try {
+      clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
+    } catch (e) {}
+
     // 1. SETUP COMMAND (.modmail setup)
-    if (sub === 'setup' || invoked === 'modmailsetup') {
-      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+    if (sub === 'setup') {
+      if (!message.member?.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can setup ModMail.`);
       }
 
@@ -157,14 +219,14 @@ module.exports = {
               `• **HTML Transcript Channel**: ${transcriptChan ? `<#${transcriptChan.id}>` : '`Created`'}\n\n` +
               `When users send a DM to the bot, a ModMail thread will be opened for staff to reply using \`.r <message>\`!`,
             requestedBy: author,
-            clientUser: message.client.user
+            clientUser
           })
         ]
       });
     }
 
     // 2. REPLY TO TICKET (.r <message> / .reply <message>)
-    if (sub === 'reply' || invoked === 'r' || invoked === 'reply') {
+    if (sub === 'reply') {
       const text = (['r', 'reply'].includes(invoked) ? args : args.slice(1)).join(' ');
       if (!text) return message.reply(`${emojis.WARNING} Usage: \`.r <message>\` or \`.reply <message>\``);
 
@@ -205,8 +267,8 @@ module.exports = {
     }
 
     // 3. CLOSE TICKET (.close [reason])
-    if (sub === 'close' || invoked === 'close') {
-      const reason = (invoked === 'close' ? args : args.slice(1)).join(' ') || 'No response';
+    if (sub === 'close') {
+      const reason = (invoked === 'close' ? args : args.slice(1)).join(' ') || 'No reason provided';
 
       let targetTicket = null;
       let targetUserId = null;
@@ -229,7 +291,6 @@ module.exports = {
       const filename = `transcript-${targetUser ? targetUser.username : targetUserId}.html`;
       const attachment = new AttachmentBuilder(htmlBuffer, { name: filename });
 
-      // Embed matching screenshot 3
       const transcriptEmbed = new EmbedBuilder()
         .setColor(0xED4245)
         .setTitle(`Transcript Saved`)
@@ -248,7 +309,6 @@ module.exports = {
         await transcriptChan.send({ embeds: [transcriptEmbed], files: [attachment] }).catch(() => {});
       }
 
-      // Send to user's DM
       if (targetUser) {
         try {
           const userCloseEmbed = new EmbedBuilder()
@@ -265,6 +325,95 @@ module.exports = {
       setTimeout(() => {
         message.channel.delete().catch(() => {});
       }, 5000);
+      return;
     }
+
+    // 4. TRANSCRIPT GENERATOR (.modmailtranscript / .transcript)
+    if (sub === 'transcript') {
+      let targetTicket = null;
+      let targetUserId = null;
+      for (const [userId, t] of activeModmailTickets.entries()) {
+        if (t.threadId === message.channel.id || t.channelId === message.channel.id) {
+          targetTicket = t;
+          targetUserId = userId;
+          break;
+        }
+      }
+
+      if (!targetTicket) {
+        return message.reply(`${emojis.WARNING} Usage: Use \`.modmailtranscript\` inside an active ModMail ticket channel to generate its HTML transcript file!`);
+      }
+
+      const targetUser = await message.client.users.fetch(targetUserId).catch(() => null);
+      const htmlBuffer = generateHTMLModmailTranscript(targetUser ? targetUser.username : 'user', targetTicket.messages, author.tag, 'On-Demand Transcript Request');
+      const filename = `transcript-${targetUser ? targetUser.username : targetUserId}.html`;
+      const attachment = new AttachmentBuilder(htmlBuffer, { name: filename });
+
+      return message.reply({
+        content: `📜 **HTML Transcript Generated for Ticket:**`,
+        files: [attachment]
+      });
+    }
+
+    // 5. OVERVIEW / DASHBOARD (.modmail)
+    const config = getOrCreateModmailConfig(guild.id);
+    let activeCount = 0;
+    for (const t of activeModmailTickets.values()) {
+      if (t.guildId === guild.id) activeCount++;
+    }
+
+    const embed = buildModmailOverviewEmbed(guild, config, activeCount, author, clientUser);
+    const row = buildModmailOverviewRow();
+
+    const msg = await message.channel.send({ embeds: [embed], components: [row] });
+
+    const collector = msg.createMessageComponentCollector({ time: 300000 });
+    collector.on('collect', async (i) => {
+      if (i.customId === 'mm_setup') {
+        if (!i.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return i.reply({ content: `${emojis.WARNING} Only Administrators can run ModMail setup.`, ephemeral: true });
+        }
+        let category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && c.name.toLowerCase().includes('modmail'));
+        if (!category) {
+          try {
+            category = await guild.channels.create({
+              name: '📬 ModMail Tickets',
+              type: ChannelType.GuildCategory,
+              permissionOverwrites: [{ id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }]
+            });
+          } catch (e) {}
+        }
+        let transcriptChan = guild.channels.cache.find(c => c.name === 'modmail-transcripts');
+        if (!transcriptChan) {
+          try {
+            transcriptChan = await guild.channels.create({
+              name: 'modmail-transcripts',
+              type: ChannelType.GuildText,
+              parent: category ? category.id : undefined,
+              permissionOverwrites: [{ id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }]
+            });
+          } catch (e) {}
+        }
+        config.categoryId = category ? category.id : null;
+        config.transcriptChanId = transcriptChan ? transcriptChan.id : null;
+        config.enabled = true;
+        modmailConfigs.set(guild.id, config);
+        await i.reply({ content: `✅ ModMail system deployed successfully!`, ephemeral: true });
+      } else if (i.customId === 'mm_active') {
+        await i.reply({ content: `📬 Current Active ModMail Tickets in server: **${activeCount}**`, ephemeral: true });
+      } else if (i.customId === 'mm_transcripts') {
+        const chan = config.transcriptChanId ? `<#${config.transcriptChanId}>` : 'None';
+        await i.reply({ content: `📜 HTML ModMail Transcripts Channel: ${chan}`, ephemeral: true });
+      }
+
+      const updatedConfig = getOrCreateModmailConfig(guild.id);
+      let newCount = 0;
+      for (const t of activeModmailTickets.values()) {
+        if (t.guildId === guild.id) newCount++;
+      }
+      const updatedEmbed = buildModmailOverviewEmbed(guild, updatedConfig, newCount, author, clientUser);
+      return i.update({ embeds: [updatedEmbed], components: [buildModmailOverviewRow()] }).catch(() => {});
+    });
+    collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
   }
 };

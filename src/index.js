@@ -928,7 +928,7 @@ client.on('messageCreate', async (message) => {
             { name: 'User', value: `<@${message.author.id}> 🚩`, inline: true },
             { name: 'ID', value: `\`${message.author.id}\``, inline: true }
           )
-          .setDescription(`Use \`!r <message>\` to reply.\nUse \`!close [reason]\` to end the ticket.`)
+          .setDescription(`Use \`.r <message>\` to reply to the user.\nUse \`.close [reason]\` to end the ticket.\nUse \`.modmailtranscript\` to generate HTML transcript.`)
           .setFooter({ text: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}` });
 
         await ticketChan.send({ content: '@here', embeds: [alertEmbed] });
