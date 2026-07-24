@@ -116,7 +116,10 @@ function buildUserMetricRow(activeCat) {
   );
 }
 
-function renderUserStatsPanel(guild, targetUser, activeCat = 'all', author, clientUser) {
+function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey = '1d', author, clientUser) {
+  const windowMs = WINDOWS[timeframeKey];
+  const label = TIMEFRAME_NAMES[timeframeKey];
+
   const dbUser = db.getUser(targetUser.id);
   const s1d = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['1d']);
   const s7d = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['7d']);
@@ -173,7 +176,7 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', author, clie
     description,
     fields: fields.length > 0 ? fields : undefined,
     thumbnailUrl: targetUser.displayAvatarURL({ dynamic: true, size: 512 }),
-    footerText: `Real-time Live Sync • Naruto One Bot`,
+    footerText: `Selected Timeframe: [${label}] • Real-time Live Sync • Naruto One Bot`,
     requestedBy: author,
     clientUser
   });
@@ -390,26 +393,31 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // H. DEDICATED USER STATS DASHBOARD (.userstats @user)
+    // H. DEDICATED DUAL-ACTIONROW USER STATS DASHBOARD (.userstats @user)
     if (sub === 'user') {
       const targetUser = message.mentions.users.first() || (args[1] ? await message.client.users.fetch(args[1]).catch(() => null) : null) || author;
       let activeCat = 'all';
+      let activeTf = '1d';
 
-      let embed = renderUserStatsPanel(guild, targetUser, activeCat, author, clientUser);
+      let embed = renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser);
       let metricRow = buildUserMetricRow(activeCat);
+      let tfRow = buildTimeframeRow(activeTf);
 
-      const msg = await message.channel.send({ embeds: [embed], components: [metricRow] });
+      const msg = await message.channel.send({ embeds: [embed], components: [metricRow, tfRow] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
         if (i.customId.startsWith('ucat_')) {
           activeCat = i.customId.replace('ucat_', '');
+        } else if (i.customId.startsWith('tf_')) {
+          activeTf = i.customId.replace('tf_', '');
         }
 
-        const newEmbed = renderUserStatsPanel(guild, targetUser, activeCat, author, clientUser);
+        const newEmbed = renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser);
         const newMetricRow = buildUserMetricRow(activeCat);
+        const newTfRow = buildTimeframeRow(activeTf);
 
-        return i.update({ embeds: [newEmbed], components: [newMetricRow] });
+        return i.update({ embeds: [newEmbed], components: [newMetricRow, newTfRow] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
