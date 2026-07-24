@@ -12,7 +12,7 @@ const WINDOWS = {
 };
 
 const TIMEFRAME_NAMES = {
-  '1d': '1-Day (24 Hours)',
+  '1d': 'Daily (24 Hours)',
   '7d': '7-Day (1 Week)',
   '14d': '14-Day (2 Weeks)',
   '30d': '30-Day (1 Month)',
@@ -57,6 +57,35 @@ function buildTimeframeRow(activeKey) {
   );
 }
 
+function buildPaginationRow(currentPage, totalPages) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('page_first')
+      .setEmoji('⏪')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(currentPage <= 1),
+    new ButtonBuilder()
+      .setCustomId('page_prev')
+      .setEmoji('◀️')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(currentPage <= 1),
+    new ButtonBuilder()
+      .setCustomId('page_refresh')
+      .setEmoji('🔄')
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId('page_next')
+      .setEmoji('▶️')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(currentPage >= totalPages),
+    new ButtonBuilder()
+      .setCustomId('page_last')
+      .setEmoji('⏩')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(currentPage >= totalPages)
+  );
+}
+
 // 📊 1. DEDICATED TIMEFRAME PANEL (.1d, .7d, .14d, .30d, .overall)
 function renderTimeframePanel(guild, timeframeKey, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
@@ -64,17 +93,17 @@ function renderTimeframePanel(guild, timeframeKey, author, clientUser) {
   const label = TIMEFRAME_NAMES[timeframeKey];
 
   return createStyledEmbed({
-    title: `📊 ${label} Server Analytics — ${guild.name}`,
+    title: `${emojis.STATS} ${label} Server Analytics — ${guild.name}`,
     subtitle: `Dedicated Audit Report for [${label}]`,
     fields: [
-      { name: '💬 Chat Messages', value: `\`${stats.messages}\` msgs`, inline: true },
+      { name: '💬 Chat Messages', value: `\`${stats.messages.toLocaleString()}\` msgs`, inline: true },
       { name: '🔊 Voice Time', value: `\`${formatDuration(stats.voiceSeconds)}\``, inline: true },
-      { name: '📨 Invites Created', value: `\`${stats.invites}\` joins`, inline: true },
-      { name: '📥 Member Joins', value: `\`+${stats.joins}\` members`, inline: true },
-      { name: '📤 Member Leaves', value: `\`-${stats.leaves}\` members`, inline: true },
-      { name: '⚡ Commands Used', value: `\`${stats.commands}\` cmds`, inline: true },
-      { name: '🎟️ Tickets Opened', value: `\`${stats.ticketsCreated}\` tickets`, inline: true },
-      { name: '🔒 Tickets Closed', value: `\`${stats.ticketsClosed}\` tickets`, inline: true }
+      { name: '📨 Invites Created', value: `\`${stats.invites.toLocaleString()}\` joins`, inline: true },
+      { name: '📥 Member Joins', value: `\`+${stats.joins.toLocaleString()}\` members`, inline: true },
+      { name: '📤 Member Leaves', value: `\`-${stats.leaves.toLocaleString()}\` members`, inline: true },
+      { name: '⚡ Commands Used', value: `\`${stats.commands.toLocaleString()}\` cmds`, inline: true },
+      { name: '🎟️ Tickets Opened', value: `\`${stats.ticketsCreated.toLocaleString()}\` tickets`, inline: true },
+      { name: '🔒 Tickets Closed', value: `\`${stats.ticketsClosed.toLocaleString()}\` tickets`, inline: true }
     ],
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
     requestedBy: author,
@@ -83,81 +112,129 @@ function renderTimeframePanel(guild, timeframeKey, author, clientUser) {
 }
 
 // 💬 2. TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
-function renderMessagesLeaderboard(guild, timeframeKey, author, clientUser) {
+function renderMessagesLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
-  const leaderboard = db.getTopLeaderboard(guild.id, 'message', windowMs, 10);
+  const allLeaderboard = db.getTopLeaderboard(guild.id, 'message', windowMs, 100);
+
+  const perPage = 10;
+  const totalPages = Math.max(1, Math.ceil(allLeaderboard.length / perPage));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  const startIdx = (currentPage - 1) * perPage;
+  const pageEntries = allLeaderboard.slice(startIdx, startIdx + perPage);
 
   let listText = '';
-  if (leaderboard.length === 0) {
+  if (pageEntries.length === 0) {
     listText = '*No chat activity recorded for this timeframe.*';
   } else {
-    listText = leaderboard.map((item, idx) => {
-      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `\`#${idx + 1}\``;
-      return `${medal} <@${item.userId}> (\`${item.userId}\`) — **${item.total}** msgs`;
+    listText = pageEntries.map((item, idx) => {
+      const rankNum = startIdx + idx + 1;
+      let rankPrefix = `\`#${rankNum}\``;
+      if (rankNum === 1) rankPrefix = `${emojis.OWNER_CROWN} **#1**`;
+      else if (rankNum === 2) rankPrefix = `${emojis.STAR} **#2**`;
+      else if (rankNum === 3) rankPrefix = `${emojis.SHINOBI} **#3**`;
+
+      return `${rankPrefix} <@${item.userId}> • **${item.total.toLocaleString()}** messages`;
     }).join('\n');
   }
 
-  return createStyledEmbed({
-    title: `💬 Top Chatters Leaderboard [${label}]`,
-    subtitle: `Ranked Chat Volume — ${guild.name}`,
-    description: `Below are the top active chat members for **${label}**:\n\n${listText}`,
+  const embed = createStyledEmbed({
+    title: `${emojis.MESSAGES} ${label} Messages Leaderboard`,
+    subtitle: `Realtime Server Chat Ranking — ${guild.name}`,
+    description:
+      `The messages are being updated in real-time!\n\n` +
+      `${listText}`,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+    footerText: `Page ${currentPage}/${totalPages} • Real-time Live Sync • Naruto One Bot`,
     requestedBy: author,
     clientUser
   });
+
+  return { embed, currentPage, totalPages };
 }
 
 // 🔊 3. TOP VOICE LEADERBOARD (.topvoice / .voicestats)
-function renderVoiceLeaderboard(guild, timeframeKey, author, clientUser) {
+function renderVoiceLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
-  const leaderboard = db.getTopLeaderboard(guild.id, 'voice', windowMs, 10);
+  const allLeaderboard = db.getTopLeaderboard(guild.id, 'voice', windowMs, 100);
+
+  const perPage = 10;
+  const totalPages = Math.max(1, Math.ceil(allLeaderboard.length / perPage));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  const startIdx = (currentPage - 1) * perPage;
+  const pageEntries = allLeaderboard.slice(startIdx, startIdx + perPage);
 
   let listText = '';
-  if (leaderboard.length === 0) {
+  if (pageEntries.length === 0) {
     listText = '*No voice activity recorded for this timeframe.*';
   } else {
-    listText = leaderboard.map((item, idx) => {
-      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `\`#${idx + 1}\``;
-      return `${medal} <@${item.userId}> (\`${item.userId}\`) — **${formatDuration(item.total)}**`;
+    listText = pageEntries.map((item, idx) => {
+      const rankNum = startIdx + idx + 1;
+      let rankPrefix = `\`#${rankNum}\``;
+      if (rankNum === 1) rankPrefix = `${emojis.OWNER_CROWN} **#1**`;
+      else if (rankNum === 2) rankPrefix = `${emojis.STAR} **#2**`;
+      else if (rankNum === 3) rankPrefix = `${emojis.SHINOBI} **#3**`;
+
+      return `${rankPrefix} <@${item.userId}> • **${formatDuration(item.total)}** in voice`;
     }).join('\n');
   }
 
-  return createStyledEmbed({
-    title: `🔊 Top Voice Members Leaderboard [${label}]`,
-    subtitle: `Ranked Active VC Duration — ${guild.name}`,
-    description: `Below are the top voice active members for **${label}**:\n\n${listText}`,
+  const embed = createStyledEmbed({
+    title: `${emojis.VOICE} ${label} Voice Channel Leaderboard`,
+    subtitle: `Realtime Voice Activity Duration — ${guild.name}`,
+    description:
+      `Active voice durations are being updated in real-time!\n\n` +
+      `${listText}`,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+    footerText: `Page ${currentPage}/${totalPages} • Real-time Live Sync • Naruto One Bot`,
     requestedBy: author,
     clientUser
   });
+
+  return { embed, currentPage, totalPages };
 }
 
 // 📨 4. TOP INVITES LEADERBOARD (.topinvites / .invitestats)
-function renderInvitesLeaderboard(guild, timeframeKey, author, clientUser) {
+function renderInvitesLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
-  const leaderboard = db.getTopLeaderboard(guild.id, 'invite', windowMs, 10);
+  const allLeaderboard = db.getTopLeaderboard(guild.id, 'invite', windowMs, 100);
+
+  const perPage = 10;
+  const totalPages = Math.max(1, Math.ceil(allLeaderboard.length / perPage));
+  const currentPage = Math.min(Math.max(1, page), totalPages);
+  const startIdx = (currentPage - 1) * perPage;
+  const pageEntries = allLeaderboard.slice(startIdx, startIdx + perPage);
 
   let listText = '';
-  if (leaderboard.length === 0) {
+  if (pageEntries.length === 0) {
     listText = '*No invite joins recorded for this timeframe.*';
   } else {
-    listText = leaderboard.map((item, idx) => {
-      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `\`#${idx + 1}\``;
-      return `${medal} <@${item.userId}> (\`${item.userId}\`) — **${item.total}** invites`;
+    listText = pageEntries.map((item, idx) => {
+      const rankNum = startIdx + idx + 1;
+      let rankPrefix = `\`#${rankNum}\``;
+      if (rankNum === 1) rankPrefix = `${emojis.OWNER_CROWN} **#1**`;
+      else if (rankNum === 2) rankPrefix = `${emojis.STAR} **#2**`;
+      else if (rankNum === 3) rankPrefix = `${emojis.SHINOBI} **#3**`;
+
+      return `${rankPrefix} <@${item.userId}> • **${item.total.toLocaleString()}** invites`;
     }).join('\n');
   }
 
-  return createStyledEmbed({
-    title: `📨 Top Invite Recruiters Leaderboard [${label}]`,
-    subtitle: `Ranked Member Invitations — ${guild.name}`,
-    description: `Below are the top recruiters for **${label}**:\n\n${listText}`,
+  const embed = createStyledEmbed({
+    title: `${emojis.INVITES} ${label} Invite Recruiters Leaderboard`,
+    subtitle: `Realtime Server Invitations — ${guild.name}`,
+    description:
+      `Top recruiter invitations are being updated in real-time!\n\n` +
+      `${listText}`,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+    footerText: `Page ${currentPage}/${totalPages} • Real-time Live Sync • Naruto One Bot`,
     requestedBy: author,
     clientUser
   });
+
+  return { embed, currentPage, totalPages };
 }
 
 // 📥 5. JOINS & LEAVES FLOW (.joinsleaves / .memberflow)
@@ -171,9 +248,9 @@ function renderJoinsLeavesPanel(guild, timeframeKey, author, clientUser) {
     title: `📥 Member Traffic & Retention Flow [${label}]`,
     subtitle: `Server Joins vs Leaves — ${guild.name}`,
     fields: [
-      { name: '📥 Total Member Joins', value: `\`+${stats.joins}\` members`, inline: true },
-      { name: '📤 Total Member Leaves', value: `\`-${stats.leaves}\` members`, inline: true },
-      { name: '📈 Net Server Growth', value: `\`${net >= 0 ? '+' : ''}${net}\` members`, inline: true }
+      { name: '📥 Total Member Joins', value: `\`+${stats.joins.toLocaleString()}\` members`, inline: true },
+      { name: '📤 Total Member Leaves', value: `\`-${stats.leaves.toLocaleString()}\` members`, inline: true },
+      { name: '📈 Net Server Growth', value: `\`${net >= 0 ? '+' : ''}${net.toLocaleString()}\` members`, inline: true }
     ],
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
     requestedBy: author,
@@ -191,7 +268,7 @@ function renderTopCommandsPanel(guild, timeframeKey, author, clientUser) {
     title: `⚡ Bot Command Analytics [${label}]`,
     subtitle: `Automation & Feature Usage — ${guild.name}`,
     fields: [
-      { name: '⚡ Total Commands Executed', value: `\`${stats.commands}\` commands`, inline: true },
+      { name: '⚡ Total Commands Executed', value: `\`${stats.commands.toLocaleString()}\` commands`, inline: true },
       { name: '🏰 Target Server', value: `\`${guild.name}\``, inline: true }
     ],
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
@@ -210,8 +287,8 @@ function renderTicketStatsPanel(guild, timeframeKey, author, clientUser) {
     title: `🎟️ Support Ticket Resolution Analytics [${label}]`,
     subtitle: `ModMail Ticket Metrics — ${guild.name}`,
     fields: [
-      { name: '🟢 Tickets Opened', value: `\`${stats.ticketsCreated}\` tickets`, inline: true },
-      { name: '🔴 Tickets Closed', value: `\`${stats.ticketsClosed}\` tickets`, inline: true },
+      { name: '🟢 Tickets Opened', value: `\`${stats.ticketsCreated.toLocaleString()}\` tickets`, inline: true },
+      { name: '🔴 Tickets Closed', value: `\`${stats.ticketsClosed.toLocaleString()}\` tickets`, inline: true },
       { name: '⚖️ Resolution Rate', value: `\`${stats.ticketsCreated > 0 ? Math.round((stats.ticketsClosed / stats.ticketsCreated) * 100) : 100}%\``, inline: true }
     ],
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
@@ -279,64 +356,112 @@ module.exports = {
       return;
     }
 
-    // B. DEDICATED TOP MESSAGES LEADERBOARD (.topmessages)
+    // B. DEDICATED TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
     if (sub === 'messages') {
       let activeKey = args[1]?.toLowerCase();
-      if (!WINDOWS[activeKey]) activeKey = 'overall';
+      if (!WINDOWS[activeKey]) activeKey = '1d';
+      let page = 1;
 
-      const embed = renderMessagesLeaderboard(guild, activeKey, author, clientUser);
-      const row = buildTimeframeRow(activeKey);
-      const msg = await message.channel.send({ embeds: [embed], components: [row] });
+      let { embed, currentPage, totalPages } = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
+      let tfRow = buildTimeframeRow(activeKey);
+      let pageRow = buildPaginationRow(currentPage, totalPages);
+
+      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (!i.customId.startsWith('tf_')) return;
-        const newKey = i.customId.replace('tf_', '');
-        const newEmbed = renderMessagesLeaderboard(guild, newKey, author, clientUser);
-        const newRow = buildTimeframeRow(newKey);
-        return i.update({ embeds: [newEmbed], components: [newRow] });
+        if (i.customId.startsWith('tf_')) {
+          activeKey = i.customId.replace('tf_', '');
+          page = 1;
+        } else if (i.customId === 'page_first') {
+          page = 1;
+        } else if (i.customId === 'page_prev') {
+          page = Math.max(1, page - 1);
+        } else if (i.customId === 'page_next') {
+          page++;
+        } else if (i.customId === 'page_last') {
+          page = 999;
+        }
+
+        const res = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
+        page = res.currentPage;
+        const newTfRow = buildTimeframeRow(activeKey);
+        const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
+        return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
     }
 
-    // C. DEDICATED TOP VOICE LEADERBOARD (.topvoice)
+    // C. DEDICATED TOP VOICE LEADERBOARD (.topvoice / .voicestats)
     if (sub === 'voice') {
       let activeKey = args[1]?.toLowerCase();
-      if (!WINDOWS[activeKey]) activeKey = 'overall';
+      if (!WINDOWS[activeKey]) activeKey = '1d';
+      let page = 1;
 
-      const embed = renderVoiceLeaderboard(guild, activeKey, author, clientUser);
-      const row = buildTimeframeRow(activeKey);
-      const msg = await message.channel.send({ embeds: [embed], components: [row] });
+      let { embed, currentPage, totalPages } = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
+      let tfRow = buildTimeframeRow(activeKey);
+      let pageRow = buildPaginationRow(currentPage, totalPages);
+
+      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (!i.customId.startsWith('tf_')) return;
-        const newKey = i.customId.replace('tf_', '');
-        const newEmbed = renderVoiceLeaderboard(guild, newKey, author, clientUser);
-        const newRow = buildTimeframeRow(newKey);
-        return i.update({ embeds: [newEmbed], components: [newRow] });
+        if (i.customId.startsWith('tf_')) {
+          activeKey = i.customId.replace('tf_', '');
+          page = 1;
+        } else if (i.customId === 'page_first') {
+          page = 1;
+        } else if (i.customId === 'page_prev') {
+          page = Math.max(1, page - 1);
+        } else if (i.customId === 'page_next') {
+          page++;
+        } else if (i.customId === 'page_last') {
+          page = 999;
+        }
+
+        const res = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
+        page = res.currentPage;
+        const newTfRow = buildTimeframeRow(activeKey);
+        const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
+        return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
     }
 
-    // D. DEDICATED TOP INVITES LEADERBOARD (.topinvites)
+    // D. DEDICATED TOP INVITES LEADERBOARD (.topinvites / .invitestats)
     if (sub === 'invites') {
       let activeKey = args[1]?.toLowerCase();
-      if (!WINDOWS[activeKey]) activeKey = 'overall';
+      if (!WINDOWS[activeKey]) activeKey = '1d';
+      let page = 1;
 
-      const embed = renderInvitesLeaderboard(guild, activeKey, author, clientUser);
-      const row = buildTimeframeRow(activeKey);
-      const msg = await message.channel.send({ embeds: [embed], components: [row] });
+      let { embed, currentPage, totalPages } = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
+      let tfRow = buildTimeframeRow(activeKey);
+      let pageRow = buildPaginationRow(currentPage, totalPages);
+
+      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (!i.customId.startsWith('tf_')) return;
-        const newKey = i.customId.replace('tf_', '');
-        const newEmbed = renderInvitesLeaderboard(guild, newKey, author, clientUser);
-        const newRow = buildTimeframeRow(newKey);
-        return i.update({ embeds: [newEmbed], components: [newRow] });
+        if (i.customId.startsWith('tf_')) {
+          activeKey = i.customId.replace('tf_', '');
+          page = 1;
+        } else if (i.customId === 'page_first') {
+          page = 1;
+        } else if (i.customId === 'page_prev') {
+          page = Math.max(1, page - 1);
+        } else if (i.customId === 'page_next') {
+          page++;
+        } else if (i.customId === 'page_last') {
+          page = 999;
+        }
+
+        const res = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
+        page = res.currentPage;
+        const newTfRow = buildTimeframeRow(activeKey);
+        const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
+        return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -345,7 +470,7 @@ module.exports = {
     // E. DEDICATED JOINS & LEAVES FLOW (.joinsleaves)
     if (sub === 'joins' || sub === 'leaves') {
       let activeKey = args[1]?.toLowerCase();
-      if (!WINDOWS[activeKey]) activeKey = 'overall';
+      if (!WINDOWS[activeKey]) activeKey = '1d';
 
       const embed = renderJoinsLeavesPanel(guild, activeKey, author, clientUser);
       const row = buildTimeframeRow(activeKey);
@@ -366,7 +491,7 @@ module.exports = {
     // F. DEDICATED TOP COMMANDS (.topcommands)
     if (sub === 'commands') {
       let activeKey = args[1]?.toLowerCase();
-      if (!WINDOWS[activeKey]) activeKey = 'overall';
+      if (!WINDOWS[activeKey]) activeKey = '1d';
 
       const embed = renderTopCommandsPanel(guild, activeKey, author, clientUser);
       const row = buildTimeframeRow(activeKey);
@@ -387,7 +512,7 @@ module.exports = {
     // G. DEDICATED TICKET STATS (.ticketstats)
     if (sub === 'tickets') {
       let activeKey = args[1]?.toLowerCase();
-      if (!WINDOWS[activeKey]) activeKey = 'overall';
+      if (!WINDOWS[activeKey]) activeKey = '1d';
 
       const embed = renderTicketStatsPanel(guild, activeKey, author, clientUser);
       const row = buildTimeframeRow(activeKey);
@@ -453,18 +578,35 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // DEFAULT GENERAL ANALYTICS OVERVIEW (.analytics)
-    const embed = renderTimeframePanel(guild, '1d', author, clientUser);
-    const row = buildTimeframeRow('1d');
-    const msg = await message.channel.send({ embeds: [embed], components: [row] });
+    // DEFAULT GENERAL LEADERBOARD OVERVIEW (.topmessages / .analytics)
+    let page = 1;
+    let activeKey = '1d';
+    let { embed, currentPage, totalPages } = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
+    let tfRow = buildTimeframeRow(activeKey);
+    let pageRow = buildPaginationRow(currentPage, totalPages);
+
+    const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
 
     const collector = msg.createMessageComponentCollector({ time: 300000 });
     collector.on('collect', async (i) => {
-      if (!i.customId.startsWith('tf_')) return;
-      const newKey = i.customId.replace('tf_', '');
-      const newEmbed = renderTimeframePanel(guild, newKey, author, clientUser);
-      const newRow = buildTimeframeRow(newKey);
-      return i.update({ embeds: [newEmbed], components: [newRow] });
+      if (i.customId.startsWith('tf_')) {
+        activeKey = i.customId.replace('tf_', '');
+        page = 1;
+      } else if (i.customId === 'page_first') {
+        page = 1;
+      } else if (i.customId === 'page_prev') {
+        page = Math.max(1, page - 1);
+      } else if (i.customId === 'page_next') {
+        page++;
+      } else if (i.customId === 'page_last') {
+        page = 999;
+      }
+
+      const res = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
+      page = res.currentPage;
+      const newTfRow = buildTimeframeRow(activeKey);
+      const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
+      return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
     });
     collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
   }
