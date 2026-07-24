@@ -14,6 +14,17 @@ process.on('unhandledRejection', (reason) => {
   console.error('⚠️ [Unhandled Rejection]:', reason?.message || reason);
 });
 
+// Render / Web Hosting Keepalive HTTP Server
+const http = require('http');
+const PORT = process.env.PORT || 10000;
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('🍥 Naruto Bot is 24/7 Active!\n');
+}).listen(PORT, () => {
+  console.log(`🌐 Keepalive HTTP server listening on port ${PORT}`);
+});
+
+
 const fs = require('fs');
 const path = require('path');
 const {
