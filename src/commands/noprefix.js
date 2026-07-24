@@ -12,33 +12,38 @@ function parseDurationMs(durationStr) {
   if (!durationStr) return null; // Default: Infinite
   const s = durationStr.toLowerCase().trim();
 
-  if (['infinite', 'infinity', 'lifetime', 'perm', 'permanent', '0', 'inf', 'never'].includes(s)) {
+  if (['infinite', 'infinity', 'lifetime', 'perm', 'permanent', '0', 'inf', 'never', 'life'].includes(s)) {
     return null; // Null means Infinite / Permanent
   }
 
-  const match = s.match(/^(\d+)([dhmyw])?$/);
+  const match = s.match(/^(\d+)\s*([a-z]+)?$/i);
   if (!match) return null;
 
   const count = parseInt(match[1]);
-  const unit = match[2] || 'd';
+  const unit = (match[2] || 'd').toLowerCase();
 
-  if (unit === 'm') return count * 60 * 1000;
-  if (unit === 'h') return count * 3600 * 1000;
-  if (unit === 'd') return count * 86400 * 1000;
-  if (unit === 'w') return count * 7 * 86400 * 1000;
-  if (unit === 'y') return count * 365 * 86400 * 1000;
+  if (['s', 'sec', 'second', 'seconds'].includes(unit)) return count * 1000;
+  if (['m', 'min', 'minute', 'minutes'].includes(unit)) return count * 60 * 1000;
+  if (['h', 'hr', 'hour', 'hours'].includes(unit)) return count * 3600 * 1000;
+  if (['d', 'day', 'days'].includes(unit)) return count * 86400 * 1000;
+  if (['w', 'week', 'weeks'].includes(unit)) return count * 7 * 86400 * 1000;
+  if (['mo', 'month', 'months'].includes(unit)) return count * 30 * 86400 * 1000;
+  if (['y', 'yr', 'year', 'years'].includes(unit)) return count * 365 * 86400 * 1000;
 
   return count * 86400 * 1000;
 }
 
 function formatExpiryText(expiresAt) {
-  if (expiresAt === null || expiresAt === undefined) return '∞ Infinite (Lifetime)';
+  if (expiresAt === null || expiresAt === undefined) return '∞ Lifetime / Permanent';
   const diff = expiresAt - Date.now();
-  if (diff <= 0) return 'Expired ❌';
+  if (diff <= 0) return 'Expired';
   const days = Math.floor(diff / (86400 * 1000));
   const hrs = Math.floor((diff % (86400 * 1000)) / (3600 * 1000));
+  const mins = Math.floor((diff % (3600 * 1000)) / (60 * 1000));
+
   if (days > 0) return `${days}d ${hrs}h remaining`;
-  return `${hrs}h remaining`;
+  if (hrs > 0) return `${hrs}h ${mins}m remaining`;
+  return `${mins}m remaining`;
 }
 
 function isNoPrefixUser(userId) {

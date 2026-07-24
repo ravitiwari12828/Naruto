@@ -39,15 +39,15 @@ module.exports = {
         `Type any command below in your server to execute.\n\n` +
         `**${emojis.PREMIUM} Premium Management**\n` +
         `\`\`\`\n` +
-        `.premium activate <guildId>\n` +
+        `.premium activate [guildId] [7d/30d/1y/lifetime]\n` +
         `.premium revoke <guildId>\n` +
-        `.premium adduser @user\n` +
+        `.premium adduser @user [7d/30d/1y/lifetime]\n` +
         `.premium revokeuser @user\n` +
         `.premium status\n` +
         `\`\`\`\n\n` +
         `**${emojis.ANALYTICS_ZAP} No-Prefix Authorization**\n` +
         `\`\`\`\n` +
-        `.noprefix add @user\n` +
+        `.noprefix add @user [7d/30d/1y/lifetime]\n` +
         `.noprefix remove @user\n` +
         `.noprefix list\n` +
         `\`\`\`\n\n` +
