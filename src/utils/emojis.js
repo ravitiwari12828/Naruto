@@ -113,5 +113,9 @@ module.exports = {
   OBJ_MODMAIL: { name: 'emoji_modmail_envelope', id: '1529910230534586449' },
   OBJ_NINJUTSU: { name: 'emoji_rpg_rasengan', id: '1529910238684119171' },
   OBJ_HOME: { name: 'orange_leaf_emoji', id: '1529377760693456956' },
-  OBJ_REMOVE: { name: 'emoji_REMOVE', id: '1529377741252595802' }
+  OBJ_REMOVE: { name: 'emoji_REMOVE', id: '1529377741252595802' },
+  OBJ_ENABLED: { name: 'emoji_green_enabled', id: '1529377708012732506' },
+  OBJ_DISABLED: { name: 'emoji_red_disabled', id: '1529377739302506516' },
+  OBJ_WARNING: { name: 'emoji_warning_alert', id: '1529377755735527465' },
+  OBJ_PANIC: { name: 'emoji_KABOOM', id: '1529377716975960075' }
 };

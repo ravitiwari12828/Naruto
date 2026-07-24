@@ -175,11 +175,13 @@ function renderPanicComponents(config) {
   const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('toggle_panic')
-      .setLabel(config.panicmode ? 'Panic Mode: ACTIVE 🚨' : 'Panic Mode: NORMAL 🟢')
+      .setLabel(config.panicmode ? 'Panic Mode: ACTIVE' : 'Panic Mode: NORMAL')
+      .setEmoji(config.panicmode ? emojis.OBJ_PANIC : emojis.OBJ_ENABLED)
       .setStyle(config.panicmode ? ButtonStyle.Danger : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_shield')
-      .setLabel(config.enabled ? 'Main Shield: ON 🛡️' : 'Main Shield: OFF ❌')
+      .setLabel(config.enabled ? 'Main Shield: ON' : 'Main Shield: OFF')
+      .setEmoji(config.enabled ? emojis.OBJ_SHIELD : emojis.OBJ_DISABLED)
       .setStyle(config.enabled ? ButtonStyle.Success : ButtonStyle.Danger)
   );
 
@@ -187,23 +189,28 @@ function renderPanicComponents(config) {
   const row2 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('toggle_ban')
-      .setLabel(`Anti Ban: ${f.antiBan ? 'ON 🟢' : 'OFF ❌'}`)
+      .setLabel('Anti Ban')
+      .setEmoji(f.antiBan ? emojis.OBJ_ENABLED : emojis.OBJ_DISABLED)
       .setStyle(f.antiBan ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_kick')
-      .setLabel(`Anti Kick: ${f.antiKick ? 'ON 🟢' : 'OFF ❌'}`)
+      .setLabel('Anti Kick')
+      .setEmoji(f.antiKick ? emojis.OBJ_ENABLED : emojis.OBJ_DISABLED)
       .setStyle(f.antiKick ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_bot')
-      .setLabel(`Anti Bot: ${f.antiBotAdd ? 'ON 🟢' : 'OFF ❌'}`)
+      .setLabel('Anti Bot Add')
+      .setEmoji(f.antiBotAdd ? emojis.OBJ_ENABLED : emojis.OBJ_DISABLED)
       .setStyle(f.antiBotAdd ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_channel')
-      .setLabel(`Anti Channel: ${f.antiChannelCreate ? 'ON 🟢' : 'OFF ❌'}`)
+      .setLabel('Anti Channel')
+      .setEmoji(f.antiChannelCreate ? emojis.OBJ_ENABLED : emojis.OBJ_DISABLED)
       .setStyle(f.antiChannelCreate ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_role')
-      .setLabel(`Anti Role: ${f.antiRoleCreate ? 'ON 🟢' : 'OFF ❌'}`)
+      .setLabel('Anti Role')
+      .setEmoji(f.antiRoleCreate ? emojis.OBJ_ENABLED : emojis.OBJ_DISABLED)
       .setStyle(f.antiRoleCreate ? ButtonStyle.Success : ButtonStyle.Secondary)
   );
 
@@ -211,23 +218,28 @@ function renderPanicComponents(config) {
   const row3 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('toggle_webhook')
-      .setLabel(`Anti Webhook: ${f.antiWebhookCreate ? 'ON 🟢' : 'OFF ❌'}`)
+      .setLabel('Anti Webhook')
+      .setEmoji(f.antiWebhookCreate ? emojis.OBJ_ENABLED : emojis.OBJ_DISABLED)
       .setStyle(f.antiWebhookCreate ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_spam')
-      .setLabel(`Anti Spam: ${f.antiSpam ? 'ON 🟢' : 'OFF ❌'}`)
+      .setLabel('Anti Spam')
+      .setEmoji(f.antiSpam ? emojis.OBJ_ENABLED : emojis.OBJ_DISABLED)
       .setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_everyone')
-      .setLabel(`Anti MassPing: ${f.antiEveryone ? 'ON 🟢' : 'OFF ❌'}`)
+      .setLabel('Anti MassPing')
+      .setEmoji(f.antiEveryone ? emojis.OBJ_ENABLED : emojis.OBJ_DISABLED)
       .setStyle(f.antiEveryone ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_raid')
-      .setLabel(`Anti Raid: ${f.antiRaid ? 'ON 🟢' : 'OFF ❌'}`)
+      .setLabel('Anti Raid')
+      .setEmoji(f.antiRaid ? emojis.OBJ_ENABLED : emojis.OBJ_DISABLED)
       .setStyle(f.antiRaid ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_guild')
-      .setLabel(`Anti Server: ${f.antiGuildUpdate ? 'ON 🟢' : 'OFF ❌'}`)
+      .setLabel('Anti Server')
+      .setEmoji(f.antiGuildUpdate ? emojis.OBJ_ENABLED : emojis.OBJ_DISABLED)
       .setStyle(f.antiGuildUpdate ? ButtonStyle.Success : ButtonStyle.Secondary)
   );
 
