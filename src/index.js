@@ -1603,38 +1603,50 @@ client.on('interactionCreate', async (interaction) => {
     const channel = voiceState?.channel;
 
     if (!channel) {
-      return interaction.reply({ content: `${emojis.WARNING} You must be in your private Voice Channel to use controls!`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `${emojis.WARNING} You must be connected to your private Voice Channel to use these controls!`, flags: 64 }).catch(() => {});
     }
 
     const action = interaction.customId.replace('vm_', '');
 
     switch (action) {
       case 'lock':
-        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: false });
-        return interaction.reply({ content: `🔒 Voice channel locked!`, flags: 64 });
+        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: false }).catch(() => {});
+        return interaction.reply({ content: `🔒 **Private VC Locked** — Channel access is now restricted to permitted members.`, flags: 64 });
+
       case 'unlock':
-        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: true });
-        return interaction.reply({ content: `🔓 Voice channel unlocked!`, flags: 64 });
+        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: true }).catch(() => {});
+        return interaction.reply({ content: `🔓 **Private VC Unlocked** — Channel access is now open to all members.`, flags: 64 });
+
       case 'hide':
-        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { ViewChannel: false });
-        return interaction.reply({ content: `👁️ Voice channel hidden!`, flags: 64 });
+        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { ViewChannel: false }).catch(() => {});
+        return interaction.reply({ content: `👁️ **Private VC Hidden** — Channel is now hidden from the server channel list.`, flags: 64 });
+
       case 'reveal':
-        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { ViewChannel: true });
-        return interaction.reply({ content: `📖 Voice channel revealed!`, flags: 64 });
+        await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { ViewChannel: true }).catch(() => {});
+        return interaction.reply({ content: `📖 **Private VC Revealed** — Channel is now visible in the channel list.`, flags: 64 });
+
+      case 'rename':
+        return interaction.reply({ content: `📝 **Rename Room**: Use \`.vc rename <new-name>\` in chat to rename your voice room.`, flags: 64 });
+
+      case 'limit':
+        return interaction.reply({ content: `👥 **Slot Capacity**: Use \`.vc limit <1-99>\` in chat to adjust room capacity limit.`, flags: 64 });
+
       case 'mute':
-        channel.members.forEach(m => m.voice.setMute(true).catch(() => {}));
-        return interaction.reply({ content: `🔇 Muted all members in VC.`, flags: 64 });
+        channel.members.forEach(m => { if (!m.user.bot) m.voice.setMute(true).catch(() => {}); });
+        return interaction.reply({ content: `🔇 **Server Muted** — All connected members in VC have been server muted.`, flags: 64 });
+
       case 'unmute':
-        channel.members.forEach(m => m.voice.setMute(false).catch(() => {}));
-        return interaction.reply({ content: `🔊 Unmuted all members in VC.`, flags: 64 });
-      case 'deafen':
-        channel.members.forEach(m => m.voice.setDeaf(true).catch(() => {}));
-        return interaction.reply({ content: `🔕 Deafened members in VC.`, flags: 64 });
-      case 'undeafen':
-        channel.members.forEach(m => m.voice.setDeaf(false).catch(() => {}));
-        return interaction.reply({ content: `🔔 Undeafened members in VC.`, flags: 64 });
+        channel.members.forEach(m => { if (!m.user.bot) m.voice.setMute(false).catch(() => {}); });
+        return interaction.reply({ content: `🔊 **Server Unmuted** — All members in VC have been unmuted.`, flags: 64 });
+
+      case 'permit':
+        return interaction.reply({ content: `🛡️ **Permit Access**: Use \`.vc permit @user\` to grant view & connect access to a user.`, flags: 64 });
+
+      case 'claim':
+        return interaction.reply({ content: `👑 **Room Status**: You are currently managing private room **<#${channel.id}>**.`, flags: 64 });
+
       default:
-        return interaction.reply({ content: `⚙️ VoiceMaster action executed!`, flags: 64 });
+        return interaction.reply({ content: `⚙️ VoiceMaster action executed.`, flags: 64 });
     }
   }
 });

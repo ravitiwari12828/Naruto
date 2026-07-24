@@ -33,35 +33,36 @@ function getOrCreateVMConfig(guildId) {
  */
 function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
   const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`➕ Join to Create`';
-  const voiceIcon = emojis.OBJ_VOICE || emojis.VOICE || '🎙️';
+  const voiceIcon = emojis.VOICE || '🎙️';
   return new EmbedBuilder()
-    .setColor(0x00E5FF)
+    .setColor(0x2B2D31)
     .setTitle(`${voiceIcon} VoiceMaster Control Center`)
     .setDescription(
       `Join ${triggerMention} to automatically create your private voice room.\n` +
-      `Use the interactive emoji buttons below to control your channel!`
+      `Click any emoji button below to manage your room settings!`
     )
-    .setFooter({ text: 'Naruto VoiceMaster • Premium Private Audio' });
+    .setFooter({ text: 'Naruto VoiceMaster • Private Voice Suite' });
 }
 
 /**
  * Builds the 2-row color-coded interactive button grid with custom 3D aesthetic emojis.
+ * Uniform Secondary style with NO text labels for perfect mobile UI responsiveness.
  */
 function buildVoiceMasterActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_lock').setLabel('Lock').setEmoji(emojis.OBJ_LOCK || '🔒').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_unlock').setLabel('Unlock').setEmoji(emojis.OBJ_UNLOCK || '🔓').setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('vm_hide').setLabel('Hide').setEmoji(emojis.OBJ_HIDE || '👁️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_reveal').setLabel('Reveal').setEmoji(emojis.OBJ_TOOLS || '📖').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_rename').setLabel('Rename').setEmoji(emojis.OBJ_SCROLL || '📝').setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId('vm_lock').setEmoji(emojis.OBJ_LOCK || '🔒').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unlock').setEmoji(emojis.OBJ_UNLOCK || '🔓').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_hide').setEmoji(emojis.OBJ_HIDE || '👁️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_reveal').setEmoji(emojis.OBJ_TOOLS || '📖').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_rename').setEmoji(emojis.OBJ_SCROLL || '📝').setStyle(ButtonStyle.Secondary)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_limit').setLabel('Limit').setEmoji(emojis.OBJ_HUMAN || '👥').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('vm_mute').setLabel('Mute').setEmoji(emojis.OBJ_DISABLED || '🔇').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_unmute').setLabel('Unmute').setEmoji(emojis.OBJ_ENABLED || '🔊').setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('vm_permit').setLabel('Permit').setEmoji(emojis.OBJ_SHIELD || '🛡️').setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('vm_claim').setLabel('Claim').setEmoji(emojis.OBJ_OWNER || '👑').setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId('vm_limit').setEmoji(emojis.OBJ_HUMAN || '👥').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_mute').setEmoji(emojis.OBJ_DISABLED || '🔇').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unmute').setEmoji(emojis.OBJ_ENABLED || '🔊').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_permit').setEmoji(emojis.OBJ_SHIELD || '🛡️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_claim').setEmoji(emojis.OBJ_OWNER || '👑').setStyle(ButtonStyle.Secondary)
   );
 
   return [row1, row2];
