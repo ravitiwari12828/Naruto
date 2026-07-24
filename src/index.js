@@ -984,7 +984,7 @@ client.on('messageCreate', async (message) => {
         const secs = afkTime % 60;
         const durationStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
-        message.channel.send(`👋 Welcome back <@${message.author.id}>! I removed your AFK status (AFK for **${durationStr}**).`).catch(() => {});
+        message.channel.send(`${emojis.LEAF || '🍃'} Welcome back <@${message.author.id}>! I removed your AFK status (AFK for **${durationStr}**).`).catch(() => {});
       }
     }
 
@@ -1000,7 +1000,7 @@ client.on('messageCreate', async (message) => {
           const secs = Math.floor(afkTime % 60);
           const timeAgo = mins > 0 ? `${mins}m ${secs}s ago` : `${secs}s ago`;
 
-          message.channel.send(`💤 **<@${mentionedUser.id}> is currently AFK** (${timeAgo})\n**Reason:** *${afkData.reason}*`).catch(() => {});
+          message.channel.send(`${emojis.MEDITATE || '💤'} **<@${mentionedUser.id}> is currently AFK** (${timeAgo})\n**Reason:** *${afkData.reason}*`).catch(() => {});
 
           if (afkData.notifyDM !== false) {
             try {

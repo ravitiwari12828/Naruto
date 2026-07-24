@@ -213,13 +213,13 @@ module.exports = {
 
       function buildAfkEmbed(data) {
         return createStyledEmbed({
-          title: `✔️ Success`,
+          title: `${emojis.SUCCESS || '✔️'} Success`,
           subtitle: `<@${authorId}>, you are now marked as AFK.`,
           description:
             `**Reason:** ${data.reason}\n\n` +
             `───────────── Settings ─────────────\n` +
-            `🌐 **AFK Scope:** \`${data.scope === 'global' ? 'Global (All Servers) ✅' : 'Server Only 🏠'}\`\n` +
-            `🔔 **DM Notification on Mention:** \`${data.notifyDM ? 'Enabled ✅' : 'Disabled ❌'}\``,
+            `${emojis.INFO || '🌐'} **AFK Scope:** \`${data.scope === 'global' ? 'Global (All Servers)' : 'Server Only'}\` ${data.scope === 'global' ? (emojis.ENABLED || '✅') : (emojis.DISABLED || '🏠')}\n` +
+            `${emojis.MODMAIL_ENVELOPE || '🔔'} **DM Notification on Mention:** \`${data.notifyDM ? 'Enabled' : 'Disabled'}\` ${data.notifyDM ? (emojis.ENABLED || '✅') : (emojis.DISABLED || '❌')}`,
           requestedBy: author,
           clientUser
         });
