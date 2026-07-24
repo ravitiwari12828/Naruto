@@ -1628,6 +1628,47 @@ client.on('interactionCreate', async (interaction) => {
   }
 });
 
+// 🏷️ AUTONICK & AUTOROLE LISTENER ON MEMBER JOIN
+client.on('guildMemberAdd', async (member) => {
+  if (!member || !member.guild) return;
+
+  const rolesCmd = client.commands.get('roles');
+  if (rolesCmd && rolesCmd.getOrCreateRoleConfig) {
+    const roleCfg = rolesCmd.getOrCreateRoleConfig(member.guild.id);
+    if (roleCfg.autonick) {
+      try {
+        const newNick = roleCfg.autonick.replace(/{user}/g, member.user.username).replace(/{username}/g, member.user.username);
+        await member.setNickname(newNick).catch(() => {});
+      } catch (e) {}
+    }
+  }
+});
+
+// 🔊 IN-VC AUTO ROLE LISTENER
+client.on('voiceStateUpdate', async (oldState, newState) => {
+  const member = newState.member || oldState.member;
+  if (!member || !member.guild || member.user.bot) return;
+
+  const rolesCmd = client.commands.get('roles');
+  if (rolesCmd && rolesCmd.getOrCreateRoleConfig) {
+    const roleCfg = rolesCmd.getOrCreateRoleConfig(member.guild.id);
+    if (roleCfg.invcrole) {
+      const targetRole = member.guild.roles.cache.get(roleCfg.invcrole);
+      if (targetRole) {
+        if (!oldState.channelId && newState.channelId) {
+          if (!member.roles.cache.has(targetRole.id)) {
+            await member.roles.add(targetRole).catch(() => {});
+          }
+        } else if (oldState.channelId && !newState.channelId) {
+          if (member.roles.cache.has(targetRole.id)) {
+            await member.roles.remove(targetRole).catch(() => {});
+          }
+        }
+      }
+    }
+  }
+});
+
 if (process.env.DISCORD_TOKEN && process.env.DISCORD_TOKEN !== 'your_discord_bot_token_here') {
   client.login(process.env.DISCORD_TOKEN).catch(err => {
     console.error('Failed to log in:', err.message);
