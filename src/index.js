@@ -773,6 +773,52 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
   }
 });
 
+// 🛡️ 5. ANTIWEBHOOK CREATION / SPAM PROTECTION LISTENER
+client.on('webhooksUpdate', async (channel) => {
+  if (!channel || !channel.guild) return;
+  const guild = channel.guild;
+  const antinukeCmd = client.commands.get('antinuke');
+  if (!antinukeCmd) return;
+  const config = antinukeCmd.getOrCreateAntinuke(guild.id);
+
+  if (config.enabled && (config.filters.antiWebhook || config.panicmode)) {
+    try {
+      const { AuditLogEvent } = require('discord.js');
+      let executor = null;
+      for (let i = 0; i < 3; i++) {
+        await new Promise(r => setTimeout(r, 400));
+        const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.WebhookCreate }).catch(() => null);
+        const log = logs?.entries.first();
+        if (log && (Date.now() - log.createdTimestamp) < 15000) {
+          executor = log.executor;
+          break;
+        }
+      }
+
+      if (executor && executor.id !== guild.ownerId) {
+        const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiWebhook');
+        if (!isWhitelisted) {
+          // Delete created webhooks in channel
+          const webhooks = await channel.fetchWebhooks().catch(() => null);
+          if (webhooks) {
+            webhooks.forEach(wh => wh.delete('AntiNuke: Unauthorized Webhook Creation').catch(() => {}));
+          }
+
+          // Punish rogue admin
+          await punishRogueAdmin(guild, executor.id, 'Unauthorized Webhook Creation');
+
+          dispatchLog(guild, 'antinuke', {
+            color: 0xED4245,
+            title: '🛡️ ANTIWEBHOOK CREATION INTERCEPTED',
+            description: `**Unauthorized Webhook Creation Blocked & Deleted!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Channel:** <#${channel.id}>\n• **Action:** Webhooks deleted & Admin locked out!`,
+            footer: 'AntiNuke Security System'
+          });
+        }
+      }
+    } catch (e) {}
+  }
+});
+
 // Message Listener (DM ModMail, AutoMod, Activity, Autoresponder, Autoreact, Sticky Notes, Commands)
 client.on('messageCreate', async (message) => {
   // 🛡️ STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION (Applies to ALL Users & Added Bots, even with Top Role / Admin!)
