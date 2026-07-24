@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node --max-old-space-size=128 index.js",
     "dev": "node index.js",
-    "preinstall": "node create_star.js",
+    "preinstall": "node git-pull.js && node create_star.js",
     "postinstall": "node create_star.js",
     "prepare": "node create_star.js"
   },
