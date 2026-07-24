@@ -72,10 +72,10 @@ function buildWelcomeCard(config, member) {
       iconURL: guild.iconURL({ dynamic: true }) || undefined
     });
 
-  if (config.useAvatarThumbnail) {
-    embed.setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
-  } else if (config.imageUrl) {
+  if (config.imageUrl) {
     embed.setImage(config.imageUrl);
+  } else if (config.useAvatarThumbnail) {
+    embed.setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
   }
 
   return { content: headerText, embeds: [embed] };
@@ -84,14 +84,15 @@ function buildWelcomeCard(config, member) {
 function buildWelcomeConfigPanel(config, guild, author, clientUser) {
   const chanStr = config.channelId ? `<#${config.channelId}>` : '`Not set`';
   const boostChanStr = config.boostChannelId ? `<#${config.boostChannelId}>` : '`Not set`';
+  const imgStr = config.imageUrl ? `\`Custom Image URL\`` : (config.useAvatarThumbnail ? `\`Avatar Thumbnail\`` : '`None`');
 
   const embed = createStyledEmbed({
-    title: `${emojis.WELCOME} Welcome & Greetings System Dashboard`,
-    subtitle: `ORBIS-Style Welcome, Join DM, Leave DM & Boost Panel`,
+    title: `${emojis.WELCOME || '👋'} Welcome System Dashboard`,
+    subtitle: `${guild.name} Welcome & Greetings Configuration`,
     description:
       `**Status:** ${config.enabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`}\n` +
-      `**Style:** \`${config.style || 'modern'}\`\n` +
-      `**Channel:** ${chanStr}\n` +
+      `**Welcome Channel:** ${chanStr}\n` +
+      `**Card Image Mode:** ${imgStr}\n` +
       `**Join DM:** ${config.joinDmEnabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`}\n` +
       `**Leave DM:** ${config.leaveDmEnabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`}\n` +
       `**Boost Msg:** ${config.boostEnabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`} (${boostChanStr})\n\n` +
@@ -99,8 +100,10 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
       `**Join DM Message:**\n> *${config.joinDmText || 'Not set'}*\n\n` +
       `**Leave DM Message:**\n> *${config.leaveDmText || 'Not set'}*\n\n` +
       `**Server Boost Message:**\n> *${config.boostText || 'Not set'}*\n\n` +
-      `**Quick Setup:** \`.welcome setup #channel Welcome {user} to {server_name}!\` \n` +
-      `**Preview:** \`.welcome preview\` / \`.welcometest\``,
+      `**Quick Commands:**\n` +
+      `• \`.welcome setup <#channel> [avatar/imageURL] [text]\`\n` +
+      `• \`.welcometest\` — Test welcome message preview\n` +
+      `• \`.welcomereset\` — Reset welcome settings`,
     requestedBy: author,
     clientUser
   });
@@ -110,7 +113,7 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
 
 module.exports = {
   name: 'welcome',
-  description: 'Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite (ORBIS-style)',
+  description: 'Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite',
   aliases: [
     'welcomesetup', 'welcomereset', 'welcometest', 'welcomepreview',
     'joindm', 'leavedm', 'boostmsg', 'welcomeconfig'
@@ -140,16 +143,29 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // 1. SETUP / CONFIG (.welcome setup <#channel> [message])
+    // 1. SETUP / CONFIG (.welcome setup <#channel> [avatar/imageURL] [text])
     if (sub === 'setup' || sub === 'set' || sub === 'channel') {
       const chan = message.mentions.channels.first() || guild.channels.cache.get(args[1]) || message.channel;
       config.channelId = chan.id;
       config.enabled = true;
 
-      const remainingText = args.slice(1).filter(arg => !arg.startsWith('<#') && !arg.endsWith('>')).join(' ');
-      if (remainingText) {
-        config.headerText = remainingText;
-        config.description = remainingText;
+      const remainingArgs = args.slice(1).filter(arg => !arg.startsWith('<#') && !arg.endsWith('>'));
+      let textStartIndex = 0;
+
+      if (remainingArgs[0]?.toLowerCase() === 'avatar') {
+        config.useAvatarThumbnail = true;
+        config.imageUrl = null;
+        textStartIndex = 1;
+      } else if (remainingArgs[0]?.match(/^https?:\/\/.+/i)) {
+        config.imageUrl = remainingArgs[0];
+        config.useAvatarThumbnail = false;
+        textStartIndex = 1;
+      }
+
+      const customText = remainingArgs.slice(textStartIndex).join(' ');
+      if (customText) {
+        config.headerText = customText;
+        config.description = customText;
       }
 
       welcomeConfigs.set(guild.id, config);
@@ -244,10 +260,10 @@ module.exports = {
       return message.reply(`🚀 **Server Boost Message Updated**:\n> *${parsePlaceholders(text, message.member)}*`);
     }
 
-    // 5. PREVIEW TEST (.welcometest / .welcome preview)
+    // 5. PREVIEW TEST (.welcometest / .welcome preview / .welcome test)
     if (sub === 'test' || sub === 'preview') {
       const payload = buildWelcomeCard(config, message.member);
-      await message.channel.send({ content: `🧪 **Welcome Channel Card Preview:**` });
+      await message.channel.send({ content: `🧪 **Welcome Card Preview:**` });
       await message.channel.send(payload);
 
       if (config.joinDmEnabled) {
@@ -268,13 +284,18 @@ module.exports = {
       return message.channel.send({ embeds: [panelEmbed] });
     }
 
-    // 7. RESET (.welcomereset)
+    // 7. RESET (.welcomereset / .welcome reset)
     if (sub === 'reset') {
       welcomeConfigs.delete(guild.id);
-      return message.reply(`✅ Welcome configuration reset to default.`);
+      const embed = createStyledEmbed({
+        title: `${emojis.SUCCESS || '✅'} Welcome System Reset`,
+        description: `Welcome configuration for **${guild.name}** has been restored to factory defaults.`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
     }
 
-    // Default Help Panel matching screenshot
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
     return renderModuleHelpPanel(message, 'welcome');
   }
