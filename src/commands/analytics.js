@@ -146,17 +146,15 @@ function renderVoiceLeaderboard(guild, timeframeKey, page = 1, author, clientUse
   } else {
     listText = pageEntries.map((item, idx) => {
       const rankNum = startIdx + idx + 1;
-      let rankPrefix = `\`#${rankNum}\``;
+      let rankPrefix = `**#${rankNum}**`;
       if (rankNum === 1) rankPrefix = `${emojis.OWNER_CROWN} **#1**`;
-      else if (rankNum === 2) rankPrefix = `${emojis.STAR} **#2**`;
-      else if (rankNum === 3) rankPrefix = `${emojis.SHINOBI} **#3**`;
 
       return `${rankPrefix} <@${item.userId}> • **${formatDuration(item.total)}** in voice`;
     }).join('\n');
   }
 
   const embed = createStyledEmbed({
-    title: `${emojis.VOICE} ${label} Voice Channel Leaderboard`,
+    title: `${emojis.VOICE} ${label} Voice Leaderboard`,
     subtitle: `Realtime Voice Activity Duration — ${guild.name}`,
     description:
       `Active voice durations are being updated in real-time!\n\n` +
@@ -188,10 +186,8 @@ function renderInvitesLeaderboard(guild, timeframeKey, page = 1, author, clientU
   } else {
     listText = pageEntries.map((item, idx) => {
       const rankNum = startIdx + idx + 1;
-      let rankPrefix = `\`#${rankNum}\``;
+      let rankPrefix = `**#${rankNum}**`;
       if (rankNum === 1) rankPrefix = `${emojis.OWNER_CROWN} **#1**`;
-      else if (rankNum === 2) rankPrefix = `${emojis.STAR} **#2**`;
-      else if (rankNum === 3) rankPrefix = `${emojis.SHINOBI} **#3**`;
 
       return `${rankPrefix} <@${item.userId}> • **${item.total.toLocaleString()}** invites`;
     }).join('\n');
