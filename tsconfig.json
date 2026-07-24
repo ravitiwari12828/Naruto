@@ -13,7 +13,14 @@
   "ts-node": {
     "compiler": "/home/container/node_modules/typescript",
     "transpileOnly": true,
-    "experimentalResolver": false
+    "experimentalResolver": false,
+    "compilerOptions": {
+      "module": "CommonJS",
+      "target": "ES2022",
+      "allowJs": true,
+      "skipLibCheck": true,
+      "isolatedModules": true
+    }
   },
   "include": ["**/*.js", "**/*.ts"]
 }

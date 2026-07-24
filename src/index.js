@@ -1,6 +1,6 @@
 try {
   const v8 = require('v8');
-  v8.setFlagsFromString('--max_old_space_size=192');
+  v8.setFlagsFromString('--max_old_space_size=128');
 } catch (e) {}
 
 try {
