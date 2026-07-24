@@ -1,7 +1,8 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const { PermissionsBitField } = require('discord.js');
 
-// Global In-Memory Sticky Notes Map (channelId -> { text, lastMsgId })
+// Global In-Memory Sticky Notes Map (channelId -> { guildId, channelId, text, lastMsgId, authorId })
 const stickyNotes = new Map();
 
 module.exports = {
@@ -23,15 +24,18 @@ module.exports = {
 
     // .sticky set <content>
     if (sub === 'set' || sub === 'add') {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+        return message.reply(`${emojis.DISABLED} You need **Manage Messages** permission to set sticky notes.`);
+      }
+
       const content = args.slice(1).join(' ');
       if (!content) {
         return message.reply(`${emojis.WARNING} Usage: \`.sticky set <your sticky message text>\``);
       }
 
-      // Delete existing sticky if present
       const existing = stickyNotes.get(channelId);
       if (existing && existing.lastMsgId) {
-        message.channel.messages.fetch(existing.lastMsgId).then(m => m.delete()).catch(() => {});
+        message.channel.messages.fetch(existing.lastMsgId).then(m => m.delete().catch(() => {})).catch(() => {});
       }
 
       const embed = createStyledEmbed({
@@ -56,13 +60,17 @@ module.exports = {
 
     // .sticky remove / delete
     if (['remove', 'delete', 'clear'].includes(sub)) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
+        return message.reply(`${emojis.DISABLED} You need **Manage Messages** permission to remove sticky notes.`);
+      }
+
       const existing = stickyNotes.get(channelId);
       if (!existing) {
         return message.reply(`${emojis.WARNING} No sticky note active in this channel.`);
       }
 
       if (existing.lastMsgId) {
-        message.channel.messages.fetch(existing.lastMsgId).then(m => m.delete()).catch(() => {});
+        message.channel.messages.fetch(existing.lastMsgId).then(m => m.delete().catch(() => {})).catch(() => {});
       }
       stickyNotes.delete(channelId);
 
