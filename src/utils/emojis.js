@@ -85,7 +85,7 @@ module.exports = {
   NINE_TAILS: '<:emoji_nine_tails_flame:1529377731718938674>',
   KUNAI: '<:emoji_crossed_kunai:1529377695656317078>',
 
-  // --- OBJECTS FOR DISCORD SELECT MENU DROPDOWNS ---
+  // --- OBJECTS FOR DISCORD SELECT MENU DROPDOWNS & BUTTONS ---
   OBJ_FUN: { name: 'emoji_fun', id: '1529474957934067892' },
   OBJ_GIVEAWAY: { name: 'emoji_giveaway', id: '1529474963856167023' },
   OBJ_MOD: { name: 'emoji_mod', id: '1529474974681927800' },
@@ -116,9 +116,15 @@ module.exports = {
   OBJ_REMOVE: { name: 'emoji_REMOVE', id: '1529377741252595802' },
   OBJ_ENABLED: { name: 'emoji_green_enabled', id: '1529377708012732506' },
   OBJ_DISABLED: { name: 'emoji_red_disabled', id: '1529377739302506516' },
-  OBJ_WARNING: { name: 'emoji_warning_alert', id: '152937755735527465' },
+  OBJ_WARNING: { name: 'emoji_warning_alert', id: '1529377755735527465' },
   OBJ_PANIC: { name: 'emoji_KABOOM', id: '1529377716975960075' },
   OBJ_STATS: { name: 'emoji_analytics_zap', id: '1529910228345163978' },
   OBJ_MESSAGES: { name: 'emoji_chat_bubble', id: '1529377690161905775' },
-  OBJ_INVITES: { name: 'emoji_envelope_invites', id: '1529377701507498044' }
+  OBJ_INVITES: { name: 'emoji_envelope_invites', id: '1529377701507498044' },
+
+  OBJ_LOCK: { name: 'emoji_LOCK', id: '1529377727042420897' },
+  OBJ_UNLOCK: { name: 'emoji_UNLOCK', id: '1529377753781239828' },
+  OBJ_HIDE: { name: 'emoji_HIDE', id: '1529377710265340034' },
+  OBJ_HUMAN: { name: 'emoji_HUMAN', id: '1529377712211492975' },
+  OBJ_SCROLL: { name: 'orange_white_shinobi_scroll', id: '1529377768528285827' }
 };

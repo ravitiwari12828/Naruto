@@ -2,7 +2,6 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  StringSelectMenuBuilder,
   ChannelType,
   PermissionsBitField,
   EmbedBuilder
@@ -29,7 +28,7 @@ function getOrCreateVMConfig(guildId) {
 }
 
 /**
- * Builds the ultra-aesthetic VoiceMaster Interface Control Center embed with 3D custom emojis.
+ * Builds the ultra-aesthetic VoiceMaster Control Center embed with custom 3D emojis.
  */
 function buildVoiceMasterInterfaceEmbed() {
   return new EmbedBuilder()
@@ -38,60 +37,46 @@ function buildVoiceMasterInterfaceEmbed() {
     .setDescription(
       `**${emojis.STAR} VoiceMaster Private Room Hub**\n` +
       `• Join **➕ Join to Create** to create your private voice room.\n` +
-      `• Use the interactive quick menu or buttons below to manage room privacy, permissions, and capacity.\n\n` +
-      `**${emojis.GEAR} Interactive Control Matrix**\n` +
+      `• Everything below is your control panel for private channels.\n\n` +
+      `**${emojis.GEAR} Control Buttons Matrix**\n` +
       `• ${emojis.LOCK} **Lock** • Restrict room access to permitted members\n` +
       `• ${emojis.UNLOCK} **Unlock** • Open room access to all server members\n` +
       `• ${emojis.HIDE} **Hide** • Hide your voice room from channel list\n` +
-      `• 📖 **Reveal** • Make your hidden voice channel visible\n` +
-      `• 📝 **Rename** • Custom rename your voice channel\n` +
-      `• 👥 **Limit** • Adjust maximum member slot limit\n` +
-      `• 🔇 **Mute All** • Server mute all connected members\n` +
-      `• 🎙️ **Unmute All** • Server unmute all connected members\n` +
+      `• ${emojis.TOOLS} **Reveal** • Make your hidden voice channel visible\n` +
+      `• ${emojis.SCROLL} **Rename** • Custom rename your voice channel\n` +
+      `• ${emojis.HUMAN} **Limit** • Adjust maximum member slot limit\n` +
+      `• ${emojis.DISABLED} **Mute All** • Server mute all connected members\n` +
+      `• ${emojis.ENABLED} **Unmute All** • Server unmute all connected members\n` +
       `• ${emojis.SHIELD} **Permit** • Grant permanent view/connect access to user\n` +
       `• ${emojis.REMOVE} **Ban** • Disconnect & ban user from channel\n` +
-      `• 🔄 **Transfer** • Transfer room ownership to another user\n` +
+      `• ${emojis.RESET} **Transfer** • Transfer room ownership to another user\n` +
       `• ${emojis.OWNER_CROWN} **Claim** • Claim ownership of an empty room`
     )
-    .setFooter({ text: 'Naruto VoiceMaster • Interactive Audio Suite' })
+    .setFooter({ text: 'Naruto VoiceMaster • Premium Audio Suite' })
     .setTimestamp();
 }
 
 /**
- * Builds the interactive select menu & color-coded button grid.
+ * Builds the 2-row color-coded interactive button grid with custom 3D aesthetic emojis.
  */
 function buildVoiceMasterActionRows() {
-  const quickMenu = new StringSelectMenuBuilder()
-    .setCustomId('vm_quick_menu')
-    .setPlaceholder('⚡ VoiceMaster Quick Presets & Control Bar...')
-    .addOptions([
-      { label: 'Lock Channel', value: 'vm_menu_lock', description: 'Restrict access to permitted users', emoji: '🔒' },
-      { label: 'Unlock Channel', value: 'vm_menu_unlock', description: 'Allow public joining', emoji: '🔓' },
-      { label: 'Set User Limit', value: 'vm_menu_limit', description: 'Adjust user slot capacity limit', emoji: '👥' },
-      { label: 'Mute Room', value: 'vm_menu_mute', description: 'Server mute all connected members', emoji: '🔇' },
-      { label: 'Unmute Room', value: 'vm_menu_unmute', description: 'Server unmute all connected members', emoji: '🎙️' },
-      { label: 'Claim Ownership', value: 'vm_menu_claim', description: 'Claim empty room ownership', emoji: '👑' }
-    ]);
-
-  const menuRow = new ActionRowBuilder().addComponents(quickMenu);
-
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_lock').setLabel('Lock').setEmoji(emojis.OBJ_SHIELD).setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_unlock').setLabel('Unlock').setEmoji(emojis.OBJ_TOOLS).setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('vm_hide').setLabel('Hide').setEmoji('👁️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_reveal').setLabel('Reveal').setEmoji('📖').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_rename').setLabel('Rename').setEmoji('📝').setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId('vm_lock').setLabel('Lock').setEmoji(emojis.OBJ_LOCK).setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_unlock').setLabel('Unlock').setEmoji(emojis.OBJ_UNLOCK).setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId('vm_hide').setLabel('Hide').setEmoji(emojis.OBJ_HIDE).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_reveal').setLabel('Reveal').setEmoji(emojis.OBJ_TOOLS).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_rename').setLabel('Rename').setEmoji(emojis.OBJ_SCROLL).setStyle(ButtonStyle.Primary)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_limit').setLabel('Limit').setEmoji('👥').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('vm_mute').setLabel('Mute').setEmoji('🔇').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_unmute').setLabel('Unmute').setEmoji('🎙️').setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('vm_permit').setLabel('Permit').setEmoji(emojis.OBJ_TOOLS).setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId('vm_limit').setLabel('Limit').setEmoji(emojis.OBJ_HUMAN).setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('vm_mute').setLabel('Mute').setEmoji(emojis.OBJ_DISABLED).setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_unmute').setLabel('Unmute').setEmoji(emojis.OBJ_ENABLED).setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId('vm_permit').setLabel('Permit').setEmoji(emojis.OBJ_SHIELD).setStyle(ButtonStyle.Success),
     new ButtonBuilder().setCustomId('vm_claim').setLabel('Claim').setEmoji(emojis.OBJ_OWNER).setStyle(ButtonStyle.Primary)
   );
 
-  return [menuRow, row1, row2];
+  return [row1, row2];
 }
 
 module.exports = {
