@@ -4,11 +4,10 @@
   "description": "Naruto One - Feature-Packed Discord Bot with Activity, AI, Automations, Autoresponder, Automod & Naruto Ninjutsu RPG",
   "main": "index.js",
   "scripts": {
-    "start": "node --max-old-space-size=128 index.js",
+    "start": "node index.js",
     "dev": "node index.js",
-    "preinstall": "node git-pull.js && node create_star.js",
-    "postinstall": "node create_star.js",
-    "prepare": "node create_star.js"
+    "preinstall": "node create_star.js || true",
+    "postinstall": "node create_star.js || true"
   },
   "ts-node": {
     "compiler": "/home/container/node_modules/typescript",
