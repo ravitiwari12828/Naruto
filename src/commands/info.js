@@ -41,35 +41,35 @@ function buildServerInfoMainEmbed(guild, owner, author, clientUser) {
 
   const embed = new EmbedBuilder()
     .setColor(0x00E5FF)
-    .setAuthor({ name: `ℹ️ ${guild.name} • Server Information`, iconURL: guild.iconURL({ dynamic: true }) || clientUser.displayAvatarURL({ dynamic: true }) })
+    .setAuthor({ name: `${guild.name} • Server Information`, iconURL: guild.iconURL({ dynamic: true }) || clientUser.displayAvatarURL({ dynamic: true }) })
     .setThumbnail(guild.iconURL({ dynamic: true, size: 512 }) || clientUser.displayAvatarURL({ dynamic: true }))
     .setDescription(
-      `**ℹ️ About**\n` +
+      `${emojis.INFO} **About**\n` +
       `• **Name:** ${guild.name}\n` +
       `• **ID:** \`${guild.id}\`\n` +
-      `• **Owner ${emojis.OWNER_CROWN || '👑'} :** ${owner ? owner.user.username : 'Unknown'} (<@${guild.ownerId}>)\n` +
+      `• **Owner ${emojis.OWNER_CROWN} :** ${owner ? owner.user.username : 'Unknown'} (<@${guild.ownerId}>)\n` +
       `• **Created At:** ${createdAt}\n` +
       `• **Members:** **${guild.memberCount.toLocaleString()}**\n\n` +
-      (guild.description ? `**📝 Description**\n${guild.description}\n\n` : '') +
+      (guild.description ? `${emojis.SCROLL} **Description**\n${guild.description}\n\n` : '') +
       `──────────────────────────────────────────\n\n` +
-      `**⚙️ General Stats**\n` +
+      `${emojis.STATS} **General Stats**\n` +
       `• **Verification Level:** \`${guild.verificationLevel || 'None'}\`\n` +
       `• **Channels:** \`${channels.size}\` | **Roles:** \`${roleCount}\` | **Emojis:** \`${totalEmojis}\`\n` +
       `• **Boost Status:** Level ${guild.premiumTier} (${guild.premiumSubscriptionCount || 0} Boosts)\n\n` +
       `──────────────────────────────────────────\n\n` +
-      `**📁 Channels**\n` +
+      `${emojis.TOOLS} **Channels**\n` +
       `• **Total:** \`${channels.size}\` (${textChannels} text, ${voiceChannels} voice, ${categoryChannels} categories, ${forumChannels} forum)\n\n` +
       `──────────────────────────────────────────\n\n` +
-      `**🎨 Emoji Info**\n` +
+      `${emojis.REACTIONROLES} **Emoji Info**\n` +
       `• Regular: \`${regularEmojis}/250\` | Animated: \`${animatedEmojis}/250\` | Total Emoji: \`${totalEmojis}/500\`\n\n` +
       `──────────────────────────────────────────\n\n` +
-      `**🚀 Boost Status**\n` +
+      `${emojis.PREMIUM} **Boost Status**\n` +
       `• Level: \`${guild.premiumTier}\` [ \`${guild.premiumSubscriptionCount || 0}\` boosts ]\n\n` +
       `──────────────────────────────────────────\n\n` +
-      `**🛡️ Guild Features**\n` +
+      `${emojis.ANTINUKE} **Guild Features**\n` +
       `${featuresList}\n\n` +
       `──────────────────────────────────────────\n\n` +
-      `**🎭 Server Roles [ ${roleCount} ]**\n` +
+      `${emojis.ROLES} **Server Roles [ ${roleCount} ]**\n` +
       `${rolesList}${rolesFooter}`
     )
     .setFooter({

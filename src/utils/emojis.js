@@ -116,6 +116,9 @@ module.exports = {
   OBJ_REMOVE: { name: 'emoji_REMOVE', id: '1529377741252595802' },
   OBJ_ENABLED: { name: 'emoji_green_enabled', id: '1529377708012732506' },
   OBJ_DISABLED: { name: 'emoji_red_disabled', id: '1529377739302506516' },
-  OBJ_WARNING: { name: 'emoji_warning_alert', id: '1529377755735527465' },
-  OBJ_PANIC: { name: 'emoji_KABOOM', id: '1529377716975960075' }
+  OBJ_WARNING: { name: 'emoji_warning_alert', id: '152937755735527465' },
+  OBJ_PANIC: { name: 'emoji_KABOOM', id: '1529377716975960075' },
+  OBJ_STATS: { name: 'emoji_analytics_zap', id: '1529910228345163978' },
+  OBJ_MESSAGES: { name: 'emoji_chat_bubble', id: '1529377690161905775' },
+  OBJ_INVITES: { name: 'emoji_envelope_invites', id: '1529377701507498044' }
 };
