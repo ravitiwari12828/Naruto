@@ -992,14 +992,14 @@ client.on('messageCreate', async (message) => {
       }
 
       const perkThresholds = [
-        { lvl: 5, key: 'Rookie' },
-        { lvl: 10, key: 'Apprentice' },
-        { lvl: 20, key: 'Guardians' },
-        { lvl: 30, key: 'Ascendant' },
-        { lvl: 40, key: 'Sentinels' },
-        { lvl: 60, key: 'Elites' },
-        { lvl: 80, key: 'Grandmaster' },
-        { lvl: 100, key: 'Untouchable' }
+        { lvl: 5, key: 'Leaf Cadet' },
+        { lvl: 10, key: 'Shinobi Specialist' },
+        { lvl: 20, key: 'Chunin Guardian' },
+        { lvl: 30, key: 'Shadow Operative' },
+        { lvl: 40, key: 'Sage Master' },
+        { lvl: 60, key: 'S-Rank Shinobi' },
+        { lvl: 80, key: 'Kage Sovereign' },
+        { lvl: 100, key: 'Will of Fire Supreme' }
       ];
 
       for (const perk of perkThresholds) {

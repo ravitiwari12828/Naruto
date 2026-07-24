@@ -32,14 +32,14 @@ async function ensureShinobiRolesAndPerks(guild) {
   ];
 
   const perkRolesDef = [
-    { name: 'Rookie [Lvl 5]', color: 0x1ABC9C, minLevel: 5, permissions: [PermissionsBitField.Flags.UseExternalEmojis, PermissionsBitField.Flags.UseExternalStickers, PermissionsBitField.Flags.AttachFiles] },
-    { name: 'Apprentice [Lvl 10]', color: 0x2ECC71, minLevel: 10, permissions: [PermissionsBitField.Flags.ChangeNickname] },
-    { name: 'Guardians [Lvl 20]', color: 0x3498DB, minLevel: 20, permissions: [PermissionsBitField.Flags.AddReactions] },
-    { name: 'Ascendant [Lvl 30]', color: 0x9B59B6, minLevel: 30, permissions: [PermissionsBitField.Flags.EmbedLinks, PermissionsBitField.Flags.AttachFiles] },
-    { name: 'Sentinels [Lvl 40]', color: 0xE67E22, minLevel: 40, permissions: [PermissionsBitField.Flags.EmbedLinks] },
-    { name: 'Elites [Lvl 60]', color: 0xE74C3C, minLevel: 60, permissions: [PermissionsBitField.Flags.SendVoiceMessages] },
-    { name: 'Grandmaster [Lvl 80]', color: 0xF1C40F, minLevel: 80, permissions: [PermissionsBitField.Flags.CreatePolls] },
-    { name: 'Untouchable [Lvl 100]', color: 0xFF0055, minLevel: 100, permissions: [] }
+    { name: 'Leaf Cadet [Lvl 5]', color: 0x00FFBB, minLevel: 5, permissions: [PermissionsBitField.Flags.UseExternalEmojis, PermissionsBitField.Flags.UseExternalStickers, PermissionsBitField.Flags.AttachFiles] },
+    { name: 'Shinobi Specialist [Lvl 10]', color: 0x2ECC71, minLevel: 10, permissions: [PermissionsBitField.Flags.ChangeNickname] },
+    { name: 'Chunin Guardian [Lvl 20]', color: 0x3498DB, minLevel: 20, permissions: [PermissionsBitField.Flags.AddReactions] },
+    { name: 'Shadow Operative [Lvl 30]', color: 0x9B59B6, minLevel: 30, permissions: [PermissionsBitField.Flags.EmbedLinks, PermissionsBitField.Flags.AttachFiles] },
+    { name: 'Sage Master [Lvl 40]', color: 0xE67E22, minLevel: 40, permissions: [PermissionsBitField.Flags.EmbedLinks] },
+    { name: 'S-Rank Shinobi [Lvl 60]', color: 0xE74C3C, minLevel: 60, permissions: [PermissionsBitField.Flags.SendVoiceMessages] },
+    { name: 'Kage Sovereign [Lvl 80]', color: 0xF1C40F, minLevel: 80, permissions: [PermissionsBitField.Flags.CreatePolls] },
+    { name: 'Will of Fire Supreme [Lvl 100]', color: 0xFF007F, minLevel: 100, permissions: [] }
   ];
 
   const roleMap = new Map();
@@ -53,7 +53,7 @@ async function ensureShinobiRolesAndPerks(guild) {
         role = await guild.roles.create({
           name: def.name,
           color: def.color,
-          reason: 'Naruto Leveling Rank Auto-Setup'
+          reason: 'Naruto Shinobi Rank Auto-Setup'
         });
         createdRoles.push(def.name);
       } catch (e) {
@@ -94,7 +94,7 @@ async function ensureShinobiRolesAndPerks(guild) {
 
 module.exports = {
   name: 'level',
-  description: 'Level System & Level Perks: level rank, level leaderboard, level setup, level perks, level disable, level status',
+  description: 'Level System & Shinobi Level Perks: level rank, level leaderboard, level setup, level perks, level disable, level status',
   aliases: [
     'levels', 'lvl', 'xp',
     'leaderboard', 'rank', 'lb', 'perks', 'rewards'
@@ -138,24 +138,26 @@ module.exports = {
 
       const createdSummary = createdRoles.length > 0
         ? `• **Created Roles (${createdRoles.length})**: ${createdRoles.map(r => `\`${r}\``).join(', ')}`
-        : `• **Level & Perk Roles**: All Rank & Level Perk roles are active in server!`;
+        : `• **Level & Perk Roles**: All Rank & Shinobi Level Perk roles are active in server!`;
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL} Leveling System & Level Perks Configured`,
+        title: `${emojis.LEVEL} Shinobi Leveling & Custom Perks Configured`,
         description:
-          `Successfully configured Naruto Leveling Engine & Level Perks for **${guild.name}**!\n\n` +
+          `Successfully configured Naruto Leveling Engine & Custom Shinobi Perks for **${guild.name}**!\n\n` +
           `• **Announcement Channel**: <#${chan.id}>\n` +
           `• **System Status**: \`ENABLED ✅\`\n` +
           `${createdSummary}\n\n` +
-          `**📜 Level Perks Hierarchy:**\n` +
-          `• **Lvl 5 (Rookie)**: External Emojis & Media Access\n` +
-          `• **Lvl 10 (Apprentice)**: Nickname Change Permissions\n` +
-          `• **Lvl 20 (Guardians)**: Reaction Permissions\n` +
-          `• **Lvl 30 (Ascendant)**: Media Sharing (Images & Videos)\n` +
-          `• **Lvl 40 (Sentinels)**: GIF Sharing Permissions\n` +
-          `• **Lvl 60 (Elites)**: Voice Message Notes Permission\n` +
-          `• **Lvl 80 (Grandmaster)**: Custom Polls & Unjail Card x2\n` +
-          `• **Lvl 100 (Untouchable)**: Wick Auto-Mute Protection Bypass`,
+          `**🍃 Genin Academy Perks (Lvls 5 – 20)**\n` +
+          `• \`Lvl 5\` ⁞ **Leaf Cadet** — *Chakra Emotes: External Emojis & Stickers + Media Files*\n` +
+          `• \`Lvl 10\` ⁞ **Shinobi Specialist** — *Ninja Identity: Custom Nickname Perms*\n` +
+          `• \`Lvl 20\` ⁞ **Chunin Guardian** — *Scroll Reactions: Unlimited Reactions Everywhere*\n\n` +
+          `**🔥 ANBU & Jounin Veteran Perks (Lvls 30 – 60)**\n` +
+          `• \`Lvl 30\` ⁞ **Shadow Operative** — *Visual Jutsu: Image & Video Media Sharing*\n` +
+          `• \`Lvl 40\` ⁞ **Sage Master** — *Expression Jutsu: GIF Animations Access*\n` +
+          `• \`Lvl 60\` ⁞ **S-Rank Shinobi** — *Voice Note Transmission: Voice Messages in chat*\n\n` +
+          `**⚡ Hokage Legend Perks (Lvls 80 – 100)**\n` +
+          `• \`Lvl 80\` ⁞ **Kage Sovereign** — *Council Polls: Create Custom Server Polls*\n` +
+          `• \`Lvl 100\` ⁞ **Will of Fire Supreme** — *Absolute Jutsu Immunity: Auto-Mute & Security Bypass!*`,
         requestedBy: author,
         clientUser
       });
@@ -171,18 +173,18 @@ module.exports = {
         title: `${emojis.LEVEL} Shinobi Level Perks & Unlockable Rewards`,
         subtitle: `Your Current Level: Level ${userLvl} (${userData.rank})`,
         description:
-          `Level up by chatting and joining VC to unlock server permissions and exclusive perks!\n\n` +
-          `✨ **Starter Perks (Lvls 5 - 20)**\n` +
-          `• \`Lvl 5\` ⁞ **Rookie** — External Emojis & Stickers, Media Channels access\n` +
-          `• \`Lvl 10\` ⁞ **Apprentice** — Nickname Permissions (Change Nickname)\n` +
-          `• \`Lvl 20\` ⁞ **Guardians** — Reaction Permission (Add Reactions freely)\n\n` +
-          `💬 **Community Veteran (Lvls 30 - 60)**\n` +
-          `• \`Lvl 30\` ⁞ **Ascendant** — Media Sharing (Images & Videos in chats)\n` +
-          `• \`Lvl 40\` ⁞ **Sentinels** — GIF Permissions (Send GIFs in conversations)\n` +
-          `• \`Lvl 60\` ⁞ **Elites** — Voice Message Permissions (Send Voice Notes)\n\n` +
-          `👑 **Elite Member (Lvls 80 - 100)**\n` +
-          `• \`Lvl 80\` ⁞ **Grandmaster** — Create Custom Polls & Unjail Card x2\n` +
-          `• \`Lvl 100\` ⁞ **Untouchable** — Wick Protection Auto-Mute Bypass Immunity!`,
+          `Chat in text channels and hang out in VC to earn XP, level up, and unlock exclusive Shinobi perks!\n\n` +
+          `🍃 **Genin Academy Perks (Lvls 5 – 20)**\n` +
+          `• \`Lvl 5\` ⁞ **Leaf Cadet** — Chakra Emotes (External Emojis & Stickers + Media Files)\n` +
+          `• \`Lvl 10\` ⁞ **Shinobi Specialist** — Ninja Identity (Custom Nickname Perms)\n` +
+          `• \`Lvl 20\` ⁞ **Chunin Guardian** — Scroll Reactions (Add Reactions everywhere freely)\n\n` +
+          `🔥 **ANBU & Jounin Veteran Perks (Lvls 30 – 60)**\n` +
+          `• \`Lvl 30\` ⁞ **Shadow Operative** — Visual Jutsu (Share Images & Videos in chat)\n` +
+          `• \`Lvl 40\` ⁞ **Sage Master** — Expression Jutsu (Send GIFs in conversations)\n` +
+          `• \`Lvl 60\` ⁞ **S-Rank Shinobi** — Voice Note Transmission (Send Voice Messages)\n\n` +
+          `⚡ **Hokage Legend Perks (Lvls 80 – 100)**\n` +
+          `• \`Lvl 80\` ⁞ **Kage Sovereign** — Council Polls & Custom Server Voting\n` +
+          `• \`Lvl 100\` ⁞ **Will of Fire Supreme** — Absolute Jutsu Immunity (Auto-Mute & Security Grid Bypass)!`,
         thumbnailUrl: author.displayAvatarURL({ dynamic: true, size: 256 }),
         requestedBy: author,
         clientUser
