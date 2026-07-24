@@ -400,20 +400,48 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 🎯 SNIPE
+    // 🎯 SNIPE (Shows last 10 sniped messages in channel)
     if (invoked === 'snipe') {
-      const sniped = snipeStore.get(message.channel.id);
-      if (!sniped) return message.reply(`${emojis.WARNING} Nothing to snipe in this channel!`);
+      const rawStore = snipeStore.get(message.channel.id);
+      const history = Array.isArray(rawStore) ? rawStore : (rawStore ? [rawStore] : []);
+
+      if (history.length === 0) {
+        return message.reply(`${emojis.WARNING} Nothing to snipe in this channel! No deleted messages found.`);
+      }
+
+      const indexArg = parseInt(args[0]);
+      if (!isNaN(indexArg) && indexArg >= 1 && indexArg <= history.length) {
+        const item = history[indexArg - 1];
+        const embed = createStyledEmbed({
+          title: `🎯 Sniped Message #${indexArg} of ${history.length}`,
+          subtitle: `Sent & Deleted by ${item.authorTag || 'Unknown User'}`,
+          description: `**Author:** ${item.authorId ? `<@${item.authorId}>` : `\`${item.authorTag}\``}\n**Deleted:** <t:${Math.floor(item.timestamp / 1000)}:R>\n\n**Message Content:**\n${item.content || '*[Empty]*'}`,
+          bannerUrl: item.image || null,
+          thumbnailUrl: item.authorAvatar || null,
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      const lines = history.map((item, i) => {
+        const timeAgo = `<t:${Math.floor(item.timestamp / 1000)}:R>`;
+        const userMention = item.authorId ? `<@${item.authorId}>` : `**${item.authorTag}**`;
+        const contentSnippet = item.content ? (item.content.length > 80 ? item.content.slice(0, 77) + '...' : item.content) : '*[Attachment]*';
+        const imgTag = item.image ? ' 🖼️' : '';
+        return `\`#${i + 1}\` ${userMention} (${timeAgo}):\n> ${contentSnippet}${imgTag}`;
+      });
 
       const embed = createStyledEmbed({
-        title: `🎯 Sniped Message`,
-        subtitle: `Deleted by ${sniped.author.tag}`,
-        description: sniped.content || '*[Image / Attachment]*',
-        bannerUrl: sniped.image || null,
+        title: `${emojis.SCROLL || '🎯'} Snipe History — #${message.channel.name}`,
+        subtitle: `Displaying last ${history.length} deleted message(s) in this channel`,
+        description:
+          `${lines.join('\n\n')}\n\n` +
+          `*Type \`.snipe <1-${history.length}>\` to view full content & image attachments of any message!*`,
         requestedBy: author,
-        clientUser,
-        footerText: `Deleted <t:${Math.floor(sniped.timestamp / 1000)}:R>`
+        clientUser
       });
+
       return message.channel.send({ embeds: [embed] });
     }
 

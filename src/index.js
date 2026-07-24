@@ -840,6 +840,30 @@ client.on('webhooksUpdate', async (channel) => {
         }
       }
     } catch (e) {}
+// 🎯 6. SNIPE ENGINE — STORES LAST 10 DELETED MESSAGES PER CHANNEL
+client.on('messageDelete', async (message) => {
+  if (!message || !message.channel || message.author?.bot) return;
+
+  const infoCmd = client.commands.get('info');
+  if (infoCmd && infoCmd.snipeStore) {
+    const channelId = message.channel.id;
+    const rawStore = infoCmd.snipeStore.get(channelId);
+    const history = Array.isArray(rawStore) ? rawStore : (rawStore ? [rawStore] : []);
+
+    const image = message.attachments?.first()?.proxyURL || message.attachments?.first()?.url || null;
+
+    history.unshift({
+      authorTag: message.author ? message.author.tag : 'Unknown User',
+      authorId: message.author ? message.author.id : null,
+      authorAvatar: message.author ? message.author.displayAvatarURL({ dynamic: true }) : null,
+      content: message.content || (image ? '*[Attachment Image]*' : '*[Empty Message]*'),
+      image: image,
+      timestamp: Date.now()
+    });
+
+    if (history.length > 10) history.pop();
+
+    infoCmd.snipeStore.set(channelId, history);
   }
 });
 
