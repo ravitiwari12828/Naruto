@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2022",
+    "target": "ES2021",
     "module": "CommonJS",
     "moduleResolution": "node",
     "allowJs": true,
@@ -11,12 +11,10 @@
     "allowSyntheticDefaultImports": true
   },
   "ts-node": {
-    "compiler": "/home/container/node_modules/typescript",
     "transpileOnly": true,
-    "experimentalResolver": false,
     "compilerOptions": {
       "module": "CommonJS",
-      "target": "ES2022",
+      "target": "ES2021",
       "allowJs": true,
       "skipLibCheck": true,
       "isolatedModules": true
