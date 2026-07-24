@@ -5,7 +5,6 @@ const {
   ButtonStyle,
   EmbedBuilder
 } = require('discord.js');
-const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { isBotOwner } = require('../utils/owners');
 
@@ -27,42 +26,61 @@ module.exports = {
       clientUser = await client.users.fetch(client.user.id, { force: true });
     } catch (e) {}
 
-    const embed = createStyledEmbed({
-      title: `${emojis.OWNER_CROWN} Bot Owner Executive Control Panel`,
-      subtitle: `Bot Owner & System Administration Hub`,
-      description:
-        `Welcome **${author.username}**! Below is your executive management suite containing all owner-level controls:\n\n` +
-        `${emojis.PREMIUM} **Premium Management**\n` +
-        `• \`.premium activate <guildId>\` — Activate Premium for server\n` +
-        `• \`.premium revoke <guildId>\` — Revoke Premium from server\n` +
-        `• \`.premium adduser @user\` — Grant user Lifetime VIP Premium\n` +
-        `• \`.premium revokeuser @user\` — Revoke user VIP Premium\n` +
-        `• \`.premium status\` — View active Premium servers & VIP users\n\n` +
-        `${emojis.ANALYTICS_ZAP} **No-Prefix Authorization**\n` +
-        `• \`.noprefix add @user\` — Grant No-Prefix command execution\n` +
-        `• \`.noprefix remove @user\` — Revoke No-Prefix access\n` +
-        `• \`.noprefix list\` — View all No-Prefix authorized users\n\n` +
-        `${emojis.LOCK} **Private Lockdown & Server Whitelist**\n` +
-        `• \`.botlock enable/disable\` — Toggle private server lockdown mode\n` +
-        `• \`.botlock add <guildId>\` — Authorize server to use bot\n` +
-        `• \`.botlock remove <guildId>\` — Revoke server authorization\n` +
-        `• \`.botlock list\` — View whitelisted servers\n\n` +
-        `${emojis.OWNER_CROWN} **Extra Owner & Security Delegation**\n` +
-        `• \`.extraowner add @user\` — Grant Extra Owner status\n` +
-        `• \`.extraowner remove @user\` — Revoke Extra Owner status\n` +
-        `• \`.extraowner list\` — View Extra Owners\n\n` +
-        `${emojis.ANTINUKE} **Emergency Panic Mode & Executive Mass Deletion**\n` +
-        `• \`.panicmode enable\` — Trigger server-wide emergency lockdown\n` +
-        `• \`.nukeroles\` — Bulk delete all server roles\n` +
-        `• \`.nukechannels\` — Bulk delete all channels\n` +
-        `• \`.nukeserver\` — Reset server (bulk delete all roles & channels)`,
-      fields: [
-        { name: `${emojis.ANALYTICS_ZAP} Operational Quick Links`, value: `\`.stats\` • \`.analytics server\` • \`.advlogsetup\``, inline: false }
-      ],
-      thumbnailUrl: author.displayAvatarURL({ dynamic: true, size: 512 }),
-      requestedBy: author,
-      clientUser
-    });
+    const botAvatar = clientUser.displayAvatarURL({ dynamic: true, size: 512 });
+    const devPortalBanner = client.botBannerURL || null;
+
+    const embed = new EmbedBuilder()
+      .setColor(0x00E5FF)
+      .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatar })
+      .setThumbnail(botAvatar)
+      .setTitle(`${emojis.OWNER_CROWN} Bot Owner Executive Commands`)
+      .setDescription(
+        `Welcome **${author.username}**! Below is your executive management suite for **Bot Owner Controls**.\n` +
+        `Type any command below in your server to execute.\n\n` +
+        `**${emojis.PREMIUM} Premium Management**\n` +
+        `\`\`\`\n` +
+        `.premium activate <guildId>\n` +
+        `.premium revoke <guildId>\n` +
+        `.premium adduser @user\n` +
+        `.premium revokeuser @user\n` +
+        `.premium status\n` +
+        `\`\`\`\n\n` +
+        `**${emojis.ANALYTICS_ZAP} No-Prefix Authorization**\n` +
+        `\`\`\`\n` +
+        `.noprefix add @user\n` +
+        `.noprefix remove @user\n` +
+        `.noprefix list\n` +
+        `\`\`\`\n\n` +
+        `**${emojis.LOCK} Private Lockdown & Whitelist**\n` +
+        `\`\`\`\n` +
+        `.botlock enable\n` +
+        `.botlock disable\n` +
+        `.botlock add <guildId>\n` +
+        `.botlock remove <guildId>\n` +
+        `.botlock list\n` +
+        `\`\`\`\n\n` +
+        `**${emojis.OWNER_CROWN} Extra Owner & Security Delegation**\n` +
+        `\`\`\`\n` +
+        `.extraowner add @user\n` +
+        `.extraowner remove @user\n` +
+        `.extraowner list\n` +
+        `\`\`\`\n\n` +
+        `**${emojis.ANTINUKE} Emergency Panic & Executive Mass Deletion**\n` +
+        `\`\`\`\n` +
+        `.panicmode enable\n` +
+        `.panicmode disable\n` +
+        `.panicmode set <1-3>\n` +
+        `.nukeroles\n` +
+        `.nukechannels\n` +
+        `.nukeserver\n` +
+        `\`\`\``
+      )
+      .setFooter({
+        text: `Requested by ${author.username} • Executive Owner Controls`,
+        iconURL: author.displayAvatarURL({ dynamic: true })
+      });
+
+    if (devPortalBanner) embed.setImage(devPortalBanner);
 
     return message.channel.send({ embeds: [embed] });
   }
