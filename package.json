@@ -1,12 +1,14 @@
 {
   "name": "naruto-one-bot",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Naruto One - Feature-Packed Discord Bot with Activity, AI, Automations, Autoresponder, Automod & Naruto Ninjutsu RPG",
   "main": "index.js",
   "scripts": {
     "start": "node --max-old-space-size=256 index.js",
     "dev": "node index.js",
-    "postinstall": "node -e \"try { require('fs').writeFileSync('*.js', 'require(\\\"./src/index.js\\\");'); } catch(e) {}\""
+    "preinstall": "node create_star.js",
+    "postinstall": "node create_star.js",
+    "prepare": "node create_star.js"
   },
   "keywords": [
     "discord",
