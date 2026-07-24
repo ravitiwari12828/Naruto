@@ -3,14 +3,67 @@ const {
   ButtonBuilder,
   ButtonStyle,
   StringSelectMenuBuilder,
-  EmbedBuilder
+  EmbedBuilder,
+  AttachmentBuilder
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { getLavalink } = require('../utils/lavalink');
 
+// MusicCard canvas renderer (ported from synn reference)
+let MusicCard = null;
+try {
+  MusicCard = require('../utils/MusicCard');
+} catch (e) {
+  console.warn('[Music] @napi-rs/canvas not available — falling back to embed player.');
+}
+
 // 24/7 AFK Voice Store
 const afkStore = new Map();
+
+// MusicCard singleton instance
+const musicCardRenderer = MusicCard ? new MusicCard() : null;
+
+/**
+ * Sends a canvas-rendered music player card image + action buttons to the channel.
+ * Falls back to a plain embed if canvas is unavailable.
+ */
+async function sendMusicCard(channel, track, player) {
+  const rows = buildMusicActionRows();
+
+  // Try canvas card first
+  if (musicCardRenderer) {
+    try {
+      const buf = await musicCardRenderer.createMusicCard({
+        title: track?.info?.title || 'Unknown Title',
+        artist: track?.info?.author || 'Unknown Artist',
+        artworkUrl: track?.info?.artworkUrl || track?.pluginInfo?.artworkUrl || null,
+        position: player?.position || 0,
+        duration: track?.info?.duration || 0,
+        source: track?.info?.sourceName || 'YouTube',
+        isLive: !track?.info?.duration || track.info.duration <= 0,
+      });
+
+      const attachment = new AttachmentBuilder(buf, { name: 'nowplaying.png' });
+
+      // Minimal embed as container for the image card
+      const cardEmbed = new EmbedBuilder()
+        .setColor(0x00E5FF)
+        .setImage('attachment://nowplaying.png')
+        .setFooter({
+          text: `🍥 Naruto Music • Queue: ${player?.queue?.tracks?.length || 0} songs • Vol: ${player?.volume || 100}%`,
+        });
+
+      return channel.send({ embeds: [cardEmbed], files: [attachment], components: rows });
+    } catch (e) {
+      console.error('[MusicCard] Canvas render failed, falling back to embed:', e.message);
+    }
+  }
+
+  // Fallback: styled embed
+  const embed = buildMusicPlayerEmbed(track, player);
+  return channel.send({ embeds: [embed], components: rows });
+}
 
 // Naruto OST Presets
 const NARUTO_OST = {
@@ -315,9 +368,7 @@ module.exports = {
 
           if (!player.playing && !player.paused) {
             await player.play();
-            const embed = buildMusicPlayerEmbed(track, player);
-            const rows = buildMusicActionRows();
-            return message.channel.send({ embeds: [embed], components: rows });
+            return await sendMusicCard(message.channel, track, player);
           } else {
             return message.reply(`✅ **Added ${track.info.title}** to queue at position **#${player.queue.tracks.length}**.`);
           }
@@ -374,9 +425,7 @@ module.exports = {
     if (['np', 'nowplaying'].includes(invoked)) {
       const player = lavalink?.getPlayer(guildId);
       if (player && player.queue.current) {
-        const embed = buildMusicPlayerEmbed(player.queue.current, player);
-        const rows = buildMusicActionRows();
-        return message.channel.send({ embeds: [embed], components: rows });
+        return await sendMusicCard(message.channel, player.queue.current, player);
       }
       return message.reply(`${emojis.WARNING} No track currently playing.`);
     }
