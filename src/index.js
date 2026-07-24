@@ -982,13 +982,33 @@ client.on('messageCreate', async (message) => {
     const levelCmd = client.commands.get('level');
     const levelCfg = levelCmd ? levelCmd.getOrCreateLevelConfig(message.guild.id) : { enabled: true, channelId: null };
 
-    // Auto-assign level rank role if bot has ManageRoles permission
+    // Auto-assign level rank role & perk roles if bot has ManageRoles permission
     if (message.member && message.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
       const currentRank = userAfter.rank;
       const targetRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === currentRank.toLowerCase() || (currentRank.includes('Student') && r.name.toLowerCase().includes('student')));
 
       if (targetRole && !message.member.roles.cache.has(targetRole.id)) {
         await message.member.roles.add(targetRole.id).catch(() => {});
+      }
+
+      const perkThresholds = [
+        { lvl: 5, key: 'Rookie' },
+        { lvl: 10, key: 'Apprentice' },
+        { lvl: 20, key: 'Guardians' },
+        { lvl: 30, key: 'Ascendant' },
+        { lvl: 40, key: 'Sentinels' },
+        { lvl: 60, key: 'Elites' },
+        { lvl: 80, key: 'Grandmaster' },
+        { lvl: 100, key: 'Untouchable' }
+      ];
+
+      for (const perk of perkThresholds) {
+        if (userAfter.level >= perk.lvl) {
+          const perkRole = message.guild.roles.cache.find(r => r.name.toLowerCase().includes(perk.key.toLowerCase()));
+          if (perkRole && !message.member.roles.cache.has(perkRole.id)) {
+            await message.member.roles.add(perkRole.id).catch(() => {});
+          }
+        }
       }
     }
 

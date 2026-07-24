@@ -20,7 +20,7 @@ function getOrCreateLevelConfig(guildId) {
   return cfg;
 }
 
-async function ensureShinobiRoles(guild) {
+async function ensureShinobiRolesAndPerks(guild) {
   const rankRolesDef = [
     { name: 'Student', color: 0x95A5A6, rankKey: 'Academy Student' },
     { name: 'Genin', color: 0x2ECC71, rankKey: 'Genin' },
@@ -29,6 +29,17 @@ async function ensureShinobiRoles(guild) {
     { name: 'Jounin', color: 0xE67E22, rankKey: 'Jounin' },
     { name: 'ANBU Black Ops', color: 0xE74C3C, rankKey: 'ANBU Black Ops' },
     { name: 'Hokage', color: 0xF1C40F, rankKey: 'Hokage' }
+  ];
+
+  const perkRolesDef = [
+    { name: 'Rookie [Lvl 5]', color: 0x1ABC9C, minLevel: 5, permissions: [PermissionsBitField.Flags.UseExternalEmojis, PermissionsBitField.Flags.UseExternalStickers, PermissionsBitField.Flags.AttachFiles] },
+    { name: 'Apprentice [Lvl 10]', color: 0x2ECC71, minLevel: 10, permissions: [PermissionsBitField.Flags.ChangeNickname] },
+    { name: 'Guardians [Lvl 20]', color: 0x3498DB, minLevel: 20, permissions: [PermissionsBitField.Flags.AddReactions] },
+    { name: 'Ascendant [Lvl 30]', color: 0x9B59B6, minLevel: 30, permissions: [PermissionsBitField.Flags.EmbedLinks, PermissionsBitField.Flags.AttachFiles] },
+    { name: 'Sentinels [Lvl 40]', color: 0xE67E22, minLevel: 40, permissions: [PermissionsBitField.Flags.EmbedLinks] },
+    { name: 'Elites [Lvl 60]', color: 0xE74C3C, minLevel: 60, permissions: [PermissionsBitField.Flags.SendVoiceMessages] },
+    { name: 'Grandmaster [Lvl 80]', color: 0xF1C40F, minLevel: 80, permissions: [PermissionsBitField.Flags.CreatePolls] },
+    { name: 'Untouchable [Lvl 100]', color: 0xFF0055, minLevel: 100, permissions: [] }
   ];
 
   const roleMap = new Map();
@@ -42,11 +53,11 @@ async function ensureShinobiRoles(guild) {
         role = await guild.roles.create({
           name: def.name,
           color: def.color,
-          reason: 'Naruto Leveling System Auto-Setup'
+          reason: 'Naruto Leveling Rank Auto-Setup'
         });
         createdRoles.push(def.name);
       } catch (e) {
-        console.error(`Failed to create role ${def.name}:`, e.message);
+        console.error(`Failed to create rank role ${def.name}:`, e.message);
       }
     }
 
@@ -56,19 +67,41 @@ async function ensureShinobiRoles(guild) {
     }
   }
 
+  for (const def of perkRolesDef) {
+    let role = guild.roles.cache.find(r => r.name.toLowerCase().includes(def.name.split(' ')[0].toLowerCase()));
+
+    if (!role) {
+      try {
+        role = await guild.roles.create({
+          name: def.name,
+          color: def.color,
+          permissions: def.permissions,
+          reason: `Naruto Level ${def.minLevel} Perk Role Auto-Setup`
+        });
+        createdRoles.push(def.name);
+      } catch (e) {
+        console.error(`Failed to create perk role ${def.name}:`, e.message);
+      }
+    }
+
+    if (role) {
+      roleMap.set(`lvl_${def.minLevel}`, role.id);
+    }
+  }
+
   return { roleMap, createdRoles };
 }
 
 module.exports = {
   name: 'level',
-  description: 'Level System: level rank, level leaderboard, level setup, level disable, level status',
+  description: 'Level System & Level Perks: level rank, level leaderboard, level setup, level perks, level disable, level status',
   aliases: [
     'levels', 'lvl', 'xp',
-    'leaderboard', 'rank', 'lb'
+    'leaderboard', 'rank', 'lb', 'perks', 'rewards'
   ],
   levelConfigs,
   getOrCreateLevelConfig,
-  ensureShinobiRoles,
+  ensureShinobiRolesAndPerks,
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -77,6 +110,7 @@ module.exports = {
 
     if (invoked === 'rank') sub = 'rank';
     if (invoked === 'leaderboard' || invoked === 'lb') sub = 'leaderboard';
+    if (invoked === 'perks' || invoked === 'rewards') sub = 'perks';
 
     const author = message.author;
     const guild = message.guild;
@@ -98,30 +132,66 @@ module.exports = {
       config.channelId = chan.id;
       config.enabled = true;
 
-      const { roleMap, createdRoles } = await ensureShinobiRoles(guild);
+      const { roleMap, createdRoles } = await ensureShinobiRolesAndPerks(guild);
       config.levelRoles = roleMap;
       levelConfigs.set(guildId, config);
 
       const createdSummary = createdRoles.length > 0
         ? `• **Created Roles (${createdRoles.length})**: ${createdRoles.map(r => `\`${r}\``).join(', ')}`
-        : `• **Shinobi Roles**: All 7 rank roles are active in server!`;
+        : `• **Level & Perk Roles**: All Rank & Level Perk roles are active in server!`;
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL} Leveling System & Roles Configured`,
+        title: `${emojis.LEVEL} Leveling System & Level Perks Configured`,
         description:
-          `Successfully configured Naruto Leveling Engine for **${guild.name}**!\n\n` +
+          `Successfully configured Naruto Leveling Engine & Level Perks for **${guild.name}**!\n\n` +
           `• **Announcement Channel**: <#${chan.id}>\n` +
           `• **System Status**: \`ENABLED ✅\`\n` +
           `${createdSummary}\n\n` +
-          `**📜 Configured Shinobi Rank Hierarchy:**\n` +
-          `\`Student\` ➔ \`Genin\` ➔ \`Chunin\` ➔ \`Special Jounin\` ➔ \`Jounin\` ➔ \`ANBU Black Ops\` ➔ \`Hokage\``,
+          `**📜 Level Perks Hierarchy:**\n` +
+          `• **Lvl 5 (Rookie)**: External Emojis & Media Access\n` +
+          `• **Lvl 10 (Apprentice)**: Nickname Change Permissions\n` +
+          `• **Lvl 20 (Guardians)**: Reaction Permissions\n` +
+          `• **Lvl 30 (Ascendant)**: Media Sharing (Images & Videos)\n` +
+          `• **Lvl 40 (Sentinels)**: GIF Sharing Permissions\n` +
+          `• **Lvl 60 (Elites)**: Voice Message Notes Permission\n` +
+          `• **Lvl 80 (Grandmaster)**: Custom Polls & Unjail Card x2\n` +
+          `• **Lvl 100 (Untouchable)**: Wick Auto-Mute Protection Bypass`,
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 2. .level disable
+    // 2. .level perks / .perks
+    if (sub === 'perks' || sub === 'rewards' || sub === 'benefits') {
+      const userData = db.getUser(author.id);
+      const userLvl = userData.level || 1;
+
+      const embed = createStyledEmbed({
+        title: `${emojis.LEVEL} Shinobi Level Perks & Unlockable Rewards`,
+        subtitle: `Your Current Level: Level ${userLvl} (${userData.rank})`,
+        description:
+          `Level up by chatting and joining VC to unlock server permissions and exclusive perks!\n\n` +
+          `✨ **Starter Perks (Lvls 5 - 20)**\n` +
+          `• \`Lvl 5\` ⁞ **Rookie** — External Emojis & Stickers, Media Channels access\n` +
+          `• \`Lvl 10\` ⁞ **Apprentice** — Nickname Permissions (Change Nickname)\n` +
+          `• \`Lvl 20\` ⁞ **Guardians** — Reaction Permission (Add Reactions freely)\n\n` +
+          `💬 **Community Veteran (Lvls 30 - 60)**\n` +
+          `• \`Lvl 30\` ⁞ **Ascendant** — Media Sharing (Images & Videos in chats)\n` +
+          `• \`Lvl 40\` ⁞ **Sentinels** — GIF Permissions (Send GIFs in conversations)\n` +
+          `• \`Lvl 60\` ⁞ **Elites** — Voice Message Permissions (Send Voice Notes)\n\n` +
+          `👑 **Elite Member (Lvls 80 - 100)**\n` +
+          `• \`Lvl 80\` ⁞ **Grandmaster** — Create Custom Polls & Unjail Card x2\n` +
+          `• \`Lvl 100\` ⁞ **Untouchable** — Wick Protection Auto-Mute Bypass Immunity!`,
+        thumbnailUrl: author.displayAvatarURL({ dynamic: true, size: 256 }),
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 3. .level disable
     if (sub === 'disable') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can disable leveling.`);
@@ -133,14 +203,14 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} Leveling system disabled on this server.`);
     }
 
-    // 3. .level status
+    // 4. .level status
     if (sub === 'status') {
       const embed = createStyledEmbed({
         title: `${emojis.LEVEL} Leveling System Status`,
         fields: [
           { name: `${emojis.GEAR} Status`, value: config.enabled ? '`ENABLED ✅`' : '`DISABLED ❌`', inline: true },
           { name: `${emojis.MESSAGES} Announcement Channel`, value: config.channelId ? `<#${config.channelId}>` : '*Current Channel*', inline: true },
-          { name: `${emojis.ROLES} Shinobi Rank Roles`, value: config.levelRoles.size > 0 ? `\`${config.levelRoles.size} Configured\`` : '`Run .level setup`', inline: true }
+          { name: `${emojis.ROLES} Shinobi Rank & Perk Roles`, value: config.levelRoles.size > 0 ? `\`${config.levelRoles.size} Configured\`` : '`Run .level setup`', inline: true }
         ],
         requestedBy: author,
         clientUser
@@ -148,7 +218,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 4. .level leaderboard / .ninja lb level / .lb
+    // 5. .level leaderboard / .lb
     if (sub === 'leaderboard' || sub === 'lb' || sub === 'top') {
       const top10 = db.getTopUsers('xp', 10);
       const lines = top10.map((u, i) => `\`#${i + 1}\` **<@${u.userId}>** — Level \`${u.level}\` (\`${u.xp} XP\`) • Rank: *${u.rank}*`);
@@ -162,7 +232,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 5. .level addxp @user <amount>
+    // 6. .level addxp @user <amount>
     if (sub === 'addxp' || sub === 'givexp') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can add XP.`);
@@ -178,7 +248,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} Added \`+${amount} XP\` to ${target.user.username}.`);
     }
 
-    // 6. .level setlevel @user <level>
+    // 7. .level setlevel @user <level>
     if (sub === 'setlevel' || sub === 'setlvl') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can set levels.`);
@@ -194,7 +264,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} Set ${target.user.username}'s level to **Level ${newLvl}**.`);
     }
 
-    // 7. .level rank [@user]
+    // 8. .level rank [@user]
     if (!sub || sub === 'rank' || sub === 'card') {
       const targetUser = message.mentions.users.first() || author;
       const userData = db.getUser(targetUser.id);
