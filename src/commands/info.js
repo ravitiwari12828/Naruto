@@ -445,6 +445,42 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
+    // 👤 USERINFO / USER / UI [@user]
+    if (['userinfo', 'user', 'ui'].includes(invoked)) {
+      const member = message.mentions.members?.first() || message.guild.members.cache.get(args[0]) || message.member;
+      const user = member.user;
+
+      const createdTimestamp = Math.floor(user.createdAt.getTime() / 1000);
+      const joinedTimestamp = member.joinedAt ? Math.floor(member.joinedAt.getTime() / 1000) : null;
+
+      const rolesList = member.roles.cache
+        .filter(r => r.name !== '@everyone')
+        .sort((a, b) => b.position - a.position)
+        .map(r => `<@&${r.id}>`)
+        .slice(0, 10)
+        .join(', ') || '*None*';
+
+      const keyPermissions = member.permissions.toArray().slice(0, 8).map(p => `\`${p.replace(/_/g, ' ')}\``).join(', ') || '`None`';
+
+      const embed = createStyledEmbed({
+        title: `👤 User Information — ${user.username}`,
+        thumbnailUrl: user.displayAvatarURL({ dynamic: true, size: 256 }),
+        fields: [
+          { name: '🆔 User ID', value: `\`${user.id}\``, inline: true },
+          { name: '🏷️ Tag / Username', value: `\`${user.tag || user.username}\``, inline: true },
+          { name: '🤖 Bot Account', value: user.bot ? '`Yes ✅`' : '`No ❌`', inline: true },
+          { name: '📅 Account Created', value: `<t:${createdTimestamp}:F> (<t:${createdTimestamp}:R>)`, inline: false },
+          { name: '📥 Joined Server', value: joinedTimestamp ? `<t:${joinedTimestamp}:F> (<t:${joinedTimestamp}:R>)` : '*Unknown*', inline: false },
+          { name: `🎭 Server Roles [ ${Math.max(0, member.roles.cache.size - 1)} ]`, value: rolesList, inline: false },
+          { name: '🛡️ Key Permissions', value: keyPermissions, inline: false }
+        ],
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.channel.send({ embeds: [embed] });
+    }
+
     // 🏓 PING
     if (invoked === 'ping') {
       const sent = await message.channel.send('🏓 Pinging...');
