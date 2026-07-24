@@ -162,11 +162,12 @@ function buildTicketActionRows() {
 
 module.exports = {
   name: 'ticket',
-  description: 'Complete Ticket System with category_add, category_edit, category_remove & category_list',
+  description: 'Complete Ticket System with category_add, category_edit, category_remove, category_list, claim, close, reopen, callstaff & transcript',
   aliases: [
     'tickets', 't', 'ticketpanel', 'staffrole',
     'panel_deploy', 'ticket_setup', 'add_member', 'remove_member',
-    'category_add', 'category_edit', 'category_remove', 'category_list', 'categories'
+    'category_add', 'category_edit', 'category_remove', 'category_list', 'categories',
+    'claim', 'reopen', 'callstaff', 'ticketinfo'
   ],
   ticketConfigs,
   priorityTimers,
@@ -189,6 +190,9 @@ module.exports = {
     if (invoked === 'category_edit') sub = 'category_edit';
     if (invoked === 'category_remove') sub = 'category_remove';
     if (invoked === 'category_list' || invoked === 'categories') sub = 'categories';
+    if (invoked === 'claim') sub = 'claim';
+    if (invoked === 'reopen') sub = 'reopen';
+    if (invoked === 'callstaff') sub = 'callstaff';
 
     const guild = message.guild;
     const author = message.author;
@@ -445,6 +449,105 @@ module.exports = {
       await message.channel.permissionOverwrites.delete(member.id).catch(() => {});
 
       return message.reply(`${emojis.SUCCESS} Removed <@${member.id}> from ticket channel ${message.channel}.`);
+    }
+
+    // 9. CLAIM TICKET (.ticket claim / .claim)
+    if (sub === 'claim') {
+      const isStaff = message.member.permissions.has(PermissionsBitField.Flags.Administrator) ||
+                      Array.from(config.staffRoles).some(rId => message.member.roles.cache.has(rId));
+
+      if (!isStaff) {
+        return message.reply(`${emojis.WARNING} Only support staff members can claim tickets!`);
+      }
+
+      return message.reply(`${emojis.SUCCESS} Ticket claimed by <@${author.id}>.`);
+    }
+
+    // 10. REOPEN TICKET (.ticket reopen / .reopen)
+    if (sub === 'reopen') {
+      const topic = message.channel.topic || '';
+      const match = topic.match(/owner:(\d+)/);
+      const ownerId = match ? match[1] : null;
+
+      if (ownerId) {
+        await message.channel.permissionOverwrites.edit(ownerId, {
+          ViewChannel: true,
+          SendMessages: true
+        }).catch(() => {});
+      }
+
+      return message.reply(`${emojis.SUCCESS} Ticket reopened by <@${author.id}>.`);
+    }
+
+    // 11. LOCK TICKET (.ticket lock / .lock)
+    if (sub === 'lock') {
+      const topic = message.channel.topic || '';
+      const match = topic.match(/owner:(\d+)/);
+      const ownerId = match ? match[1] : null;
+
+      if (ownerId) {
+        await message.channel.permissionOverwrites.edit(ownerId, { SendMessages: false }).catch(() => {});
+      }
+
+      return message.reply(`${emojis.LOCK} Ticket locked by <@${author.id}>.`);
+    }
+
+    // 12. CALL STAFF (.ticket callstaff / .callstaff)
+    if (sub === 'callstaff') {
+      const staffPings = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(' ') || '@here';
+      await message.channel.send({ content: `📞 **Call Staff Alert**: ${staffPings}\n<@${author.id}> has requested immediate support staff attendance in this ticket!` }).catch(() => {});
+      return message.reply(`${emojis.SUCCESS} Support staff summoned!`);
+    }
+
+    // 13. TICKET INFO (.ticket info / .ticketinfo)
+    if (sub === 'info' || sub === 'ticketinfo') {
+      const topic = message.channel.topic || '';
+      const ownerMatch = topic.match(/owner:(\d+)/);
+      const typeMatch = topic.match(/type:([^|]+)/);
+      const priorityMatch = topic.match(/priority:([^|]+)/);
+      const claimMatch = topic.match(/claim:([^|]+)/);
+
+      const embed = createStyledEmbed({
+        title: `${emojis.TICKETS} Ticket Audit Details`,
+        subtitle: `Channel: #${message.channel.name}`,
+        fields: [
+          { name: `${emojis.HUMAN} Ticket Owner`, value: ownerMatch ? `<@${ownerMatch[1]}>` : 'Unknown', inline: true },
+          { name: `${emojis.TICKETS} Category`, value: typeMatch ? typeMatch[1] : 'General Support', inline: true },
+          { name: `${emojis.ZAP} Priority`, value: priorityMatch ? priorityMatch[1] : 'Urgent', inline: true },
+          { name: `${emojis.MOD} Claimed By`, value: claimMatch ? claimMatch[1] : 'Unclaimed', inline: true },
+          { name: `${emojis.STAR} Channel ID`, value: `\`${message.channel.id}\``, inline: true }
+        ],
+        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.reply({ embeds: [embed] });
+    }
+
+    // 14. TICKET TRANSCRIPT (.ticket transcript / .transcript)
+    if (sub === 'transcript') {
+      const fetchedMsgs = await message.channel.messages.fetch({ limit: 100 }).catch(() => null);
+      if (!fetchedMsgs) return message.reply(`${emojis.WARNING} Could not fetch ticket message history.`);
+
+      const buffer = generateTranscriptBuffer(message.channel, fetchedMsgs, author);
+      const attachment = new AttachmentBuilder(buffer, { name: `transcript-${message.channel.name}.txt` });
+
+      return message.reply({
+        content: `${emojis.SCROLL} **Ticket Transcript Exported:**`,
+        files: [attachment]
+      });
+    }
+
+    // 15. CLOSE TICKET (.ticket close / .close)
+    if (sub === 'close') {
+      const modmailCmd = message.client.commands.get('modmail');
+      if (modmailCmd) {
+        return modmailCmd.execute(message, args);
+      }
+      return message.reply(`${emojis.LOCK} Closing ticket channel...`).then(() => {
+        setTimeout(() => message.channel.delete().catch(() => {}), 3000);
+      });
     }
 
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
