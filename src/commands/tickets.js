@@ -29,15 +29,18 @@ function getOrCreateTicketConfig(guildId) {
         { id: 'cat_report', name: 'Report', emoji: '🚨', description: 'Report a user or server violation' },
         { id: 'cat_reward', name: 'Reward', emoji: '🎁', description: 'Claim your event or activity rewards' },
         { id: 'cat_staff', name: 'Staff Apply', emoji: '💼', description: 'Apply for staff position' },
-        { id: 'cat_server_promo', name: 'Server Promo', emoji: '🌐', description: 'Request server cross-promotions' },
-        { id: 'cat_event_promo', name: 'Event Promo', emoji: '🎉', description: 'Partner for server events' },
-        { id: 'cat_reg', name: 'Registration', emoji: '📝', description: 'Register for tournaments & events' }
+        { id: 'cat_server_promo', name: 'Server Promo', emoji: '🌐', description: 'Request server cross-promotions' }
       ]
     });
   }
   const cfg = ticketConfigs.get(guildId);
   if (cfg.ticketCounter === undefined) cfg.ticketCounter = 0;
   if (!cfg.staffRoles) cfg.staffRoles = new Set();
+  
+  // Filter out removed categories (registration & event_promo) if already stored in memory
+  if (cfg.categories) {
+    cfg.categories = cfg.categories.filter(c => c.id !== 'cat_event_promo' && c.id !== 'cat_reg');
+  }
   return cfg;
 }
 
@@ -125,18 +128,18 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText, claimed
 
   return new EmbedBuilder()
     .setColor(color)
-    .setTitle(`🏷️ ${opener.username}'s Ticket — ${categoryName}`)
+    .setTitle(`${emojis.TICKETS} ${opener.username}'s Ticket — ${categoryName}`)
     .setDescription(
       `Welcome <@${opener.id}>! Thanks for reaching out to support.\n` +
       `Our team will assist you shortly — please explain your request in full detail below.`
     )
     .addFields(
-      { name: '👤 Opened By', value: `<@${opener.id}> (\`${opener.tag}\`)`, inline: true },
-      { name: '🚦 Priority Level', value: `${priorityText === 'Urgent' ? '🔴' : priorityText === 'Normal' ? '🟡' : '🟢'} ${priorityText}`, inline: true },
-      { name: '🙋‍♂️ Claimed By', value: claimedByText, inline: true }
+      { name: `${emojis.HUMAN} Opened By`, value: `<@${opener.id}> (\`${opener.tag}\`)`, inline: true },
+      { name: `${emojis.ZAP} Priority Level`, value: `${priorityText === 'Urgent' ? emojis.WARNING : priorityText === 'Normal' ? emojis.STAR : emojis.SUCCESS} ${priorityText}`, inline: true },
+      { name: `${emojis.MOD} Claimed By`, value: claimedByText, inline: true }
     )
     .setFooter({
-      text: `Ticket ID #${ticketNum} • Konoha Ticket System`,
+      text: `Ticket ID #${ticketNum} • Naruto Support Desk`,
       iconURL: opener.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
@@ -144,15 +147,15 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText, claimed
 
 function buildTicketActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket_claim_btn').setLabel('Claim').setEmoji('🙋‍♂️').setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('ticket_callstaff_btn').setLabel('Call Staff').setEmoji('📞').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('ticket_priority_btn').setLabel('Priority').setEmoji('🚦').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('ticket_claim_btn').setLabel('Claim').setEmoji(emojis.OBJ_MOD).setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId('ticket_callstaff_btn').setLabel('Call Staff').setEmoji(emojis.OBJ_PRIORITY).setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('ticket_priority_btn').setLabel('Priority').setEmoji(emojis.OBJ_ZAP).setStyle(ButtonStyle.Secondary)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket_addmember_btn').setLabel('Add Member').setEmoji('➕').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_lock_btn').setLabel('Lock').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_close_btn').setLabel('Close').setEmoji('🗑️').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('ticket_addmember_btn').setLabel('Add Member').setEmoji(emojis.OBJ_TOOLS).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_lock_btn').setLabel('Lock').setEmoji(emojis.OBJ_SHIELD).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_close_btn').setLabel('Close').setEmoji(emojis.OBJ_REMOVE).setStyle(ButtonStyle.Danger)
   );
 
   return [row1, row2];
@@ -160,7 +163,7 @@ function buildTicketActionRows() {
 
 module.exports = {
   name: 'ticket',
-  description: 'Complete Ticket System with 8 categories, Call Staff, Transcripts to DM & Priority Escalation',
+  description: 'Complete Ticket System with 6 active categories, Call Staff, Transcripts to DM & Priority Escalation',
   aliases: [
     'tickets', 't', 'ticketpanel', 'staffrole',
     'panel_deploy', 'ticket_setup', 'add_member', 'remove_member'
@@ -174,7 +177,8 @@ module.exports = {
   buildTicketActionRows,
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
     if (invoked === 'panel_deploy') sub = 'panel';
@@ -203,22 +207,20 @@ module.exports = {
 
       const panelEmbed = new EmbedBuilder()
         .setColor(0x00FFBB)
-        .setTitle(`🎟️ Konoha Private Support Desk`)
+        .setTitle(`${emojis.TICKETS} Naruto Private Support Desk`)
         .setDescription(
           `Welcome to **${guild.name}** Support Center!\n\n` +
           `Select a category from the dropdown menu below to open a private ticket with our staff.\n\n` +
-          `📌 **Available Categories:**\n` +
+          `**${emojis.STAR} Available Support Categories:**\n` +
           `• 🎫 **General Support** — Assistance & Questions\n` +
           `• 📢 **Promotion** — Inquire about server promotions\n` +
           `• 🚨 **Report** — Report a user or rule violation\n` +
           `• 🎁 **Reward** — Claim event prizes & activity rewards\n` +
           `• 💼 **Staff Apply** — Submit staff application\n` +
-          `• 🌐 **Server Promo** — Server cross-promotions\n` +
-          `• 🎉 **Event Promo** — Partner for server events\n` +
-          `• 📝 **Registration** — Register for tournaments\n\n` +
-          `⚙️ **Staff Roles Assigned**: ${staffRoleMentions}`
+          `• 🌐 **Server Promo** — Server cross-promotions\n\n` +
+          `**${emojis.GEAR} Staff Roles Assigned**: ${staffRoleMentions}`
         )
-        .setFooter({ text: 'Konoha Ticket System • Fast & Dedicated Support' })
+        .setFooter({ text: 'Naruto Ticket System • Dedicated Fast Support' })
         .setTimestamp();
 
       const selectMenu = new StringSelectMenuBuilder()
@@ -242,7 +244,7 @@ module.exports = {
       return message.reply({
         embeds: [
           createStyledEmbed({
-            title: `✅ Ticket Desk Deployed Successfully`,
+            title: `${emojis.SUCCESS} Ticket Desk Deployed Successfully`,
             description:
               `• **Ticket Panel**: Active in <#${message.channel.id}>\n` +
               `• **Ticket Logs**: ${logChan ? `<#${logChan.id}>` : '`Created`'}\n` +
@@ -266,17 +268,17 @@ module.exports = {
       if (action === 'add' && role) {
         config.staffRoles.add(role.id);
         ticketConfigs.set(guild.id, config);
-        return message.reply(`✅ Added <@&${role.id}> as Ticket Support Staff.`);
+        return message.reply(`${emojis.SUCCESS} Added <@&${role.id}> as Ticket Support Staff.`);
       } else if (action === 'remove' && role) {
         config.staffRoles.delete(role.id);
         ticketConfigs.set(guild.id, config);
-        return message.reply(`✅ Removed <@&${role.id}> from Ticket Support Staff.`);
+        return message.reply(`${emojis.SUCCESS} Removed <@&${role.id}> from Ticket Support Staff.`);
       } else {
         const staffList = Array.from(config.staffRoles).map(id => `<@&${id}>`).join('\n') || 'None assigned (Administrators only)';
         return message.reply({
           embeds: [
             createStyledEmbed({
-              title: `🛡️ Ticket Staff Roles`,
+              title: `${emojis.SHIELD} Ticket Staff Roles`,
               description: `**Current Support Staff Roles:**\n${staffList}\n\n**Usage:**\n\`.ticket staff add @role\`\n\`.ticket staff remove @role\``,
               requestedBy: author,
               clientUser
