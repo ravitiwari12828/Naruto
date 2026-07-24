@@ -11,14 +11,16 @@ function getBannerFiles() {
  */
 function stripCustomEmojis(str) {
   if (!str) return str;
-  return str.replace(/<a?:[a-zA-Z0-9_]+:\d+>/g, '⚡').trim();
+  return str.replace(/<a?:[a-zA-Z0-9_]+:\d+>/g, '').trim();
 }
 
 /**
  * Creates a Discord Embed styled with custom server emojis, bot avatar & Developer Portal banner.
+ * Matches exact Image 2 aesthetic design across all panels!
  */
 function createStyledEmbed({
-  title = 'Naruto Help Menu',
+  title = 'Naruto Module Panel',
+  authorName = 'Naruto Module Panel',
   subtitle = '',
   description = '',
   fields = [],
@@ -41,14 +43,20 @@ function createStyledEmbed({
 
   const embed = new EmbedBuilder().setColor(color);
 
-  const cleanTitle = stripCustomEmojis(title);
+  // Author header: plain text author name + bot avatar
+  const cleanAuthor = stripCustomEmojis(authorName);
   if (botIcon) {
-    embed.setAuthor({ name: cleanTitle, iconURL: botIcon });
+    embed.setAuthor({ name: cleanAuthor, iconURL: botIcon });
     if (showThumbnail) {
       embed.setThumbnail(botIcon);
     }
   } else {
-    embed.setAuthor({ name: cleanTitle });
+    embed.setAuthor({ name: cleanAuthor });
+  }
+
+  // Title: Supports full custom 3D emojis!
+  if (title) {
+    embed.setTitle(title);
   }
 
   let fullDesc = '';
@@ -72,17 +80,14 @@ function createStyledEmbed({
   if (showBanner) {
     let targetBanner = bannerUrl;
 
-    // 1. Try stored client.botBannerURL (fetched on ready event from Discord Developer Portal)
     if (!targetBanner && clientRef && clientRef.botBannerURL) {
       targetBanner = clientRef.botBannerURL;
     }
 
-    // 2. Try direct bannerURL() method if available
     if (!targetBanner && botUserObj && typeof botUserObj.bannerURL === 'function') {
       targetBanner = botUserObj.bannerURL({ dynamic: true, size: 1024 });
     }
 
-    // Set Developer Portal Banner URL if available
     if (targetBanner) {
       embed.setImage(targetBanner);
     }

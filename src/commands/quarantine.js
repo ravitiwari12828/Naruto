@@ -131,17 +131,20 @@ module.exports = {
     // Default Status Overview Card
     const embed = createStyledEmbed({
       title: `${emojis.SHIELD} 15-Day New Joiner Security Probation Grid`,
-      subtitle: `${emojis.SHIELD} Konoha Anti-Rogue Joiner Protection`,
+      subtitle: `Konoha Anti-Rogue Joiner Protection`,
       fields: [
-        { name: '⚙️ Status', value: config.enabled ? `\`ENABLED\` ${emojis.ENABLED}` : `\`DISABLED\` ${emojis.DISABLED}`, inline: true },
-        { name: '⏱️ Probation Period', value: `\`${config.days} Days\``, inline: true },
-        { name: '🚫 Enforced Restrictions', value: `• Ban / Kick Commands\n• @everyone & @here Mentions\n• Mass Channel Renaming & Deletion\n• Mass Role Modifications`, inline: false }
+        { name: `${emojis.GEAR} Status`, value: config.enabled ? `\`ENABLED\` ${emojis.ENABLED}` : `\`DISABLED\` ${emojis.DISABLED}`, inline: true },
+        { name: `${emojis.STATS_NEW} Probation Period`, value: `\`${config.days} Days\``, inline: true },
+        { name: `${emojis.SHIELD} Enforced Restrictions`, value: `• Ban / Kick Commands\n• @everyone & @here Mentions\n• Mass Channel Deletions\n• Mass Role Modifications`, inline: false }
       ],
       description:
-        `**Commands:**\n` +
-        `\`.quarantine days <number>\` — Change required probation days (Default: 15)\n` +
-        `\`.quarantine bypass @user\` — Grant probation exemption to trusted staff/bots\n` +
-        `\`.quarantine enable | disable\` — Toggle probation protection grid`,
+        `**${emojis.TOOLS} Probation Commands**\n` +
+        `\`\`\`\n` +
+        `.quarantine days <number>\n` +
+        `.quarantine bypass @user\n` +
+        `.quarantine enable\n` +
+        `.quarantine disable\n` +
+        `\`\`\``,
       requestedBy: author,
       clientUser
     });

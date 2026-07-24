@@ -288,15 +288,17 @@ module.exports = {
       const listText = entries.join('\n\n') || '*No users currently whitelisted.*';
 
       const embed = createStyledEmbed({
-        title: `📜 AntiNuke Whitelist & Permission Delegation Dashboard`,
+        title: `${emojis.SHIELD} AntiNuke Whitelist & Permission Delegation`,
         subtitle: `Granular Security Bypass Management`,
         description:
-          `Welcome **${author.username}**! Server Owner and Extra Owners can grant or toggle individual bypass permissions for whitelisted members.\n\n` +
+          `Welcome **${author.username}**! Below is your whitelist delegation status.\n\n` +
           `**Whitelisted Members & Granted Permissions:**\n${listText}\n\n` +
-          `**${emojis.OWNER_CROWN} Whitelist Management Commands:**\n` +
-          `• \`.whitelist add @user [perms]\` — Add user to whitelist\n` +
-          `• \`.whitelist perms @user +ban -role\` — Toggle specific ON/OFF perms\n` +
-          `• \`.whitelist remove @user\` — Revoke user from whitelist`,
+          `**${emojis.OWNER_CROWN} Whitelist Management Commands**\n` +
+          `\`\`\`\n` +
+          `.whitelist add @user [perms]\n` +
+          `.whitelist perms @user +ban -role\n` +
+          `.whitelist remove @user\n` +
+          `\`\`\``,
         requestedBy: author,
         clientUser
       });
@@ -456,11 +458,12 @@ module.exports = {
 
     const embed = createStyledEmbed({
       title: `${emojis.SHIELD} AntiNuke Security Dashboard`,
+      subtitle: `Security Status & Filter Controls`,
       fields: [
-        { name: '⚙️ Main Shield', value: config.enabled ? `\`ENABLED\` ${emojis.ENABLED}` : `\`DISABLED\` ${emojis.DISABLED}`, inline: true },
-        { name: '🚨 Panic Mode', value: config.panicmode ? `\`ACTIVE (Level ${config.panicLevel})\` 🚨` : `\`NORMAL\` ${emojis.ENABLED}`, inline: true },
-        { name: '📜 Protection Filters', value: filterStatusText, inline: false },
-        { name: '👑 Permissions Policy', value: `🔒 **Server Owner & Extra Owners Only**`, inline: false }
+        { name: `${emojis.GEAR} Main Shield`, value: config.enabled ? `\`ENABLED\` ${emojis.ENABLED}` : `\`DISABLED\` ${emojis.DISABLED}`, inline: true },
+        { name: `${emojis.ANTINUKE} Panic Mode`, value: config.panicmode ? `\`ACTIVE (Level ${config.panicLevel})\`` : `\`NORMAL\` ${emojis.ENABLED}`, inline: true },
+        { name: `${emojis.SCROLL} Protection Filters`, value: filterStatusText, inline: false },
+        { name: `${emojis.OWNER_CROWN} AntiNuke Commands`, value: `\`\`\`\n.antinuke enable\n.antinuke disable\n.panicmode enable\n.panicmode set <1-3>\n.whitelist add @user\n.whitelist perms @user +ban -role\n.extraowner add @user\n.bypassrole add @role\n\`\`\``, inline: false }
       ],
       requestedBy: author,
       clientUser
