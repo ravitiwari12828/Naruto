@@ -1,5 +1,6 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 const { PermissionsBitField } = require('discord.js');
 
 function missingPerms(message, perm) {
@@ -11,12 +12,12 @@ function botMissingPerms(message, perm) {
 
 module.exports = {
   name: 'mod',
-  description: 'Moderation commands: ban, kick, mute, purge, nuke, role & more.',
+  description: 'Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn',
   aliases: [
     'ban', 'hackban', 'kick', 'mute', 'unmute',
     'nuke', 'purge', 'purgebots',
     'unban', 'unbanall',
-    'role', 'rolemenu',
+    'role', 'rolemenu', 'list',
     'warn', 'warnings', 'clearwarns'
   ],
 
@@ -39,9 +40,7 @@ module.exports = {
       }
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 🔨 BAN
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 1. 🔨 BAN
     if (invoked === 'ban') {
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return botMissingPerms(message, 'Ban Members');
@@ -50,7 +49,6 @@ module.exports = {
       if (!target) return message.reply(`${emojis.WARNING} Please mention a user to ban.\nUsage: \`.ban @user [reason]\``);
       if (!target.bannable) return message.reply(`${emojis.WARNING} I cannot ban that user — they may have higher permissions.`);
 
-      // Daily Quota Check
       const modLimitsCmd = message.client.commands.get('modlimits');
       if (modLimitsCmd && modLimitsCmd.checkAndIncrementModAction) {
         const quota = modLimitsCmd.checkAndIncrementModAction(guild.id, message.author.id, 'ban');
@@ -71,17 +69,14 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 🌐 HACKBAN (ban by ID)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 2. 🌐 HACKBAN (ban by ID)
     if (invoked === 'hackban') {
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return botMissingPerms(message, 'Ban Members');
 
-      const userId = args[0];
+      const userId = args[0]?.replace(/[<@!>]/g, '');
       if (!userId || isNaN(userId)) return message.reply(`${emojis.WARNING} Please provide a valid User ID.\nUsage: \`.hackban <ID> [reason]\``);
 
-      // Daily Quota Check
       const modLimitsCmd = message.client.commands.get('modlimits');
       if (modLimitsCmd && modLimitsCmd.checkAndIncrementModAction) {
         const quota = modLimitsCmd.checkAndIncrementModAction(guild.id, message.author.id, 'ban');
@@ -104,9 +99,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 👢 KICK
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 3. 👢 KICK
     if (invoked === 'kick') {
       if (!author.permissions.has(PermissionsBitField.Flags.KickMembers)) return missingPerms(message, 'Kick Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.KickMembers)) return botMissingPerms(message, 'Kick Members');
@@ -127,9 +120,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 🔇 MUTE (timeout 10 min default)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 4. 🔇 MUTE (timeout 10 min default)
     if (invoked === 'mute') {
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Timeout Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return botMissingPerms(message, 'Timeout Members');
@@ -140,7 +131,7 @@ module.exports = {
       const timeArg = args[1];
       const timeMap = { s: 1000, m: 60000, h: 3600000, d: 86400000 };
       const match = timeArg?.match(/^(\d+)(s|m|h|d)$/i);
-      const duration = match ? parseInt(match[1]) * timeMap[match[2].toLowerCase()] : 600000; // default 10 min
+      const duration = match ? parseInt(match[1]) * timeMap[match[2].toLowerCase()] : 600000;
       const reason = (match ? args.slice(2) : args.slice(1)).join(' ') || 'No reason provided.';
 
       await target.timeout(duration, reason);
@@ -154,9 +145,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 🔊 UNMUTE
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 5. 🔊 UNMUTE
     if (invoked === 'unmute') {
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Timeout Members');
 
@@ -174,9 +163,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // ✅ UNBAN
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 6. ✅ UNBAN
     if (invoked === 'unban') {
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
 
@@ -194,9 +181,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // ✅ UNBAN ALL
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 7. ✅ UNBAN ALL
     if (invoked === 'unbanall') {
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
       if (!author.permissions.has(PermissionsBitField.Flags.Administrator)) return missingPerms(message, 'Administrator');
@@ -217,9 +202,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 🗑️ PURGE
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 8. 🗑️ PURGE
     if (invoked === 'purge') {
       if (!author.permissions.has(PermissionsBitField.Flags.ManageMessages)) return missingPerms(message, 'Manage Messages');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageMessages)) return botMissingPerms(message, 'Manage Messages');
@@ -243,9 +226,7 @@ module.exports = {
       return;
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 🤖 PURGEBOTS
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 9. 🤖 PURGEBOTS
     if (invoked === 'purgebots') {
       if (!author.permissions.has(PermissionsBitField.Flags.ManageMessages)) return missingPerms(message, 'Manage Messages');
 
@@ -265,9 +246,7 @@ module.exports = {
       return;
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 💣 NUKE
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 10. 💣 NUKE
     if (invoked === 'nuke') {
       if (!author.permissions.has(PermissionsBitField.Flags.ManageChannels)) return missingPerms(message, 'Manage Channels');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) return botMissingPerms(message, 'Manage Channels');
@@ -288,9 +267,7 @@ module.exports = {
       return newChannel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 🎭 ROLE (add/remove)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 11. 🎭 ROLE (add/remove)
     if (invoked === 'role') {
       if (!author.permissions.has(PermissionsBitField.Flags.ManageRoles)) return missingPerms(message, 'Manage Roles');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) return botMissingPerms(message, 'Manage Roles');
@@ -320,9 +297,7 @@ module.exports = {
       }
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 📋 ROLEMENU (list all roles)
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 12. 📋 ROLEMENU (list all roles)
     if (invoked === 'rolemenu') {
       const roles = guild.roles.cache
         .filter(r => r.name !== '@everyone')
@@ -340,14 +315,49 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // 📜 BAN LIST
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 13. 📜 LIST (bans, bots, admins, mutes)
     if (invoked === 'list') {
-      if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
+      const sub = args[0]?.toLowerCase();
 
-      const bans = await guild.bans.fetch();
-      if (bans.size === 0) return message.reply(`${emojis.WARNING} No users are currently banned.`);
+      if (sub === 'bots') {
+        const bots = guild.members.cache.filter(m => m.user.bot);
+        const lines = [...bots.values()].slice(0, 25).map(b => `• <@${b.id}> (\`${b.user.tag}\`)`);
+        const embed = createStyledEmbed({
+          title: `🤖 Server Bots List`,
+          description: lines.join('\n') || '*No bots in server.*',
+          requestedBy: message.author, clientUser,
+          footerText: `Total Bots: ${bots.size}`
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      if (sub === 'admins' || sub === 'staff') {
+        const admins = guild.members.cache.filter(m => m.permissions.has(PermissionsBitField.Flags.Administrator) && !m.user.bot);
+        const lines = [...admins.values()].slice(0, 25).map(a => `• <@${a.id}> (\`${a.user.tag}\`)`);
+        const embed = createStyledEmbed({
+          title: `🛡️ Server Administrators List`,
+          description: lines.join('\n') || '*No administrators found.*',
+          requestedBy: message.author, clientUser,
+          footerText: `Total Admins: ${admins.size}`
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      if (sub === 'mutes' || sub === 'muted') {
+        const muted = guild.members.cache.filter(m => m.communicationDisabledUntilTimestamp && m.communicationDisabledUntilTimestamp > Date.now());
+        const lines = [...muted.values()].slice(0, 25).map(m => `• <@${m.id}> — Until <t:${Math.floor(m.communicationDisabledUntilTimestamp / 1000)}:R>`);
+        const embed = createStyledEmbed({
+          title: `🔇 Muted / Timed Out Members`,
+          description: lines.join('\n') || '*No members currently muted.*',
+          requestedBy: message.author, clientUser,
+          footerText: `Total Muted: ${muted.size}`
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      // Default to bans list
+      const bans = await guild.bans.fetch().catch(() => null);
+      if (!bans || bans.size === 0) return message.reply(`${emojis.WARNING} No users are currently banned.`);
 
       const lines = [...bans.values()].slice(0, 20).map(b =>
         `• **${b.user.tag}** (\`${b.user.id}\`) — *${b.reason || 'No reason'}*`
@@ -363,30 +373,32 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    // ⚠️ WARN
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // 14. ⚠️ WARN [@user] [reason]
     if (invoked === 'warn') {
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Moderate Members');
 
-      const target = message.mentions.members?.first();
+      const target = message.mentions.members?.first() || guild.members.cache.get(args[0]);
       if (!target) return message.reply(`${emojis.WARNING} Usage: \`.warn @user [reason]\``);
 
       const reason = args.slice(1).join(' ') || 'No reason provided.';
+      
+      const userObj = db.getUser(target.id);
+      const warnCount = (userObj.warns || 0) + 1;
+      db.updateUser(target.id, u => { u.warns = warnCount; });
+
       try {
-        await target.user.send(`⚠️ You have been warned in **${guild.name}**.\n**Reason:** ${reason}`);
-      } catch (e) { /* DMs closed */ }
+        await target.user.send(`⚠️ You have received Warning #${warnCount} in **${guild.name}**.\n**Reason:** ${reason}`);
+      } catch (e) {}
 
       const embed = createStyledEmbed({
-        title: `⚠️ User Warned`,
-        description: `**${target.user.tag}** has received an official village warning.\n\n**Reason:** ${reason}`,
+        title: `⚠️ User Warned — Warning #${warnCount}`,
+        description: `**Member:** <@${target.id}> (\`${target.user.tag}\`)\n**Warning Count:** \`${warnCount} warning(s)\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Default Mod Help Panel matching screenshot
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
     return renderModuleHelpPanel(message, 'mod');
   }
