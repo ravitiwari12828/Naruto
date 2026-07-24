@@ -970,6 +970,53 @@ client.on('messageCreate', async (message) => {
     return;
   }
 
+  // 💤 AFK AUTO-CLEAR & MENTION RESPONDER
+  const infoCmd = client.commands.get('info');
+  const afkStore = infoCmd ? infoCmd.afkStore : null;
+
+  if (afkStore) {
+    if (afkStore.has(message.author.id)) {
+      const afkData = afkStore.get(message.author.id);
+      if (!afkData.scope || afkData.scope === 'global' || afkData.guildId === message.guild.id) {
+        afkStore.delete(message.author.id);
+        const afkTime = Math.floor((Date.now() - afkData.timestamp) / 1000);
+        const mins = Math.floor(afkTime / 60);
+        const secs = afkTime % 60;
+        const durationStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+
+        message.channel.send(`👋 Welcome back <@${message.author.id}>! I removed your AFK status (AFK for **${durationStr}**).`).catch(() => {});
+      }
+    }
+
+    if (message.mentions.users.size > 0) {
+      message.mentions.users.forEach(async (mentionedUser) => {
+        if (mentionedUser.id === message.author.id) return;
+        if (afkStore.has(mentionedUser.id)) {
+          const afkData = afkStore.get(mentionedUser.id);
+          if (afkData.scope === 'server' && afkData.guildId !== message.guild.id) return;
+
+          const afkTime = Math.floor((Date.now() - afkData.timestamp) / 1000);
+          const mins = Math.floor(afkTime / 60);
+          const secs = Math.floor(afkTime % 60);
+          const timeAgo = mins > 0 ? `${mins}m ${secs}s ago` : `${secs}s ago`;
+
+          message.channel.send(`💤 **<@${mentionedUser.id}> is currently AFK** (${timeAgo})\n**Reason:** *${afkData.reason}*`).catch(() => {});
+
+          if (afkData.notifyDM !== false) {
+            try {
+              const dmEmbed = createStyledEmbed({
+                title: `🔔 AFK Mention Alert`,
+                description: `You were mentioned by **<@${message.author.id}>** (\`${message.author.username}\`) in **#${message.channel.name}** (**${message.guild.name}**) while AFK!\n\n**Message Content:**\n> ${message.content.slice(0, 500)}`,
+                clientUser: client.user
+              });
+              await mentionedUser.send({ embeds: [dmEmbed] }).catch(() => {});
+            } catch (e) {}
+          }
+        }
+      });
+    }
+  }
+
   // GUILD MESSAGES & LEVELING ENGINE
   const userBefore = db.getUser(message.author.id);
   const oldLvl = userBefore.level;

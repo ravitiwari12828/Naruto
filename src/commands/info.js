@@ -198,16 +198,92 @@ module.exports = {
 
     // 💤 AFK [reason]
     if (invoked === 'afk') {
-      const reason = args.join(' ') || 'AFK';
-      afkStore.set(author.id, { reason, timestamp: Date.now() });
+      const reason = args.join(' ') || 'I am afk :)';
+      const authorId = author.id;
 
-      const embed = createStyledEmbed({
-        title: `💤 AFK Status Set`,
-        description: `<@${author.id}> is now AFK: **${reason}**`,
-        requestedBy: author,
-        clientUser
+      const afkData = {
+        reason,
+        timestamp: Date.now(),
+        scope: 'global',
+        guildId: guild.id,
+        notifyDM: true
+      };
+
+      afkStore.set(authorId, afkData);
+
+      function buildAfkEmbed(data) {
+        return createStyledEmbed({
+          title: `✔️ Success`,
+          subtitle: `<@${authorId}>, you are now marked as AFK.`,
+          description:
+            `**Reason:** ${data.reason}\n\n` +
+            `───────────── Settings ─────────────\n` +
+            `🌐 **AFK Scope:** \`${data.scope === 'global' ? 'Global (All Servers) ✅' : 'Server Only 🏠'}\`\n` +
+            `🔔 **DM Notification on Mention:** \`${data.notifyDM ? 'Enabled ✅' : 'Disabled ❌'}\``,
+          requestedBy: author,
+          clientUser
+        });
+      }
+
+      function buildAfkButtons(data) {
+        const row1 = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId(`afk_scope_global_${authorId}`)
+            .setLabel('🌐 Global AFK')
+            .setStyle(data.scope === 'global' ? ButtonStyle.Success : ButtonStyle.Secondary),
+          new ButtonBuilder()
+            .setCustomId(`afk_scope_server_${authorId}`)
+            .setLabel('🏠 Server Only')
+            .setStyle(data.scope === 'server' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+        );
+
+        const row2 = new ActionRowBuilder().addComponents(
+          new ButtonBuilder()
+            .setCustomId(`afk_dm_enable_${authorId}`)
+            .setLabel('🔔 Enable DM Mention')
+            .setStyle(data.notifyDM ? ButtonStyle.Success : ButtonStyle.Secondary),
+          new ButtonBuilder()
+            .setCustomId(`afk_dm_disable_${authorId}`)
+            .setLabel('🔕 Disable DM Mention')
+            .setStyle(!data.notifyDM ? ButtonStyle.Danger : ButtonStyle.Secondary)
+        );
+
+        return [row1, row2];
+      }
+
+      const msg = await message.channel.send({
+        embeds: [buildAfkEmbed(afkData)],
+        components: buildAfkButtons(afkData)
       });
-      return message.channel.send({ embeds: [embed] });
+
+      const collector = msg.createMessageComponentCollector({
+        filter: i => i.user.id === authorId,
+        time: 300000
+      });
+
+      collector.on('collect', async (i) => {
+        const curData = afkStore.get(authorId) || afkData;
+
+        if (i.customId.startsWith('afk_scope_global_')) {
+          curData.scope = 'global';
+          afkStore.set(authorId, curData);
+          await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
+        } else if (i.customId.startsWith('afk_scope_server_')) {
+          curData.scope = 'server';
+          afkStore.set(authorId, curData);
+          await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
+        } else if (i.customId.startsWith('afk_dm_enable_')) {
+          curData.notifyDM = true;
+          afkStore.set(authorId, curData);
+          await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
+        } else if (i.customId.startsWith('afk_dm_disable_')) {
+          curData.notifyDM = false;
+          afkStore.set(authorId, curData);
+          await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
+        }
+      });
+
+      return;
     }
 
     // 🏠 SERVERINFO / SERVER / SI
