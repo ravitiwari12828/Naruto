@@ -95,17 +95,17 @@ function buildModmailOverviewEmbed(guild, config, activeCount, author, clientUse
   const transcriptChan = config.transcriptChanId ? guild.channels.cache.get(config.transcriptChanId) : null;
 
   return createStyledEmbed({
-    title: `📬 ModMail System Control & Overview`,
+    title: `${emojis.MODMAIL_ENVELOPE} ModMail System Control & Overview`,
     subtitle: `Support Suite & Direct Ticket Routing — ${guild.name}`,
     description:
       `Welcome to the **ModMail Management Suite**.\n` +
       `Users can DM the bot directly to open support tickets in real-time!\n\n` +
-      `**⚙️ System Status**\n` +
-      `• **Status:** \`${config.enabled ? '🟢 Active & Listening' : '🔴 Disabled'}\`\n` +
+      `**${emojis.GEAR} System Status**\n` +
+      `• **Status:** ${config.enabled ? `${emojis.ENABLED} Active & Listening` : `${emojis.DISABLED} Disabled`}\n` +
       `• **ModMail Category:** ${category ? `<#${category.id}>` : '`Not Deployed (Run .modmail setup)`'}\n` +
       `• **Transcripts Channel:** ${transcriptChan ? `<#${transcriptChan.id}>` : '`Not Deployed`'}\n` +
       `• **Active Open Tickets:** \`${activeCount}\` active tickets\n\n` +
-      `**📜 ModMail Command Suite**\n` +
+      `**${emojis.SCROLL} ModMail Command Suite**\n` +
       `\`\`\`\n` +
       `.modmail setup           • Deploy category & transcript channel\n` +
       `.r <message>             • Reply to user inside ticket channel\n` +
@@ -124,22 +124,22 @@ function buildModmailOverviewRow() {
     new ButtonBuilder()
       .setCustomId('mm_setup')
       .setLabel('Deploy Setup')
-      .setEmoji('🛠️')
+      .setEmoji(emojis.OBJ_TOOLS)
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('mm_active')
       .setLabel('Active Tickets')
-      .setEmoji('📬')
+      .setEmoji(emojis.OBJ_MODMAIL)
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('mm_transcripts')
       .setLabel('Transcripts')
-      .setEmoji('📜')
+      .setEmoji(emojis.OBJ_TICKETS)
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('mm_refresh')
       .setLabel('Refresh')
-      .setEmoji('🔄')
+      .setEmoji(emojis.OBJ_ZAP)
       .setStyle(ButtonStyle.Success)
   );
 }
