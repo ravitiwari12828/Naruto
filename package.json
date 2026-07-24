@@ -7,17 +7,7 @@
     "start": "node index.js",
     "dev": "node index.js"
   },
-  "ts-node": {
-    "compiler": "/home/container/node_modules/typescript",
-    "transpileOnly": true,
-    "compilerOptions": {
-      "module": "CommonJS",
-      "target": "ES2022",
-      "allowJs": true,
-      "skipLibCheck": true,
-      "isolatedModules": true
-    }
-  },
+
   "keywords": [
     "discord",
     "discord-bot",

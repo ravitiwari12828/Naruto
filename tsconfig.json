@@ -8,7 +8,7 @@
     "noEmit": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true
+    "skipDefaultLibCheck": true
   },
   "ts-node": {
     "transpileOnly": true,
@@ -17,6 +17,7 @@
       "target": "ES2021",
       "allowJs": true,
       "skipLibCheck": true,
+      "skipDefaultLibCheck": true,
       "isolatedModules": true
     }
   },
