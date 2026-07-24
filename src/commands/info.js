@@ -10,7 +10,7 @@ const afkStore = new Map();
 // Global Snipe store (channelId -> { author, content, image, timestamp })
 const snipeStore = new Map();
 
-function buildServerInfoMainEmbed(guild, owner, author, clientUser) {
+function buildServerInfoMainEmbed(guild, owner, activeTab = 'overview', author, clientUser) {
   const createdAt = `<t:${Math.floor(guild.createdAt.getTime() / 1000)}:F>`;
   const channels = guild.channels.cache;
   const textChannels = channels.filter(c => c.type === 0).size;
@@ -27,10 +27,10 @@ function buildServerInfoMainEmbed(guild, owner, author, clientUser) {
     .filter(r => r.name !== '@everyone')
     .sort((a, b) => b.position - a.position)
     .map(r => `${r}`)
-    .slice(0, 10)
+    .slice(0, 15)
     .join('\n') || '*None*';
 
-  const remainingRoles = Math.max(0, roleCount - 10);
+  const remainingRoles = Math.max(0, roleCount - 15);
   const rolesFooter = remainingRoles > 0 ? `\n*...and ${remainingRoles} more*` : '';
 
   const featuresList = guild.features && guild.features.length > 0
@@ -39,11 +39,38 @@ function buildServerInfoMainEmbed(guild, owner, author, clientUser) {
 
   const banner = guild.bannerURL({ dynamic: true, size: 1024 });
 
-  const embed = new EmbedBuilder()
-    .setColor(0x00E5FF)
-    .setAuthor({ name: `${guild.name} • Server Information`, iconURL: guild.iconURL({ dynamic: true }) || clientUser.displayAvatarURL({ dynamic: true }) })
-    .setThumbnail(guild.iconURL({ dynamic: true, size: 512 }) || clientUser.displayAvatarURL({ dynamic: true }))
-    .setDescription(
+  let title = `${guild.name} • Server Information`;
+  let description = '';
+
+  if (activeTab === 'channels') {
+    title = `${guild.name} • Channels Breakdown`;
+    description =
+      `${emojis.TOOLS} **Channels Structure**\n` +
+      `• **Total Channels:** \`${channels.size}\`\n` +
+      `• **Text Channels:** \`${textChannels}\`\n` +
+      `• **Voice Channels:** \`${voiceChannels}\`\n` +
+      `• **Categories:** \`${categoryChannels}\`\n` +
+      `• **Forum Channels:** \`${forumChannels}\``;
+  } else if (activeTab === 'emojis') {
+    title = `${guild.name} • Emojis Information`;
+    description =
+      `${emojis.REACTIONROLES} **Emoji Stats & Allowance**\n` +
+      `• **Regular Emojis:** \`${regularEmojis}/250\`\n` +
+      `• **Animated Emojis:** \`${animatedEmojis}/250\`\n` +
+      `• **Total Emojis:** \`${totalEmojis}/500\``;
+  } else if (activeTab === 'features') {
+    title = `${guild.name} • Guild Features`;
+    description =
+      `${emojis.ANTINUKE} **Unlocked Discord Features**\n\n` +
+      `${featuresList}`;
+  } else if (activeTab === 'roles') {
+    title = `${guild.name} • Server Roles [ ${roleCount} ]`;
+    description =
+      `${emojis.ROLES} **Top Hierarchy Roles**\n\n` +
+      `${rolesList}${rolesFooter}`;
+  } else {
+    // OVERVIEW
+    description =
       `${emojis.INFO} **About**\n` +
       `• **Name:** ${guild.name}\n` +
       `• **ID:** \`${guild.id}\`\n` +
@@ -70,8 +97,14 @@ function buildServerInfoMainEmbed(guild, owner, author, clientUser) {
       `${featuresList}\n\n` +
       `──────────────────────────────────────────\n\n` +
       `${emojis.ROLES} **Server Roles [ ${roleCount} ]**\n` +
-      `${rolesList}${rolesFooter}`
-    )
+      `${rolesList}${rolesFooter}`;
+  }
+
+  const embed = new EmbedBuilder()
+    .setColor(0x00E5FF)
+    .setAuthor({ name: title, iconURL: guild.iconURL({ dynamic: true }) || clientUser.displayAvatarURL({ dynamic: true }) })
+    .setThumbnail(guild.iconURL({ dynamic: true, size: 512 }) || clientUser.displayAvatarURL({ dynamic: true }))
+    .setDescription(description)
     .setFooter({
       text: `Requested By ${author.username} • Realtime Server Info`,
       iconURL: author.displayAvatarURL({ dynamic: true })
@@ -182,7 +215,7 @@ module.exports = {
       const owner = await guild.fetchOwner().catch(() => null);
       let activeTab = 'overview';
 
-      let embed = buildServerInfoMainEmbed(guild, owner, author, clientUser);
+      let embed = buildServerInfoMainEmbed(guild, owner, activeTab, author, clientUser);
       let row1 = buildServerInfoRow1(activeTab);
       let row2 = buildServerInfoRow2(guild);
 
@@ -219,7 +252,7 @@ module.exports = {
           return i.reply({ embeds: [splashEmbed], ephemeral: true });
         } else if (i.customId.startsWith('sinfo_')) {
           activeTab = i.customId.replace('sinfo_', '');
-          const newEmbed = buildServerInfoMainEmbed(guild, owner, author, clientUser);
+          const newEmbed = buildServerInfoMainEmbed(guild, owner, activeTab, author, clientUser);
           const newRow1 = buildServerInfoRow1(activeTab);
           const newRow2 = buildServerInfoRow2(guild);
           return i.update({ embeds: [newEmbed], components: [newRow1, newRow2] });
