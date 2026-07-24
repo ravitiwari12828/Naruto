@@ -11,10 +11,52 @@ function getOrCreateLevelConfig(guildId) {
     levelConfigs.set(guildId, {
       enabled: true,
       channelId: null,
-      leaderboardMsgId: null
+      leaderboardMsgId: null,
+      levelRoles: new Map()
     });
   }
-  return levelConfigs.get(guildId);
+  const cfg = levelConfigs.get(guildId);
+  if (!cfg.levelRoles) cfg.levelRoles = new Map();
+  return cfg;
+}
+
+async function ensureShinobiRoles(guild) {
+  const rankRolesDef = [
+    { name: 'Student', color: 0x95A5A6, rankKey: 'Academy Student' },
+    { name: 'Genin', color: 0x2ECC71, rankKey: 'Genin' },
+    { name: 'Chunin', color: 0x3498DB, rankKey: 'Chunin' },
+    { name: 'Special Jounin', color: 0x9B59B6, rankKey: 'Special Jounin' },
+    { name: 'Jounin', color: 0xE67E22, rankKey: 'Jounin' },
+    { name: 'ANBU Black Ops', color: 0xE74C3C, rankKey: 'ANBU Black Ops' },
+    { name: 'Hokage', color: 0xF1C40F, rankKey: 'Hokage' }
+  ];
+
+  const roleMap = new Map();
+  const createdRoles = [];
+
+  for (const def of rankRolesDef) {
+    let role = guild.roles.cache.find(r => r.name.toLowerCase() === def.name.toLowerCase() || (def.name === 'Student' && r.name.toLowerCase().includes('student')));
+
+    if (!role) {
+      try {
+        role = await guild.roles.create({
+          name: def.name,
+          color: def.color,
+          reason: 'Naruto Leveling System Auto-Setup'
+        });
+        createdRoles.push(def.name);
+      } catch (e) {
+        console.error(`Failed to create role ${def.name}:`, e.message);
+      }
+    }
+
+    if (role) {
+      roleMap.set(def.rankKey, role.id);
+      roleMap.set(def.name, role.id);
+    }
+  }
+
+  return { roleMap, createdRoles };
 }
 
 module.exports = {
@@ -26,6 +68,7 @@ module.exports = {
   ],
   levelConfigs,
   getOrCreateLevelConfig,
+  ensureShinobiRoles,
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -36,7 +79,8 @@ module.exports = {
     if (invoked === 'leaderboard' || invoked === 'lb') sub = 'leaderboard';
 
     const author = message.author;
-    const guildId = message.guild.id;
+    const guild = message.guild;
+    const guildId = guild.id;
     const config = getOrCreateLevelConfig(guildId);
 
     let clientUser = message.client.user;
@@ -53,11 +97,24 @@ module.exports = {
       const chan = message.mentions.channels.first() || message.channel;
       config.channelId = chan.id;
       config.enabled = true;
+
+      const { roleMap, createdRoles } = await ensureShinobiRoles(guild);
+      config.levelRoles = roleMap;
       levelConfigs.set(guildId, config);
 
+      const createdSummary = createdRoles.length > 0
+        ? `• **Created Roles (${createdRoles.length})**: ${createdRoles.map(r => `\`${r}\``).join(', ')}`
+        : `• **Shinobi Roles**: All 7 rank roles are active in server!`;
+
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL} Leveling System Configured`,
-        description: `• Announcement Channel: <#${chan.id}>\n• Status: **ENABLED ✅**`,
+        title: `${emojis.LEVEL} Leveling System & Roles Configured`,
+        description:
+          `Successfully configured Naruto Leveling Engine for **${guild.name}**!\n\n` +
+          `• **Announcement Channel**: <#${chan.id}>\n` +
+          `• **System Status**: \`ENABLED ✅\`\n` +
+          `${createdSummary}\n\n` +
+          `**📜 Configured Shinobi Rank Hierarchy:**\n` +
+          `\`Student\` ➔ \`Genin\` ➔ \`Chunin\` ➔ \`Special Jounin\` ➔ \`Jounin\` ➔ \`ANBU Black Ops\` ➔ \`Hokage\``,
         requestedBy: author,
         clientUser
       });
@@ -82,7 +139,8 @@ module.exports = {
         title: `${emojis.LEVEL} Leveling System Status`,
         fields: [
           { name: `${emojis.GEAR} Status`, value: config.enabled ? '`ENABLED ✅`' : '`DISABLED ❌`', inline: true },
-          { name: `${emojis.MESSAGES} Announcement Channel`, value: config.channelId ? `<#${config.channelId}>` : '*Current Channel*', inline: true }
+          { name: `${emojis.MESSAGES} Announcement Channel`, value: config.channelId ? `<#${config.channelId}>` : '*Current Channel*', inline: true },
+          { name: `${emojis.ROLES} Shinobi Rank Roles`, value: config.levelRoles.size > 0 ? `\`${config.levelRoles.size} Configured\`` : '`Run .level setup`', inline: true }
         ],
         requestedBy: author,
         clientUser

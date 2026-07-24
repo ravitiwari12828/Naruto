@@ -982,6 +982,16 @@ client.on('messageCreate', async (message) => {
     const levelCmd = client.commands.get('level');
     const levelCfg = levelCmd ? levelCmd.getOrCreateLevelConfig(message.guild.id) : { enabled: true, channelId: null };
 
+    // Auto-assign level rank role if bot has ManageRoles permission
+    if (message.member && message.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
+      const currentRank = userAfter.rank;
+      const targetRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === currentRank.toLowerCase() || (currentRank.includes('Student') && r.name.toLowerCase().includes('student')));
+
+      if (targetRole && !message.member.roles.cache.has(targetRole.id)) {
+        await message.member.roles.add(targetRole.id).catch(() => {});
+      }
+    }
+
     if (levelCfg.enabled !== false) {
       const targetChan = (levelCfg.channelId && message.guild.channels.cache.get(levelCfg.channelId)) || message.channel;
 
