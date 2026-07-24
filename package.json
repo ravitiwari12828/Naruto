@@ -5,9 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "dev": "node index.js",
-    "preinstall": "node create_star.js || true",
-    "postinstall": "node create_star.js || true"
+    "dev": "node index.js"
   },
   "ts-node": {
     "compiler": "/home/container/node_modules/typescript",
