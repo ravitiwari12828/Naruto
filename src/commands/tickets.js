@@ -37,7 +37,6 @@ function getOrCreateTicketConfig(guildId) {
   if (cfg.ticketCounter === undefined) cfg.ticketCounter = 0;
   if (!cfg.staffRoles) cfg.staffRoles = new Set();
   
-  // Filter out removed categories (registration & event_promo) if already stored in memory
   if (cfg.categories) {
     cfg.categories = cfg.categories.filter(c => c.id !== 'cat_event_promo' && c.id !== 'cat_reg');
   }
@@ -163,10 +162,11 @@ function buildTicketActionRows() {
 
 module.exports = {
   name: 'ticket',
-  description: 'Complete Ticket System with 6 active categories, Call Staff, Transcripts to DM & Priority Escalation',
+  description: 'Complete Ticket System with category_add, category_edit, category_remove & category_list',
   aliases: [
     'tickets', 't', 'ticketpanel', 'staffrole',
-    'panel_deploy', 'ticket_setup', 'add_member', 'remove_member'
+    'panel_deploy', 'ticket_setup', 'add_member', 'remove_member',
+    'category_add', 'category_edit', 'category_remove', 'category_list', 'categories'
   ],
   ticketConfigs,
   priorityTimers,
@@ -185,6 +185,10 @@ module.exports = {
     if (invoked === 'add_member') sub = 'add';
     if (invoked === 'remove_member') sub = 'remove';
     if (invoked === 'staffrole') sub = 'staff';
+    if (invoked === 'category_add') sub = 'category_add';
+    if (invoked === 'category_edit') sub = 'category_edit';
+    if (invoked === 'category_remove') sub = 'category_remove';
+    if (invoked === 'category_list' || invoked === 'categories') sub = 'categories';
 
     const guild = message.guild;
     const author = message.author;
@@ -212,12 +216,7 @@ module.exports = {
           `Welcome to **${guild.name}** Support Center!\n\n` +
           `Select a category from the dropdown menu below to open a private ticket with our staff.\n\n` +
           `**${emojis.STAR} Available Support Categories:**\n` +
-          `• 🎫 **General Support** — Assistance & Questions\n` +
-          `• 📢 **Promotion** — Inquire about server promotions\n` +
-          `• 🚨 **Report** — Report a user or rule violation\n` +
-          `• 🎁 **Reward** — Claim event prizes & activity rewards\n` +
-          `• 💼 **Staff Apply** — Submit staff application\n` +
-          `• 🌐 **Server Promo** — Server cross-promotions\n\n` +
+          config.categories.map(c => `• ${c.emoji || '🎫'} **${c.name}** — ${c.description}`).join('\n') + `\n\n` +
           `**${emojis.GEAR} Staff Roles Assigned**: ${staffRoleMentions}`
         )
         .setFooter({ text: 'Naruto Ticket System • Dedicated Fast Support' })
@@ -286,6 +285,166 @@ module.exports = {
           ]
         });
       }
+    }
+
+    // 3. CATEGORY LIST (.ticket category list / .category_list / .categories)
+    if (sub === 'categories' || sub === 'category_list' || (sub === 'category' && (args[1]?.toLowerCase() === 'list' || !args[1]))) {
+      const catList = config.categories.map((c, i) =>
+        `**${i + 1}.** ${c.emoji || '🎫'} **${c.name}** (\`${c.id}\`)\n` +
+        `   • *${c.description || 'No description'}*`
+      ).join('\n\n') || '*No categories configured.*';
+
+      const embed = createStyledEmbed({
+        title: `${emojis.TICKETS} Ticket Support Categories (${config.categories.length})`,
+        subtitle: `Category Configuration Hub — ${guild.name}`,
+        description:
+          `Below are the active support categories available in your ticket panel dropdown:\n\n` +
+          `${catList}\n\n` +
+          `**${emojis.SCROLL} Category Management Suite:**\n` +
+          `\`\`\`\n` +
+          `.ticket category add <Name> [Emoji] [Description]\n` +
+          `.ticket category edit <ID> <New Name> [Emoji] [Desc]\n` +
+          `.ticket category remove <ID/Name>\n` +
+          `.ticket category list\n` +
+          `\`\`\``,
+        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.reply({ embeds: [embed] });
+    }
+
+    // 4. CATEGORY ADD (.ticket category add <Name> [Emoji] [Description] / .category_add)
+    if (sub === 'category_add' || (sub === 'category' && args[1]?.toLowerCase() === 'add')) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can add ticket categories.`);
+      }
+
+      const params = sub === 'category_add' ? args : args.slice(2);
+      if (params.length === 0) {
+        return message.reply(`${emojis.WARNING} Usage: \`.ticket category add <Name> [Emoji] [Description]\``);
+      }
+
+      if (config.categories.length >= 25) {
+        return message.reply(`${emojis.WARNING} Reached maximum limit of 25 ticket categories.`);
+      }
+
+      const name = params[0];
+      const emoji = params[1] && params[1].length <= 50 ? params[1] : '🎫';
+      const description = params.slice(2).join(' ') || `Open a ${name} support ticket`;
+      const catId = `cat_${name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+
+      config.categories.push({ id: catId, name, emoji, description });
+      ticketConfigs.set(guild.id, config);
+
+      const embed = createStyledEmbed({
+        title: `${emojis.SUCCESS} Ticket Category Created`,
+        description:
+          `Successfully added **${name}** to active ticket categories!\n\n` +
+          `• **Category ID:** \`${catId}\`\n` +
+          `• **Display Name:** ${emoji} **${name}**\n` +
+          `• **Description:** *${description}*\n\n` +
+          `*Run \`.ticket setup\` to redeploy your updated panel!*`,
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.reply({ embeds: [embed] });
+    }
+
+    // 5. CATEGORY EDIT (.ticket category edit <id> <newName> [emoji] [desc] / .category_edit)
+    if (sub === 'category_edit' || (sub === 'category' && args[1]?.toLowerCase() === 'edit')) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can edit ticket categories.`);
+      }
+
+      const params = sub === 'category_edit' ? args : args.slice(2);
+      const targetId = params[0]?.toLowerCase();
+      if (!targetId || !params[1]) {
+        return message.reply(`${emojis.WARNING} Usage: \`.ticket category edit <Category ID or Name> <New Name> [New Emoji] [New Desc]\``);
+      }
+
+      const catObj = config.categories.find(c => c.id.toLowerCase() === targetId || c.name.toLowerCase() === targetId);
+      if (!catObj) {
+        return message.reply(`${emojis.WARNING} Category \`${targetId}\` not found. Run \`.ticket category list\` to view all valid IDs.`);
+      }
+
+      catObj.name = params[1];
+      if (params[2]) catObj.emoji = params[2];
+      if (params.slice(3).length > 0) catObj.description = params.slice(3).join(' ');
+
+      ticketConfigs.set(guild.id, config);
+
+      const embed = createStyledEmbed({
+        title: `${emojis.TOOLS} Ticket Category Updated`,
+        description:
+          `Successfully updated category **${catObj.name}**!\n\n` +
+          `• **Category ID:** \`${catObj.id}\`\n` +
+          `• **New Name:** ${catObj.emoji} **${catObj.name}**\n` +
+          `• **New Description:** *${catObj.description}*`,
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.reply({ embeds: [embed] });
+    }
+
+    // 6. CATEGORY REMOVE (.ticket category remove <id/name> / .category_remove)
+    if (sub === 'category_remove' || (sub === 'category' && args[1]?.toLowerCase() === 'remove')) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can remove ticket categories.`);
+      }
+
+      const params = sub === 'category_remove' ? args : args.slice(2);
+      const targetId = params[0]?.toLowerCase();
+      if (!targetId) {
+        return message.reply(`${emojis.WARNING} Usage: \`.ticket category remove <Category ID or Name>\``);
+      }
+
+      const initialCount = config.categories.length;
+      config.categories = config.categories.filter(c => c.id.toLowerCase() !== targetId && c.name.toLowerCase() !== targetId);
+
+      if (config.categories.length === initialCount) {
+        return message.reply(`${emojis.WARNING} Category \`${targetId}\` not found.`);
+      }
+
+      ticketConfigs.set(guild.id, config);
+
+      const embed = createStyledEmbed({
+        title: `${emojis.REMOVE} Ticket Category Removed`,
+        description:
+          `Successfully removed category \`${targetId}\` from ticket panel!\n` +
+          `Remaining active categories: **${config.categories.length}**`,
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.reply({ embeds: [embed] });
+    }
+
+    // 7. ADD MEMBER TO TICKET (.ticket add @user / .add_member @user)
+    if (sub === 'add' || sub === 'add_member') {
+      const member = message.mentions.members.first() || guild.members.cache.get(args[1]);
+      if (!member) return message.reply(`${emojis.WARNING} Usage: \`.ticket add @user\``);
+
+      await message.channel.permissionOverwrites.edit(member.id, {
+        ViewChannel: true,
+        SendMessages: true,
+        ReadMessageHistory: true
+      }).catch(() => {});
+
+      return message.reply(`${emojis.SUCCESS} Added <@${member.id}> to ticket channel ${message.channel}.`);
+    }
+
+    // 8. REMOVE MEMBER FROM TICKET (.ticket remove @user / .remove_member @user)
+    if (sub === 'remove' || sub === 'remove_member') {
+      const member = message.mentions.members.first() || guild.members.cache.get(args[1]);
+      if (!member) return message.reply(`${emojis.WARNING} Usage: \`.ticket remove @user\``);
+
+      await message.channel.permissionOverwrites.delete(member.id).catch(() => {});
+
+      return message.reply(`${emojis.SUCCESS} Removed <@${member.id}> from ticket channel ${message.channel}.`);
     }
 
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
