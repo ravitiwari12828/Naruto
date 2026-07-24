@@ -17,7 +17,6 @@ function parseTime(str) {
   return val * mult[unit];
 }
 
-// Fisher-Yates shuffle then slice — works on plain arrays (Discord.js v14)
 function pickWinners(arr, count) {
   const shuffled = [...arr].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, Math.min(count, shuffled.length));
@@ -39,14 +38,14 @@ module.exports = {
     // .giveaway create <time> <winners> <prize>
     if (sub === 'create' || sub === 'start') {
       if (args.length < 4) {
-        return message.reply(`${emojis.WARNING} Usage: \`.giveaway create <time: 1m/1h/1d> <winners: 1> <prize>\`\nExample: \`.giveaway create 1h 1 Lifetime Nitro\``);
+        return message.reply(`⚠️ Usage: \`.giveaway create <time: 1m/1h/1d> <winners: 1> <prize>\`\nExample: \`.giveaway create 1h 1 Lifetime Nitro\``);
       }
 
       const duration = parseTime(args[1]);
-      if (!duration) return message.reply(`${emojis.WARNING} Invalid time format. Use: \`10s\`, \`5m\`, \`2h\`, \`1d\``);
+      if (!duration) return message.reply(`⚠️ Invalid time format. Use: \`10s\`, \`5m\`, \`2h\`, \`1d\``);
 
       const winnerCount = parseInt(args[2]);
-      if (isNaN(winnerCount) || winnerCount < 1) return message.reply(`${emojis.WARNING} Winners must be a number >= 1.`);
+      if (isNaN(winnerCount) || winnerCount < 1) return message.reply(`⚠️ Winners must be a number >= 1.`);
 
       const prize = args.slice(3).join(' ');
       const endTime = Date.now() + duration;
@@ -55,7 +54,7 @@ module.exports = {
 
       const embed = createStyledEmbed({
         title: `🎉 GIVEAWAY — ${prize}`,
-        subtitle: `${emojis.NARUTO} Hosted by ${message.author.username}`,
+        subtitle: `🍃 Hosted by ${message.author.username}`,
         description:
           `React with 🎉 to enter the giveaway!\n\n` +
           `**Prize:** \`${prize}\`\n` +
@@ -99,7 +98,7 @@ module.exports = {
         giveaways.set(id, gw);
 
         if (!eligible || eligible.length === 0) {
-          return chan.send(`${emojis.WARNING} Giveaway **${id}** ended with no valid entries. No winners selected.`);
+          return chan.send(`⚠️ Giveaway **${id}** ended with no valid entries. No winners selected.`);
         }
 
         const winners = pickWinners(eligible, gw.winnerCount);
@@ -114,15 +113,15 @@ module.exports = {
         chan.send({ embeds: [endEmbed] });
       }, duration);
 
-      return message.channel.send(`${emojis.CELEBRATION} Giveaway **\`${id}\`** created! Ends in **${args[1]}**!`);
+      return message.channel.send(`🎉 Giveaway **\`${id}\`** created! Ends in **${args[1]}**!`);
     }
 
     // .giveaway end <id>
     if (sub === 'end') {
       const id = args[1]?.toUpperCase();
       const gw = giveaways.get(id);
-      if (!gw) return message.reply(`${emojis.WARNING} No giveaway found with ID \`${id}\`.`);
-      if (gw.ended) return message.reply(`${emojis.WARNING} That giveaway already ended.`);
+      if (!gw) return message.reply(`⚠️ No giveaway found with ID \`${id}\`.`);
+      if (gw.ended) return message.reply(`⚠️ That giveaway already ended.`);
 
       const chan = message.client.channels.cache.get(gw.channelId);
       const fetchedMsg = await chan?.messages.fetch(gw.messageId).catch(() => null);
@@ -134,7 +133,7 @@ module.exports = {
       giveaways.set(id, gw);
 
       if (!eligible || eligible.length === 0) {
-        return message.channel.send(`${emojis.WARNING} Giveaway **${id}** ended with no valid entries.`);
+        return message.channel.send(`⚠️ Giveaway **${id}** ended with no valid entries.`);
       }
 
       const winners = pickWinners(eligible, gw.winnerCount);
@@ -146,15 +145,15 @@ module.exports = {
         requestedBy: message.author,
         clientUser
       });
-      return message.channel.send({ embeds: [endEmbed] });
+      return message.channel.send({ embeds: [embed] });
     }
 
     // .giveaway reroll <id>
     if (sub === 'reroll') {
       const id = args[1]?.toUpperCase();
       const gw = giveaways.get(id);
-      if (!gw) return message.reply(`${emojis.WARNING} No giveaway found with ID \`${id}\`.`);
-      if (!gw.ended) return message.reply(`${emojis.WARNING} That giveaway hasn't ended yet. Use \`.giveaway end ${id}\` first.`);
+      if (!gw) return message.reply(`⚠️ No giveaway found with ID \`${id}\`.`);
+      if (!gw.ended) return message.reply(`⚠️ That giveaway hasn't ended yet. Use \`.giveaway end ${id}\` first.`);
 
       const chan = message.client.channels.cache.get(gw.channelId);
       const fetchedMsg = await chan?.messages.fetch(gw.messageId).catch(() => null);
@@ -163,7 +162,7 @@ module.exports = {
       const eligible = users ? [...users.filter(u => !u.bot).values()] : [];
 
       if (!eligible || eligible.length === 0) {
-        return message.channel.send(`${emojis.WARNING} No eligible entries to reroll.`);
+        return message.channel.send(`⚠️ No eligible entries to reroll.`);
       }
 
       const winners = pickWinners(eligible, gw.winnerCount);
@@ -182,7 +181,7 @@ module.exports = {
     if (sub === 'list') {
       const all = [...giveaways.values()];
       if (all.length === 0) {
-        return message.reply(`${emojis.WARNING} No giveaways have been created yet.`);
+        return message.reply(`⚠️ No giveaways have been created yet.`);
       }
 
       const lines = all.map(gw =>
@@ -199,7 +198,6 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Default Giveaway Help Panel matching screenshot
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
     return renderModuleHelpPanel(message, 'giveaway');
   }
