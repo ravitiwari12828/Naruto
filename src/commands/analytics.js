@@ -302,8 +302,6 @@ module.exports = {
   description: 'Analytics, Leaderboards, User & Server Metrics Suite',
   aliases: [
     'tracker', 'userstats', 'serverstats', 'serveranalytics', 'useranalytics',
-    '1d', '7d', '14d', '30d', 'overall', 'lifetime',
-    'analytics1d', 'analytics7d', 'analytics14d', 'analytics30d', 'overallanalytics',
     'topmessages', 'msgstats', 'topvoice', 'voicestats', 'vctiming',
     'topinvites', 'invitestats', 'joinsleaves', 'memberflow', 'joinleavestats',
     'topcommands', 'commandstats', 'ticketstats', 'ticketanalytics'
@@ -312,13 +310,6 @@ module.exports = {
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
     let sub = args[0]?.toLowerCase();
-
-    // Timeframe direct aliases
-    if (invoked === '1d' || invoked === 'analytics1d') sub = '1d';
-    if (invoked === '7d' || invoked === 'analytics7d') sub = '7d';
-    if (invoked === '14d' || invoked === 'analytics14d') sub = '14d';
-    if (invoked === '30d' || invoked === 'analytics30d') sub = '30d';
-    if (invoked === 'overall' || invoked === 'lifetime' || invoked === 'overallanalytics') sub = 'lifetime';
 
     // Category direct aliases
     if (['topmessages', 'msgstats', 'messages', 'chat'].includes(invoked)) sub = 'messages';
@@ -337,24 +328,6 @@ module.exports = {
     try {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
-
-    // A. DEDICATED TIMEFRAME PANELS (.1d, .7d, .14d, .30d, .overall)
-    if (['1d', '7d', '14d', '30d', 'lifetime'].includes(sub)) {
-      const embed = renderTimeframePanel(guild, sub, author, clientUser);
-      const row = buildTimeframeRow(sub);
-      const msg = await message.channel.send({ embeds: [embed], components: [row] });
-
-      const collector = msg.createMessageComponentCollector({ time: 300000 });
-      collector.on('collect', async (i) => {
-        if (!i.customId.startsWith('tf_')) return;
-        const newKey = i.customId.replace('tf_', '');
-        const newEmbed = renderTimeframePanel(guild, newKey, author, clientUser);
-        const newRow = buildTimeframeRow(newKey);
-        return i.update({ embeds: [newEmbed], components: [newRow] });
-      });
-      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
-      return;
-    }
 
     // B. DEDICATED TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
     if (sub === 'messages') {
