@@ -351,14 +351,14 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
       .setColor(0x00E5FF)
       .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
       .setThumbnail(botAvatarURL)
-      .setTitle(`${cat.heading}`)
+      .setTitle(`${emojis.FUN || '🎉'} Fun & Entertainment Suite`)
       .setDescription(
         `Below is the complete list of commands for **${cat.label}**.\n\n` +
-        `😂 **Meme Generation**\n` +
+        `${emojis.FUN || '😂'} **Meme Generation**\n` +
         `\`spongebobchicken\` \`slapcar\` \`isthisa\` \`drake\` \`distractedbf\` \`communismcat\` \`eject\` \`emergencymeeting\` \`headpat\` \`tradeoffer\` \`waddle\`\n\n` +
-        `😃 **Emotes**\n` +
+        `${emojis.STAR || '😃'} **Emotes**\n` +
         `\`blush\` \`cry\` \`dance\` \`lewd\` \`pout\` \`shrug\` \`sleepy\` \`smile\` \`smug\` \`thumbsup\` \`wag\` \`thinking\` \`triggered\` \`teehee\` \`deredere\` \`thonking\` \`scoff\` \`happy\` \`thumbs\` \`grin\`\n\n` +
-        `🤗 **Actions**\n` +
+        `${emojis.HEART || '🤗'} **Actions**\n` +
         `\`cuddle\` \`hug\` \`kiss\` \`lick\` \`nom\` \`pat\` \`poke\` \`slap\` \`stare\` \`highfive\` \`bite\` \`greet\` \`punch\` \`handholding\` \`tickle\` \`kill\` \`hold\` \`pats\` \`wave\` \`boop\` \`snuggle\` \`bully\``
       )
       .setFooter({
