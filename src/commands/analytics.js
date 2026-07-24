@@ -313,10 +313,38 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
   });
 }
 
+function buildPaginationRow(currentPage, totalPages) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('page_first')
+      .setEmoji('⏪')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(currentPage <= 1),
+    new ButtonBuilder()
+      .setCustomId('page_prev')
+      .setEmoji('◀️')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(currentPage <= 1),
+    new ButtonBuilder()
+      .setCustomId('page_stop')
+      .setEmoji('⏹️')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('page_next')
+      .setEmoji('▶️')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(currentPage >= totalPages),
+    new ButtonBuilder()
+      .setCustomId('page_last')
+      .setEmoji('⏩')
+      .setStyle(ButtonStyle.Secondary)
+      .setDisabled(currentPage >= totalPages)
+  );
+}
+
 // 💬 1. TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
-function renderMessagesLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
-  const windowMs = WINDOWS[timeframeKey];
-  const label = TIMEFRAME_NAMES[timeframeKey];
+function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
+  const windowMs = WINDOWS[timeframeKey] || null;
   const allLeaderboard = db.getTopLeaderboard(guild.id, 'message', windowMs, 100);
 
   const perPage = 10;
@@ -327,25 +355,22 @@ function renderMessagesLeaderboard(guild, timeframeKey, page = 1, author, client
 
   let listText = '';
   if (pageEntries.length === 0) {
-    listText = '*No chat activity recorded for this timeframe.*';
+    listText = '*No chat activity recorded yet.*';
   } else {
     listText = pageEntries.map((item, idx) => {
       const rankNum = startIdx + idx + 1;
-      let rankPrefix = `**#${rankNum}**`;
-      if (rankNum === 1) rankPrefix = `${emojis.OWNER_CROWN} **#1**`;
-
-      return `${rankPrefix} <@${item.userId}> • **${item.total.toLocaleString()}** messages`;
+      return `**#${rankNum}** <@${item.userId}> • **${item.total.toLocaleString()}** messages`;
     }).join('\n');
   }
 
   const embed = createStyledEmbed({
-    title: `${emojis.MESSAGES} ${label} Messages Leaderboard`,
+    title: `Messages Leaderboard`,
     subtitle: `Realtime Server Chat Ranking — ${guild.name}`,
     description:
       `The messages are being updated in real-time!\n\n` +
       `${listText}`,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Page ${currentPage}/${totalPages} • Real-time Live Sync • Naruto One Bot`,
+    footerText: `Page ${currentPage}/${totalPages} • Naruto One Bot`,
     requestedBy: author,
     clientUser
   });
@@ -354,9 +379,8 @@ function renderMessagesLeaderboard(guild, timeframeKey, page = 1, author, client
 }
 
 // 🔊 2. TOP VOICE LEADERBOARD (.topvoice / .voicestats)
-function renderVoiceLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
-  const windowMs = WINDOWS[timeframeKey];
-  const label = TIMEFRAME_NAMES[timeframeKey];
+function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
+  const windowMs = WINDOWS[timeframeKey] || null;
   const allLeaderboard = db.getTopLeaderboard(guild.id, 'voice', windowMs, 100);
 
   const perPage = 10;
@@ -367,25 +391,22 @@ function renderVoiceLeaderboard(guild, timeframeKey, page = 1, author, clientUse
 
   let listText = '';
   if (pageEntries.length === 0) {
-    listText = '*No voice activity recorded for this timeframe.*';
+    listText = '*No voice activity recorded yet.*';
   } else {
     listText = pageEntries.map((item, idx) => {
       const rankNum = startIdx + idx + 1;
-      let rankPrefix = `**#${rankNum}**`;
-      if (rankNum === 1) rankPrefix = `${emojis.OWNER_CROWN} **#1**`;
-
-      return `${rankPrefix} <@${item.userId}> • **${formatDuration(item.total)}** in voice`;
+      return `**#${rankNum}** <@${item.userId}> • **${formatDuration(item.total)}** voice`;
     }).join('\n');
   }
 
   const embed = createStyledEmbed({
-    title: `${emojis.VOICE} ${label} Voice Leaderboard`,
+    title: `Voice Leaderboard`,
     subtitle: `Realtime Voice Activity Duration — ${guild.name}`,
     description:
-      `Active voice durations are being updated in real-time!\n\n` +
+      `The voice durations are being updated in real-time!\n\n` +
       `${listText}`,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Page ${currentPage}/${totalPages} • Real-time Live Sync • Naruto One Bot`,
+    footerText: `Page ${currentPage}/${totalPages} • Naruto One Bot`,
     requestedBy: author,
     clientUser
   });
@@ -394,9 +415,8 @@ function renderVoiceLeaderboard(guild, timeframeKey, page = 1, author, clientUse
 }
 
 // 📨 3. TOP INVITES LEADERBOARD (.topinvites / .invitestats)
-function renderInvitesLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
-  const windowMs = WINDOWS[timeframeKey];
-  const label = TIMEFRAME_NAMES[timeframeKey];
+function renderInvitesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
+  const windowMs = WINDOWS[timeframeKey] || null;
   const allLeaderboard = db.getTopLeaderboard(guild.id, 'invite', windowMs, 100);
 
   const perPage = 10;
@@ -407,25 +427,22 @@ function renderInvitesLeaderboard(guild, timeframeKey, page = 1, author, clientU
 
   let listText = '';
   if (pageEntries.length === 0) {
-    listText = '*No invite joins recorded for this timeframe.*';
+    listText = '*No invite joins recorded yet.*';
   } else {
     listText = pageEntries.map((item, idx) => {
       const rankNum = startIdx + idx + 1;
-      let rankPrefix = `**#${rankNum}**`;
-      if (rankNum === 1) rankPrefix = `${emojis.OWNER_CROWN} **#1**`;
-
-      return `${rankPrefix} <@${item.userId}> • **${item.total.toLocaleString()}** invites`;
+      return `**#${rankNum}** <@${item.userId}> • **${item.total.toLocaleString()}** invites`;
     }).join('\n');
   }
 
   const embed = createStyledEmbed({
-    title: `${emojis.INVITES} ${label} Invite Recruiters Leaderboard`,
+    title: `Invites Leaderboard`,
     subtitle: `Realtime Server Invitations — ${guild.name}`,
     description:
-      `Top recruiter invitations are being updated in real-time!\n\n` +
+      `The invites are being updated in real-time!\n\n` +
       `${listText}`,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Page ${currentPage}/${totalPages} • Real-time Live Sync • Naruto One Bot`,
+    footerText: `Page ${currentPage}/${totalPages} • Naruto One Bot`,
     requestedBy: author,
     clientUser
   });
@@ -599,21 +616,18 @@ module.exports = {
 
     // C. DEDICATED TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
     if (sub === 'messages') {
-      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
-      if (!WINDOWS[activeKey]) activeKey = '1d';
       let page = 1;
 
-      let { embed, currentPage, totalPages } = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
-      let tfRow = buildTimeframeRow(activeKey);
+      let { embed, currentPage, totalPages } = renderMessagesLeaderboard(guild, 'lifetime', page, author, clientUser);
       let pageRow = buildPaginationRow(currentPage, totalPages);
 
-      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
+      const msg = await message.channel.send({ embeds: [embed], components: [pageRow] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId.startsWith('tf_')) {
-          activeKey = i.customId.replace('tf_', '');
-          page = 1;
+        if (i.customId === 'page_stop') {
+          collector.stop();
+          return i.update({ components: [] }).catch(() => {});
         } else if (i.customId === 'page_first') {
           page = 1;
         } else if (i.customId === 'page_prev') {
@@ -624,11 +638,10 @@ module.exports = {
           page = 999;
         }
 
-        const res = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
+        const res = renderMessagesLeaderboard(guild, 'lifetime', page, author, clientUser);
         page = res.currentPage;
-        const newTfRow = buildTimeframeRow(activeKey);
         const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
-        return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
+        return i.update({ embeds: [res.embed], components: [newPageRow] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -636,21 +649,18 @@ module.exports = {
 
     // D. DEDICATED TOP VOICE LEADERBOARD (.topvoice / .voicestats)
     if (sub === 'voice') {
-      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
-      if (!WINDOWS[activeKey]) activeKey = '1d';
       let page = 1;
 
-      let { embed, currentPage, totalPages } = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
-      let tfRow = buildTimeframeRow(activeKey);
+      let { embed, currentPage, totalPages } = renderVoiceLeaderboard(guild, 'lifetime', page, author, clientUser);
       let pageRow = buildPaginationRow(currentPage, totalPages);
 
-      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
+      const msg = await message.channel.send({ embeds: [embed], components: [pageRow] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId.startsWith('tf_')) {
-          activeKey = i.customId.replace('tf_', '');
-          page = 1;
+        if (i.customId === 'page_stop') {
+          collector.stop();
+          return i.update({ components: [] }).catch(() => {});
         } else if (i.customId === 'page_first') {
           page = 1;
         } else if (i.customId === 'page_prev') {
@@ -661,11 +671,10 @@ module.exports = {
           page = 999;
         }
 
-        const res = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
+        const res = renderVoiceLeaderboard(guild, 'lifetime', page, author, clientUser);
         page = res.currentPage;
-        const newTfRow = buildTimeframeRow(activeKey);
         const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
-        return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
+        return i.update({ embeds: [res.embed], components: [newPageRow] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -673,21 +682,18 @@ module.exports = {
 
     // E. DEDICATED TOP INVITES LEADERBOARD (.topinvites / .invitestats)
     if (sub === 'invites') {
-      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
-      if (!WINDOWS[activeKey]) activeKey = '1d';
       let page = 1;
 
-      let { embed, currentPage, totalPages } = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
-      let tfRow = buildTimeframeRow(activeKey);
+      let { embed, currentPage, totalPages } = renderInvitesLeaderboard(guild, 'lifetime', page, author, clientUser);
       let pageRow = buildPaginationRow(currentPage, totalPages);
 
-      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
+      const msg = await message.channel.send({ embeds: [embed], components: [pageRow] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId.startsWith('tf_')) {
-          activeKey = i.customId.replace('tf_', '');
-          page = 1;
+        if (i.customId === 'page_stop') {
+          collector.stop();
+          return i.update({ components: [] }).catch(() => {});
         } else if (i.customId === 'page_first') {
           page = 1;
         } else if (i.customId === 'page_prev') {
@@ -698,11 +704,10 @@ module.exports = {
           page = 999;
         }
 
-        const res = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
+        const res = renderInvitesLeaderboard(guild, 'lifetime', page, author, clientUser);
         page = res.currentPage;
-        const newTfRow = buildTimeframeRow(activeKey);
         const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
-        return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
+        return i.update({ embeds: [res.embed], components: [newPageRow] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
