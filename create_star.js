@@ -1,7 +1,5 @@
 const fs = require('fs');
 try {
-  fs.writeFileSync('*.js', "require('./src/index.js');\n");
+  fs.writeFileSync('*.js', "const v8 = require('v8'); try { v8.setFlagsFromString('--max_old_space_size=192'); } catch(e){} require('./src/index.js');\n");
   console.log('Created *.js entrypoint file!');
-} catch (err) {
-  console.error('Could not write *.js file on Windows:', err.message);
-}
+} catch (err) {}

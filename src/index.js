@@ -1,4 +1,9 @@
 try {
+  const v8 = require('v8');
+  v8.setFlagsFromString('--max_old_space_size=192');
+} catch (e) {}
+
+try {
   require('dotenv').config();
 } catch (e) {}
 
@@ -35,14 +40,25 @@ const PREFIX = process.env.PREFIX || '.';
 
 const client = new Client({
   makeCache: Options.cacheWithLimits({
-    MessageManager: 50,
+    MessageManager: 25,
     StageInstanceManager: 0,
     GuildBanManager: 0,
     GuildInviteManager: 0,
     GuildStickerManager: 0,
     ReactionManager: 0,
-    PresenceManager: 0
+    PresenceManager: 0,
+    ThreadManager: 0,
+    ThreadMemberManager: 0,
+    VoiceStateManager: 50,
+    UserManager: 50
   }),
+  sweepers: {
+    ...Options.DefaultSweeperSettings,
+    messages: {
+      interval: 180,
+      lifetime: 300
+    }
+  },
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
