@@ -616,18 +616,24 @@ module.exports = {
 
     // C. DEDICATED TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
     if (sub === 'messages') {
+      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
+      if (!WINDOWS[activeKey]) activeKey = 'lifetime';
       let page = 1;
 
-      let { embed, currentPage, totalPages } = renderMessagesLeaderboard(guild, 'lifetime', page, author, clientUser);
+      let { embed, currentPage, totalPages } = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
+      let tfRow = buildTimeframeRow(activeKey);
       let pageRow = buildPaginationRow(currentPage, totalPages);
 
-      const msg = await message.channel.send({ embeds: [embed], components: [pageRow] });
+      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
         if (i.customId === 'page_stop') {
           collector.stop();
           return i.update({ components: [] }).catch(() => {});
+        } else if (i.customId.startsWith('tf_')) {
+          activeKey = i.customId.replace('tf_', '');
+          page = 1;
         } else if (i.customId === 'page_first') {
           page = 1;
         } else if (i.customId === 'page_prev') {
@@ -638,10 +644,11 @@ module.exports = {
           page = 999;
         }
 
-        const res = renderMessagesLeaderboard(guild, 'lifetime', page, author, clientUser);
+        const res = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
         page = res.currentPage;
+        const newTfRow = buildTimeframeRow(activeKey);
         const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
-        return i.update({ embeds: [res.embed], components: [newPageRow] });
+        return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -649,18 +656,24 @@ module.exports = {
 
     // D. DEDICATED TOP VOICE LEADERBOARD (.topvoice / .voicestats)
     if (sub === 'voice') {
+      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
+      if (!WINDOWS[activeKey]) activeKey = 'lifetime';
       let page = 1;
 
-      let { embed, currentPage, totalPages } = renderVoiceLeaderboard(guild, 'lifetime', page, author, clientUser);
+      let { embed, currentPage, totalPages } = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
+      let tfRow = buildTimeframeRow(activeKey);
       let pageRow = buildPaginationRow(currentPage, totalPages);
 
-      const msg = await message.channel.send({ embeds: [embed], components: [pageRow] });
+      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
         if (i.customId === 'page_stop') {
           collector.stop();
           return i.update({ components: [] }).catch(() => {});
+        } else if (i.customId.startsWith('tf_')) {
+          activeKey = i.customId.replace('tf_', '');
+          page = 1;
         } else if (i.customId === 'page_first') {
           page = 1;
         } else if (i.customId === 'page_prev') {
@@ -671,10 +684,11 @@ module.exports = {
           page = 999;
         }
 
-        const res = renderVoiceLeaderboard(guild, 'lifetime', page, author, clientUser);
+        const res = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
         page = res.currentPage;
+        const newTfRow = buildTimeframeRow(activeKey);
         const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
-        return i.update({ embeds: [res.embed], components: [newPageRow] });
+        return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -682,18 +696,24 @@ module.exports = {
 
     // E. DEDICATED TOP INVITES LEADERBOARD (.topinvites / .invitestats)
     if (sub === 'invites') {
+      let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
+      if (!WINDOWS[activeKey]) activeKey = 'lifetime';
       let page = 1;
 
-      let { embed, currentPage, totalPages } = renderInvitesLeaderboard(guild, 'lifetime', page, author, clientUser);
+      let { embed, currentPage, totalPages } = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
+      let tfRow = buildTimeframeRow(activeKey);
       let pageRow = buildPaginationRow(currentPage, totalPages);
 
-      const msg = await message.channel.send({ embeds: [embed], components: [pageRow] });
+      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
         if (i.customId === 'page_stop') {
           collector.stop();
           return i.update({ components: [] }).catch(() => {});
+        } else if (i.customId.startsWith('tf_')) {
+          activeKey = i.customId.replace('tf_', '');
+          page = 1;
         } else if (i.customId === 'page_first') {
           page = 1;
         } else if (i.customId === 'page_prev') {
@@ -704,10 +724,11 @@ module.exports = {
           page = 999;
         }
 
-        const res = renderInvitesLeaderboard(guild, 'lifetime', page, author, clientUser);
+        const res = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
         page = res.currentPage;
+        const newTfRow = buildTimeframeRow(activeKey);
         const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
-        return i.update({ embeds: [res.embed], components: [newPageRow] });
+        return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
