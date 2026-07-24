@@ -840,6 +840,9 @@ client.on('webhooksUpdate', async (channel) => {
         }
       }
     } catch (e) {}
+  }
+});
+
 // 🎯 6. SNIPE ENGINE — STORES LAST 10 DELETED MESSAGES PER CHANNEL
 client.on('messageDelete', async (message) => {
   if (!message || !message.channel || message.author?.bot) return;
