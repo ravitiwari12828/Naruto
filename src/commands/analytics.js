@@ -189,38 +189,44 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', author
     membersText = '*No active members recorded yet.*';
   } else {
     membersText = topMembers.map((item, idx) => {
-      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
-      return `${medal} <@${item.userId}> — **${item.total.toLocaleString()}** msgs`;
+      let rankPrefix = `**#${idx + 1}**`;
+      if (idx === 0) rankPrefix = `${emojis.OWNER_CROWN} **#1**`;
+      else if (idx === 1) rankPrefix = `${emojis.STAR} **#2**`;
+      else if (idx === 2) rankPrefix = `${emojis.SHINOBI} **#3**`;
+
+      return `${rankPrefix} <@${item.userId}> • **${item.total.toLocaleString()}** msgs`;
     }).join('\n');
   }
 
   const textChannels = guild.channels.cache.filter(c => c.isTextBased()).size;
   const voiceChannels = guild.channels.cache.filter(c => c.isVoiceBased()).size;
 
+  const activeToday = stats1d.joins + stats1d.messages > 0 ? (stats1d.joins + stats1d.messages) : 101;
+  const activeWeek = stats7d.joins + stats7d.messages > 0 ? (stats7d.joins + stats7d.messages) : 605;
+
   return createStyledEmbed({
-    title: `🏰 ${guild.name} — Server Stats`,
-    subtitle: `Guild Overview & Realtime Analytics Audit`,
+    title: `${emojis.STATS} ${guild.name} — Server Stats`,
+    subtitle: `Realtime Guild Audit & Member Analytics`,
     fields: [
       {
-        name: '👥 Members',
-        value: `• Total: **${guild.memberCount.toLocaleString()}** (\`${humans}\` Humans | \`${bots}\` Bots)\n` +
-               `• Active Today: **${stats1d.joins + stats1d.messages > 0 ? (stats1d.joins + stats1d.messages).toLocaleString() : '101'}** | Active This Week: **${stats7d.joins + stats7d.messages > 0 ? (stats7d.joins + stats7d.messages).toLocaleString() : '605'}**`,
+        name: `${emojis.ROLES} Members`,
+        value: `• Total: **${guild.memberCount.toLocaleString()}** | Active Today: **${activeToday.toLocaleString()}** | Active This Week: **${activeWeek.toLocaleString()}**`,
         inline: false
       },
       {
-        name: `💬 Messages (${label})`,
+        name: `${emojis.MESSAGES} Messages (${label})`,
         value: `• Total: **${stats.messages.toLocaleString()}** msgs`,
         inline: false
       },
       {
-        name: `🎙️ Voice (${label})`,
+        name: `${emojis.VOICE} Voice (${label})`,
         value: `• Total: **${formatDuration(stats.voiceSeconds)}**\n` +
                `🟢 Active: **${formatDuration(stats.voiceSeconds)}** | 🔇 Muted: **0m** | 🔕 Deaf: **0m** | 💤 AFK: **0m**`,
         inline: false
       },
       {
-        name: `📨 Invites (${label})`,
-        value: `• Tracked Joins: **${stats.invites.toLocaleString()}** joins`,
+        name: `${emojis.INVITES} Invites (${label})`,
+        value: `• Tracked joins: **${stats.invites.toLocaleString()}**`,
         inline: false
       },
       {
