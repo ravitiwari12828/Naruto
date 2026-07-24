@@ -319,6 +319,43 @@ class ResilientDatabase {
     return stats;
   }
 
+  getTopLeaderboard(guildId, eventType, windowMs = null, limit = 10) {
+    const now = Date.now();
+    const minTime = windowMs ? (now - windowMs) : 0;
+
+    const events = (this.data.analytics || []).filter(e =>
+      (!guildId || e.guildId === guildId) &&
+      e.eventType === eventType &&
+      e.timestamp >= minTime
+    );
+
+    const userTotals = new Map();
+    events.forEach(e => {
+      if (!e.userId) return;
+      const current = userTotals.get(e.userId) || 0;
+      userTotals.set(e.userId, current + e.value);
+    });
+
+    let sorted = Array.from(userTotals.entries())
+      .map(([userId, total]) => ({ userId, total }))
+      .sort((a, b) => b.total - a.total);
+
+    // Fallback to lifetime user database if no timeframe events match
+    if (sorted.length === 0 && windowMs === null) {
+      const allUsers = Object.entries(this.data.users || {}).map(([id, data]) => {
+        let total = 0;
+        if (eventType === 'message') total = data.messages || 0;
+        if (eventType === 'voice') total = data.voiceSeconds || 0;
+        if (eventType === 'invite') total = data.invites || 0;
+        return { userId: id, total };
+      }).filter(u => u.total > 0).sort((a, b) => b.total - a.total);
+
+      sorted = allUsers;
+    }
+
+    return sorted.slice(0, limit);
+  }
+
   // --- AUTOMOD & ANTIBOT ---
   getAutomod(guildId) {
     if (!this.data.automod[guildId]) {
