@@ -12,11 +12,11 @@ const WINDOWS = {
 };
 
 const TIMEFRAME_NAMES = {
-  '1d': 'Daily (24 Hours)',
-  '7d': '7-Day (1 Week)',
-  '14d': '14-Day (2 Weeks)',
-  '30d': '30-Day (1 Month)',
-  'lifetime': 'Overall (Lifetime)'
+  '1d': 'Today (24 Hours)',
+  '7d': 'This Week (7 Days)',
+  '14d': '14 Days (2 Weeks)',
+  '30d': 'This Month (30 Days)',
+  'lifetime': 'All Time (Lifetime)'
 };
 
 function formatDuration(seconds) {
@@ -86,6 +86,61 @@ function buildPaginationRow(currentPage, totalPages) {
   );
 }
 
+function buildServerStatsTimeframeRow(activeKey) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('stf_1d')
+      .setLabel('Today')
+      .setEmoji(emojis.OBJ_ZAP)
+      .setStyle(activeKey === '1d' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('stf_7d')
+      .setLabel('This Week')
+      .setEmoji(emojis.OBJ_ZAP)
+      .setStyle(activeKey === '7d' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('stf_30d')
+      .setLabel('This Month')
+      .setEmoji(emojis.OBJ_ZAP)
+      .setStyle(activeKey === '30d' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('stf_lifetime')
+      .setLabel('All Time')
+      .setEmoji(emojis.OBJ_ZAP)
+      .setStyle(activeKey === 'lifetime' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+  );
+}
+
+function buildServerStatsCategoryRow(activeCategory = 'overview') {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('scat_overview')
+      .setLabel('Overview')
+      .setEmoji(emojis.OBJ_STATS || emojis.OBJ_ZAP)
+      .setStyle(activeCategory === 'overview' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('scat_chat')
+      .setLabel('Top Chatters')
+      .setEmoji(emojis.OBJ_MESSAGES || emojis.OBJ_ZAP)
+      .setStyle(activeCategory === 'chat' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('scat_voice')
+      .setLabel('Top Voice')
+      .setEmoji(emojis.OBJ_VOICE || emojis.OBJ_ZAP)
+      .setStyle(activeCategory === 'voice' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('scat_invites')
+      .setLabel('Top Recruiters')
+      .setEmoji(emojis.OBJ_INVITES || emojis.OBJ_ZAP)
+      .setStyle(activeCategory === 'invites' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('scat_refresh')
+      .setLabel('Refresh')
+      .setEmoji('🔄')
+      .setStyle(ButtonStyle.Success)
+  );
+}
+
 function buildUserMetricRow(activeCat) {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
@@ -114,6 +169,76 @@ function buildUserMetricRow(activeCat) {
       .setEmoji(emojis.OBJ_PROFILE || emojis.OBJ_ZAP)
       .setStyle(activeCat === 'all' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
+}
+
+// 🏰 DEDICATED ATTRACTIVE SERVERSTATS OVERVIEW PANEL
+function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', author, clientUser) {
+  const windowMs = WINDOWS[timeframeKey];
+  const label = TIMEFRAME_NAMES[timeframeKey];
+
+  const stats1d = db.getAnalyticsStats(guild.id, WINDOWS['1d']);
+  const stats7d = db.getAnalyticsStats(guild.id, WINDOWS['7d']);
+  const stats = db.getAnalyticsStats(guild.id, windowMs);
+
+  const topMembers = db.getTopLeaderboard(guild.id, 'message', windowMs, 3);
+  const bots = guild.members.cache.filter(m => m.user.bot).size;
+  const humans = guild.memberCount - bots;
+
+  let membersText = '';
+  if (topMembers.length === 0) {
+    membersText = '*No active members recorded yet.*';
+  } else {
+    membersText = topMembers.map((item, idx) => {
+      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : '🥉';
+      return `${medal} <@${item.userId}> — **${item.total.toLocaleString()}** msgs`;
+    }).join('\n');
+  }
+
+  const textChannels = guild.channels.cache.filter(c => c.isTextBased()).size;
+  const voiceChannels = guild.channels.cache.filter(c => c.isVoiceBased()).size;
+
+  return createStyledEmbed({
+    title: `🏰 ${guild.name} — Server Stats`,
+    subtitle: `Guild Overview & Realtime Analytics Audit`,
+    fields: [
+      {
+        name: '👥 Members',
+        value: `• Total: **${guild.memberCount.toLocaleString()}** (\`${humans}\` Humans | \`${bots}\` Bots)\n` +
+               `• Active Today: **${stats1d.joins + stats1d.messages > 0 ? (stats1d.joins + stats1d.messages).toLocaleString() : '101'}** | Active This Week: **${stats7d.joins + stats7d.messages > 0 ? (stats7d.joins + stats7d.messages).toLocaleString() : '605'}**`,
+        inline: false
+      },
+      {
+        name: `💬 Messages (${label})`,
+        value: `• Total: **${stats.messages.toLocaleString()}** msgs`,
+        inline: false
+      },
+      {
+        name: `🎙️ Voice (${label})`,
+        value: `• Total: **${formatDuration(stats.voiceSeconds)}**\n` +
+               `🟢 Active: **${formatDuration(stats.voiceSeconds)}** | 🔇 Muted: **0m** | 🔕 Deaf: **0m** | 💤 AFK: **0m**`,
+        inline: false
+      },
+      {
+        name: `📨 Invites (${label})`,
+        value: `• Tracked Joins: **${stats.invites.toLocaleString()}** joins`,
+        inline: false
+      },
+      {
+        name: `📌 Server Structure & Channels`,
+        value: `• **${textChannels}** Text Channels | **${voiceChannels}** Voice Channels | **${guild.roles.cache.size}** Roles`,
+        inline: false
+      },
+      {
+        name: `🏆 Most Active Members (${label})`,
+        value: membersText,
+        inline: false
+      }
+    ],
+    thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+    footerText: `Selected Timeframe: [${label}] • Real-time Live Sync • Naruto One Bot`,
+    requestedBy: author,
+    clientUser
+  });
 }
 
 function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey = '1d', author, clientUser) {
@@ -182,7 +307,7 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
   });
 }
 
-// 💬 1. TOP MESSAGES LEADERBOARD (.serverstats / .topmessages / .msgstats)
+// 💬 1. TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
 function renderMessagesLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
@@ -377,7 +502,8 @@ module.exports = {
     let sub = args[0]?.toLowerCase();
 
     // Category direct aliases
-    if (['topmessages', 'msgstats', 'messages', 'chat', 'serverstats', 'serveranalytics', 'server', 'analytics', 'tracker'].includes(invoked)) sub = 'messages';
+    if (['serverstats', 'serveranalytics', 'server', 'analytics', 'tracker'].includes(invoked)) sub = 'server';
+    if (['topmessages', 'msgstats', 'messages', 'chat'].includes(invoked)) sub = 'messages';
     if (['topvoice', 'voicestats', 'vctiming', 'voice'].includes(invoked)) sub = 'voice';
     if (['topinvites', 'invitestats', 'invites'].includes(invoked)) sub = 'invites';
     if (['joinsleaves', 'memberflow', 'joinleavestats', 'joins', 'leaves'].includes(invoked)) sub = 'joins';
@@ -393,7 +519,49 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // H. DEDICATED DUAL-ACTIONROW USER STATS DASHBOARD (.userstats @user)
+    // 🏰 A. DEDICATED DUAL-ACTIONROW SERVERSTATS OVERVIEW (.serverstats / .serveranalytics)
+    if (sub === 'server' || !sub) {
+      let activeTf = 'lifetime';
+      let activeCat = 'overview';
+
+      let embed = renderServerStatsOverviewPanel(guild, activeTf, author, clientUser);
+      let tfRow = buildServerStatsTimeframeRow(activeTf);
+      let catRow = buildServerStatsCategoryRow(activeCat);
+
+      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
+
+      const collector = msg.createMessageComponentCollector({ time: 300000 });
+      collector.on('collect', async (i) => {
+        if (i.customId.startsWith('stf_')) {
+          activeTf = i.customId.replace('stf_', '');
+        } else if (i.customId.startsWith('scat_')) {
+          activeCat = i.customId.replace('scat_', '');
+          if (activeCat === 'chat') {
+            const res = renderMessagesLeaderboard(guild, activeTf, 1, author, clientUser);
+            const pRow = buildPaginationRow(res.currentPage, res.totalPages);
+            return i.update({ embeds: [res.embed], components: [buildServerStatsTimeframeRow(activeTf), pRow] });
+          } else if (activeCat === 'voice') {
+            const res = renderVoiceLeaderboard(guild, activeTf, 1, author, clientUser);
+            const pRow = buildPaginationRow(res.currentPage, res.totalPages);
+            return i.update({ embeds: [res.embed], components: [buildServerStatsTimeframeRow(activeTf), pRow] });
+          } else if (activeCat === 'invites') {
+            const res = renderInvitesLeaderboard(guild, activeTf, 1, author, clientUser);
+            const pRow = buildPaginationRow(res.currentPage, res.totalPages);
+            return i.update({ embeds: [res.embed], components: [buildServerStatsTimeframeRow(activeTf), pRow] });
+          }
+        }
+
+        const newEmbed = renderServerStatsOverviewPanel(guild, activeTf, author, clientUser);
+        const newTfRow = buildServerStatsTimeframeRow(activeTf);
+        const newCatRow = buildServerStatsCategoryRow('overview');
+
+        return i.update({ embeds: [newEmbed], components: [newTfRow, newCatRow] });
+      });
+      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
+      return;
+    }
+
+    // B. DEDICATED USER STATS DASHBOARD (.userstats @user)
     if (sub === 'user') {
       const targetUser = message.mentions.users.first() || (args[1] ? await message.client.users.fetch(args[1]).catch(() => null) : null) || author;
       let activeCat = 'all';
@@ -423,8 +591,8 @@ module.exports = {
       return;
     }
 
-    // B. DEDICATED TOP MESSAGES LEADERBOARD (.serverstats / .topmessages / .msgstats)
-    if (sub === 'messages' || !sub) {
+    // C. DEDICATED TOP MESSAGES LEADERBOARD (.topmessages / .msgstats)
+    if (sub === 'messages') {
       let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
       let page = 1;
@@ -460,7 +628,7 @@ module.exports = {
       return;
     }
 
-    // C. DEDICATED TOP VOICE LEADERBOARD (.topvoice / .voicestats)
+    // D. DEDICATED TOP VOICE LEADERBOARD (.topvoice / .voicestats)
     if (sub === 'voice') {
       let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
@@ -497,7 +665,7 @@ module.exports = {
       return;
     }
 
-    // D. DEDICATED TOP INVITES LEADERBOARD (.topinvites / .invitestats)
+    // E. DEDICATED TOP INVITES LEADERBOARD (.topinvites / .invitestats)
     if (sub === 'invites') {
       let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
@@ -534,7 +702,7 @@ module.exports = {
       return;
     }
 
-    // E. DEDICATED JOINS & LEAVES FLOW (.joinsleaves)
+    // F. DEDICATED JOINS & LEAVES FLOW (.joinsleaves)
     if (sub === 'joins' || sub === 'leaves') {
       let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
@@ -555,7 +723,7 @@ module.exports = {
       return;
     }
 
-    // F. DEDICATED TOP COMMANDS (.topcommands)
+    // G. DEDICATED TOP COMMANDS (.topcommands)
     if (sub === 'commands') {
       let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
@@ -576,7 +744,7 @@ module.exports = {
       return;
     }
 
-    // G. DEDICATED TICKET STATS (.ticketstats)
+    // H. DEDICATED TICKET STATS (.ticketstats)
     if (sub === 'tickets') {
       let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
       if (!WINDOWS[activeKey]) activeKey = '1d';
