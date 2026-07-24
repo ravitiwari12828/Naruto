@@ -28,33 +28,36 @@ function getOrCreateVMConfig(guildId) {
 }
 
 /**
- * Builds the exact VoiceMaster Interface Control Center embed with 3D aesthetic emojis.
+ * Builds the ultra-aesthetic VoiceMaster Interface Control Center embed with 3D custom emojis.
  */
 function buildVoiceMasterInterfaceEmbed() {
   return new EmbedBuilder()
-    .setColor(0x2B2D31)
-    .setTitle(`${emojis.VOICE} VoiceMaster Interface Control Center`)
+    .setColor(0x00E5FF)
+    .setTitle(`${emojis.VOICE} VoiceMaster Control Center`)
     .setDescription(
-      `**${emojis.STAR} VoiceMaster Hub**\n` +
-      `Join **➕ Join to Create** to create and control your own temporary voice room.\n` +
-      `Everything below is your control panel for private voice channels.\n\n` +
-      `**${emojis.GEAR} Control Buttons Matrix**\n` +
-      `• ${emojis.LOCK} **Lock** — Lock your voice channel\n` +
-      `• ${emojis.UNLOCK} **Unlock** — Unlock your voice channel\n` +
-      `• ${emojis.HIDE} **Hide** — Hide your voice channel\n` +
-      `• 📖 **Reveal** — Reveal your voice channel\n` +
-      `• 📝 **Rename** — Rename your voice channel\n` +
-      `• 👥 **Limit** — Change user capacity limit\n` +
-      `• 🔇 **Mute** — Server mute members in VC\n` +
-      `• 🎙️ **Unmute** — Server unmute members in VC\n` +
-      `• 🔕 **Deafen** — Server deafen members in VC\n` +
-      `• 🎧 **Undeafen** — Server undeafen members in VC\n` +
-      `• ${emojis.SHIELD} **Permit** — Permit a user to join\n` +
-      `• ${emojis.REMOVE} **Ban** — Ban & kick a user from room\n` +
-      `• 🔄 **Transfer** — Transfer room ownership\n` +
-      `• ${emojis.OWNER_CROWN} **Claim** — Claim empty room ownership`
+      `**${emojis.STAR} VoiceMaster Private Room Hub**\n` +
+      `• Join **➕ Join to Create** to create your private voice room.\n` +
+      `• Everything below is your control panel for managing room access and audio.\n\n` +
+      `**${emojis.GEAR} Control Buttons Guide**\n` +
+      `• ${emojis.LOCK} **Lock** • Lock your voice channel\n` +
+      `• ${emojis.UNLOCK} **Unlock** • Unlock your voice channel\n` +
+      `• ${emojis.HIDE} **Hide** • Hide your voice channel from view\n` +
+      `• 📖 **Reveal** • Reveal your hidden voice channel\n` +
+      `• 📝 **Rename** • Change your voice channel name\n` +
+      `• 👥 **Limit** • Set maximum user slot limit\n` +
+      `• 🔇 **Mute** • Server mute all connected members\n` +
+      `• 🎙️ **Unmute** • Server unmute all connected members\n` +
+      `• 🔕 **Deafen** • Server deafen all connected members\n` +
+      `• 🎧 **Undeafen** • Server undeafen all connected members\n` +
+      `• ${emojis.SHIELD} **Permit** • Grant private access to a user\n` +
+      `• ${emojis.REMOVE} **Ban** • Disconnect & ban user from channel\n` +
+      `• 🔄 **Transfer** • Transfer room ownership to member\n` +
+      `• ${emojis.OWNER_CROWN} **Claim** • Claim ownership of empty room\n` +
+      `• 🌐 **Region** • Change voice channel region\n` +
+      `• ${emojis.ZAP} **Bitrate** • Set enhanced audio bitrate`
     )
-    .setFooter({ text: 'Naruto Priority Development • VoiceMaster Core' });
+    .setFooter({ text: 'Naruto VoiceMaster • Premium Audio Suite' })
+    .setTimestamp();
 }
 
 /**
