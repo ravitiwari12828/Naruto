@@ -970,9 +970,38 @@ client.on('messageCreate', async (message) => {
     return;
   }
 
-  // GUILD MESSAGES
+  // GUILD MESSAGES & LEVELING ENGINE
+  const userBefore = db.getUser(message.author.id);
+  const oldLvl = userBefore.level;
+
   db.addMessage(message.author.id, 1);
   db.recordAnalyticsEvent(message.guild.id, message.author.id, 'message', 1);
+
+  const userAfter = db.getUser(message.author.id);
+  if (userAfter.level > oldLvl) {
+    const levelCmd = client.commands.get('level');
+    const levelCfg = levelCmd ? levelCmd.getOrCreateLevelConfig(message.guild.id) : { enabled: true, channelId: null };
+
+    if (levelCfg.enabled !== false) {
+      const targetChan = (levelCfg.channelId && message.guild.channels.cache.get(levelCfg.channelId)) || message.channel;
+
+      const levelUpEmbed = createStyledEmbed({
+        title: `${emojis.CELEBRATION || '🎉'} LEVEL UP! — Shinobi Rank Advancement`,
+        description: `Congratulations <@${message.author.id}>! Your activity has elevated your Ninja Rank!`,
+        fields: [
+          { name: `${emojis.STAR || '⭐'} New Level`, value: `\`Level ${userAfter.level}\``, inline: true },
+          { name: `${emojis.NINJA_RANK || '🍥'} Shinobi Rank`, value: `\`${userAfter.rank}\``, inline: true },
+          { name: `${emojis.ZAP || '✨'} Total XP`, value: `\`${userAfter.xp} XP\``, inline: true }
+        ],
+        thumbnailUrl: message.author.displayAvatarURL({ dynamic: true, size: 256 }),
+        requestedBy: message.author,
+        clientUser: client.user,
+        footerText: `Naruto Leveling • Chat to unlock higher Ninja Ranks!`
+      });
+
+      targetChan.send({ content: `<@${message.author.id}>`, embeds: [levelUpEmbed] }).catch(() => {});
+    }
+  }
 
   // 15-Day Quarantine Check
   const quarantineCmd = client.commands.get('quarantine');
