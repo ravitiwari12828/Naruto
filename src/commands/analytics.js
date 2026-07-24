@@ -86,6 +86,102 @@ function buildPaginationRow(currentPage, totalPages) {
   );
 }
 
+function buildUserMetricRow(activeCat) {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('ucat_messages')
+      .setLabel('Messages')
+      .setEmoji(emojis.OBJ_ZAP)
+      .setStyle(activeCat === 'messages' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('ucat_voice')
+      .setLabel('Voice Time')
+      .setEmoji(emojis.OBJ_VOICE || emojis.OBJ_ZAP)
+      .setStyle(activeCat === 'voice' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('ucat_invites')
+      .setLabel('Invites')
+      .setEmoji(emojis.OBJ_ZAP)
+      .setStyle(activeCat === 'invites' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('ucat_shinobi')
+      .setLabel('Shinobi Rank')
+      .setEmoji(emojis.OBJ_NINJUTSU || emojis.OBJ_ZAP)
+      .setStyle(activeCat === 'shinobi' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('ucat_all')
+      .setLabel('All Metrics')
+      .setEmoji(emojis.OBJ_PROFILE || emojis.OBJ_ZAP)
+      .setStyle(activeCat === 'all' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+  );
+}
+
+function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey = '1d', author, clientUser) {
+  const windowMs = WINDOWS[timeframeKey];
+  const label = TIMEFRAME_NAMES[timeframeKey];
+
+  const dbUser = db.getUser(targetUser.id);
+  const s1d = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['1d']);
+  const s7d = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['7d']);
+  const s30d = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['30d']);
+  const sLife = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['lifetime']);
+
+  let title = `${emojis.PROFILE} ${targetUser.username}'s Activity Dashboard`;
+  let description = `Messages & Voice activity are being updated in real-time!\n`;
+  let fields = [];
+
+  if (activeCat === 'messages') {
+    title = `${emojis.MESSAGES} ${targetUser.username}'s Chat Messages`;
+    description += `\n` +
+      `• **All time** • **${(dbUser.messages || sLife.messages).toLocaleString()}** messages in this server!\n` +
+      `• **This month (30d)** • **${s30d.messages.toLocaleString()}** messages in this server\n` +
+      `• **This week (7d)** • **${s7d.messages.toLocaleString()}** messages in this server\n` +
+      `• **Today (24h)** • **${s1d.messages.toLocaleString()}** messages in this server`;
+  } else if (activeCat === 'voice') {
+    title = `${emojis.VOICE} ${targetUser.username}'s Voice Duration`;
+    description += `\n` +
+      `• **All time** • **${formatDuration(dbUser.voiceSeconds || sLife.voiceSeconds)}** in voice channels!\n` +
+      `• **This month (30d)** • **${formatDuration(s30d.voiceSeconds)}** in voice channels\n` +
+      `• **This week (7d)** • **${formatDuration(s7d.voiceSeconds)}** in voice channels\n` +
+      `• **Today (24h)** • **${formatDuration(s1d.voiceSeconds)}** in voice channels`;
+  } else if (activeCat === 'invites') {
+    title = `${emojis.INVITES} ${targetUser.username}'s Server Invites`;
+    description += `\n` +
+      `• **All time** • **${(dbUser.invites || sLife.invites).toLocaleString()}** members invited!\n` +
+      `• **This month (30d)** • **${s30d.invites.toLocaleString()}** members invited\n` +
+      `• **This week (7d)** • **${s7d.invites.toLocaleString()}** members invited\n` +
+      `• **Today (24h)** • **${s1d.invites.toLocaleString()}** members invited`;
+  } else if (activeCat === 'shinobi') {
+    title = `${emojis.SHINOBI} ${targetUser.username}'s Shinobi Profile`;
+    fields = [
+      { name: '📜 Ninja Rank', value: `\`${dbUser.rank || 'Academy Student'}\``, inline: true },
+      { name: '⚡ Level / XP', value: `\`Lvl ${dbUser.level || 1}\` (${dbUser.xp || 0} XP)`, inline: true },
+      { name: '🔮 Chakra / Ryo', value: `\`${dbUser.chakra || 100} Chakra\` | \`${dbUser.ryo || 500} Ryo\``, inline: true },
+      { name: '🌀 Equipped Jutsu', value: `\`${(dbUser.jutsuList || ['Rasengan']).join(', ')}\``, inline: false }
+    ];
+  } else {
+    // ALL METRICS OVERVIEW
+    fields = [
+      { name: '💬 Chat Messages (24h / All-time)', value: `\`${s1d.messages.toLocaleString()}\` / \`${(dbUser.messages || sLife.messages).toLocaleString()}\` msgs`, inline: true },
+      { name: '🔊 Voice Time (24h / All-time)', value: `\`${formatDuration(s1d.voiceSeconds)}\` / \`${formatDuration(dbUser.voiceSeconds || sLife.voiceSeconds)}\``, inline: true },
+      { name: '📨 Invites (24h / All-time)', value: `\`${s1d.invites.toLocaleString()}\` / \`${(dbUser.invites || sLife.invites).toLocaleString()}\` joins`, inline: true },
+      { name: '📜 Shinobi Rank', value: `\`${dbUser.rank || 'Academy Student'}\` (Lvl \`${dbUser.level || 1}\`)`, inline: true },
+      { name: '🔮 Chakra & Ryo', value: `\`${dbUser.chakra || 100} Chakra\` | \`${dbUser.ryo || 500} Ryo\``, inline: true }
+    ];
+  }
+
+  return createStyledEmbed({
+    title,
+    subtitle: `Member Activity Audit — ${guild.name}`,
+    description,
+    fields: fields.length > 0 ? fields : undefined,
+    thumbnailUrl: targetUser.displayAvatarURL({ dynamic: true, size: 512 }),
+    footerText: `Selected Timeframe: [${label}] • Real-time Live Sync • Naruto One Bot`,
+    requestedBy: author,
+    clientUser
+  });
+}
+
 // 💬 1. TOP MESSAGES LEADERBOARD (.serverstats / .topmessages / .msgstats)
 function renderMessagesLeaderboard(guild, timeframeKey, page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
@@ -104,10 +200,8 @@ function renderMessagesLeaderboard(guild, timeframeKey, page = 1, author, client
   } else {
     listText = pageEntries.map((item, idx) => {
       const rankNum = startIdx + idx + 1;
-      let rankPrefix = `\`#${rankNum}\``;
+      let rankPrefix = `**#${rankNum}**`;
       if (rankNum === 1) rankPrefix = `${emojis.OWNER_CROWN} **#1**`;
-      else if (rankNum === 2) rankPrefix = `${emojis.STAR} **#2**`;
-      else if (rankNum === 3) rankPrefix = `${emojis.SHINOBI} **#3**`;
 
       return `${rankPrefix} <@${item.userId}> • **${item.total.toLocaleString()}** messages`;
     }).join('\n');
@@ -299,6 +393,36 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
+    // H. DEDICATED DUAL-ACTIONROW USER STATS DASHBOARD (.userstats @user)
+    if (sub === 'user') {
+      const targetUser = message.mentions.users.first() || (args[1] ? await message.client.users.fetch(args[1]).catch(() => null) : null) || author;
+      let activeCat = 'all';
+      let activeTf = '1d';
+
+      let embed = renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser);
+      let metricRow = buildUserMetricRow(activeCat);
+      let tfRow = buildTimeframeRow(activeTf);
+
+      const msg = await message.channel.send({ embeds: [embed], components: [metricRow, tfRow] });
+
+      const collector = msg.createMessageComponentCollector({ time: 300000 });
+      collector.on('collect', async (i) => {
+        if (i.customId.startsWith('ucat_')) {
+          activeCat = i.customId.replace('ucat_', '');
+        } else if (i.customId.startsWith('tf_')) {
+          activeTf = i.customId.replace('tf_', '');
+        }
+
+        const newEmbed = renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser);
+        const newMetricRow = buildUserMetricRow(activeCat);
+        const newTfRow = buildTimeframeRow(activeTf);
+
+        return i.update({ embeds: [newEmbed], components: [newMetricRow, newTfRow] });
+      });
+      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
+      return;
+    }
+
     // B. DEDICATED TOP MESSAGES LEADERBOARD (.serverstats / .topmessages / .msgstats)
     if (sub === 'messages' || !sub) {
       let activeKey = args[1]?.toLowerCase() || args[0]?.toLowerCase();
@@ -471,30 +595,6 @@ module.exports = {
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
-    }
-
-    // H. DEDICATED USER STATS CARD (.userstats @user)
-    if (sub === 'user') {
-      const targetUser = message.mentions.users.first() || (args[1] ? await message.client.users.fetch(args[1]).catch(() => null) : null) || author;
-      const dbUser = db.getUser(targetUser.id);
-      const s30d = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['30d']);
-
-      const embed = createStyledEmbed({
-        title: `👤 Member Profile & Activity Card — ${targetUser.username}`,
-        subtitle: `Ninja Rank & Member Activity Breakdown`,
-        fields: [
-          { name: '📜 Ninja Rank', value: `\`${dbUser.rank || 'Academy Student'}\``, inline: true },
-          { name: '⚡ Level / XP', value: `\`Lvl ${dbUser.level || 1}\` (${dbUser.xp || 0} XP)`, inline: true },
-          { name: '🔮 Chakra / Ryo', value: `\`${dbUser.chakra || 100} Chakra\` | \`${dbUser.ryo || 500} Ryo\``, inline: true },
-          { name: '💬 Total Messages', value: `\`${dbUser.messages || s30d.messages}\` msgs`, inline: true },
-          { name: '🔊 Total Voice Time', value: `\`${formatDuration(dbUser.voiceSeconds || s30d.voiceSeconds)}\``, inline: true },
-          { name: '📨 Total Invites', value: `\`${dbUser.invites || s30d.invites}\` joins`, inline: true }
-        ],
-        thumbnailUrl: targetUser.displayAvatarURL({ dynamic: true, size: 512 }),
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
     }
   }
 };
