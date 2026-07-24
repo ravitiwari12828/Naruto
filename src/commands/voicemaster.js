@@ -29,31 +29,19 @@ function getOrCreateVMConfig(guildId) {
 
 /**
  * Builds the ultra-aesthetic VoiceMaster Control Center embed with custom 3D emojis.
+ * Kept minimal and clean without clutter or wall-of-text paragraphs.
  */
-function buildVoiceMasterInterfaceEmbed() {
+function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
+  const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`➕ Join to Create`';
+  const voiceIcon = emojis.OBJ_VOICE || emojis.VOICE || '🎙️';
   return new EmbedBuilder()
     .setColor(0x00E5FF)
-    .setTitle(`${emojis.VOICE} VoiceMaster Control Center`)
+    .setTitle(`${voiceIcon} VoiceMaster Control Center`)
     .setDescription(
-      `**${emojis.STAR} VoiceMaster Private Room Hub**\n` +
-      `• Join **➕ Join to Create** to create your private voice room.\n` +
-      `• Everything below is your control panel for private channels.\n\n` +
-      `**${emojis.GEAR} Control Buttons Matrix**\n` +
-      `• ${emojis.LOCK} **Lock** • Restrict room access to permitted members\n` +
-      `• ${emojis.UNLOCK} **Unlock** • Open room access to all server members\n` +
-      `• ${emojis.HIDE} **Hide** • Hide your voice room from channel list\n` +
-      `• ${emojis.TOOLS} **Reveal** • Make your hidden voice channel visible\n` +
-      `• ${emojis.SCROLL} **Rename** • Custom rename your voice channel\n` +
-      `• ${emojis.HUMAN} **Limit** • Adjust maximum member slot limit\n` +
-      `• ${emojis.DISABLED} **Mute All** • Server mute all connected members\n` +
-      `• ${emojis.ENABLED} **Unmute All** • Server unmute all connected members\n` +
-      `• ${emojis.SHIELD} **Permit** • Grant permanent view/connect access to user\n` +
-      `• ${emojis.REMOVE} **Ban** • Disconnect & ban user from channel\n` +
-      `• ${emojis.RESET} **Transfer** • Transfer room ownership to another user\n` +
-      `• ${emojis.OWNER_CROWN} **Claim** • Claim ownership of an empty room`
+      `Join ${triggerMention} to automatically create your private voice room.\n` +
+      `Use the interactive emoji buttons below to control your channel!`
     )
-    .setFooter({ text: 'Naruto VoiceMaster • Premium Audio Suite' })
-    .setTimestamp();
+    .setFooter({ text: 'Naruto VoiceMaster • Premium Private Audio' });
 }
 
 /**
@@ -61,19 +49,19 @@ function buildVoiceMasterInterfaceEmbed() {
  */
 function buildVoiceMasterActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_lock').setLabel('Lock').setEmoji(emojis.OBJ_LOCK).setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_unlock').setLabel('Unlock').setEmoji(emojis.OBJ_UNLOCK).setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('vm_hide').setLabel('Hide').setEmoji(emojis.OBJ_HIDE).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_reveal').setLabel('Reveal').setEmoji(emojis.OBJ_TOOLS).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_rename').setLabel('Rename').setEmoji(emojis.OBJ_SCROLL).setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId('vm_lock').setLabel('Lock').setEmoji(emojis.OBJ_LOCK || '🔒').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_unlock').setLabel('Unlock').setEmoji(emojis.OBJ_UNLOCK || '🔓').setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId('vm_hide').setLabel('Hide').setEmoji(emojis.OBJ_HIDE || '👁️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_reveal').setLabel('Reveal').setEmoji(emojis.OBJ_TOOLS || '📖').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_rename').setLabel('Rename').setEmoji(emojis.OBJ_SCROLL || '📝').setStyle(ButtonStyle.Primary)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_limit').setLabel('Limit').setEmoji(emojis.OBJ_HUMAN).setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('vm_mute').setLabel('Mute').setEmoji(emojis.OBJ_DISABLED).setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_unmute').setLabel('Unmute').setEmoji(emojis.OBJ_ENABLED).setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('vm_permit').setLabel('Permit').setEmoji(emojis.OBJ_SHIELD).setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('vm_claim').setLabel('Claim').setEmoji(emojis.OBJ_OWNER).setStyle(ButtonStyle.Primary)
+    new ButtonBuilder().setCustomId('vm_limit').setLabel('Limit').setEmoji(emojis.OBJ_HUMAN || '👥').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('vm_mute').setLabel('Mute').setEmoji(emojis.OBJ_DISABLED || '🔇').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_unmute').setLabel('Unmute').setEmoji(emojis.OBJ_ENABLED || '🔊').setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId('vm_permit').setLabel('Permit').setEmoji(emojis.OBJ_SHIELD || '🛡️').setStyle(ButtonStyle.Success),
+    new ButtonBuilder().setCustomId('vm_claim').setLabel('Claim').setEmoji(emojis.OBJ_OWNER || '👑').setStyle(ButtonStyle.Primary)
   );
 
   return [row1, row2];
@@ -106,7 +94,7 @@ module.exports = {
     } catch (e) {}
 
     // 1. SETUP COMMAND (.setupvc / .vcsetup / .vctemp setup / .vc setup)
-    if (['setup', 'create'].includes(sub)) {
+    if (['setup', 'create', 'enable', 'on'].includes(sub)) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can run VoiceMaster setup.`);
       }
@@ -133,7 +121,7 @@ module.exports = {
         parent: category ? category.id : undefined
       });
 
-      const embed = buildVoiceMasterInterfaceEmbed();
+      const embed = buildVoiceMasterInterfaceEmbed(triggerChan.id);
       const rows = buildVoiceMasterActionRows();
       await interfaceChan.send({ embeds: [embed], components: rows });
 
@@ -157,7 +145,102 @@ module.exports = {
       });
     }
 
-    // 2. IN-VC AUTO ROLE (.invcrole @role / remove)
+    // 2. DISABLE / RESET COMMAND (.vctemp disable / .vctemp off / .vctemp reset)
+    if (['disable', 'off', 'reset', 'delete', 'remove'].includes(sub)) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can disable VoiceMaster.`);
+      }
+
+      let deletedItems = [];
+      let parentCategoryId = null;
+
+      // Delete trigger channel
+      if (config.triggerChanId) {
+        try {
+          const ch = guild.channels.cache.get(config.triggerChanId) || await guild.channels.fetch(config.triggerChanId).catch(() => null);
+          if (ch) {
+            if (ch.parentId) parentCategoryId = ch.parentId;
+            await ch.delete('VoiceMaster disabled').catch(() => {});
+            deletedItems.push(`🔊 \`${ch.name}\``);
+          }
+        } catch (e) {}
+      }
+
+      // Delete interface channel
+      if (config.interfaceChanId) {
+        try {
+          const ch = guild.channels.cache.get(config.interfaceChanId) || await guild.channels.fetch(config.interfaceChanId).catch(() => null);
+          if (ch) {
+            if (ch.parentId && !parentCategoryId) parentCategoryId = ch.parentId;
+            await ch.delete('VoiceMaster disabled').catch(() => {});
+            deletedItems.push(`💬 \`${ch.name}\``);
+          }
+        } catch (e) {}
+      }
+
+      // Delete active temp VCs
+      if (config.activeTempVCs && config.activeTempVCs.size > 0) {
+        for (const [vcId] of config.activeTempVCs) {
+          try {
+            const ch = guild.channels.cache.get(vcId) || await guild.channels.fetch(vcId).catch(() => null);
+            if (ch) {
+              await ch.delete('VoiceMaster temp VC cleanup').catch(() => {});
+              deletedItems.push(`🎙️ \`${ch.name}\``);
+            }
+          } catch (e) {}
+        }
+        config.activeTempVCs.clear();
+      }
+
+      // Also search for any remaining orphaned "➕ Join to Create" or "interface" channels
+      const orphanTrigger = guild.channels.cache.find(c => c.type === ChannelType.GuildVoice && c.name.toLowerCase().includes('join to create'));
+      if (orphanTrigger) {
+        if (orphanTrigger.parentId && !parentCategoryId) parentCategoryId = orphanTrigger.parentId;
+        await orphanTrigger.delete('VoiceMaster cleanup').catch(() => {});
+        deletedItems.push(`🔊 \`${orphanTrigger.name}\``);
+      }
+
+      const orphanInterface = guild.channels.cache.find(c => c.type === ChannelType.GuildText && c.name.toLowerCase() === 'interface');
+      if (orphanInterface) {
+        if (orphanInterface.parentId && !parentCategoryId) parentCategoryId = orphanInterface.parentId;
+        await orphanInterface.delete('VoiceMaster cleanup').catch(() => {});
+        deletedItems.push(`💬 \`${orphanInterface.name}\``);
+      }
+
+      // Delete Category if empty
+      if (parentCategoryId) {
+        try {
+          const category = guild.channels.cache.get(parentCategoryId) || await guild.channels.fetch(parentCategoryId).catch(() => null);
+          if (category && category.type === ChannelType.GuildCategory) {
+            const remainingChildren = guild.channels.cache.filter(c => c.parentId === category.id);
+            if (remainingChildren.size === 0) {
+              await category.delete('VoiceMaster category cleanup').catch(() => {});
+              deletedItems.push(`📁 \`${category.name}\``);
+            }
+          }
+        } catch (e) {}
+      }
+
+      config.enabled = false;
+      config.triggerChanId = null;
+      config.interfaceChanId = null;
+      voicemasterConfigs.set(guild.id, config);
+
+      return message.reply({
+        embeds: [
+          createStyledEmbed({
+            title: `${emojis.VOICE} VoiceMaster Temp VC Disabled`,
+            description:
+              `${emojis.SUCCESS} **VoiceMaster temp VC system has been disabled.**\n\n` +
+              `**Deleted Channels & Category:**\n${deletedItems.length > 0 ? deletedItems.join('\n') : '• *No channels found to delete.*'}`,
+            requestedBy: author,
+            clientUser
+          })
+        ]
+      });
+    }
+
+    // 3. IN-VC AUTO ROLE (.invcrole @role / remove)
     if (sub === 'role' || sub === 'vcrole') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} Only Administrators can configure in-VC role.`);
@@ -180,3 +263,4 @@ module.exports = {
     return renderModuleHelpPanel(message, 'voice');
   }
 };
+
