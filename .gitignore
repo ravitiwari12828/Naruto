@@ -4,6 +4,9 @@
 # Node modules (installed by npm install on server)
 node_modules/
 
+# npm lockfile — each environment manages its own (prevents git pull conflicts on Pterodactyl)
+package-lock.json
+
 # SQLite database files (data persists on server)
 data/
 
