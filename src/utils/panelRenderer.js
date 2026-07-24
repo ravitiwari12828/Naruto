@@ -351,9 +351,13 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
       .setColor(0x00E5FF)
       .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
       .setThumbnail(botAvatarURL)
-      .setTitle(`${emojis.FUN || '🎉'} Fun & Entertainment Suite`)
+      .setTitle(`${emojis.FUN || '🎉'} Shinobi Fun & Entertainment Suite`)
       .setDescription(
         `Below is the complete list of commands for **${cat.label}**.\n\n` +
+        `${emojis.SCROLL || '🌀'} **Shinobi Games & Oracle**\n` +
+        `\`8ball\` \`truth\` \`dare\` \`wyr\` \`pickup\` \`fortune\` \`vibecheck\` \`mood\`\n\n` +
+        `${emojis.ZAP || '📊'} **Shinobi Ratings & Mini-Games**\n` +
+        `\`smartrate\` \`rizzmeter\` \`shipname\` \`wanted\` \`wasted\` \`powerlevel\` \`coolrate\` \`bonk\`\n\n` +
         `${emojis.FUN || '😂'} **Meme Generation**\n` +
         `\`spongebobchicken\` \`slapcar\` \`isthisa\` \`drake\` \`distractedbf\` \`communismcat\` \`eject\` \`emergencymeeting\` \`headpat\` \`tradeoffer\` \`waddle\`\n\n` +
         `${emojis.STAR || '😃'} **Emotes**\n` +
@@ -362,7 +366,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
         `\`cuddle\` \`hug\` \`kiss\` \`lick\` \`nom\` \`pat\` \`poke\` \`slap\` \`stare\` \`highfive\` \`bite\` \`greet\` \`punch\` \`handholding\` \`tickle\` \`kill\` \`hold\` \`pats\` \`wave\` \`boop\` \`snuggle\` \`bully\``
       )
       .setFooter({
-        text: `Requested by ${message.author.username} • Total 44 commands`,
+        text: `Requested by ${message.author.username} • Total 59 commands`,
         iconURL: message.author.displayAvatarURL({ dynamic: true })
       });
 
