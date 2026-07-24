@@ -25,37 +25,16 @@ function pickWinners(arr, count) {
 
 async function collectEligibleUsers(client, gw) {
   const eligibleUsers = [];
-  const chan = client.channels.cache.get(gw.channelId);
-  if (!chan) return eligibleUsers;
-
-  try {
-    const fetchedMsg = await chan.messages.fetch(gw.messageId);
-    if (fetchedMsg) {
-      const targetReaction = fetchedMsg.reactions.cache.find(r => r.emoji.name === '🎉' || r.emoji.name === '🎁') || fetchedMsg.reactions.cache.get('🎉');
-      if (targetReaction) {
-        const fetchedUsers = await targetReaction.users.fetch();
-        fetchedUsers.forEach(u => {
-          if (!u.bot && !eligibleUsers.some(existing => existing.id === u.id)) {
-            eligibleUsers.push(u);
-          }
-        });
-      }
-    }
-  } catch (e) {}
-
   if (gw.entries && gw.entries.size > 0) {
     for (const uid of gw.entries) {
-      if (!eligibleUsers.some(u => u.id === uid)) {
-        try {
-          const uObj = await client.users.fetch(uid);
-          if (uObj && !uObj.bot) {
-            eligibleUsers.push(uObj);
-          }
-        } catch (e) {}
-      }
+      try {
+        const uObj = await client.users.fetch(uid);
+        if (uObj && !uObj.bot) {
+          eligibleUsers.push(uObj);
+        }
+      } catch (e) {}
     }
   }
-
   return eligibleUsers;
 }
 
@@ -94,7 +73,7 @@ module.exports = {
         title: `🎉 GIVEAWAY — ${prize}`,
         subtitle: `Hosted by ${message.author.username}`,
         description:
-          `React with 🎉 or click the button below to enter!\n\n` +
+          `Click the **🎉 Enter Giveaway** button below to participate!\n\n` +
           `**Prize:** \`${prize}\`\n` +
           `**Winners:** \`${winnerCount}\`\n` +
           `**Ends:** \`${endDate}\`\n` +
@@ -112,7 +91,6 @@ module.exports = {
       );
 
       const msg = await message.channel.send({ embeds: [embed], components: [enterBtn] });
-      await msg.react('🎉').catch(() => {});
 
       const gwData = {
         id,
