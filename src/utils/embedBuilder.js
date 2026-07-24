@@ -36,22 +36,24 @@ function createStyledEmbed({
   let botUserObj = clientUser || (requestedBy && requestedBy.client ? requestedBy.client.user : null);
   let clientRef = (botUserObj && botUserObj.client) ? botUserObj.client : (requestedBy ? requestedBy.client : null);
 
-  let botIcon = thumbnailUrl;
-  if (!botIcon && botUserObj && botUserObj.displayAvatarURL) {
-    botIcon = botUserObj.displayAvatarURL({ dynamic: true, size: 512 });
-  }
+  let botIcon = (botUserObj && typeof botUserObj.displayAvatarURL === 'function')
+    ? botUserObj.displayAvatarURL({ dynamic: true, size: 512 })
+    : null;
 
   const embed = new EmbedBuilder().setColor(color);
 
-  // Author header: plain text author name + bot avatar
+  // Author header: plain text author name + BOT avatar
   const cleanAuthor = stripCustomEmojis(authorName);
   if (botIcon) {
     embed.setAuthor({ name: cleanAuthor, iconURL: botIcon });
-    if (showThumbnail) {
-      embed.setThumbnail(botIcon);
-    }
   } else {
     embed.setAuthor({ name: cleanAuthor });
+  }
+
+  // Thumbnail header: always show BOT avatar (unless custom thumbnailUrl explicitly specified)
+  const finalThumbnail = thumbnailUrl || botIcon;
+  if (showThumbnail && finalThumbnail) {
+    embed.setThumbnail(finalThumbnail);
   }
 
   // Title: Supports full custom 3D emojis!
@@ -98,27 +100,25 @@ function createStyledEmbed({
       ? `Requested by ${requestedBy.tag || requestedBy.username} • ${footerText}`
       : `Requested by ${requestedBy.tag || requestedBy.username}`;
     
-    embed.setFooter({
-      text: stripCustomEmojis(rawFooter),
-      iconURL: requestedBy.displayAvatarURL ? requestedBy.displayAvatarURL({ dynamic: true }) : undefined
-    });
+    const userAvatar = (typeof requestedBy.displayAvatarURL === 'function')
+      ? requestedBy.displayAvatarURL({ dynamic: true, size: 128 })
+      : null;
+
+    if (userAvatar) {
+      embed.setFooter({ text: stripCustomEmojis(rawFooter), iconURL: userAvatar });
+    } else {
+      embed.setFooter({ text: stripCustomEmojis(rawFooter) });
+    }
   } else if (footerText) {
     embed.setFooter({ text: stripCustomEmojis(footerText) });
   }
 
+  embed.setTimestamp();
   return embed;
-}
-
-/**
- * Formats command tags into code block pills like: `cmd1`, `cmd2`, `cmd3`
- */
-function formatCodePills(commands = []) {
-  return commands.map(cmd => `\`${cmd}\``).join(', ');
 }
 
 module.exports = {
   createStyledEmbed,
-  formatCodePills,
   getBannerFiles,
-  ACCENT_COLOR
+  stripCustomEmojis
 };

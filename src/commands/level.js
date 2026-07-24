@@ -182,7 +182,6 @@ module.exports = {
           `• \`Lvl 75\` ⁞ **Sannin Legend** — Council Polls (Create Custom Server Polls)\n\n` +
           `⚡ **Phase 3: Hokage Sovereign (Lvl 100)**\n` +
           `• \`Lvl 100\` ⁞ **Hokage Sovereign** — Will of Fire Immunity (Auto-Mute & Security Grid Bypass)!`,
-        thumbnailUrl: author.displayAvatarURL({ dynamic: true, size: 256 }),
         requestedBy: author,
         clientUser
       });
