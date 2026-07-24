@@ -341,7 +341,7 @@ class ResilientDatabase {
       .sort((a, b) => b.total - a.total);
 
     // Fallback to lifetime user database if no timeframe events match
-    if (sorted.length === 0 && windowMs === null) {
+    if (sorted.length === 0) {
       const allUsers = Object.entries(this.data.users || {}).map(([id, data]) => {
         let total = 0;
         if (eventType === 'message') total = data.messages || 0;

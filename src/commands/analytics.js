@@ -578,35 +578,18 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // DEFAULT GENERAL LEADERBOARD OVERVIEW (.topmessages / .analytics)
-    let page = 1;
-    let activeKey = '1d';
-    let { embed, currentPage, totalPages } = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
-    let tfRow = buildTimeframeRow(activeKey);
-    let pageRow = buildPaginationRow(currentPage, totalPages);
-
-    const msg = await message.channel.send({ embeds: [embed], components: [tfRow, pageRow] });
+    // DEFAULT GENERAL SERVER ANALYTICS DASHBOARD (.analytics)
+    const embed = renderTimeframePanel(guild, '1d', author, clientUser);
+    const row = buildTimeframeRow('1d');
+    const msg = await message.channel.send({ embeds: [embed], components: [row] });
 
     const collector = msg.createMessageComponentCollector({ time: 300000 });
     collector.on('collect', async (i) => {
-      if (i.customId.startsWith('tf_')) {
-        activeKey = i.customId.replace('tf_', '');
-        page = 1;
-      } else if (i.customId === 'page_first') {
-        page = 1;
-      } else if (i.customId === 'page_prev') {
-        page = Math.max(1, page - 1);
-      } else if (i.customId === 'page_next') {
-        page++;
-      } else if (i.customId === 'page_last') {
-        page = 999;
-      }
-
-      const res = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
-      page = res.currentPage;
-      const newTfRow = buildTimeframeRow(activeKey);
-      const newPageRow = buildPaginationRow(res.currentPage, res.totalPages);
-      return i.update({ embeds: [res.embed], components: [newTfRow, newPageRow] });
+      if (!i.customId.startsWith('tf_')) return;
+      const newKey = i.customId.replace('tf_', '');
+      const newEmbed = renderTimeframePanel(guild, newKey, author, clientUser);
+      const newRow = buildTimeframeRow(newKey);
+      return i.update({ embeds: [newEmbed], components: [newRow] });
     });
     collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
   }
