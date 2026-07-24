@@ -49,7 +49,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
       `Total Commands :  ${totalCommands}+\n` +
       `Active Modules :  ${CATEGORIES.length}\n` +
       `\`\`\`\n\n` +
-      `**📦 All Modules**\n` +
+      `**${emojis.SCROLL} All Modules**\n` +
       CATEGORIES.map(cat => {
         const customEmoji = EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
         return `${customEmoji} » **${cat.label}**`;
@@ -110,7 +110,7 @@ module.exports = {
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
         return interaction.reply({
-          content: '❌ Only the user who ran `.help` can use this menu.',
+          content: `${emojis.DISABLED} Only the user who ran \`.help\` can use this menu.`,
           flags: 64
         });
       }
