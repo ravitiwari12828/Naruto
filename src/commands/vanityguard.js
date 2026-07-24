@@ -36,10 +36,10 @@ module.exports = {
     const extraOwners = ['1420687548807905324', '1529362747047805029', '1514546738055348237'];
     const isOwner = author.id === guild.ownerId || extraOwners.includes(author.id);
 
-    if (!isOwner && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+    if (!isOwner) {
       const embed = createStyledEmbed({
         title: `${emojis.WARNING} Permission Denied`,
-        description: `Only the Server Owner or Administrators can configure VanityGuard.`,
+        description: `Only the Server Owner or Bot Owners can manage VanityGuard.`,
         requestedBy: author,
         clientUser
       });

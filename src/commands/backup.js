@@ -23,11 +23,11 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // Security Check: Only Owner / Administrator can use Backup System
-    if (!isOwner(author.id, guild.ownerId) && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+    // Security Check: Only Bot Owner / Server Owner can use Backup System
+    if (!isOwner(author.id, guild.ownerId)) {
       const embed = createStyledEmbed({
         title: `${emojis.WARNING} Permission Denied`,
-        description: `Only the Server Owner or Administrators can manage server backups.`,
+        description: `Only the Server Owner or Bot Owners can manage server backups.`,
         requestedBy: author,
         clientUser
       });
