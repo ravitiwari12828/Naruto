@@ -27,7 +27,7 @@ function createStyledEmbed({
   requestedBy = null,
   clientUser = null,
   footerText = '',
-  showBanner = true,
+  showBanner = false,
   showThumbnail = true,
   bannerUrl = null,
   thumbnailUrl = null,

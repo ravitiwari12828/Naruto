@@ -391,7 +391,6 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
       iconURL: message.author.displayAvatarURL({ dynamic: true })
     });
 
-  if (devPortalBanner) embed.setImage(devPortalBanner);
   return embed;
 }
 
