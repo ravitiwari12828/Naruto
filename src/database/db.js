@@ -482,6 +482,36 @@ class ResilientDatabase {
     this.saveJSON();
     return true;
   }
+
+  // --- SERVER BACKUPS ---
+  saveBackup(guildId, backupData) {
+    if (!this.data.backups) this.data.backups = {};
+    if (!this.data.backups[guildId]) this.data.backups[guildId] = {};
+
+    this.data.backups[guildId][backupData.backupId] = backupData;
+    this.saveJSON();
+    return backupData;
+  }
+
+  getBackups(guildId) {
+    if (!this.data.backups || !this.data.backups[guildId]) return {};
+    return this.data.backups[guildId];
+  }
+
+  getBackup(guildId, backupId) {
+    if (!this.data.backups || !this.data.backups[guildId]) return null;
+    return this.data.backups[guildId][backupId] || null;
+  }
+
+  deleteBackup(guildId, backupId) {
+    if (!this.data.backups || !this.data.backups[guildId]) return false;
+    if (this.data.backups[guildId][backupId]) {
+      delete this.data.backups[guildId][backupId];
+      this.saveJSON();
+      return true;
+    }
+    return false;
+  }
 }
 
 const db = new ResilientDatabase();
