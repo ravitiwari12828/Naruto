@@ -246,49 +246,56 @@ function renderAntinukeDashboard(config, author, clientUser) {
   const aq = config.autoQuarantine;
   const rl = config.rateLimits;
 
-  const filterStatusText =
-    `• **Anti Ban**: ${f.antiBan ? '`ON` ✅' : '`OFF` ❌'} | **Anti Kick**: ${f.antiKick ? '`ON` ✅' : '`OFF` ❌'}\n` +
-    `• **Anti Bot Add**: ${f.antiBotAdd ? '`ON` ✅' : '`OFF` ❌'} | **Anti Channel**: ${f.antiChannelCreate ? '`ON` ✅' : '`OFF` ❌'}\n` +
-    `• **Anti Role**: ${f.antiRoleCreate ? '`ON` ✅' : '`OFF` ❌'} | **Anti Webhook**: ${f.antiWebhookCreate ? '`ON` ✅' : '`OFF` ❌'}\n` +
-    `• **Anti Server**: ${f.antiGuildUpdate ? '`ON` ✅' : '`OFF` ❌'} | **Anti MassPing**: ${f.antiEveryone ? '`ON` ✅' : '`OFF` ❌'}\n` +
-    `• **Anti Spam**: ${f.antiSpam ? '`ON` ✅' : '`OFF` ❌'} | **Anti Raid**: ${f.antiRaid ? '`ON` ✅' : '`OFF` ❌'}`;
-
-  const joinGateText =
-    `• **Bot Additions**: ${jg.antiBotAdd ? '`ENABLED` ✅' : '`DISABLED` ❌'} (Action: \`${jg.botAddAction.toUpperCase()}\`)\n` +
-    `• **Unverified Bots**: ${jg.antiUnverifiedBot ? '`ENABLED` ✅' : '`DISABLED` ❌'} (Action: \`${jg.unverifiedBotAction.toUpperCase()}\`)\n` +
-    `• **No Avatar Gate**: ${jg.antiNoAvatar ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
-    `• **Advertising Name**: ${jg.antiAdvertisingName ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
-    `• **Account Age Gate**: ${jg.antiAccountAge ? `\`ENABLED\` ✅ (Min \`${jg.minAccountAgeDays} days\`)` : '`DISABLED` ❌'}`;
-
-  const autoQuarantineText =
-    `• **Auto Quarantine Module**: ${aq.enabled ? '`ACTIVE` 🟢' : '`DISABLED` 🔴'}\n` +
-    `• **Strict Admin Role Guard**: ${aq.strictMode ? '`ON` ✅' : '`OFF` ❌'}\n` +
-    `• **Strict Member Role Guard**: ${aq.strictMemberRole ? '`ON` ✅' : '`OFF` ❌'}\n` +
-    `• **Public Roles (@everyone) Protection**: ${aq.monitorPublicRoles ? '`ACTIVE` ✅' : '`OFF` ❌'}\n` +
-    `• **Channel Permissions Guard**: ${aq.monitorChannelPerms ? '`ACTIVE` ✅' : '`OFF` ❌'}`;
-
-  const limitsText =
-    `• **Kicks/Bans**: \`${rl.kickBanLimitMin}/min\` (\`${rl.kickBanLimitHour}/hr\`)\n` +
-    `• **Role Creations**: \`${rl.roleCreateLimitMin}/min\` | **Deletions**: \`${rl.roleDeleteLimitMin}/min\`\n` +
-    `• **Channel Creations**: \`${rl.channelCreateLimitMin}/min\` | **Deletions**: \`${rl.channelDeleteLimitMin}/min\`\n` +
-    `• **Webhook Creations**: \`${rl.webhookCreateLimitMin}/min\``;
-
   const extraOwnersList = Array.from(config.extraOwners).map(id => `<@${id}>`).join(', ') || 'None';
   const whitelistCount = config.whitelistedUsers.size;
 
+  const description =
+    `Welcome **${author.username}**! Below is your executive **AntiNuke & Security Control Suite**.\n\n` +
+    `**🛡️ Main System Status**\n` +
+    `\`\`\`\n` +
+    `AntiNuke System : ${config.enabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+    `Panic Mode      : ${config.panicmode ? `ACTIVE (Level ${config.panicLevel})` : 'NORMAL [OFF]'}\n` +
+    `Extra Owners    : ${config.extraOwners.size} Users\n` +
+    `Whitelisted     : ${whitelistCount} Users\n` +
+    `\`\`\`\n\n` +
+    `**🚪 Join Gate Security (Account Guard)**\n` +
+    `\`\`\`\n` +
+    `Bot Additions   : ${jg.antiBotAdd ? 'ENABLED' : 'DISABLED'} (Action: ${jg.botAddAction.toUpperCase()})\n` +
+    `Unverified Bots : ${jg.antiUnverifiedBot ? 'ENABLED' : 'DISABLED'} (Action: ${jg.unverifiedBotAction.toUpperCase()})\n` +
+    `No Avatar Gate  : ${jg.antiNoAvatar ? 'ENABLED' : 'DISABLED'}\n` +
+    `Advertising Name: ${jg.antiAdvertisingName ? 'ENABLED' : 'DISABLED'}\n` +
+    `Account Age Gate: ${jg.antiAccountAge ? `ENABLED (Min ${jg.minAccountAgeDays} days)` : 'DISABLED'}\n` +
+    `\`\`\`\n\n` +
+    `**☣️ Auto Quarantine & Dangerous Perm Guard**\n` +
+    `\`\`\`\n` +
+    `Quarantine Module : ${aq.enabled ? 'ACTIVE' : 'DISABLED'}\n` +
+    `Strict Admin Guard: ${aq.strictMode ? 'ON' : 'OFF'}\n` +
+    `Strict Member Guard: ${aq.strictMemberRole ? 'ON' : 'OFF'}\n` +
+    `Public Roles Guard: ${aq.monitorPublicRoles ? 'ACTIVE' : 'OFF'}\n` +
+    `Channel Perm Guard: ${aq.monitorChannelPerms ? 'ACTIVE' : 'OFF'}\n` +
+    `\`\`\`\n\n` +
+    `**📊 Rate Heat Limits per Action**\n` +
+    `\`\`\`\n` +
+    `Kicks & Bans    : ${rl.kickBanLimitMin}/min | ${rl.kickBanLimitHour}/hr\n` +
+    `Role Creations  : ${rl.roleCreateLimitMin}/min | Deletions: ${rl.roleDeleteLimitMin}/min\n` +
+    `Channel Creates : ${rl.channelCreateLimitMin}/min | Deletions: ${rl.channelDeleteLimitMin}/min\n` +
+    `Webhook Creates : ${rl.webhookCreateLimitMin}/min\n` +
+    `\`\`\`\n\n` +
+    `**⚡ Standard Protection Filters**\n` +
+    `\`\`\`\n` +
+    `Anti Ban      : ${f.antiBan ? 'ON' : 'OFF'} | Anti Kick     : ${f.antiKick ? 'ON' : 'OFF'}\n` +
+    `Anti Bot Add  : ${f.antiBotAdd ? 'ON' : 'OFF'} | Anti Channel  : ${f.antiChannelCreate ? 'ON' : 'OFF'}\n` +
+    `Anti Role     : ${f.antiRoleCreate ? 'ON' : 'OFF'} | Anti Webhook  : ${f.antiWebhookCreate ? 'ON' : 'OFF'}\n` +
+    `Anti Server   : ${f.antiGuildUpdate ? 'ON' : 'OFF'} | Anti MassPing : ${f.antiEveryone ? 'ON' : 'OFF'}\n` +
+    `Anti Spam     : ${f.antiSpam ? 'ON' : 'OFF'} | Anti Raid     : ${f.antiRaid ? 'ON' : 'OFF'}\n` +
+    `\`\`\`\n\n` +
+    `**👑 Registered Extra Owners**\n` +
+    `${extraOwnersList}`;
+
   return createStyledEmbed({
     title: `${emojis.SHIELD || '🛡️'} AntiNuke & Security Control Suite`,
-    subtitle: `Wick-Grade Server Protection, Join Gate & Auto Quarantine`,
-    fields: [
-      { name: `🛡️ Main AntiNuke Status`, value: config.enabled ? '`ENABLED` ✅' : '`DISABLED` ❌', inline: true },
-      { name: `🚨 Panic Mode`, value: config.panicmode ? `\`ACTIVE (Lvl ${config.panicLevel})\`` : '`NORMAL` ✅', inline: true },
-      { name: `👥 Security Users`, value: `• **Extra Owners:** ${config.extraOwners.size}\n• **Whitelisted:** ${whitelistCount}`, inline: true },
-      { name: `🚪 Join Gate Security (Account Guard)`, value: joinGateText, inline: false },
-      { name: `☣️ Auto Quarantine & Dangerous Perm Guard`, value: autoQuarantineText, inline: false },
-      { name: `📊 Rate Heat Limits per Action`, value: limitsText, inline: false },
-      { name: `⚡ Standard Protection Filters`, value: filterStatusText, inline: false },
-      { name: `👑 Registered Extra Owners`, value: extraOwnersList, inline: false }
-    ],
+    subtitle: `Wick-Grade Server Protection & Executive Guard`,
+    description,
     requestedBy: author,
     clientUser
   });
