@@ -2,40 +2,43 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const db = require('../database/db');
 
-// Verified Anime Aesthetic Direct Image Collections (100% Guaranteed Render)
+// Verified Anime Aesthetic Direct Image Collections (Gender & Category Accurate)
 const ANIME_PFP_COLLECTION = {
   animes: [
+    'https://media.kitsu.app/characters/images/221/original.jpg', // Naruto
+    'https://media.kitsu.app/characters/images/388/original.jpg', // Itachi
+    'https://media.kitsu.app/characters/images/91221/original.jpg', // Hinata
+    'https://media.kitsu.app/characters/images/74558/original.jpg', // Nezuko
     'https://cdn.nekos.life/avatar/avatar_01.png',
-    'https://cdn.nekos.life/avatar/avatar_05.png',
-    'https://cdn.nekos.life/avatar/avatar_10.png',
-    'https://cdn.nekos.life/avatar/avatar_15.png',
-    'https://cdn.nekos.life/avatar/avatar_20.png',
-    'https://cdn.nekos.life/avatar/avatar_25.png',
-    'https://cdn.nekos.life/avatar/avatar_30.png',
-    'https://cdn.nekos.life/avatar/avatar_40.png',
-    'https://cdn.nekos.life/avatar/avatar_50.png'
+    'https://cdn.nekos.life/avatar/avatar_05.png'
   ],
   boys: [
-    'https://cdn.nekos.life/avatar/avatar_02.png',
-    'https://cdn.nekos.life/avatar/avatar_06.png',
-    'https://cdn.nekos.life/avatar/avatar_12.png',
-    'https://cdn.nekos.life/avatar/avatar_18.png',
-    'https://cdn.nekos.life/avatar/avatar_24.png',
-    'https://cdn.nekos.life/avatar/avatar_36.png'
+    'https://media.kitsu.app/characters/images/221/original.jpg', // Naruto Uzumaki
+    'https://media.kitsu.app/characters/images/28725/original.jpg', // Sasuke Uchiha
+    'https://media.kitsu.app/characters/images/388/original.jpg', // Itachi Uchiha
+    'https://media.kitsu.app/characters/images/39556/original.jpg', // Levi Ackerman
+    'https://media.kitsu.app/characters/images/411/original.jpg', // Monkey D. Luffy
+    'https://media.kitsu.app/characters/images/60601/original.jpg', // Osamu Dazai
+    'https://media.kitsu.app/characters/images/2818/original.jpg', // Killua Zoldyck
+    'https://media.kitsu.app/characters/images/68743/original.jpg' // Goku
   ],
   girls: [
+    'https://media.kitsu.app/characters/images/91221/original.jpg', // Hinata Hyuga
+    'https://media.kitsu.app/characters/images/229/original.jpg', // Tsunade
+    'https://media.kitsu.app/characters/images/74558/original.jpg', // Nezuko Kamado
+    'https://media.kitsu.app/characters/images/15789/original.jpg', // Rem
+    'https://media.kitsu.app/characters/images/17472/original.jpg', // Emilia
+    'https://media.kitsu.app/characters/images/6553/original.jpg', // Saber
+    'https://media.kitsu.app/characters/images/408/original.jpg', // Nami
+    'https://media.kitsu.app/characters/images/22784/original.jpg', // Kaguya Shinomiya
     'https://cdn.nekos.life/neko/neko046.png',
-    'https://cdn.nekos.life/neko/neko202.jpeg',
-    'https://cdn.nekos.life/avatar/avatar_03.png',
-    'https://cdn.nekos.life/avatar/avatar_07.png',
-    'https://cdn.nekos.life/avatar/avatar_11.png',
-    'https://cdn.nekos.life/avatar/avatar_21.png'
+    'https://cdn.nekos.life/neko/neko202.jpeg'
   ],
   couples: [
-    'https://cdn.nekos.life/avatar/avatar_08.png',
-    'https://cdn.nekos.life/avatar/avatar_16.png',
-    'https://cdn.nekos.life/avatar/avatar_32.png',
-    'https://cdn.nekos.life/avatar/avatar_48.png'
+    'https://cdn.otakugifs.xyz/gifs/hug/d6b2dfe0ae69b8d0.gif',
+    'https://cdn.purrbot.site/sfw/hug/gif/hug_061.gif',
+    'https://cdn.purrbot.site/sfw/hug/gif/hug_087.gif',
+    'https://api.kawaii.red/gif/hug/hug18.gif'
   ],
   banners: [
     'https://cdn.nekos.life/wallpaper/sSlML-mWFXA.jpg',
@@ -44,19 +47,20 @@ const ANIME_PFP_COLLECTION = {
 };
 
 async function fetchDynamicAnimeImage(category) {
+  if (category === 'boys') {
+    const list = ANIME_PFP_COLLECTION.boys;
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
   const apis = {
     girls: [
       'https://nekos.life/api/v2/img/neko',
       'https://nekos.life/api/v2/img/fox_girl',
       'https://nekos.life/api/v2/img/waifu'
     ],
-    boys: [
-      'https://nekos.life/api/v2/img/avatar'
-    ],
     animes: [
       'https://nekos.life/api/v2/img/avatar',
-      'https://nekos.life/api/v2/img/fox_girl',
-      'https://nekos.life/api/v2/img/neko'
+      'https://nekos.life/api/v2/img/fox_girl'
     ],
     couples: [
       'https://api.otakugifs.xyz/gif?reaction=hug',
