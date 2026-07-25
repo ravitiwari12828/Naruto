@@ -61,7 +61,7 @@ function initLavalink(client) {
     autoSkip: true,
     autoSkipOnResolveError: true,
     playerOptions: {
-      defaultSearchPlatform: 'ytmsearch',
+      defaultSearchPlatform: 'spsearch',
       applyVolumeAsFilter: false,
       onDisconnect: {
         autoReconnect: true,

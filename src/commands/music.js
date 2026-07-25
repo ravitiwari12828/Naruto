@@ -462,8 +462,8 @@ module.exports = {
             // Explicit user-chosen search platform
             res = await player.search({ query, source }, author);
           } else {
-            // Ultimate Multi-Source Cascade Engine: YTM -> YT -> SoundCloud -> Spotify -> Apple Music -> Deezer
-            const sources = ['ytmsearch', 'ytsearch', 'scsearch', 'spsearch', 'amsearch', 'dzsearch'];
+            // Primary Spotify Search Engine Cascade: Spotify -> YTM -> YT -> SoundCloud -> Apple Music -> Deezer
+            const sources = ['spsearch', 'ytmsearch', 'ytsearch', 'scsearch', 'amsearch', 'dzsearch'];
             for (const s of sources) {
               try {
                 res = await player.search({ query, source: s }, author);
