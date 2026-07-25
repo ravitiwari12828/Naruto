@@ -365,12 +365,55 @@ class ResilientDatabase {
         caps: false,
         mention: true,
         emoji: false,
+        antiSpam: true,
+        inviteLinks: true,
+        maliciousLinks: true,
+        nsfwLinks: true,
+        wordBlacklist: ['grabify', 'iplogger', 'discord-nitro'],
+        linkBlacklist: [],
         punishment: 'warn',
         whitelistedBots: [],
-        ignoredChannels: []
+        ignoredChannels: [],
+        misc: {
+          prefix: '.',
+          logsChannelId: null,
+          modlogsChannelId: null,
+          quarantineRoleId: null,
+          mainRoleId: null,
+          displayPunishReason: true,
+          autoPurgeMessages: false,
+          moderatorConfirmation: true,
+          alwaysDmPunished: true,
+          hideStaffIdentity: false,
+          defaultTimeoutMinutes: 2880,
+          daysPurgedOnBan: 7
+        }
       };
     }
-    return this.data.automod[guildId];
+    const config = this.data.automod[guildId];
+    if (config.antiSpam === undefined) config.antiSpam = true;
+    if (config.inviteLinks === undefined) config.inviteLinks = true;
+    if (config.maliciousLinks === undefined) config.maliciousLinks = true;
+    if (config.nsfwLinks === undefined) config.nsfwLinks = true;
+    if (!config.wordBlacklist) config.wordBlacklist = [];
+    if (!config.linkBlacklist) config.linkBlacklist = [];
+    if (!config.misc) {
+      config.misc = {
+        prefix: '.',
+        logsChannelId: null,
+        modlogsChannelId: null,
+        quarantineRoleId: null,
+        mainRoleId: null,
+        displayPunishReason: true,
+        autoPurgeMessages: false,
+        moderatorConfirmation: true,
+        alwaysDmPunished: true,
+        hideStaffIdentity: false,
+        defaultTimeoutMinutes: 2880,
+        daysPurgedOnBan: 7
+      };
+    }
+    return config;
   }
 
   updateAutomod(guildId, key, value) {

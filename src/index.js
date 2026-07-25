@@ -1303,16 +1303,48 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // AutoMod
+  // 🛡️ WICK-GRADE AUTOMOD FILTERS EVALUATION
   const automod = db.getAutomod(message.guild.id);
   const contentLower = message.content.toLowerCase();
 
-  if (automod.enabled && !message.member.permissions.has('Administrator')) {
-    const badWords = ['fuck', 'shit', 'bitch', 'asshole', 'cunt', 'nigger'];
-    if (automod.profanity && badWords.some(w => contentLower.includes(w))) {
-      await message.delete().catch(() => {});
-      return message.channel.send(`${emojis.WARNING} <@${message.author.id}>, profanity is disabled on this server!`)
-        .then(msg => setTimeout(() => msg.delete().catch(() => {}), 5000));
+  if (automod.enabled && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+    // 1. INVITE LINKS FILTER
+    if (automod.inviteLinks) {
+      const hasInvite = /(discord\.(gg|com\/invite)|.gg\/)/i.test(message.content);
+      if (hasInvite) {
+        await message.delete().catch(() => {});
+        return message.channel.send(`📢 <@${message.author.id}>, posting Discord server invite links is **PROHIBITED** on this server!`)
+          .then(msg => setTimeout(() => msg.delete().catch(() => {}), 6000));
+      }
+    }
+
+    // 2. MALICIOUS / SCAM LINKS FILTER
+    if (automod.maliciousLinks) {
+      const maliciousPatterns = [/grabify/i, /iplogger/i, /free-nitro/i, /discord-nitro/i, /steamgift/i, /bit\.ly/i];
+      if (maliciousPatterns.some(pat => pat.test(message.content))) {
+        await message.delete().catch(() => {});
+        return message.channel.send(`🛡️ <@${message.author.id}>, **Malicious/Phishing link blocked!**`)
+          .then(msg => setTimeout(() => msg.delete().catch(() => {}), 6000));
+      }
+    }
+
+    // 3. WORD BLACKLIST & PROFANITY FILTER
+    if (automod.profanity) {
+      const badWords = ['fuck', 'shit', 'bitch', 'asshole', 'cunt', 'nigger', ...(automod.wordBlacklist || [])];
+      if (badWords.some(w => w && contentLower.includes(w.toLowerCase()))) {
+        await message.delete().catch(() => {});
+        return message.channel.send(`⚠️ <@${message.author.id}>, blacklisted word/profanity is **DISABLED** on this server!`)
+          .then(msg => setTimeout(() => msg.delete().catch(() => {}), 5000));
+      }
+    }
+
+    // 4. LINK BLACKLIST FILTER
+    if (automod.linkBlacklist && automod.linkBlacklist.length > 0) {
+      if (automod.linkBlacklist.some(domain => contentLower.includes(domain.toLowerCase()))) {
+        await message.delete().catch(() => {});
+        return message.channel.send(`🔗 <@${message.author.id}>, blacklisted website link is **NOT ALLOWED** on this server!`)
+          .then(msg => setTimeout(() => msg.delete().catch(() => {}), 5000));
+      }
     }
   }
 
