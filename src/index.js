@@ -1847,7 +1847,15 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.editReply({ content: `🔄 Cleared queue.` }).catch(() => {});
     }
     if (action === 'music_prev') {
-      return interaction.editReply({ content: `⏮️ Replaying track.` }).catch(() => {});
+      if (player.queue.previous && player.queue.previous.length) {
+        const prevTrack = player.queue.previous[player.queue.previous.length - 1];
+        await player.queue.add(prevTrack, 0);
+        await player.skip();
+        return interaction.editReply({ content: `⏮️ Replaying previous track: **${prevTrack.info.title}**.` }).catch(() => {});
+      } else {
+        await player.seek(0).catch(() => {});
+        return interaction.editReply({ content: `⏮️ Replayed track from beginning.` }).catch(() => {});
+      }
     }
     if (action === 'music_autoplay') {
       player.autoplay = !player.autoplay;
