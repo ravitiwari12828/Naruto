@@ -1834,7 +1834,19 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.editReply({ content: `⭐ Queued **${queuedCount} Favorite Songs** into queue!` }).catch(() => {});
     }
     if (action === 'music_lyrics') {
-      return interaction.editReply({ content: `📜 **Lyrics:** Use \`.lyrics\` to view full song lyrics.` }).catch(() => {});
+      const currentTrack = player?.queue?.current;
+      if (!currentTrack?.info?.title) {
+        return interaction.editReply({ content: `${emojis.WARNING} No track currently playing!` }).catch(() => {});
+      }
+      const lyricsCmd = require('./commands/lyrics');
+      const cleanTitle = currentTrack.info.title.replace(/\(Official Video\)/gi, '').replace(/\[Official Music Video\]/gi, '').trim();
+      const res = await lyricsCmd.fetchLyrics(cleanTitle);
+      if (!res || !res.lyrics) {
+        return interaction.editReply({ content: `❌ **Lyrics Not Found** for **${cleanTitle}**.` }).catch(() => {});
+      }
+      let lyricsText = res.lyrics;
+      if (lyricsText.length > 1900) lyricsText = lyricsText.slice(0, 1900) + '\n...*(truncated)*';
+      return interaction.editReply({ content: `📜 **Lyrics for ${res.title}:**\n\`\`\`\n${lyricsText}\n\`\`\`` }).catch(() => {});
     }
   }
 
