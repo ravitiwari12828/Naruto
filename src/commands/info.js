@@ -78,6 +78,18 @@ function buildServerInfoMainEmbed(guild, owner, activeTab = 'overview', author, 
     description =
       `${emojis.ROLES} **Top Hierarchy Roles**\n\n` +
       `${rolesList}${rolesFooter}`;
+  } else if (activeTab === 'icon') {
+    const iconURL = guild.iconURL({ dynamic: true, size: 1024 });
+    title = `${guild.name} • Server Icon`;
+    description = iconURL ? `🖼️ **Server Icon Image**\n[Click for High-Res Original Image](${iconURL})` : `⚠️ *This server does not have an icon.*`;
+  } else if (activeTab === 'banner') {
+    const bannerURL = guild.bannerURL({ dynamic: true, size: 1024 });
+    title = `${guild.name} • Server Banner`;
+    description = bannerURL ? `🌆 **Server Banner Image**\n[Click for High-Res Original Image](${bannerURL})` : `⚠️ *This server does not have a banner.*`;
+  } else if (activeTab === 'splash') {
+    const splashURL = guild.splashURL({ dynamic: true, size: 1024 });
+    title = `${guild.name} • Invite Splash`;
+    description = splashURL ? `🎨 **Invite Splash Image**\n[Click for High-Res Original Image](${splashURL})` : `⚠️ *This server does not have an invite splash.*`;
   } else {
     // OVERVIEW
     const ownerName = owner ? owner.user.username : 'Unknown';
@@ -114,7 +126,11 @@ function buildServerInfoMainEmbed(guild, owner, activeTab = 'overview', author, 
     })
     .setTimestamp();
 
-  if (banner) embed.setImage(banner);
+  if (activeTab === 'icon' && guild.iconURL()) embed.setImage(guild.iconURL({ dynamic: true, size: 1024 }));
+  else if (activeTab === 'banner' && guild.bannerURL()) embed.setImage(guild.bannerURL({ dynamic: true, size: 1024 }));
+  else if (activeTab === 'splash' && guild.splashURL()) embed.setImage(guild.splashURL({ dynamic: true, size: 1024 }));
+  else if (banner) embed.setImage(banner);
+
   return embed;
 }
 
@@ -148,24 +164,24 @@ function buildServerInfoRow1(activeTab = 'overview') {
   );
 }
 
-function buildServerInfoRow2(guild) {
+function buildServerInfoRow2(guild, activeTab = 'overview') {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('sinfo_icon')
       .setLabel('Icon')
       .setEmoji('🖼️')
-      .setStyle(ButtonStyle.Secondary),
+      .setStyle(activeTab === 'icon' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_banner')
       .setLabel('Banner')
       .setEmoji('🌆')
-      .setStyle(ButtonStyle.Secondary)
+      .setStyle(activeTab === 'banner' ? ButtonStyle.Primary : ButtonStyle.Secondary)
       .setDisabled(!guild.bannerURL()),
     new ButtonBuilder()
       .setCustomId('sinfo_splash')
       .setLabel('Splash')
       .setEmoji('🎨')
-      .setStyle(ButtonStyle.Secondary)
+      .setStyle(activeTab === 'splash' ? ButtonStyle.Primary : ButtonStyle.Secondary)
       .setDisabled(!guild.splashURL()),
     new ButtonBuilder()
       .setCustomId('sinfo_refresh')

@@ -2498,27 +2498,11 @@ client.on('interactionCreate', async (interaction) => {
       if (!infoCmd || !interaction.guild) return;
 
       const owner = await interaction.guild.fetchOwner().catch(() => null);
-
-      if (action === 'icon') {
-        const iconURL = interaction.guild.iconURL({ dynamic: true, size: 1024 });
-        if (!iconURL) return interaction.followUp({ content: `⚠️ This server does not have an icon.`, flags: 64 }).catch(() => {});
-        return interaction.followUp({ content: iconURL, flags: 64 }).catch(() => {});
-      }
-      if (action === 'banner') {
-        const bannerURL = interaction.guild.bannerURL({ dynamic: true, size: 1024 });
-        if (!bannerURL) return interaction.followUp({ content: `⚠️ This server does not have a banner.`, flags: 64 }).catch(() => {});
-        return interaction.followUp({ content: bannerURL, flags: 64 }).catch(() => {});
-      }
-      if (action === 'splash') {
-        const splashURL = interaction.guild.splashURL({ dynamic: true, size: 1024 });
-        if (!splashURL) return interaction.followUp({ content: `⚠️ This server does not have an invite splash.`, flags: 64 }).catch(() => {});
-        return interaction.followUp({ content: splashURL, flags: 64 }).catch(() => {});
-      }
-
       const activeTab = action === 'refresh' ? 'overview' : action;
+
       const embed = infoCmd.buildServerInfoMainEmbed(interaction.guild, owner, activeTab, interaction.user, client.user);
       const row1 = infoCmd.buildServerInfoRow1(activeTab);
-      const row2 = infoCmd.buildServerInfoRow2(interaction.guild);
+      const row2 = infoCmd.buildServerInfoRow2(interaction.guild, activeTab);
 
       await interaction.message.edit({ embeds: [embed], components: [row1, row2] }).catch(() => {});
     } catch (e) {
