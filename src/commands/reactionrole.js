@@ -28,7 +28,7 @@ module.exports = {
       const role = message.mentions.roles.first() || message.guild.roles.cache.get(args[3]);
 
       if (!msgId || !emoji || !role) {
-        return message.reply(`${emojis.WARNING} Usage: \`.rr add <messageId> <emoji> <@role>\``);
+        return message.reply({ content: `${emojis.WARNING} Usage: \`.rr add <messageId> <emoji> <@role>\``, allowedMentions: { parse: [], repliedUser: false } });
       }
 
       try {

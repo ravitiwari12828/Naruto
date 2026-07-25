@@ -113,10 +113,10 @@ module.exports = {
       try {
         if (targetMember.roles.cache.has(roleId)) {
           await targetMember.roles.remove(roleId);
-          return message.reply(`${emojis.SUCCESS} Removed <@&${roleId}> from **${targetMember.user.tag}**.`);
+          return message.reply({ content: `${emojis.SUCCESS} Removed <@&${roleId}> from **${targetMember.user.tag}**.`, allowedMentions: { parse: [], repliedUser: false } });
         } else {
           await targetMember.roles.add(roleId);
-          return message.reply(`${emojis.SUCCESS} Added <@&${roleId}> to **${targetMember.user.tag}**!`);
+          return message.reply({ content: `${emojis.SUCCESS} Added <@&${roleId}> to **${targetMember.user.tag}**!`, allowedMentions: { parse: [], repliedUser: false } });
         }
       } catch (err) {
         return message.reply(`${emojis.WARNING} Failed to update role. Make sure the bot role is higher than the assigned role.`);

@@ -120,10 +120,10 @@ module.exports = {
       } else {
         if (config.bypassRoles.has(target.id)) {
           config.bypassRoles.delete(target.id);
-          return message.reply(`${emojis.SUCCESS} Removed <@&${target.id}> from quarantine bypass list.`);
+          return message.reply({ content: `${emojis.SUCCESS} Removed <@&${target.id}> from quarantine bypass list.`, allowedMentions: { parse: [], repliedUser: false } });
         } else {
           config.bypassRoles.add(target.id);
-          return message.reply(`${emojis.SHIELD} Added <@&${target.id}> to quarantine bypass list!`);
+          return message.reply({ content: `${emojis.SHIELD} Added <@&${target.id}> to quarantine bypass list!`, allowedMentions: { parse: [], repliedUser: false } });
         }
       }
     }

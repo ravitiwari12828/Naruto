@@ -378,11 +378,11 @@ module.exports = {
       if (action === 'add' && role) {
         config.staffRoles.add(role.id);
         ticketConfigs.set(guild.id, config);
-        return message.reply(`✅ Added <@&${role.id}> as Ticket Support Staff.`);
+        return message.reply({ content: `✅ Added <@&${role.id}> as Ticket Support Staff.`, allowedMentions: { parse: [], repliedUser: false } });
       } else if (action === 'remove' && role) {
         config.staffRoles.delete(role.id);
         ticketConfigs.set(guild.id, config);
-        return message.reply(`✅ Removed <@&${role.id}> from Ticket Support Staff.`);
+        return message.reply({ content: `✅ Removed <@&${role.id}> from Ticket Support Staff.`, allowedMentions: { parse: [], repliedUser: false } });
       } else {
         const staffList = Array.from(config.staffRoles).map(id => `<@&${id}>`).join('\n') || 'None assigned (Administrators only)';
         return message.reply({

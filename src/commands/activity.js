@@ -88,10 +88,10 @@ module.exports = {
       const modifier = sub === 'add' ? amount : -amount;
       if (type === 'messages') {
         db.addMessage(target.id, modifier);
-        return message.reply(`${emojis.SUCCESS} Successfully updated messages for <@${target.id}> by \`${modifier}\`.`);
+        return message.reply({ content: `${emojis.SUCCESS} Successfully updated messages for <@${target.id}> by \`${modifier}\`.`, allowedMentions: { parse: [], repliedUser: false } });
       } else if (type === 'invites') {
         db.addInvites(target.id, modifier);
-        return message.reply(`${emojis.SUCCESS} Successfully updated invites for <@${target.id}> by \`${modifier}\`.`);
+        return message.reply({ content: `${emojis.SUCCESS} Successfully updated invites for <@${target.id}> by \`${modifier}\`.`, allowedMentions: { parse: [], repliedUser: false } });
       }
     }
 

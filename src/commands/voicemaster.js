@@ -270,14 +270,14 @@ module.exports = {
       const role = message.mentions.roles.first() || guild.roles.cache.get(args[1]);
       if (!role) {
         if (config.inVcRoleId) {
-          return message.reply(`🎙️ Current In-VC Auto Role: <@&${config.inVcRoleId}>`);
+          return message.reply({ content: `🎙️ Current In-VC Auto Role: <@&${config.inVcRoleId}>`, allowedMentions: { parse: [], repliedUser: false } });
         }
         return message.reply(`ℹ️ Usage: \`.invcrole @role\` to set the role automatically given when members join any VC.`);
       }
 
       config.inVcRoleId = role.id;
       voicemasterConfigs.set(guild.id, config);
-      return message.reply(`${emojis.SUCCESS} In-VC Auto Role set to <@&${role.id}>!`);
+      return message.reply({ content: `${emojis.SUCCESS} In-VC Auto Role set to <@&${role.id}>!`, allowedMentions: { parse: [], repliedUser: false } });
     }
 
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
