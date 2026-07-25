@@ -88,6 +88,7 @@ function buildMusicPlayerEmbed(track, player) {
   const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
   const volume = player?.volume || 100;
   const isLoop = player?.repeatMode === 'track' ? 'Track' : player?.repeatMode === 'queue' ? 'Queue' : 'Off';
+  const isAutoplay = player?.autoplay ? 'ON' : 'OFF';
   const queueLen = player?.queue?.tracks?.length || 0;
 
   let reqUser = '*Server Member*';
@@ -108,7 +109,7 @@ function buildMusicPlayerEmbed(track, player) {
     .setTitle(`🎵 Now Playing`)
     .setDescription(`**[${title}](${track?.info?.uri || 'https://youtube.com'})**\nby **${author}**\n\n🕒 **Progress:** \`${positionStr} / ${durationStr}\`\n\`${barStr}\``)
     .addFields([
-      { name: '📊 Audio Details', value: `🔊 **Volume:** \`${volume}%\` • 🔁 **Loop:** \`${isLoop}\` • 🎵 **Queue:** \`${queueLen} songs\``, inline: false },
+      { name: '📊 Audio Details', value: `🔊 **Volume:** \`${volume}%\` • 🔁 **Loop:** \`${isLoop}\` • ♾️ **Autoplay:** \`${isAutoplay}\` • 🎵 **Queue:** \`${queueLen}\``, inline: false },
       { name: '👤 Requested By', value: reqUser, inline: true }
     ])
     .setThumbnail(artworkUrl)
@@ -117,8 +118,7 @@ function buildMusicPlayerEmbed(track, player) {
 }
 
 /**
- * Builds the Music Player action buttons & multi-filter dropdown.
- * Uses 4 buttons per row for 100% perfect horizontal alignment across Mobile & Desktop!
+ * Builds the Music Player action buttons & multi-filter dropdown matching Synn layout.
  */
 function buildMusicActionRows() {
   const controlsSelect = new StringSelectMenuBuilder()
@@ -129,6 +129,9 @@ function buildMusicActionRows() {
       { label: 'Loop: Off', value: 'ctrl_loop_off', description: 'No repeat', emoji: '➡️' },
       { label: 'Loop: Track', value: 'ctrl_loop_track', description: 'Repeat current song', emoji: '🔂' },
       { label: 'Loop: Queue', value: 'ctrl_loop_queue', description: 'Repeat entire queue', emoji: '🔁' },
+      { label: 'Autoplay: Toggle', value: 'ctrl_autoplay', description: 'Auto-play recommended songs when queue ends', emoji: '♾️' },
+      { label: 'Add to Favorites', value: 'ctrl_fav_add', description: 'Save current track to personal playlist', emoji: '❤️' },
+      { label: 'Play Favorites', value: 'ctrl_fav_play', description: 'Queue all your saved favorite tracks', emoji: '⭐' },
       { label: 'Volume -20%', value: 'ctrl_voldown', description: 'Decrease volume by 20%', emoji: '🔉' },
       { label: 'Volume +20%', value: 'ctrl_volup', description: 'Increase volume by 20%', emoji: '🔊' },
       { label: 'Previous Track', value: 'ctrl_prev', description: 'Play previous track', emoji: '⏮️' },
@@ -206,13 +209,14 @@ function formatDuration(ms) {
 
 module.exports = {
   name: 'music',
-  description: 'Complete Lavalink Music Suite: seek, equalizer, multi-filter selection, 24/7 AFK mode',
+  description: 'Complete Lavalink Music Suite: seek, equalizer, multi-filter selection, 24/7 AFK mode, autoplay, favorites',
   aliases: [
     'm', 'play', 'p', 'stop', 'pause', 'resume',
     'skip', 's', 'previous', 'prev', 'queue', 'q',
     'np', 'nowplaying', 'loop', 'shuffle',
     'volume', 'vol', 'clear', 'join', 'dc', 'afk247', '247',
-    'seek', 'equalizer', 'eq', 'filter', 'filters'
+    'seek', 'equalizer', 'eq', 'filter', 'filters',
+    'autoplay', 'ap', 'fav', 'favorite', 'favorites'
   ],
   afkStore,
   buildMusicPlayerEmbed,
@@ -454,6 +458,92 @@ module.exports = {
         await player.setVolume(targetVol);
       }
       return message.reply(`🔊 Volume set to **${targetVol}%**.`);
+    }
+
+    // 6.5 AUTOPLAY COMMAND
+    if (['autoplay', 'ap'].includes(invoked)) {
+      const player = lavalink?.getPlayer(guildId);
+      if (!player) return message.reply(`${emojis.WARNING} No active music player!`);
+
+      player.autoplay = !player.autoplay;
+      const status = player.autoplay ? '🟢 **ENABLED**' : '🔴 **DISABLED**';
+      return message.reply(`♾️ **Autoplay Mode:** ${status}! ${player.autoplay ? '(Auto-queuing recommended tracks when queue ends)' : ''}`);
+    }
+
+    // 6.6 FAVORITES COMMAND (.fav add / .fav list / .fav remove / .fav play)
+    if (['fav', 'favorite', 'favorites'].includes(invoked)) {
+      const db = require('../database/db');
+      const sub = args[0]?.toLowerCase() || 'list';
+
+      if (sub === 'add') {
+        const player = lavalink?.getPlayer(guildId);
+        const currentTrack = player?.queue?.current;
+        if (!currentTrack) return message.reply(`${emojis.WARNING} No track currently playing to add to favorites!`);
+
+        const res = db.addFavorite(author.id, currentTrack);
+        if (!res.added) return message.reply(`⚠️ ${res.message}`);
+        return message.reply(`❤️ **Saved to Favorites:** [${res.favorite.title}](${res.favorite.uri}) (Total: ${res.total} tracks).`);
+      }
+
+      if (sub === 'remove' || sub === 'del') {
+        const idx = parseInt(args[1]) - 1;
+        if (isNaN(idx)) return message.reply(`${emojis.WARNING} Usage: \`.fav remove <number>\` (e.g. \`.fav remove 1\`).`);
+
+        const removed = db.removeFavorite(author.id, idx);
+        if (!removed) return message.reply(`${emojis.WARNING} Invalid favorite index.`);
+        return message.reply(`🗑️ **Removed from Favorites:** ${removed.title}`);
+      }
+
+      if (sub === 'play') {
+        const favs = db.getFavorites(author.id);
+        if (!favs.length) return message.reply(`💔 You have no saved favorite tracks! Use \`.fav add\` while a track plays.`);
+        if (!voiceState?.channel) return message.reply(`${emojis.WARNING} Join a voice channel first!`);
+
+        let player = lavalink?.getPlayer(guildId);
+        if (!player && lavalink) {
+          player = await lavalink.createPlayer({
+            guildId,
+            voiceChannelId: voiceState.channel.id,
+            textChannelId: message.channel.id,
+            selfDeaf: true
+          });
+          await player.connect();
+        }
+
+        let queuedCount = 0;
+        for (const f of favs) {
+          try {
+            let res = await player.search({ query: f.uri || f.title, source: 'ytmsearch' }, author);
+            if (res && res.tracks.length) {
+              await player.queue.add(res.tracks[0]);
+              queuedCount++;
+            }
+          } catch (e) {}
+        }
+
+        if (!player.playing && !player.paused) {
+          await player.play();
+        }
+
+        return message.reply(`⭐ **Queued ${queuedCount} Favorite Songs** into queue!`);
+      }
+
+      // Default: List Favorites
+      const favs = db.getFavorites(author.id);
+      if (!favs.length) {
+        return message.reply(`💔 **Your Favorites List is Empty!**\nUse \`.fav add\` while listening to save your favorite songs.`);
+      }
+
+      const listStr = favs.map((f, i) => `\`${i + 1}.\` **[${f.title}](${f.uri})** — *${f.author}*`).slice(0, 15).join('\n');
+
+      const favEmbed = createStyledEmbed({
+        title: `❤️ Your Favorite Songs (${favs.length})`,
+        description: listStr + (favs.length > 15 ? `\n*...and ${favs.length - 15} more tracks.*` : '') + `\n\n💡 *Use \`.fav play\` to queue all favorites, or \`.fav remove <#>\` to delete.*`,
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.reply({ embeds: [favEmbed] });
     }
 
     // 7. PAUSE / RESUME / SKIP / STOP / NP

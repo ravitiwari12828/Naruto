@@ -1639,6 +1639,44 @@ client.on('interactionCreate', async (interaction) => {
       await player.setRepeatMode('queue');
       return interaction.editReply({ content: `🔁 Repeating entire queue.` }).catch(() => {});
     }
+    if (val === 'ctrl_autoplay') {
+      player.autoplay = !player.autoplay;
+      const status = player.autoplay ? '🟢 **ENABLED**' : '🔴 **DISABLED**';
+      return interaction.editReply({ content: `♾️ **Autoplay Mode:** ${status}!` }).catch(() => {});
+    }
+    if (val === 'ctrl_fav_add') {
+      const db = require('./database/db');
+      const currentTrack = player?.queue?.current;
+      if (!currentTrack) {
+        return interaction.editReply({ content: `${emojis.WARNING} No track currently playing!` }).catch(() => {});
+      }
+      const res = db.addFavorite(interaction.user.id, currentTrack);
+      if (!res.added) {
+        return interaction.editReply({ content: `⚠️ ${res.message}` }).catch(() => {});
+      }
+      return interaction.editReply({ content: `❤️ **Saved to Favorites:** [${res.favorite.title}](${res.favorite.uri})!` }).catch(() => {});
+    }
+    if (val === 'ctrl_fav_play') {
+      const db = require('./database/db');
+      const favs = db.getFavorites(interaction.user.id);
+      if (!favs.length) {
+        return interaction.editReply({ content: `💔 You have no saved favorite tracks! Use \`.fav add\` while listening.` }).catch(() => {});
+      }
+      let queuedCount = 0;
+      for (const f of favs) {
+        try {
+          let res = await player.search({ query: f.uri || f.title, source: 'ytmsearch' }, interaction.user);
+          if (res && res.tracks.length) {
+            await player.queue.add(res.tracks[0]);
+            queuedCount++;
+          }
+        } catch (e) {}
+      }
+      if (!player.playing && !player.paused) {
+        await player.play().catch(() => {});
+      }
+      return interaction.editReply({ content: `⭐ Queued **${queuedCount} Favorite Songs** into queue!` }).catch(() => {});
+    }
     if (val === 'ctrl_voldown') {
       const vol = Math.max(10, (player.volume || 100) - 20);
       await player.setVolume(vol);

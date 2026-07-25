@@ -556,6 +556,48 @@ class ResilientDatabase {
     }
     return false;
   }
+
+  // --- FAVORITES SYSTEM ---
+  getFavorites(userId) {
+    if (!this.data.favorites) this.data.favorites = {};
+    return this.data.favorites[userId] || [];
+  }
+
+  addFavorite(userId, track) {
+    if (!this.data.favorites) this.data.favorites = {};
+    if (!this.data.favorites[userId]) this.data.favorites[userId] = [];
+
+    const existing = this.data.favorites[userId].find(t => t.uri === (track.info?.uri || track.uri) || t.title === (track.info?.title || track.title));
+    if (existing) return { added: false, message: 'Track is already in your favorites!' };
+
+    const favItem = {
+      title: track.info?.title || track.title || 'Unknown Track',
+      author: track.info?.author || track.author || 'Unknown Artist',
+      uri: track.info?.uri || track.uri || '',
+      duration: track.info?.duration || track.duration || 0
+    };
+
+    this.data.favorites[userId].unshift(favItem);
+    if (this.data.favorites[userId].length > 50) this.data.favorites[userId].pop();
+    this.saveJSON();
+    return { added: true, favorite: favItem, total: this.data.favorites[userId].length };
+  }
+
+  removeFavorite(userId, index) {
+    if (!this.data.favorites || !this.data.favorites[userId]) return false;
+    if (index < 0 || index >= this.data.favorites[userId].length) return false;
+
+    const removed = this.data.favorites[userId].splice(index, 1);
+    this.saveJSON();
+    return removed[0];
+  }
+
+  clearFavorites(userId) {
+    if (!this.data.favorites) this.data.favorites = {};
+    this.data.favorites[userId] = [];
+    this.saveJSON();
+    return true;
+  }
 }
 
 const db = new ResilientDatabase();
