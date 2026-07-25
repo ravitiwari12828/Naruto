@@ -28,19 +28,34 @@ const musicCardRenderer = MusicCard ? new MusicCard() : null;
  */
 async function sendMusicCard(channel, track, player) {
   if (player) {
-    // Delete previous main player card
+    // Delete previous main player card via Message instance
     if (player.lastMessage) {
       try {
         await player.lastMessage.delete().catch(() => {});
-        player.lastMessage = null;
       } catch (e) {}
+      player.lastMessage = null;
+    }
+
+    // Delete previous main player card via direct Channel/Message API ID fetch
+    if (player.lastMessageId && (player.lastChannelId || channel?.id)) {
+      try {
+        const targetChanId = player.lastChannelId || channel?.id;
+        const targetChan = channel?.client?.channels?.cache?.get(targetChanId) || await channel?.client?.channels?.fetch(targetChanId).catch(() => null) || channel;
+        if (targetChan && targetChan.messages) {
+          await targetChan.messages.delete(player.lastMessageId).catch(() => {});
+        }
+      } catch (e) {}
+      player.lastMessageId = null;
+      player.lastChannelId = null;
     }
 
     // Delete any temporary queue / status notifications
     if (player.tempMessages && player.tempMessages.length) {
       for (const msg of player.tempMessages) {
         try {
-          await msg.delete().catch(() => {});
+          if (msg && typeof msg.delete === 'function') {
+            await msg.delete().catch(() => {});
+          }
         } catch (e) {}
       }
       player.tempMessages = [];
@@ -76,7 +91,11 @@ async function sendMusicCard(channel, track, player) {
       const attachment = new AttachmentBuilder(buf, { name: 'nowplaying.png' });
       embed.setImage('attachment://nowplaying.png');
       sentMsg = await channel.send({ embeds: [embed], files: [attachment], components: rows });
-      if (player) player.lastMessage = sentMsg;
+      if (player && sentMsg) {
+        player.lastMessage = sentMsg;
+        player.lastMessageId = sentMsg.id;
+        player.lastChannelId = sentMsg.channel?.id || channel.id;
+      }
       return sentMsg;
     } catch (e) {
       console.error('[MusicCard] Canvas render failed, falling back to embed:', e.message);
@@ -84,7 +103,11 @@ async function sendMusicCard(channel, track, player) {
   }
 
   sentMsg = await channel.send({ embeds: [embed], components: rows });
-  if (player) player.lastMessage = sentMsg;
+  if (player && sentMsg) {
+    player.lastMessage = sentMsg;
+    player.lastMessageId = sentMsg.id;
+    player.lastChannelId = sentMsg.channel?.id || channel.id;
+  }
   return sentMsg;
 }
 

@@ -197,7 +197,7 @@ function initLavalink(client) {
         }
       } catch (e) {}
 
-      const channel = client.channels.cache.get(player.textChannelId);
+      const channel = client.channels.cache.get(player.textChannelId) || await client.channels.fetch(player.textChannelId).catch(() => null);
       if (channel) {
         const musicCmd = client.commands?.get('music');
         if (musicCmd && musicCmd.sendMusicCard) {
