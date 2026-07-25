@@ -290,7 +290,7 @@ function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, a
   ];
 
   if (pageEntries.length === 0) {
-    boxLines.push('│ No recorded chat data    │');
+    boxLines.push('│ ' + 'No recorded chat data'.padEnd(24, ' ') + ' │');
   } else {
     pageEntries.forEach((item, idx) => {
       const rankNum = '#' + (startIdx + idx + 1);
@@ -338,7 +338,7 @@ function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, auth
   ];
 
   if (pageEntries.length === 0) {
-    boxLines.push('│ No recorded voice data   │');
+    boxLines.push('│ ' + 'No recorded voice data'.padEnd(24, ' ') + ' │');
   } else {
     pageEntries.forEach((item, idx) => {
       const rankNum = '#' + (startIdx + idx + 1);
@@ -386,7 +386,7 @@ function renderInvitesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, au
   ];
 
   if (pageEntries.length === 0) {
-    boxLines.push('│ No recorded invite data  │');
+    boxLines.push('│ ' + 'No recorded invite data'.padEnd(24, ' ') + ' │');
   } else {
     pageEntries.forEach((item, idx) => {
       const rankNum = '#' + (startIdx + idx + 1);
