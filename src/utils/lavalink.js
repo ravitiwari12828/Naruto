@@ -173,7 +173,9 @@ function initLavalink(client) {
     }
   });
 
-  // Automatically send Now Playing card when a new track starts (and delete old panel)
+  // ─────────────────────────────────────────
+  // TRACK START: Send STELLAR BEATS card & auto-delete previous card
+  // ─────────────────────────────────────────
   lavalink.on('trackStart', async (player, track) => {
     if (!player || !player.textChannelId) return;
     try {
@@ -185,6 +187,70 @@ function initLavalink(client) {
         }
       }
     } catch (e) {}
+  });
+
+  // ─────────────────────────────────────────
+  // QUEUE END: Handle queue completion & 24/7 AFK persistence
+  // ─────────────────────────────────────────
+  lavalink.on('queueEnd', async (player) => {
+    if (!player || !player.textChannelId) return;
+
+    // If Autoplay is enabled, trackEnd handles loading recommended tracks
+    if (player.autoplay) return;
+
+    try {
+      const channel = client.channels.cache.get(player.textChannelId);
+      const musicCmd = client.commands?.get('music');
+      const afkStore = musicCmd?.afkStore;
+      const isAfk247 = afkStore ? afkStore.has(player.guildId) : false;
+
+      if (channel) {
+        channel.send(`🎵 **Queue Ended:** All songs have finished playing. ${isAfk247 ? '*(24/7 AFK Mode Active)*' : ''}`).catch(() => {});
+      }
+
+      // If 24/7 mode is NOT active, auto-disconnect after 2 minutes of idle
+      if (!isAfk247) {
+        setTimeout(async () => {
+          if (player && !player.playing && !player.paused && player.queue.tracks.length === 0) {
+            await player.destroy().catch(() => {});
+            if (channel) channel.send(`👋 Left voice channel due to inactivity.`).catch(() => {});
+          }
+        }, 120000);
+      }
+    } catch (e) {}
+  });
+
+  // ─────────────────────────────────────────
+  // TRACK ERROR & STUCK HANDLERS: Smooth auto-skip
+  // ─────────────────────────────────────────
+  lavalink.on('trackError', async (player, track, payload) => {
+    console.error(`⚠️ [Lavalink Track Error] ${track?.info?.title}:`, payload?.exception?.message || payload);
+    if (!player) return;
+    try {
+      const channel = client.channels.cache.get(player.textChannelId);
+      if (channel) channel.send(`⚠️ **Playback Error:** Failed to stream \`${track?.info?.title || 'Track'}\`. Auto-skipping...`).catch(() => {});
+      await player.skip().catch(() => {});
+    } catch (e) {}
+  });
+
+  lavalink.on('trackStuck', async (player, track, payload) => {
+    console.warn(`⚠️ [Lavalink Track Stuck] ${track?.info?.title}`);
+    if (!player) return;
+    try {
+      await player.skip().catch(() => {});
+    } catch (e) {}
+  });
+
+  // ─────────────────────────────────────────
+  // PLAYER DESTROY: Clean up last message reference
+  // ─────────────────────────────────────────
+  lavalink.on('playerDestroy', async (player) => {
+    if (player && player.lastMessage) {
+      try {
+        await player.lastMessage.delete().catch(() => {});
+        player.lastMessage = null;
+      } catch (e) {}
+    }
   });
 
   try {
