@@ -406,14 +406,22 @@ function renderJoinsLeavesPanel(guild, timeframeKey = '1d', author, clientUser) 
   const stats = db.getAnalyticsStats(guild.id, windowMs);
   const net = stats.joins - stats.leaves;
 
+  const titlePadded = 'MEMBER FLOW & TRAFFIC'.padStart(Math.floor((24 + 21) / 2), ' ').padEnd(24, ' ');
+  const boxText =
+    '```\n' +
+    '╭──────────────────────────╮\n' +
+    '│ ' + titlePadded + ' │\n' +
+    '├──────────────────────────┤\n' +
+    '│ Joins     : ' + String('+' + stats.joins.toLocaleString() + ' members').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Leaves    : ' + String('-' + stats.leaves.toLocaleString() + ' members').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Net Growth: ' + String((net >= 0 ? '+' : '') + net.toLocaleString() + ' members').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '╰──────────────────────────╯\n' +
+    '```';
+
   return createStyledEmbed({
     title: `📥 Member Flow & Traffic [${label}]`,
     subtitle: `Joins vs Leaves — ${guild.name}`,
-    fields: [
-      { name: '📥 Member Joins', value: `\`+${stats.joins.toLocaleString()}\``, inline: true },
-      { name: '📤 Member Leaves', value: `\`-${stats.leaves.toLocaleString()}\``, inline: true },
-      { name: '📈 Net Growth', value: `\`${net >= 0 ? '+' : ''}${net.toLocaleString()}\``, inline: true }
-    ],
+    description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
     requestedBy: author,
     clientUser
@@ -425,13 +433,21 @@ function renderTopCommandsPanel(guild, timeframeKey = '1d', author, clientUser) 
   const label = TIMEFRAME_NAMES[timeframeKey];
   const stats = db.getAnalyticsStats(guild.id, windowMs);
 
+  const titlePadded = 'COMMAND USAGE STATS'.padStart(Math.floor((24 + 19) / 2), ' ').padEnd(24, ' ');
+  const boxText =
+    '```\n' +
+    '╭──────────────────────────╮\n' +
+    '│ ' + titlePadded + ' │\n' +
+    '├──────────────────────────┤\n' +
+    '│ Executed  : ' + String(stats.commands.toLocaleString() + ' cmds').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Server    : ' + String(guild.name).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '╰──────────────────────────╯\n' +
+    '```';
+
   return createStyledEmbed({
     title: `⚡ Command Usage Analytics [${label}]`,
     subtitle: `Automation Metrics — ${guild.name}`,
-    fields: [
-      { name: '⚡ Commands Executed', value: `\`${stats.commands.toLocaleString()}\` commands`, inline: true },
-      { name: '🏰 Guild Name', value: `\`${guild.name}\``, inline: true }
-    ],
+    description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
     requestedBy: author,
     clientUser
@@ -442,15 +458,24 @@ function renderTicketStatsPanel(guild, timeframeKey = '1d', author, clientUser) 
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
   const stats = db.getAnalyticsStats(guild.id, windowMs);
+  const rate = stats.ticketsCreated > 0 ? Math.round((stats.ticketsClosed / stats.ticketsCreated) * 100) : 100;
+
+  const titlePadded = 'TICKET RESOLUTION STATS'.padStart(Math.floor((24 + 23) / 2), ' ').padEnd(24, ' ');
+  const boxText =
+    '```\n' +
+    '╭──────────────────────────╮\n' +
+    '│ ' + titlePadded + ' │\n' +
+    '├──────────────────────────┤\n' +
+    '│ Opened    : ' + String(stats.ticketsCreated.toLocaleString() + ' tickets').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Closed    : ' + String(stats.ticketsClosed.toLocaleString() + ' tickets').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Rate      : ' + String(rate + '% resolved').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '╰──────────────────────────╯\n' +
+    '```';
 
   return createStyledEmbed({
     title: `🎟️ Ticket Resolution Metrics [${label}]`,
     subtitle: `Support Stats — ${guild.name}`,
-    fields: [
-      { name: '🟢 Opened', value: `\`${stats.ticketsCreated.toLocaleString()}\``, inline: true },
-      { name: '🔴 Closed', value: `\`${stats.ticketsClosed.toLocaleString()}\``, inline: true },
-      { name: '⚖️ Resolution Rate', value: `\`${stats.ticketsCreated > 0 ? Math.round((stats.ticketsClosed / stats.ticketsCreated) * 100) : 100}%\``, inline: true }
-    ],
+    description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
     requestedBy: author,
     clientUser
