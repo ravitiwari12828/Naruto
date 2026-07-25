@@ -1594,15 +1594,6 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.editReply({ content: `${emojis.WARNING} You must be in a Voice Channel to play suggested songs!` }).catch(() => {});
     }
 
-    const map = {
-      'sug_bluebird': 'Naruto Shippuden OP 3 - Blue Bird',
-      'sug_silhouette': 'Naruto Shippuden OP 16 - Silhouette',
-      'sug_sadness': 'Naruto OST - Sadness and Sorrow',
-      'sug_heeriye': 'Heeriye Jasleen Royal Arijit Singh',
-      'sug_jagjit': 'Tere Baare Mein Jab Socha Jagjit Singh'
-    };
-
-    const query = map[val] || 'Naruto Blue Bird';
     const { getLavalink } = require('./utils/lavalink');
     const lavalink = getLavalink();
 
@@ -1618,9 +1609,31 @@ client.on('interactionCreate', async (interaction) => {
         await player.connect();
       }
 
-      let res = await player.search({ query, source: 'ytmsearch' }, interaction.user);
+      // Handle dynamic suggested tracks
+      if (val.startsWith('sug_dyn_')) {
+        const idx = parseInt(val.replace('sug_dyn_', ''));
+        const track = player?.suggestedTracks?.[idx];
+        if (track) {
+          await player.queue.add(track);
+          if (!player.playing && !player.paused) {
+            await player.play();
+          }
+          return interaction.editReply({ content: `✨ **Queued Suggested Track:** [${track.info.title}](${track.info.uri || 'https://spotify.com'})` }).catch(() => {});
+        }
+      }
+
+      const map = {
+        'sug_bluebird': 'Naruto Shippuden OP 3 - Blue Bird',
+        'sug_silhouette': 'Naruto Shippuden OP 16 - Silhouette',
+        'sug_sadness': 'Naruto OST - Sadness and Sorrow',
+        'sug_heeriye': 'Heeriye Jasleen Royal Arijit Singh',
+        'sug_jagjit': 'Tere Baare Mein Jab Socha Jagjit Singh'
+      };
+
+      const query = map[val] || 'Naruto Blue Bird';
+      let res = await player.search({ query, source: 'spsearch' }, interaction.user);
       if (!res || !res.tracks.length) {
-        res = await player.search({ query, source: 'ytsearch' }, interaction.user);
+        res = await player.search({ query, source: 'ytmsearch' }, interaction.user);
       }
       if (!res || !res.tracks.length) {
         return interaction.editReply({ content: `❌ Could not find track: **${query}**.` }).catch(() => {});
@@ -1633,7 +1646,7 @@ client.on('interactionCreate', async (interaction) => {
         await player.play();
       }
 
-      return interaction.editReply({ content: `✨ **Queued Suggested Track:** ${track.info.title}` }).catch(() => {});
+      return interaction.editReply({ content: `✨ **Queued Suggested Track:** [${track.info.title}](${track.info.uri || 'https://spotify.com'})` }).catch(() => {});
     } catch (e) {
       return interaction.editReply({ content: `❌ Failed to play suggested song: ${e.message}` }).catch(() => {});
     }

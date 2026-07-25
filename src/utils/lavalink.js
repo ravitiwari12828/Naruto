@@ -179,6 +179,24 @@ function initLavalink(client) {
   lavalink.on('trackStart', async (player, track) => {
     if (!player || !player.textChannelId) return;
     try {
+      // Dynamically fetch 5 recommended songs matching current track's artist/genre
+      const artist = track?.info?.author || '';
+      const title = track?.info?.title || '';
+      const searchQuery = `${artist} top hits song`.trim();
+
+      try {
+        let res = await player.search({ query: searchQuery, source: 'spsearch' }, client.user);
+        if (!res || !res.tracks || !res.tracks.length) {
+          res = await player.search({ query: searchQuery, source: 'ytmsearch' }, client.user);
+        }
+
+        if (res && res.tracks && res.tracks.length) {
+          player.suggestedTracks = res.tracks
+            .filter(t => t.info.identifier !== track?.info?.identifier)
+            .slice(0, 5);
+        }
+      } catch (e) {}
+
       const channel = client.channels.cache.get(player.textChannelId);
       if (channel) {
         const musicCmd = client.commands?.get('music');

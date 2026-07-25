@@ -193,16 +193,35 @@ function buildMusicActionRows(player = null) {
     new ButtonBuilder().setCustomId('music_lyrics').setEmoji('💬').setStyle(ButtonStyle.Secondary)
   );
 
-  const suggestedSelect = new StringSelectMenuBuilder()
-    .setCustomId('music_suggested_select')
-    .setPlaceholder('✨ Suggested songs...')
-    .addOptions([
+  let suggestedOptions = [];
+
+  if (player?.suggestedTracks && player.suggestedTracks.length) {
+    suggestedOptions = player.suggestedTracks.map((t, idx) => {
+      const label = t.info.title.length > 90 ? t.info.title.slice(0, 87) + '...' : t.info.title;
+      const desc = t.info.author ? (t.info.author.length > 90 ? t.info.author.slice(0, 87) + '...' : `by ${t.info.author}`) : 'Recommended Song';
+      return {
+        label,
+        value: `sug_dyn_${idx}`,
+        description: desc,
+        emoji: '✨'
+      };
+    });
+  }
+
+  if (!suggestedOptions.length) {
+    suggestedOptions = [
       { label: 'Naruto Shippuden OP 3 - Blue Bird', value: 'sug_bluebird', description: 'Recommended Naruto Anime OST', emoji: '🍥' },
       { label: 'Naruto Shippuden OP 16 - Silhouette', value: 'sug_silhouette', description: 'Recommended Naruto Anime OST', emoji: '🍥' },
       { label: 'Naruto OST - Sadness and Sorrow', value: 'sug_sadness', description: 'Recommended Naruto Emotional Track', emoji: '🍥' },
       { label: 'Heeriye - Jasleen Royal & Arijit Singh', value: 'sug_heeriye', description: 'Trending Acoustic Pop', emoji: '✨' },
       { label: 'Tere Baare Mein Jab Socha - Jagjit Singh', value: 'sug_jagjit', description: 'Trending Ghazal Classic', emoji: '✨' }
-    ]);
+    ];
+  }
+
+  const suggestedSelect = new StringSelectMenuBuilder()
+    .setCustomId('music_suggested_select')
+    .setPlaceholder('✨ Suggested songs...')
+    .addOptions(suggestedOptions);
 
   const row4 = new ActionRowBuilder().addComponents(suggestedSelect);
 
