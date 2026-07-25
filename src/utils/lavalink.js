@@ -96,6 +96,58 @@ function initLavalink(client) {
     } catch (e) {}
   });
 
+  // ─────────────────────────────────────────
+  // AUTOPLAY ENGINE: Automatically fetch & queue recommended songs
+  // ─────────────────────────────────────────
+  lavalink.on('trackEnd', async (player, track, reason) => {
+    if (!player) return;
+
+    // Check if Autoplay is enabled and queue is empty
+    if (player.autoplay && player.queue.tracks.length === 0) {
+      try {
+        console.log(`♾️ [Autoplay] Queue ended for guild ${player.guildId}. Searching related tracks for "${track?.info?.title}"...`);
+
+        // Search YouTube Music for related artist & genre tracks
+        const searchQuery = `${track?.info?.author || ''} ${track?.info?.title || ''} song`.trim();
+        let res = await player.search({ query: searchQuery, source: 'ytmsearch' }, client.user);
+        if (!res || !res.tracks.length) {
+          res = await player.search({ query: searchQuery, source: 'ytsearch' }, client.user);
+        }
+
+        if (res && res.tracks.length) {
+          // Filter out the exact same song
+          const nextTrack = res.tracks.find(t => t.info.identifier !== track?.info?.identifier) || res.tracks[0];
+          await player.queue.add(nextTrack);
+
+          const channel = client.channels.cache.get(player.textChannelId);
+          if (channel) {
+            channel.send(`♾️ **Autoplay:** Automatically playing recommended track **[${nextTrack.info.title}](${nextTrack.info.uri})**!`).catch(() => {});
+          }
+
+          await player.play();
+        }
+      } catch (err) {
+        console.error('[Autoplay Engine Error]', err.message || err);
+      }
+    }
+  });
+
+  // Automatically send Now Playing card when a new track starts
+  lavalink.on('trackStart', async (player, track) => {
+    if (!player || !player.textChannelId) return;
+    try {
+      const channel = client.channels.cache.get(player.textChannelId);
+      if (channel) {
+        const musicCmd = client.commands?.get('music');
+        if (musicCmd && musicCmd.buildMusicPlayerEmbed) {
+          const embed = musicCmd.buildMusicPlayerEmbed(track, player);
+          const rows = musicCmd.buildMusicActionRows(player);
+          await channel.send({ embeds: [embed], components: rows }).catch(() => {});
+        }
+      }
+    } catch (e) {}
+  });
+
   try {
     lavalink.init({ id: client.user.id, username: client.user.username });
   } catch (e) {}
