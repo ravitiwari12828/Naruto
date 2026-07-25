@@ -929,6 +929,53 @@ client.on('messageCreate', async (message) => {
 
   if (message.author.bot) return;
 
+  // ⚡ AUTOMATIC SPAM CONTROL (Timeout 2 Minutes on Fast Message Spamming)
+  if (message.guild && message.member) {
+    const antinukeCmd = client.commands.get('antinuke');
+    const antiConfig = antinukeCmd ? antinukeCmd.getOrCreateAntinuke(message.guild.id) : null;
+    const isOwnerOrWhitelisted = antiConfig ? (antinukeCmd.isUserWhitelistedForFeature(antiConfig, message.author.id, 'antiSpam') || message.author.id === message.guild.ownerId) : (message.author.id === message.guild.ownerId);
+
+    if (!isOwnerOrWhitelisted) {
+      if (!client.spamTracker) client.spamTracker = new Map();
+
+      const userKey = `${message.guild.id}:${message.author.id}`;
+      const now = Date.now();
+      let userLogs = client.spamTracker.get(userKey) || [];
+
+      // Filter message timestamps within last 4 seconds
+      userLogs = userLogs.filter(t => now - t < 4000);
+      userLogs.push(now);
+      client.spamTracker.set(userKey, userLogs);
+
+      // Trigger threshold: 5 messages in 4 seconds -> 2 Minute Timeout
+      if (userLogs.length >= 5) {
+        client.spamTracker.delete(userKey);
+
+        // Delete the spam message
+        await message.delete().catch(() => {});
+
+        try {
+          // Timeout member for 2 minutes (120,000 ms)
+          await message.member.timeout(2 * 60 * 1000, 'AntiSpam Protection: Fast message spamming');
+
+          const alertEmbed = createStyledEmbed({
+            title: `⚡ AntiSpam Protection Triggered`,
+            description:
+              `**Spammer:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
+              `**Action:** Timed out for **2 minutes** (120 seconds)\n` +
+              `**Reason:** Fast message spamming detected in <#${message.channel.id}>.`,
+            clientUser: client.user
+          });
+
+          await message.channel.send({ embeds: [alertEmbed] }).catch(() => {});
+        } catch (e) {
+          console.error('Failed to timeout spammer:', e.message);
+        }
+        return;
+      }
+    }
+  }
+
   // 🎟️ TICKET MESSAGE RECEIPT REACTION & ANONYMOUS STAFF MODE
   if (message.guild && message.channel.topic && message.channel.topic.includes('ticket|')) {
     // React to confirm message receipt for both user & staff
