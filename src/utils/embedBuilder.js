@@ -79,7 +79,7 @@ function createStyledEmbed({
     });
   }
 
-  if (showBanner) {
+  if (showBanner || bannerUrl) {
     let targetBanner = bannerUrl;
 
     if (!targetBanner && clientRef && clientRef.botBannerURL) {

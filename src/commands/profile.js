@@ -157,6 +157,7 @@ module.exports = {
         title: titles[invoked] || '🎌 Anime Profile Collection',
         description: `Here is a fresh dynamic **${invoked}** image fetched live! Type \`.${invoked}\` to get another one.`,
         bannerUrl: imageUrl,
+        showBanner: true,
         requestedBy: author,
         clientUser
       });
