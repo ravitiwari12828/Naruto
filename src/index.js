@@ -1617,8 +1617,10 @@ client.on('interactionCreate', async (interaction) => {
           await player.queue.add(track);
           if (!player.playing && !player.paused) {
             await player.play();
+            return interaction.editReply({ content: `✨ **Playing Suggested Track:** \`${track.info.title}\`` }).catch(() => {});
+          } else {
+            return interaction.editReply({ content: `✨ **Added to Queue:** \`${track.info.title}\` at position **#${player.queue.tracks.length}**.` }).catch(() => {});
           }
-          return interaction.editReply({ content: `✨ **Queued Suggested Track:** [${track.info.title}](${track.info.uri || 'https://spotify.com'})` }).catch(() => {});
         }
       }
 
@@ -1644,9 +1646,10 @@ client.on('interactionCreate', async (interaction) => {
 
       if (!player.playing && !player.paused) {
         await player.play();
+        return interaction.editReply({ content: `✨ **Playing Suggested Track:** \`${track.info.title}\`` }).catch(() => {});
+      } else {
+        return interaction.editReply({ content: `✨ **Added to Queue:** \`${track.info.title}\` at position **#${player.queue.tracks.length}**.` }).catch(() => {});
       }
-
-      return interaction.editReply({ content: `✨ **Queued Suggested Track:** [${track.info.title}](${track.info.uri || 'https://spotify.com'})` }).catch(() => {});
     } catch (e) {
       return interaction.editReply({ content: `❌ Failed to play suggested song: ${e.message}` }).catch(() => {});
     }
