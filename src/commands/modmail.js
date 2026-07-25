@@ -124,22 +124,22 @@ function buildModmailOverviewRow() {
     new ButtonBuilder()
       .setCustomId('mm_setup')
       .setLabel('Deploy Setup')
-      .setEmoji(emojis.OBJ_TOOLS)
+      .setEmoji('🛠️')
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('mm_active')
       .setLabel('Active Tickets')
-      .setEmoji(emojis.OBJ_MODMAIL)
+      .setEmoji('📬')
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('mm_transcripts')
       .setLabel('Transcripts')
-      .setEmoji(emojis.OBJ_TICKETS)
+      .setEmoji('📜')
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('mm_refresh')
       .setLabel('Refresh')
-      .setEmoji(emojis.OBJ_ZAP)
+      .setEmoji('⚡')
       .setStyle(ButtonStyle.Success)
   );
 }

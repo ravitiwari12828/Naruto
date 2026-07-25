@@ -120,27 +120,27 @@ function buildServerInfoRow1(activeTab = 'overview') {
     new ButtonBuilder()
       .setCustomId('sinfo_overview')
       .setLabel('Overview')
-      .setEmoji(emojis.OBJ_STATS || 'ℹ️')
+      .setEmoji('ℹ️')
       .setStyle(activeTab === 'overview' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_channels')
       .setLabel('Channels')
-      .setEmoji(emojis.OBJ_TOOLS || '📁')
+      .setEmoji('📁')
       .setStyle(activeTab === 'channels' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_emojis')
       .setLabel('Emojis')
-      .setEmoji(emojis.OBJ_REACTIONROLES || '🎨')
+      .setEmoji('🎨')
       .setStyle(activeTab === 'emojis' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_features')
       .setLabel('Features')
-      .setEmoji(emojis.OBJ_SHIELD || '🛡️')
+      .setEmoji('🛡️')
       .setStyle(activeTab === 'features' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_roles')
       .setLabel('Roles')
-      .setEmoji(emojis.OBJ_ROLES || '🎭')
+      .setEmoji('🎭')
       .setStyle(activeTab === 'roles' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 }
