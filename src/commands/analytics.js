@@ -456,9 +456,9 @@ module.exports = {
     if (invoked === 'lb' || invoked === 'leaderboard' || invoked === 'top') {
       if (['m', 'msg', 'msgs', 'chat', 'messages'].includes(arg0)) sub = 'messages';
       else if (['v', 'vc', 'voice', 'vct'].includes(arg0)) sub = 'voice';
-      else if (['i', 'inv', 'invs', 'invites'].includes(arg0)) sub = 'invites';
+      else if (['i', 'inv', 'invs', 'invites', 'dm', 'dms'].includes(arg0)) sub = 'invites';
       else if (['u', 'user', 'usr'].includes(arg0)) sub = 'user';
-      else sub = 'server';
+      else sub = 'messages';
     } else if (['lbm', 'topmessages', 'msgstats', 'messages', 'chat', 'topmsg', 'msgs', 'msg', 'topm'].includes(invoked)) {
       sub = 'messages';
     } else if (['lbvc', 'topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'vc', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct'].includes(invoked)) {

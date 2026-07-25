@@ -195,15 +195,11 @@ function getQuestPoolForLevel(level) {
 module.exports = {
   name: 'ninja',
   description: 'Naruto RPG commands: Ninja Profile, Jutsu activation, Chakra meditation, Quests & Leaderboards',
-  aliases: ['naruto', 'jutsu', 'rank', 'chakra', 'quest', 'lb', 'leaderboard', 'top'],
+  aliases: ['naruto', 'jutsu', 'chakra', 'quest'],
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
     let sub = args[0] ? args[0].toLowerCase() : 'profile';
-
-    if (['lb', 'leaderboard', 'top'].includes(invoked)) {
-      sub = 'lb';
-    }
 
     const targetUser = message.mentions.users.first() || message.author;
     const userData = db.getUser(targetUser.id);

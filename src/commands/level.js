@@ -129,7 +129,7 @@ module.exports = {
   description: 'Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status',
   aliases: [
     'levels', 'lvl', 'xp',
-    'leaderboard', 'rank', 'lb', 'perks', 'rewards'
+    'rank', 'perks', 'rewards'
   ],
   levelConfigs,
   getOrCreateLevelConfig,
@@ -141,7 +141,6 @@ module.exports = {
     let sub = args[0]?.toLowerCase();
 
     if (invoked === 'rank') sub = 'rank';
-    if (invoked === 'leaderboard' || invoked === 'lb') sub = 'leaderboard';
     if (invoked === 'perks' || invoked === 'rewards') sub = 'perks';
 
     const author = message.author;
