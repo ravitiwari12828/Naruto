@@ -1882,7 +1882,7 @@ client.on('interactionCreate', async (interaction) => {
   if (!interaction.isButton()) return;
 
   // MUSIC BUTTON CONTROLS
-  if (interaction.customId.startsWith('music_')) {
+  if (interaction.customId.startsWith('music_') || interaction.customId.startsWith('queue_')) {
     await interaction.deferReply({ flags: 64 }).catch(() => {});
     const action = interaction.customId;
     const { getLavalink } = require('./utils/lavalink');
