@@ -1585,6 +1585,60 @@ client.on('interactionCreate', async (interaction) => {
     }
   }
 
+  // 1.9 SUGGESTED SONGS SELECT MENU
+  if (interaction.isStringSelectMenu() && interaction.customId === 'music_suggested_select') {
+    await interaction.deferReply({ flags: 64 }).catch(() => {});
+    const val = interaction.values[0];
+    const voiceState = interaction.member?.voice;
+    if (!voiceState?.channel) {
+      return interaction.editReply({ content: `${emojis.WARNING} You must be in a Voice Channel to play suggested songs!` }).catch(() => {});
+    }
+
+    const map = {
+      'sug_bluebird': 'Naruto Shippuden OP 3 - Blue Bird',
+      'sug_silhouette': 'Naruto Shippuden OP 16 - Silhouette',
+      'sug_sadness': 'Naruto OST - Sadness and Sorrow',
+      'sug_heeriye': 'Heeriye Jasleen Royal Arijit Singh',
+      'sug_jagjit': 'Tere Baare Mein Jab Socha Jagjit Singh'
+    };
+
+    const query = map[val] || 'Naruto Blue Bird';
+    const { getLavalink } = require('./utils/lavalink');
+    const lavalink = getLavalink();
+
+    try {
+      let player = lavalink?.getPlayer(interaction.guild.id);
+      if (!player && lavalink) {
+        player = await lavalink.createPlayer({
+          guildId: interaction.guild.id,
+          voiceChannelId: voiceState.channel.id,
+          textChannelId: interaction.channel.id,
+          selfDeaf: true
+        });
+        await player.connect();
+      }
+
+      let res = await player.search({ query, source: 'ytmsearch' }, interaction.user);
+      if (!res || !res.tracks.length) {
+        res = await player.search({ query, source: 'ytsearch' }, interaction.user);
+      }
+      if (!res || !res.tracks.length) {
+        return interaction.editReply({ content: `❌ Could not find track: **${query}**.` }).catch(() => {});
+      }
+
+      const track = res.tracks[0];
+      await player.queue.add(track);
+
+      if (!player.playing && !player.paused) {
+        await player.play();
+      }
+
+      return interaction.editReply({ content: `✨ **Queued Suggested Track:** ${track.info.title}` }).catch(() => {});
+    } catch (e) {
+      return interaction.editReply({ content: `❌ Failed to play suggested song: ${e.message}` }).catch(() => {});
+    }
+  }
+
   // 2. AUDIO FILTER SELECT MENU
   if (interaction.isStringSelectMenu() && interaction.customId === 'music_filter_select') {
     await interaction.deferReply({ flags: 64 }).catch(() => {});

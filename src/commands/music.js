@@ -82,92 +82,57 @@ function buildMusicPlayerEmbed(track, player) {
   const title = track?.info?.title || 'Unknown Track';
   const author = track?.info?.author || 'Unknown Artist';
   const durationMs = track?.info?.duration || 240000;
-  const positionMs = player?.position || 0;
   const durationStr = formatDuration(durationMs);
-  const positionStr = formatDuration(positionMs);
   const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
   const volume = player?.volume || 100;
-  const isLoop = player?.repeatMode === 'track' ? 'Track' : player?.repeatMode === 'queue' ? 'Queue' : 'Off';
-  const isAutoplay = player?.autoplay ? 'ON' : 'OFF';
-  const queueLen = player?.queue?.tracks?.length || 0;
 
-  let reqUser = '*Server Member*';
+  let reqName = 'Member';
+  let reqAvatar = 'https://cdn.discordapp.com/embed/avatars/0.png';
   if (track?.requester) {
-    if (typeof track.requester === 'string') reqUser = `<@${track.requester}>`;
-    else if (track.requester.id) reqUser = `<@${track.requester.id}>`;
-    else if (track.requester.username) reqUser = `**${track.requester.username}**`;
+    if (typeof track.requester === 'object') {
+      reqName = track.requester.username || track.requester.displayName || 'Member';
+      if (typeof track.requester.displayAvatarURL === 'function') {
+        reqAvatar = track.requester.displayAvatarURL({ dynamic: true });
+      }
+    }
   }
 
-  // Progress Bar
-  const progressPercent = Math.min(1, Math.max(0, positionMs / (durationMs || 1)));
-  const totalBars = 12;
-  const filledBars = Math.round(progressPercent * totalBars);
-  const barStr = '▬'.repeat(Math.max(0, filledBars)) + '🔘' + '▬'.repeat(Math.max(0, totalBars - filledBars));
+  const engineName = track?.info?.sourceName ? (track.info.sourceName.charAt(0).toUpperCase() + track.info.sourceName.slice(1)) : 'Youtube';
 
   return new EmbedBuilder()
-    .setColor(0x00E5FF)
-    .setTitle(`🎵 Now Playing`)
-    .setDescription(`**[${title}](${track?.info?.uri || 'https://youtube.com'})**\nby **${author}**\n\n🕒 **Progress:** \`${positionStr} / ${durationStr}\`\n\`${barStr}\``)
+    .setColor(0xFF007F) // Vibrant Hot Pink / Magenta accent bar matching STELLAR BEATS!
+    .setAuthor({ name: '💿 Starting playing...', iconURL: 'https://i.imgur.com/8Q9Z9zG.png' })
+    .setDescription(`**[${title}](${track?.info?.uri || 'https://youtube.com'})**`)
     .addFields([
-      { name: '📊 Audio Details', value: `🔊 **Volume:** \`${volume}%\` • 🔁 **Loop:** \`${isLoop}\` • ♾️ **Autoplay:** \`${isAutoplay}\` • 🎵 **Queue:** \`${queueLen}\``, inline: false },
-      { name: '👤 Requested By', value: reqUser, inline: true }
+      { name: '👤 Author:', value: author, inline: true },
+      { name: '🔊 Volume:', value: `${volume}%`, inline: true },
+      { name: '🌐 Duration:', value: durationStr, inline: true }
     ])
-    .setThumbnail(artworkUrl)
-    .setFooter({ text: 'Naruto One Music Engine • High Fidelity Audio' })
+    .setImage(artworkUrl) // Full-width banner image matching STELLAR BEATS screenshot!
+    .setFooter({ text: `Engine: ${engineName} | Requested By ${reqName}`, iconURL: reqAvatar })
     .setTimestamp();
 }
 
 /**
- * Builds the Music Player action buttons & multi-filter dropdown matching Synn layout.
+ * Builds the exact STELLAR BEATS action buttons & multi-dropdown matching screenshot 100%.
  */
 function buildMusicActionRows(player = null) {
-  const isAutoplay = player?.autoplay || false;
-
-  const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
-  );
-
-  const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_clear').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
-  );
-
-  const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_autoplay').setEmoji('♾️').setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_add').setEmoji('❤️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_play').setEmoji('⭐').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_lyrics').setEmoji('💬').setStyle(ButtonStyle.Secondary)
-  );
-
-  const controlsSelect = new StringSelectMenuBuilder()
-    .setCustomId('music_controls_select')
-    .setPlaceholder('🎛️ Controls & Seek...')
+  const suggestedSelect = new StringSelectMenuBuilder()
+    .setCustomId('music_suggested_select')
+    .setPlaceholder('✨ Suggested songs...')
     .addOptions([
-      { label: 'Shuffle Queue', value: 'ctrl_shuffle', description: 'Randomize the order of songs', emoji: '🔀' },
-      { label: 'Loop: Off', value: 'ctrl_loop_off', description: 'No repeat', emoji: '➡️' },
-      { label: 'Loop: Track', value: 'ctrl_loop_track', description: 'Repeat current song', emoji: '🔂' },
-      { label: 'Loop: Queue', value: 'ctrl_loop_queue', description: 'Repeat entire queue', emoji: '🔁' },
-      { label: 'Autoplay: Toggle', value: 'ctrl_autoplay', description: 'Auto-play recommended songs when queue ends', emoji: '♾️' },
-      { label: 'Add to Favorites', value: 'ctrl_fav_add', description: 'Save current track to personal playlist', emoji: '❤️' },
-      { label: 'Play Favorites', value: 'ctrl_fav_play', description: 'Queue all your saved favorite tracks', emoji: '⭐' },
-      { label: 'Volume -20%', value: 'ctrl_voldown', description: 'Decrease volume by 20%', emoji: '🔉' },
-      { label: 'Volume +20%', value: 'ctrl_volup', description: 'Increase volume by 20%', emoji: '🔊' },
-      { label: 'Previous Track', value: 'ctrl_prev', description: 'Play previous track', emoji: '⏮️' },
-      { label: 'Pause / Resume', value: 'ctrl_pause', description: 'Toggle playback', emoji: '⏸️' },
-      { label: 'Skip Track', value: 'ctrl_skip', description: 'Skip to next track', emoji: '⏭️' },
-      { label: 'Stop Player', value: 'ctrl_stop', description: 'Stop music & clear queue', emoji: '⏹️' }
+      { label: 'Naruto Shippuden OP 3 - Blue Bird', value: 'sug_bluebird', description: 'Recommended Naruto Anime OST', emoji: '🍥' },
+      { label: 'Naruto Shippuden OP 16 - Silhouette', value: 'sug_silhouette', description: 'Recommended Naruto Anime OST', emoji: '🍥' },
+      { label: 'Naruto OST - Sadness and Sorrow', value: 'sug_sadness', description: 'Recommended Naruto Emotional Track', emoji: '🍥' },
+      { label: 'Heeriye - Jasleen Royal & Arijit Singh', value: 'sug_heeriye', description: 'Trending Acoustic Pop', emoji: '✨' },
+      { label: 'Tere Baare Mein Jab Socha - Jagjit Singh', value: 'sug_jagjit', description: 'Trending Ghazal Classic', emoji: '✨' }
     ]);
 
-  const row4 = new ActionRowBuilder().addComponents(controlsSelect);
+  const row1 = new ActionRowBuilder().addComponents(suggestedSelect);
 
   const filterSelect = new StringSelectMenuBuilder()
     .setCustomId('music_filter_select')
-    .setPlaceholder('▚ Select Audio Filters (Bass Boost, 8D, Nightcore...)...')
+    .setPlaceholder('✨ Select a music filter to apply...')
     .setMinValues(1)
     .setMaxValues(5)
     .addOptions([
@@ -175,14 +140,28 @@ function buildMusicActionRows(player = null) {
       { label: 'Bass Boost', value: 'filter_bassboost', description: 'Deep, rich low-frequency amplification', emoji: '🔊' },
       { label: '8D Audio', value: 'filter_8d', description: 'Immersive 360-degree spatial audio panning', emoji: '🎧' },
       { label: 'Nightcore', value: 'filter_nightcore', description: 'Upbeat tempo & increased vocal pitch', emoji: '🌙' },
-      { label: 'Vaporwave', value: 'filter_vaporwave', description: 'Slowed aesthetic retro synthwave vibe', emoji: '☁️' },
-      { label: 'Speed Up', value: 'filter_speedup', description: 'Increase speed while keeping the song clean', emoji: '⚡' },
-      { label: 'Slowed', value: 'filter_slowed', description: 'Slow down playback without crushing the mix', emoji: '🐢' },
-      { label: 'Karaoke', value: 'filter_karaoke', description: 'Reduce centered vocals for karaoke playback', emoji: '🎤' },
-      { label: 'Distort', value: 'filter_distort', description: 'Heavier, rougher effect for edits and memes', emoji: '💥' }
+      { label: 'Vaporwave', value: 'filter_vaporwave', description: 'Slowed aesthetic retro synthwave vibe', emoji: '☁️' }
     ]);
 
-  const row5 = new ActionRowBuilder().addComponents(filterSelect);
+  const row2 = new ActionRowBuilder().addComponents(filterSelect);
+
+  const row3 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔄').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_prev').setEmoji('◀').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_skip').setEmoji('▶').setStyle(ButtonStyle.Secondary)
+  );
+
+  const row4 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_fav_add').setEmoji('🤍').setStyle(ButtonStyle.Secondary)
+  );
+
+  const row5 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_voldown').setEmoji('🔉').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary)
+  );
 
   return [row1, row2, row3, row4, row5];
 }
