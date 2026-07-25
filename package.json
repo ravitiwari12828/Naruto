@@ -7,7 +7,6 @@
     "start": "node index.js",
     "dev": "node index.js"
   },
-
   "keywords": [
     "discord",
     "discord-bot",
@@ -19,6 +18,7 @@
   "author": "Antigravity",
   "license": "MIT",
   "dependencies": {
+    "@discordjs/voice": "^0.19.2",
     "chalk": "^4.1.2",
     "discord.js": "^14.14.1",
     "dotenv": "^16.4.5",

@@ -286,26 +286,67 @@ module.exports = {
     // 3. JOIN / DISCONNECT COMMANDS
     if (['join', 'connect'].includes(invoked)) {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} Join a voice channel first!`);
-      if (lavalink) {
-        let player = lavalink.getPlayer(guildId);
-        if (!player) {
-          player = await lavalink.createPlayer({
-            guildId,
-            voiceChannelId: voiceState.channel.id,
-            textChannelId: message.channel.id,
+
+      const channel = voiceState.channel;
+      const permissions = channel.permissionsFor(message.guild.members.me);
+      if (permissions && !permissions.has(PermissionsBitField.Flags.Connect)) {
+        return message.reply(`⚠️ I don't have permission to **CONNECT** to <#${channel.id}>!`);
+      }
+      if (permissions && !permissions.has(PermissionsBitField.Flags.Speak)) {
+        return message.reply(`⚠️ I don't have permission to **SPEAK** in <#${channel.id}>!`);
+      }
+
+      try {
+        let connected = false;
+        if (lavalink) {
+          try {
+            let player = lavalink.getPlayer(guildId);
+            if (!player) {
+              player = await lavalink.createPlayer({
+                guildId,
+                voiceChannelId: channel.id,
+                textChannelId: message.channel.id,
+                selfDeaf: true
+              });
+            } else {
+              player.voiceChannelId = channel.id;
+              player.textChannelId = message.channel.id;
+            }
+            await player.connect();
+            connected = true;
+          } catch (e) {
+            console.warn('[Lavalink Join Notice] Falling back to native voice connection:', e.message);
+          }
+        }
+
+        if (!connected) {
+          const { joinVoiceChannel } = require('@discordjs/voice');
+          joinVoiceChannel({
+            channelId: channel.id,
+            guildId: guildId,
+            adapterCreator: message.guild.voiceAdapterCreator,
             selfDeaf: true
           });
-          await player.connect();
         }
+
+        return message.reply(`🔊 **Joined Voice Channel:** Successfully connected to **<#${channel.id}>**!`);
+      } catch (err) {
+        console.error('[Music Join Error]', err);
+        return message.reply(`❌ Failed to join **<#${channel.id}>**: ${err.message || 'Voice Connection Error'}`);
       }
-      return message.reply(`✅ **Joined:** Successfully connected to **${voiceState.channel.name}**! Ready to play music.`);
     }
 
     if (['dc', 'leave'].includes(invoked)) {
       if (lavalink) {
         const player = lavalink.getPlayer(guildId);
-        if (player) await player.destroy();
+        if (player) await player.destroy().catch(() => {});
       }
+      try {
+        const { getVoiceConnection } = require('@discordjs/voice');
+        const conn = getVoiceConnection(guildId);
+        if (conn) conn.destroy();
+      } catch (e) {}
+
       return message.reply(`👋 Disconnected from voice channel.`);
     }
 
