@@ -641,6 +641,27 @@ module.exports = {
       return;
     }
 
+    if (sub === 'user') {
+      const mentionOrId = (invoked === 'lb' || invoked === 'leaderboard') ? args[1] : args[0];
+      const targetUser = message.mentions.users.first() || (mentionOrId ? await message.client.users.fetch(mentionOrId).catch(() => null) : null) || author;
+      let activeCat = 'all';
+      let activeTf = 'lifetime';
+      let embed = renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser);
+      const msg = await message.channel.send({ embeds: [embed], components: [buildUserMetricRow(activeCat), buildTimeframeRow(activeTf, 'utf_')] });
+      const collector = msg.createMessageComponentCollector({ time: 300000 });
+      collector.on('collect', async (i) => {
+        await i.deferUpdate().catch(() => {});
+        if (i.customId.startsWith('ucat_')) activeCat = i.customId.replace('ucat_', '');
+        else if (i.customId.startsWith('utf_') || i.customId.startsWith('tf_')) activeTf = i.customId.replace(/^(utf_|tf_)/, '');
+        await i.message.edit({
+          embeds: [renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser)],
+          components: [buildUserMetricRow(activeCat), buildTimeframeRow(activeTf, 'utf_')]
+        }).catch(() => {});
+      });
+      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
+      return;
+    }
+
     if (sub === 'joins' || sub === 'leaves') {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || '1d') : (arg0 || '1d');
       if (!WINDOWS[activeKey]) activeKey = '1d';
