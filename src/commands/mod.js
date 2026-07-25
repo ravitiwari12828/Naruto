@@ -85,9 +85,11 @@ module.exports = {
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return botMissingPerms(message, 'Ban Members');
 
-      const target = message.mentions.members?.first();
-      if (!target) return message.reply(`${emojis.WARNING} Please mention a user to ban.\nUsage: \`.ban @user [reason]\``);
-      if (!target.bannable) return message.reply(`${emojis.WARNING} I cannot ban that user — they may have higher permissions.`);
+      const targetId = message.mentions.users.first()?.id || (args[0] && args[0].replace(/[<@!>]/g, '').match(/^\d{17,20}$/) ? args[0].replace(/[<@!>]/g, '') : null);
+      if (!targetId) return message.reply(`${emojis.WARNING} Please mention a user or provide a valid User ID.\nUsage: \`.ban @user [reason]\` or \`.ban <userID> [reason]\``);
+
+      const targetMember = await guild.members.fetch(targetId).catch(() => null);
+      if (targetMember && !targetMember.bannable) return message.reply(`${emojis.WARNING} I cannot ban that user — they may have higher permissions.`);
 
       const modLimitsCmd = message.client.commands.get('modlimits');
       if (modLimitsCmd && modLimitsCmd.checkAndIncrementModAction) {
@@ -98,12 +100,18 @@ module.exports = {
       }
 
       const reason = args.slice(1).join(' ') || 'No reason provided.';
-      await target.ban({ reason, deleteMessageSeconds: 86400 });
+      const targetUser = targetMember ? targetMember.user : await message.client.users.fetch(targetId).catch(() => ({ tag: `User ID: ${targetId}` }));
+
+      try {
+        await guild.bans.create(targetId, { reason, deleteMessageSeconds: 86400 });
+      } catch (err) {
+        return message.reply(`${emojis.WARNING} Failed to ban user: ${err.message}`);
+      }
 
       const cData = recordAndLogCase(guild, {
         action: 'BAN',
-        targetId: target.id,
-        targetTag: target.user.tag,
+        targetId: targetId,
+        targetTag: targetUser.tag || `User ID: ${targetId}`,
         executorId: message.author.id,
         executorTag: message.author.tag,
         reason
@@ -111,7 +119,7 @@ module.exports = {
 
       const embed = createStyledEmbed({
         title: `🔨 User Banned [Case #${cData.caseId}]`,
-        description: `**${target.user.tag}** has been banished from the village!\n\n**Case ID:** \`#${cData.caseId}\`\n**Reason:** ${reason}`,
+        description: `**<@${targetId}>** (\`${targetUser.tag || targetId}\`) has been banished from the village!\n\n**Case ID:** \`#${cData.caseId}\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
       });
@@ -135,9 +143,11 @@ module.exports = {
       }
 
       const reason = args.slice(1).join(' ') || 'No reason provided.';
-      await guild.members.ban(userId, { reason }).catch(err => {
+      try {
+        await guild.bans.create(userId, { reason });
+      } catch (err) {
         return message.reply(`${emojis.WARNING} Failed to ban user ID \`${userId}\`: ${err.message}`);
-      });
+      }
 
       const cData = recordAndLogCase(guild, {
         action: 'HACKBAN',
@@ -162,12 +172,19 @@ module.exports = {
       if (!author.permissions.has(PermissionsBitField.Flags.KickMembers)) return missingPerms(message, 'Kick Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.KickMembers)) return botMissingPerms(message, 'Kick Members');
 
-      const target = message.mentions.members?.first();
-      if (!target) return message.reply(`${emojis.WARNING} Usage: \`.kick @user [reason]\``);
-      if (!target.kickable) return message.reply(`${emojis.WARNING} I cannot kick that user.`);
+      const targetId = message.mentions.users.first()?.id || (args[0] && args[0].replace(/[<@!>]/g, '').match(/^\d{17,20}$/) ? args[0].replace(/[<@!>]/g, '') : null);
+      if (!targetId) return message.reply(`${emojis.WARNING} Usage: \`.kick @user [reason]\``);
+
+      const target = await guild.members.fetch(targetId).catch(() => null);
+      if (!target) return message.reply(`${emojis.WARNING} Member not found in this server.`);
+      if (!target.kickable) return message.reply(`${emojis.WARNING} I cannot kick that user — they may have higher permissions.`);
 
       const reason = args.slice(1).join(' ') || 'No reason provided.';
-      await target.kick(reason);
+      try {
+        await target.kick(reason);
+      } catch (err) {
+        return message.reply(`${emojis.WARNING} Failed to kick member: ${err.message}`);
+      }
 
       const cData = recordAndLogCase(guild, {
         action: 'KICK',
@@ -192,8 +209,11 @@ module.exports = {
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Timeout Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return botMissingPerms(message, 'Timeout Members');
 
-      const target = message.mentions.members?.first();
-      if (!target) return message.reply(`${emojis.WARNING} Usage: \`.mute @user [duration: 1m/1h/1d] [reason]\``);
+      const targetId = message.mentions.users.first()?.id || (args[0] && args[0].replace(/[<@!>]/g, '').match(/^\d{17,20}$/) ? args[0].replace(/[<@!>]/g, '') : null);
+      if (!targetId) return message.reply(`${emojis.WARNING} Usage: \`.mute @user [duration: 1m/1h/1d] [reason]\``);
+
+      const target = await guild.members.fetch(targetId).catch(() => null);
+      if (!target) return message.reply(`${emojis.WARNING} Member not found in this server.`);
 
       const timeArg = args[1];
       const timeMap = { s: 1000, m: 60000, h: 3600000, d: 86400000 };
@@ -201,7 +221,11 @@ module.exports = {
       const duration = match ? parseInt(match[1]) * timeMap[match[2].toLowerCase()] : 600000;
       const reason = (match ? args.slice(2) : args.slice(1)).join(' ') || 'No reason provided.';
 
-      await target.timeout(duration, reason);
+      try {
+        await target.timeout(duration, reason);
+      } catch (err) {
+        return message.reply(`${emojis.WARNING} Failed to mute member: ${err.message}`);
+      }
 
       const cData = recordAndLogCase(guild, {
         action: 'MUTE',
@@ -225,10 +249,17 @@ module.exports = {
     if (invoked === 'unmute') {
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Timeout Members');
 
-      const target = message.mentions.members?.first();
-      if (!target) return message.reply(`${emojis.WARNING} Usage: \`.unmute @user\``);
+      const targetId = message.mentions.users.first()?.id || (args[0] && args[0].replace(/[<@!>]/g, '').match(/^\d{17,20}$/) ? args[0].replace(/[<@!>]/g, '') : null);
+      if (!targetId) return message.reply(`${emojis.WARNING} Usage: \`.unmute @user\``);
 
-      await target.timeout(null);
+      const target = await guild.members.fetch(targetId).catch(() => null);
+      if (!target) return message.reply(`${emojis.WARNING} Member not found in this server.`);
+
+      try {
+        await target.timeout(null);
+      } catch (err) {
+        return message.reply(`${emojis.WARNING} Failed to unmute member: ${err.message}`);
+      }
 
       const cData = recordAndLogCase(guild, {
         action: 'UNMUTE',
