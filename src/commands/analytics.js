@@ -145,48 +145,51 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', author
   const bots = guild.members.cache.filter(m => m.user.bot).size;
   const humans = guild.memberCount - bots;
 
-  let membersText = '';
+  let topChattersBlock = '';
   if (topMembers.length === 0) {
-    membersText = '`No activity recorded.`';
+    topChattersBlock = 'No recorded chat activity yet.';
   } else {
-    membersText = topMembers.map((item, idx) => {
-      let icon = idx === 0 ? `${emojis.OWNER_CROWN || '👑'} **#1**` : idx === 1 ? `${emojis.STAR || '⭐'} **#2**` : `${emojis.SHINOBI || '🍥'} **#3**`;
-      return `${icon} <@${item.userId}> • \`${item.total.toLocaleString()}\` msgs`;
+    topChattersBlock = topMembers.map((item, idx) => {
+      const member = guild.members.cache.get(item.userId);
+      const name = member ? member.user.username : `User ${item.userId}`;
+      return `#${idx + 1} ${name} — ${item.total.toLocaleString()} msgs`;
     }).join('\n');
   }
 
   const textChannels = guild.channels.cache.filter(c => c.isTextBased()).size;
   const voiceChannels = guild.channels.cache.filter(c => c.isVoiceBased()).size;
 
+  const description =
+    `Welcome **${author.username}**! Below is the executive **Server Analytics** dashboard.\n\n` +
+    `**${emojis.ROLES || '👥'} Member Metrics**\n` +
+    `\`\`\`\n` +
+    `Total Members : ${guild.memberCount.toLocaleString()}\n` +
+    `Human Users   : ${humans.toLocaleString()}\n` +
+    `Server Bots   : ${bots.toLocaleString()}\n` +
+    `\`\`\`\n\n` +
+    `**${emojis.MESSAGES || '💬'} Activity Overview (${label})**\n` +
+    `\`\`\`\n` +
+    `Messages Sent : ${stats.messages.toLocaleString()} msgs\n` +
+    `Voice Time    : ${formatDuration(stats.voiceSeconds)}\n` +
+    `Joins Tracked : ${stats.invites.toLocaleString()} members\n` +
+    `\`\`\`\n\n` +
+    `**📌 Guild Channels & Roles**\n` +
+    `\`\`\`\n` +
+    `Text Channels : ${textChannels}\n` +
+    `Voice Channels: ${voiceChannels}\n` +
+    `Server Roles  : ${guild.roles.cache.size}\n` +
+    `\`\`\`\n\n` +
+    `**🏆 Top Active Chatters (${label})**\n` +
+    `\`\`\`\n` +
+    `${topChattersBlock}\n` +
+    `\`\`\``;
+
   return createStyledEmbed({
     title: `${emojis.STATS || '📊'} ${guild.name} Analytics`,
     subtitle: `Server Performance Dashboard (${label})`,
-    fields: [
-      {
-        name: `${emojis.ROLES || '👥'} Member Metrics`,
-        value: `\`Total: ${guild.memberCount.toLocaleString()}\` • \`Humans: ${humans.toLocaleString()}\` • \`Bots: ${bots.toLocaleString()}\``,
-        inline: false
-      },
-      {
-        name: `${emojis.MESSAGES || '💬'} Activity Overview (${label})`,
-        value: `• **Messages:** \`${stats.messages.toLocaleString()}\` msgs\n` +
-               `• **Voice Time:** \`${formatDuration(stats.voiceSeconds)}\` duration\n` +
-               `• **Joins Tracked:** \`${stats.invites.toLocaleString()}\` members`,
-        inline: false
-      },
-      {
-        name: `📌 Guild Channels & Roles`,
-        value: `\`${textChannels} Text\` • \`${voiceChannels} Voice\` • \`${guild.roles.cache.size} Roles\``,
-        inline: false
-      },
-      {
-        name: `🏆 Top Active Chatters (${label})`,
-        value: membersText,
-        inline: false
-      }
-    ],
+    description,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Timeframe: ${label} • Live Sync • Naruto One`,
+    footerText: `Timeframe: ${label} • Live Sync • Naruto Executive`,
     requestedBy: author,
     clientUser
   });
