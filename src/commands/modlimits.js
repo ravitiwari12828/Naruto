@@ -155,23 +155,29 @@ module.exports = {
     }
 
     // Default: View Mod Limits & Usage Status Dashboard
+    const description =
+      `Welcome **${author.username}**! Below is your **Daily Moderation Action Quota Grid**.\n\n` +
+      `**🛡️ Quota Protection Limits (Per Moderator / 24hrs)**\n` +
+      `\`\`\`\n` +
+      `Protection Status : ${config.enabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+      `Ban Action Quota  : ${config.limits.ban} / 24hrs\n` +
+      `Kick Action Quota : ${config.limits.kick} / 24hrs\n` +
+      `Mute Action Quota : ${config.limits.mute} / 24hrs\n` +
+      `Purge Action Quota: ${config.limits.purge} / 24hrs\n` +
+      `Channel Delete    : ${config.limits.channelDelete} / 24hrs\n` +
+      `\`\`\`\n\n` +
+      `**⚡ Commands to Manage**\n` +
+      `\`\`\`\n` +
+      `.modlimits set <action> <limit>\n` +
+      `.modlimits reset @moderator\n` +
+      `.modlimits bypass @user\n` +
+      `.modlimits enable | disable\n` +
+      `\`\`\``;
+
     const embed = createStyledEmbed({
       title: `🛡️ Daily Moderation Action Quotas & Rate Limits`,
-      subtitle: `${emojis.SHIELD} Anti-Rogue Moderator Protection Grid`,
-      fields: [
-        { name: '⚙️ Protection Status', value: config.enabled ? '`ENABLED ✅`' : '`DISABLED ⚠️`', inline: true },
-        { name: '🔨 Ban Quota', value: `\`${config.limits.ban} / 24hrs\``, inline: true },
-        { name: '👢 Kick Quota', value: `\`${config.limits.kick} / 24hrs\``, inline: true },
-        { name: '🔇 Mute Quota', value: `\`${config.limits.mute} / 24hrs\``, inline: true },
-        { name: '🧹 Purge Quota', value: `\`${config.limits.purge} / 24hrs\``, inline: true },
-        { name: '🗑️ Channel Delete Quota', value: `\`${config.limits.channelDelete} / 24hrs\``, inline: true }
-      ],
-      description:
-        `**Commands:**\n` +
-        `\`.modlimits set <action> <limit>\` — Set daily action limit (ban, kick, mute, purge)\n` +
-        `\`.modlimits reset @moderator\` — Reset moderator action count\n` +
-        `\`.modlimits bypass @user\` — Grant quota bypass\n` +
-        `\`.modlimits enable | disable\` — Enable or disable rate limits`,
+      subtitle: `Anti-Rogue Moderator Protection Grid`,
+      description,
       requestedBy: author,
       clientUser
     });

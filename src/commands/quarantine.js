@@ -129,22 +129,26 @@ module.exports = {
     }
 
     // Default Status Overview Card
+    const description =
+      `Welcome **${author.username}**! Below is your **New Joiner Security Probation Grid**.\n\n` +
+      `**☣️ Quarantine Probation Status**\n` +
+      `\`\`\`\n` +
+      `System Status    : ${config.enabled ? 'ENABLED [ACTIVE]' : 'DISABLED [OFF]'}\n` +
+      `Probation Window : ${config.days} Days\n` +
+      `Enforced Limits  : Ban / Kick / Mass Ping / Channel Edit Lock\n` +
+      `\`\`\`\n\n` +
+      `**⚡ Commands to Manage**\n` +
+      `\`\`\`\n` +
+      `.quarantine enable\n` +
+      `.quarantine disable\n` +
+      `.quarantine days <1-90>\n` +
+      `.quarantine bypass @user/@role\n` +
+      `\`\`\``;
+
     const embed = createStyledEmbed({
-      title: `${emojis.SHIELD} 15-Day New Joiner Security Probation Grid`,
-      subtitle: `Konoha Anti-Rogue Joiner Protection`,
-      fields: [
-        { name: `${emojis.GEAR} Status`, value: config.enabled ? `\`ENABLED\` ${emojis.ENABLED}` : `\`DISABLED\` ${emojis.DISABLED}`, inline: true },
-        { name: `${emojis.STATS_NEW} Probation Period`, value: `\`${config.days} Days\``, inline: true },
-        { name: `${emojis.SHIELD} Enforced Restrictions`, value: `• Ban / Kick Commands\n• @everyone & @here Mentions\n• Mass Channel Deletions\n• Mass Role Modifications`, inline: false }
-      ],
-      description:
-        `**${emojis.TOOLS} Probation Commands**\n` +
-        `\`\`\`\n` +
-        `.quarantine days <number>\n` +
-        `.quarantine bypass @user\n` +
-        `.quarantine enable\n` +
-        `.quarantine disable\n` +
-        `\`\`\``,
+      title: `☣️ 15-Day New Joiner Security Probation Grid`,
+      subtitle: `Shinobi Anti-Rogue Joiner Protection`,
+      description,
       requestedBy: author,
       clientUser
     });

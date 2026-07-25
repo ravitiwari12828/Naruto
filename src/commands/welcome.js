@@ -82,28 +82,36 @@ function buildWelcomeCard(config, member) {
 }
 
 function buildWelcomeConfigPanel(config, guild, author, clientUser) {
-  const chanStr = config.channelId ? `<#${config.channelId}>` : '`Not set`';
-  const boostChanStr = config.boostChannelId ? `<#${config.boostChannelId}>` : '`Not set`';
-  const imgStr = config.imageUrl ? `\`Custom Image URL\`` : (config.useAvatarThumbnail ? `\`Avatar Thumbnail\`` : '`None`');
+  const chanName = config.channelId ? `#${guild.channels.cache.get(config.channelId)?.name || config.channelId}` : 'Not set';
+  const boostChanName = config.boostChannelId ? `#${guild.channels.cache.get(config.boostChannelId)?.name || config.boostChannelId}` : 'Not set';
+  const imgStr = config.imageUrl ? 'Custom Image URL' : (config.useAvatarThumbnail ? 'Avatar Thumbnail' : 'None');
+
+  const description =
+    `Welcome **${author.username}**! Below is your server **Welcome & Greetings Configuration**.\n\n` +
+    `**👋 Welcome System Status**\n` +
+    `\`\`\`\n` +
+    `Welcome Module  : ${config.enabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+    `Welcome Channel : ${chanName}\n` +
+    `Card Image Mode : ${imgStr}\n` +
+    `Join DM Module  : ${config.joinDmEnabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+    `Leave DM Module : ${config.leaveDmEnabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+    `Boost Module    : ${config.boostEnabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'} (${boostChanName})\n` +
+    `\`\`\`\n\n` +
+    `**💬 Welcome Message Template**\n` +
+    `> *"${config.headerText}"*\n\n` +
+    `**⚡ Quick Commands**\n` +
+    `\`\`\`\n` +
+    `.welcome setup <#channel> [avatar/imageURL] [text]\n` +
+    `.welcometest   - Test welcome preview\n` +
+    `.welcomereset  - Reset welcome settings\n` +
+    `.joindm <text> - Configure Join DM\n` +
+    `.leavedm <text>- Configure Leave DM\n` +
+    `\`\`\``;
 
   const embed = createStyledEmbed({
-    title: `${emojis.WELCOME || '👋'} Welcome System Dashboard`,
-    subtitle: `${guild.name} Welcome & Greetings Configuration`,
-    description:
-      `**Status:** ${config.enabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`}\n` +
-      `**Welcome Channel:** ${chanStr}\n` +
-      `**Card Image Mode:** ${imgStr}\n` +
-      `**Join DM:** ${config.joinDmEnabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`}\n` +
-      `**Leave DM:** ${config.leaveDmEnabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`}\n` +
-      `**Boost Msg:** ${config.boostEnabled ? `\`Enabled\` ${emojis.ENABLED}` : `\`Disabled\` ${emojis.DISABLED}`} (${boostChanStr})\n\n` +
-      `**Welcome Message:**\n> *${config.headerText}*\n\n` +
-      `**Join DM Message:**\n> *${config.joinDmText || 'Not set'}*\n\n` +
-      `**Leave DM Message:**\n> *${config.leaveDmText || 'Not set'}*\n\n` +
-      `**Server Boost Message:**\n> *${config.boostText || 'Not set'}*\n\n` +
-      `**Quick Commands:**\n` +
-      `• \`.welcome setup <#channel> [avatar/imageURL] [text]\`\n` +
-      `• \`.welcometest\` — Test welcome message preview\n` +
-      `• \`.welcomereset\` — Reset welcome settings`,
+    title: `👋 Welcome System Dashboard`,
+    subtitle: `${guild.name} Greetings Configuration`,
+    description,
     requestedBy: author,
     clientUser
   });

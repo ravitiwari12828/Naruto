@@ -40,19 +40,24 @@ module.exports = {
       const isAntiNukeOn = antinukeData?.enabled ?? true;
       const isAutoModOn = automodData?.enabled ?? true;
       const isPanicOn = antinukeData?.panicmode ?? false;
+      const secLogChan = guild.channels.cache.find(c => c.name.includes('security-logs'));
+
+      const description =
+        `Welcome **${author.username}**! Configure and lock down your server security using the interactive buttons below.\n\n` +
+        `**🛡️ Server Protection Overview**\n` +
+        `\`\`\`\n` +
+        `AntiNuke Shield    : ${isAntiNukeOn ? 'ENABLED [21 Filters]' : 'DISABLED [OFF]'}\n` +
+        `Panic Mode        : ${isPanicOn ? 'ACTIVE [LOCKDOWN]' : 'INACTIVE [NORMAL]'}\n` +
+        `AutoMod & AntiBot : ${isAutoModOn ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+        `Security Log Chan : ${secLogChan ? '#' + secLogChan.name : 'NOT CREATED'}\n` +
+        `\`\`\`\n\n` +
+        (statusText ? `> 💡 **Latest Action:** ${statusText}\n\n` : '') +
+        `*Click any button below to trigger immediate server protection setup!*`;
 
       return createStyledEmbed({
         title: `🛡️ One-Click Server Security & Protection Setup`,
-        subtitle: `${emojis.SHIELD} Konoha Defense Grid Wizard`,
-        description:
-          `Welcome **${author.username}**! Configure and lock down your server security in seconds using the interactive buttons below.\n\n` +
-          `**Current Protection Status:**\n` +
-          `• 🛡️ AntiNuke Shield: ${isAntiNukeOn ? '`ENABLED ✅` (21 Filters Active)' : '`DISABLED ⚠️`'}\n` +
-          `• 🚨 Panic Mode: ${isPanicOn ? '`ACTIVE 🚨` (High Lockdown)' : '`INACTIVE 🟢`'}\n` +
-          `• 🍊 AutoMod & AntiBot: ${isAutoModOn ? '`ENABLED ✅` (Filters Active)' : '`DISABLED ⚠️`'}\n` +
-          `• 📜 Security Audit Channel: ${guild.channels.cache.find(c => c.name.includes('security-logs')) ? '`CONFIGURED 📜`' : '`NOT CREATED`'}\n\n` +
-          (statusText ? `> 💡 **Latest Action:** ${statusText}\n\n` : '') +
-          `*Click any button below to trigger immediate server protection setup!*`,
+        subtitle: `Shinobi Defense Grid Wizard`,
+        description,
         requestedBy: author,
         clientUser
       });

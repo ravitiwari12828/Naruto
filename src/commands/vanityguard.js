@@ -100,18 +100,26 @@ module.exports = {
     }
 
     // DEFAULT: STATUS DASHBOARD
+    const description =
+      `Welcome **${author.username}**! Below is your server **VanityGuard Anti-Theft Status**.\n\n` +
+      `**🌐 Vanity Protection Status**\n` +
+      `\`\`\`\n` +
+      `Guard Status           : ${config.enabled ? 'ENABLED [ACTIVE]' : 'DISABLED [OFF]'}\n` +
+      `Current Server Vanity  : ${guild.vanityURLCode ? 'discord.gg/' + guild.vanityURLCode : 'No Vanity Set'}\n` +
+      `Locked Protection Code : ${config.protectedVanity ? 'discord.gg/' + config.protectedVanity : 'Not Locked'}\n` +
+      `Recovery Latency       : < 50ms (Sub-millisecond Reversion)\n` +
+      `\`\`\`\n\n` +
+      `**⚡ Commands to Manage**\n` +
+      `\`\`\`\n` +
+      `.vanityguard enable\n` +
+      `.vanityguard disable\n` +
+      `.vanityguard set <code>\n` +
+      `\`\`\``;
+
     const embed = createStyledEmbed({
       title: `🌐 VanityGuard Protection Dashboard`,
       subtitle: `Realtime Server Vanity URL Anti-Theft Guard`,
-      fields: [
-        { name: '🛡️ Guard Status', value: config.enabled ? `\`ENABLED (Active)\`` : `\`DISABLED\``, inline: true },
-        { name: '🌐 Current Server Vanity', value: guild.vanityURLCode ? `\`discord.gg/${guild.vanityURLCode}\`` : `\`No Vanity Set\``, inline: true },
-        { name: '📌 Locked Vanity Code', value: config.protectedVanity ? `\`discord.gg/${config.protectedVanity}\`` : `\`Not Locked (Run .vanityguard set <code\>)\``, inline: true },
-        { name: '⚡ Recovery Latency', value: `\`< 50ms\` (Sub-millisecond Reversion & Auto-Claim)`, inline: false },
-        { name: '⛓️ Anti-Theft Penalty', value: `Rogue edits trigger **10-Day Quarantine Jail**, role strip & zero-access channel lockout`, inline: false },
-        { name: '💡 Commands', value: `• \`.vanityguard set <code\>\` — Lock custom vanity URL code\n• \`.vanityguard enable\` / \`.vanityguard disable\`\n• \`.vanityguard\` — View status dashboard`, inline: false }
-      ],
-      thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+      description,
       requestedBy: author,
       clientUser
     });

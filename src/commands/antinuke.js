@@ -426,22 +426,29 @@ module.exports = {
           jg.minAccountAgeDays = parseInt(args[2]);
         }
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`🚪 **JoinGate Account Age Gate** is now **${jg.antiAccountAge ? 'ENABLED' : 'DISABLED'}** (Min Age: **${jg.minAccountAgeDays} days**).`);
       }
+
+      const description =
+        `Welcome **${author.username}**! Below are your **Join Gate Security Controls**.\n\n` +
+        `**🚪 Join Gate Status**\n` +
+        `\`\`\`\n` +
+        `Bot Additions Protection: ${jg.antiBotAdd ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+        `Unverified Bot Gate     : ${jg.antiUnverifiedBot ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+        `No Avatar Gate          : ${jg.antiNoAvatar ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+        `Advertising Name Gate   : ${jg.antiAdvertisingName ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+        `Minimum Account Age     : ${jg.antiAccountAge ? `ENABLED (${jg.minAccountAgeDays} Days)` : 'DISABLED [OFF]'}\n` +
+        `\`\`\`\n\n` +
+        `**⚡ Commands to Toggle**\n` +
+        `\`\`\`\n` +
+        `.antinuke joingate noavatar\n` +
+        `.antinuke joingate unverified\n` +
+        `.antinuke joingate adname\n` +
+        `.antinuke joingate accage <days>\n` +
+        `\`\`\``;
 
       const embed = createStyledEmbed({
         title: `🚪 Join Gate Security Controls`,
-        description:
-          `• **Bot Additions Protection**: ${jg.antiBotAdd ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
-          `• **Unverified Bot Gate**: ${jg.antiUnverifiedBot ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
-          `• **No Avatar Gate**: ${jg.antiNoAvatar ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
-          `• **Advertising Name Gate**: ${jg.antiAdvertisingName ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
-          `• **Minimum Account Age**: ${jg.antiAccountAge ? `\`${jg.minAccountAgeDays} Days\` ✅` : '`DISABLED` ❌'}\n\n` +
-          `**Commands to Toggle:**\n` +
-          `\`.antinuke joingate noavatar\`\n` +
-          `\`.antinuke joingate unverified\`\n` +
-          `\`.antinuke joingate adname\`\n` +
-          `\`.antinuke joingate accage <days>\``,
+        description,
         requestedBy: author,
         clientUser
       });
@@ -458,31 +465,36 @@ module.exports = {
       if (toggle === 'strict' || toggle === 'mode') {
         aq.strictMode = !aq.strictMode;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`☣️ **Strict Role Creation Guard** is now **${aq.strictMode ? 'ENABLED' : 'DISABLED'}**.`);
       }
       if (toggle === 'member' || toggle === 'strictmember') {
         aq.strictMemberRole = !aq.strictMemberRole;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`☣️ **Strict Member Role Assignment Guard** is now **${aq.strictMemberRole ? 'ENABLED' : 'DISABLED'}**.`);
       }
       if (toggle === 'everyone' || toggle === 'publicroles') {
         aq.monitorPublicRoles = !aq.monitorPublicRoles;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`☣️ **Public Roles (@everyone) Protection** is now **${aq.monitorPublicRoles ? 'ENABLED' : 'DISABLED'}**.`);
       }
+
+      const description =
+        `Welcome **${author.username}**! Below is your **Auto Quarantine & Dangerous Perm Protection** status.\n\n` +
+        `**☣️ Auto Quarantine Status**\n` +
+        `\`\`\`\n` +
+        `Auto Quarantine Suite  : ${aq.enabled ? 'ACTIVE [OK]' : 'DISABLED [OFF]'}\n` +
+        `Strict Admin Role Guard: ${aq.strictMode ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+        `Strict Member Guard    : ${aq.strictMemberRole ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+        `Public Roles Guard     : ${aq.monitorPublicRoles ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+        `Channel Perm Overwrite : ${aq.monitorChannelPerms ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
+        `\`\`\`\n\n` +
+        `**⚡ Commands to Toggle**\n` +
+        `\`\`\`\n` +
+        `.antinuke quarantine strict\n` +
+        `.antinuke quarantine member\n` +
+        `.antinuke quarantine publicroles\n` +
+        `\`\`\``;
 
       const embed = createStyledEmbed({
         title: `☣️ Auto Quarantine & Dangerous Permission Protection`,
-        description:
-          `• **Auto Quarantine Suite**: ${aq.enabled ? '`ACTIVE` 🟢' : '`DISABLED` 🔴'}\n` +
-          `• **Strict Admin Role Guard**: ${aq.strictMode ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
-          `• **Strict Member Role Assignment Guard**: ${aq.strictMemberRole ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
-          `• **Public Roles (@everyone) Protection**: ${aq.monitorPublicRoles ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
-          `• **Channel Permissions Overwrite Guard**: ${aq.monitorChannelPerms ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n\n` +
-          `**Commands to Toggle:**\n` +
-          `\`.antinuke quarantine strict\`\n` +
-          `\`.antinuke quarantine member\`\n` +
-          `\`.antinuke quarantine publicroles\``,
+        description,
         requestedBy: author,
         clientUser
       });
@@ -499,7 +511,7 @@ module.exports = {
       // .whitelist add @user [perms]
       if (action === 'add' && (user || args[1])) {
         const targetUser = user || await message.client.users.fetch(args[1]).catch(() => null);
-        if (!targetUser) return message.reply(`⚠️ Usage: \`.whitelist add @user [ban kick bot channel role webhook all]\``);
+        if (!targetUser) return message.reply(`👥 Usage: \`.whitelist add @user [perms]\``);
 
         const permArgs = args.slice(2).map(p => p.toLowerCase()).filter(p => ALL_PERMS.includes(p));
         const grantedPerms = permArgs.length > 0 ? new Set(permArgs) : new Set(['all']);
@@ -512,7 +524,10 @@ module.exports = {
           description:
             `**User:** <@${targetUser.id}> (\`${targetUser.tag}\`)\n` +
             `**Granted Permissions:** ${formatUserPerms(grantedPerms)}\n\n` +
-            `*Toggle perms using command:* \`.whitelist perms @user +ban -role\``,
+            `**Management Commands:**\n` +
+            `\`\`\`\n` +
+            `.whitelist perms @user +ban -role\n` +
+            `\`\`\``,
           requestedBy: author,
           clientUser
         });
