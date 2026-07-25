@@ -414,11 +414,12 @@ module.exports = {
             return message.reply(`✅ **Added ${track.info.title}** to queue at position **#${player.queue.tracks.length}**.`);
           }
         } catch (err) {
-          console.error('Lavalink error:', err.message);
+          console.error('[Music Play Error]', err.message || err);
+          return message.reply(`❌ Could not play track: **${err.message || 'Lavalink Search Error'}**. Please try another song title or URL.`);
         }
       }
 
-      return message.reply(`🎶 Connected to **${voiceState.channel.name}** and queuing **${query}**.`);
+      return message.reply(`⚠️ Lavalink nodes are currently connecting. Please try again in a few seconds.`);
     }
 
     // 6. VOLUME CONTROL

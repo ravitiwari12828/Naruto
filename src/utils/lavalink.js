@@ -6,6 +6,42 @@ function initLavalink(client) {
   lavalink = new LavalinkManager({
     nodes: [
       {
+        id: 'node-jirayu',
+        host: 'lavalink.jirayu.net',
+        port: 443,
+        authorization: 'youshallnotpass',
+        secure: true,
+        retryAmount: 15,
+        retryDelay: 3000
+      },
+      {
+        id: 'node-vost',
+        host: 'lavalink.vost.pt',
+        port: 443,
+        authorization: 'youshallnotpass',
+        secure: true,
+        retryAmount: 10,
+        retryDelay: 3000
+      },
+      {
+        id: 'node-ajie',
+        host: 'lava-v4.ajiehospitality.me',
+        port: 443,
+        authorization: 'ajiehospitality',
+        secure: true,
+        retryAmount: 10,
+        retryDelay: 3000
+      },
+      {
+        id: 'node-devamop',
+        host: 'lavalink.devamop.ru',
+        port: 443,
+        authorization: 'youshallnotpass',
+        secure: true,
+        retryAmount: 10,
+        retryDelay: 3000
+      },
+      {
         id: 'synn-node-main',
         host: process.env.LAVALINK_HOST || 'usa5.kerit.cloud',
         port: parseInt(process.env.LAVALINK_PORT) || 9013,
@@ -13,15 +49,6 @@ function initLavalink(client) {
         secure: process.env.LAVALINK_SECURE === 'true',
         retryAmount: 10,
         retryDelay: 3000
-      },
-      {
-        id: 'lavalink-fallback',
-        host: 'lavalink.jirayu.net',
-        port: 443,
-        authorization: 'youshallnotpass',
-        secure: true,
-        retryAmount: 5,
-        retryDelay: 5000
       }
     ],
     sendToShard: (guildId, payload) => {
@@ -68,6 +95,10 @@ function initLavalink(client) {
       lavalink.sendRawData(d);
     } catch (e) {}
   });
+
+  try {
+    lavalink.init({ id: client.user.id, username: client.user.username });
+  } catch (e) {}
 
   return lavalink;
 }
