@@ -2510,65 +2510,91 @@ client.on('interactionCreate', async (interaction) => {
     }
   }
 
-  // 12. ANALYTICS TIMEFRAME (tf_) & CATEGORY (scat_) BUTTONS
-  if (interaction.customId && (interaction.customId.startsWith('tf_') || interaction.customId.startsWith('scat_'))) {
+  // 12. ANALYTICS BUTTONS (stf_, scat_, jltf_, cmdtf_, tktf_, ucat_, utf_)
+  if (interaction.customId && (
+    interaction.customId.startsWith('stf_') ||
+    interaction.customId.startsWith('scat_') ||
+    interaction.customId.startsWith('jltf_') ||
+    interaction.customId.startsWith('cmdtf_') ||
+    interaction.customId.startsWith('tktf_') ||
+    interaction.customId.startsWith('ucat_') ||
+    interaction.customId.startsWith('utf_')
+  )) {
     try {
       await interaction.deferUpdate().catch(() => {});
       const analyticsCmd = client.commands.get('analytics');
       if (!analyticsCmd || !interaction.guild) return;
 
-      let timeframeKey = 'lifetime';
-      let activeCat = 'overview';
+      const customId = interaction.customId;
 
-      if (interaction.customId.startsWith('tf_')) {
-        timeframeKey = interaction.customId.replace('tf_', '');
-      } else if (interaction.customId.startsWith('scat_')) {
-        activeCat = interaction.customId.replace('scat_', '');
-      }
+      if (customId.startsWith('stf_') || customId.startsWith('scat_')) {
+        let timeframeKey = 'lifetime';
+        let activeCat = 'overview';
 
-      const messageComponents = interaction.message.components;
-      if (messageComponents && messageComponents.length) {
-        const tfRow = messageComponents.find(row => row.components.some(c => c.customId && c.customId.startsWith('tf_')));
-        if (tfRow && !interaction.customId.startsWith('tf_')) {
-          const activeTfBtn = tfRow.components.find(c => c.style === 1);
-          if (activeTfBtn && activeTfBtn.customId) {
-            timeframeKey = activeTfBtn.customId.replace('tf_', '');
+        const messageComponents = interaction.message.components;
+        if (messageComponents && messageComponents.length) {
+          const tfRow = messageComponents.find(row => row.components.some(c => c.customId && c.customId.startsWith('stf_')));
+          if (tfRow) {
+            const activeTfBtn = tfRow.components.find(c => c.style === 1);
+            if (activeTfBtn && activeTfBtn.customId) timeframeKey = activeTfBtn.customId.replace('stf_', '');
+          }
+          const scatRow = messageComponents.find(row => row.components.some(c => c.customId && c.customId.startsWith('scat_')));
+          if (scatRow) {
+            const activeScatBtn = scatRow.components.find(c => c.style === 1);
+            if (activeScatBtn && activeScatBtn.customId) activeCat = activeScatBtn.customId.replace('scat_', '');
           }
         }
 
-        const scatRow = messageComponents.find(row => row.components.some(c => c.customId && c.customId.startsWith('scat_')));
-        if (scatRow && !interaction.customId.startsWith('scat_')) {
-          const activeScatBtn = scatRow.components.find(c => c.style === 1);
-          if (activeScatBtn && activeScatBtn.customId) {
-            activeCat = activeScatBtn.customId.replace('scat_', '');
+        if (customId.startsWith('stf_')) timeframeKey = customId.replace('stf_', '');
+        else if (customId.startsWith('scat_')) activeCat = customId.replace('scat_', '');
+
+        const embed = analyticsCmd.renderServerStatsOverviewPanel(interaction.guild, timeframeKey, activeCat, interaction.user, client.user);
+        const row1 = analyticsCmd.buildTimeframeRow(timeframeKey, 'stf_');
+        const row2 = analyticsCmd.buildServerStatsCategoryRow(activeCat);
+        await interaction.message.edit({ embeds: [embed], components: [row1, row2] }).catch(() => {});
+      } else if (customId.startsWith('jltf_')) {
+        const tf = customId.replace('jltf_', '');
+        const embed = analyticsCmd.renderJoinsLeavesPanel(interaction.guild, tf, interaction.user, client.user);
+        const row1 = analyticsCmd.buildTimeframeRow(tf, 'jltf_');
+        await interaction.message.edit({ embeds: [embed], components: [row1] }).catch(() => {});
+      } else if (customId.startsWith('cmdtf_')) {
+        const tf = customId.replace('cmdtf_', '');
+        const embed = analyticsCmd.renderTopCommandsPanel(interaction.guild, tf, interaction.user, client.user);
+        const row1 = analyticsCmd.buildTimeframeRow(tf, 'cmdtf_');
+        await interaction.message.edit({ embeds: [embed], components: [row1] }).catch(() => {});
+      } else if (customId.startsWith('tktf_')) {
+        const tf = customId.replace('tktf_', '');
+        const embed = analyticsCmd.renderTicketStatsPanel(interaction.guild, tf, interaction.user, client.user);
+        const row1 = analyticsCmd.buildTimeframeRow(tf, 'tktf_');
+        await interaction.message.edit({ embeds: [embed], components: [row1] }).catch(() => {});
+      } else if (customId.startsWith('ucat_') || customId.startsWith('utf_')) {
+        let activeCat = 'all';
+        let activeTf = 'lifetime';
+
+        const messageComponents = interaction.message.components;
+        if (messageComponents && messageComponents.length) {
+          const ucatRow = messageComponents.find(row => row.components.some(c => c.customId && c.customId.startsWith('ucat_')));
+          if (ucatRow) {
+            const activeCatBtn = ucatRow.components.find(c => c.style === 1);
+            if (activeCatBtn && activeCatBtn.customId) activeCat = activeCatBtn.customId.replace('ucat_', '');
+          }
+          const utfRow = messageComponents.find(row => row.components.some(c => c.customId && c.customId.startsWith('utf_')));
+          if (utfRow) {
+            const activeTfBtn = utfRow.components.find(c => c.style === 1);
+            if (activeTfBtn && activeTfBtn.customId) activeTf = activeTfBtn.customId.replace('utf_', '');
           }
         }
+
+        if (customId.startsWith('ucat_')) activeCat = customId.replace('ucat_', '');
+        else if (customId.startsWith('utf_')) activeTf = customId.replace('utf_', '');
+
+        const embed = analyticsCmd.renderUserStatsPanel(interaction.guild, interaction.user, activeCat, activeTf, interaction.user, client.user);
+        const row1 = analyticsCmd.buildUserMetricRow(activeCat);
+        const row2 = analyticsCmd.buildTimeframeRow(activeTf, 'utf_');
+        await interaction.message.edit({ embeds: [embed], components: [row1, row2] }).catch(() => {});
       }
-
-      const embed = analyticsCmd.renderServerStatsOverviewPanel(interaction.guild, timeframeKey, activeCat, interaction.user, client.user);
-      const row1 = analyticsCmd.buildTimeframeRow(timeframeKey);
-      const row2 = analyticsCmd.buildServerStatsCategoryRow(activeCat);
-
-      await interaction.message.edit({ embeds: [embed], components: [row1, row2] }).catch(() => {});
     } catch (e) {
-      console.error('tf_/scat_ button error:', e);
-    }
-  }
-
-  // 13. USER ANALYTICS METRIC (ucat_) BUTTONS
-  if (interaction.customId && interaction.customId.startsWith('ucat_')) {
-    try {
-      await interaction.deferUpdate().catch(() => {});
-      const analyticsCmd = client.commands.get('analytics');
-      if (!analyticsCmd || !interaction.guild) return;
-
-      const activeCat = interaction.customId.replace('ucat_', '');
-      const embed = analyticsCmd.renderUserStatsPanel(interaction.guild, interaction.user, activeCat, '1d', interaction.user, client.user);
-      const row1 = analyticsCmd.buildUserMetricRow(activeCat);
-
-      await interaction.message.edit({ embeds: [embed], components: [row1] }).catch(() => {});
-    } catch (e) {
-      console.error('ucat_ button error:', e);
+      console.error('analytics button error:', e);
     }
   }
 });

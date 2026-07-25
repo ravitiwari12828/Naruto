@@ -27,26 +27,26 @@ function formatDuration(seconds) {
   return `${mins}m`;
 }
 
-function buildTimeframeRow(activeKey) {
+function buildTimeframeRow(activeKey = 'lifetime', prefix = 'stf_') {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
-      .setCustomId('tf_1d')
+      .setCustomId(`${prefix}1d`)
       .setLabel('24H')
       .setStyle(activeKey === '1d' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId('tf_7d')
+      .setCustomId(`${prefix}7d`)
       .setLabel('7D')
       .setStyle(activeKey === '7d' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId('tf_14d')
+      .setCustomId(`${prefix}14d`)
       .setLabel('14D')
       .setStyle(activeKey === '14d' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId('tf_30d')
+      .setCustomId(`${prefix}30d`)
       .setLabel('30D')
       .setStyle(activeKey === '30d' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId('tf_lifetime')
+      .setCustomId(`${prefix}lifetime`)
       .setLabel('All')
       .setStyle(activeKey === 'lifetime' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
@@ -150,20 +150,8 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
   const stats = db.getAnalyticsStats(guild.id, windowMs);
-  const topMembers = db.getTopLeaderboard(guild.id, 'message', windowMs, 3);
   const bots = guild.members.cache.filter(m => m.user.bot).size;
   const humans = guild.memberCount - bots;
-
-  let topBlock = '';
-  if (topMembers.length === 0) {
-    topBlock = 'No recorded chat activity yet.';
-  } else {
-    topBlock = topMembers.map((item, idx) => {
-      const member = guild.members.cache.get(item.userId);
-      const name = member ? member.user.username : `User ${item.userId}`;
-      return `#${idx + 1} ${name} — ${item.total.toLocaleString()} msgs`;
-    }).join('\n');
-  }
 
   const textChannels = guild.channels.cache.filter(c => c.isTextBased()).size;
   const voiceChannels = guild.channels.cache.filter(c => c.isVoiceBased()).size;
@@ -187,11 +175,7 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
 
   const description =
     `Welcome **${author.username}**! Below is the executive **Server Analytics** dashboard.\n\n` +
-    boxText + `\n\n` +
-    `**🏆 Top Active Chatters (${label})**\n` +
-    `\`\`\`\n` +
-    `${topBlock}\n` +
-    `\`\`\``;
+    boxText;
 
   return createStyledEmbed({
     title: `${emojis.STATS || '📊'} ${guild.name} Analytics`,
@@ -204,43 +188,80 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
   });
 }
 
-function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey = '1d', author, clientUser) {
-  const windowMs = WINDOWS[timeframeKey];
-  const label = TIMEFRAME_NAMES[timeframeKey];
-
+function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey = 'lifetime', author, clientUser) {
+  const windowMs = WINDOWS[timeframeKey] || null;
+  const label = TIMEFRAME_NAMES[timeframeKey] || 'All Time';
+  const sTf = db.getUserAnalyticsStats(guild.id, targetUser.id, windowMs);
+  const sLife = db.getUserAnalyticsStats(guild.id, targetUser.id, null);
   const dbUser = db.getUser(targetUser.id);
-  const s1d = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['1d']);
-  const s7d = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['7d']);
-  const s30d = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['30d']);
-  const sLife = db.getUserAnalyticsStats(guild.id, targetUser.id, WINDOWS['lifetime']);
 
-  let title = `${emojis.PROFILE || '👤'} ${targetUser.username} — Activity`;
-  let description = '';
+  let titleText = 'USER ACTIVITY STATS';
+  let rows = [];
 
-  const totalMsgs = (dbUser.messages || sLife.messages || 0);
-  const totalVoice = formatDuration(dbUser.voiceSeconds || sLife.voiceSeconds || 0);
-  const totalInvites = (dbUser.invites || sLife.invites || 0);
+  if (activeCat === 'messages' || activeCat === 'msgs') {
+    titleText = 'USER MESSAGES BREAKDOWN';
+    rows = [
+      { key: 'Username', val: targetUser.username },
+      { key: 'Timeframe', val: label },
+      { key: 'Period Msg', val: `${sTf.messages.toLocaleString()} msgs` },
+      { key: 'Total Msgs', val: `${(dbUser.messages || sLife.messages || 0).toLocaleString()} msgs` }
+    ];
+  } else if (activeCat === 'voice') {
+    titleText = 'USER VOICE BREAKDOWN';
+    rows = [
+      { key: 'Username', val: targetUser.username },
+      { key: 'Timeframe', val: label },
+      { key: 'Period Vc', val: formatDuration(sTf.voiceSeconds) },
+      { key: 'Total Vc', val: formatDuration(dbUser.voiceSeconds || sLife.voiceSeconds || 0) }
+    ];
+  } else if (activeCat === 'invites') {
+    titleText = 'USER INVITES BREAKDOWN';
+    rows = [
+      { key: 'Username', val: targetUser.username },
+      { key: 'Timeframe', val: label },
+      { key: 'Period Inv', val: `${sTf.invites.toLocaleString()} joins` },
+      { key: 'Total Inv', val: `${(dbUser.invites || sLife.invites || 0).toLocaleString()} joins` }
+    ];
+  } else if (activeCat === 'shinobi' || activeCat === 'rank') {
+    titleText = 'SHINOBI RANK PROGRESS';
+    rows = [
+      { key: 'Username', val: targetUser.username },
+      { key: 'Rank', val: dbUser.rank || 'Student' },
+      { key: 'Level', val: `Lvl ${dbUser.level || 1}` },
+      { key: 'XP Points', val: `${(dbUser.xp || 0).toLocaleString()} XP` }
+    ];
+  } else {
+    // OVERVIEW / ALL
+    titleText = 'USER ACTIVITY STATS';
+    rows = [
+      { key: 'Username', val: targetUser.username },
+      { key: 'Msgs (' + label + ')', val: `${sTf.messages.toLocaleString()} msgs` },
+      { key: 'Voice(' + label + ')', val: formatDuration(sTf.voiceSeconds) },
+      { key: 'Invites', val: `${(dbUser.invites || sLife.invites || 0).toLocaleString()} joins` },
+      { key: 'Level', val: `Lvl ${dbUser.level || 1}` },
+      { key: 'Rank', val: dbUser.rank || 'Student' }
+    ];
+  }
 
-  const boxText =
-    '```\n' +
-    '╭──────────────────────────╮\n' +
-    '│    USER ACTIVITY STATS   │\n' +
-    '├──────────────────────────┤\n' +
-    '│ Username  : ' + String(targetUser.username).slice(0, 12).padEnd(12, ' ') + ' │\n' +
-    '│ Msgs (24h): ' + String(s1d.messages).padEnd(12, ' ') + ' │\n' +
-    '│ Msgs Total: ' + String(totalMsgs).padEnd(12, ' ') + ' │\n' +
-    '│ Voice(24h): ' + String(formatDuration(s1d.voiceSeconds)).slice(0, 12).padEnd(12, ' ') + ' │\n' +
-    '│ Voice Total: ' + String(totalVoice).slice(0, 11).padEnd(11, ' ') + ' │\n' +
-    '│ Invites   : ' + String(totalInvites).padEnd(12, ' ') + ' │\n' +
-    '│ Rank      : ' + String(dbUser.rank || 'Student').slice(0, 12).padEnd(12, ' ') + ' │\n' +
-    '│ Level     : ' + String('Lvl ' + (dbUser.level || 1)).padEnd(12, ' ') + ' │\n' +
-    '╰──────────────────────────╯\n' +
-    '```';
+  const top = '╭──────────────────────────╮';
+  const mid = '├──────────────────────────┤';
+  const bot = '╰──────────────────────────╯';
 
-  description = boxText;
+  const titlePadded = titleText.slice(0, 24).padStart(Math.floor((24 + titleText.length) / 2), ' ').padEnd(24, ' ');
+  const titleLine = '│ ' + titlePadded + ' │';
+
+  const boxLines = [top, titleLine, mid];
+  rows.forEach(r => {
+    const keyStr = r.key.slice(0, 11).padEnd(11, ' ');
+    const valStr = r.val.slice(0, 11).padEnd(11, ' ');
+    boxLines.push('│ ' + keyStr + ': ' + valStr + ' │');
+  });
+  boxLines.push(bot);
+
+  const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   return createStyledEmbed({
-    title,
+    title: `${emojis.PROFILE || '👤'} ${targetUser.username} — Activity [${label}]`,
     subtitle: `Member Activity Audit — ${guild.name}`,
     description: boxText,
     thumbnailUrl: targetUser.displayAvatarURL({ dynamic: true, size: 512 }),
@@ -417,6 +438,7 @@ function renderJoinsLeavesPanel(guild, timeframeKey = '1d', author, clientUser) 
     subtitle: `Joins vs Leaves — ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+    footerText: `Timeframe: ${label} • Live Sync • Naruto Executive`,
     requestedBy: author,
     clientUser
   });
@@ -443,6 +465,7 @@ function renderTopCommandsPanel(guild, timeframeKey = '1d', author, clientUser) 
     subtitle: `Automation Metrics — ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+    footerText: `Timeframe: ${label} • Live Sync • Naruto Executive`,
     requestedBy: author,
     clientUser
   });
@@ -471,6 +494,7 @@ function renderTicketStatsPanel(guild, timeframeKey = '1d', author, clientUser) 
     subtitle: `Support Stats — ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+    footerText: `Timeframe: ${label} • Live Sync • Naruto Executive`,
     requestedBy: author,
     clientUser
   });
@@ -481,7 +505,7 @@ module.exports = {
   description: 'Analytics, Leaderboards, User & Server Metrics Suite',
   aliases: [
     'lb', 'lbm', 'lbvc', 'lbi', 'leaderboard', 'top', 'st', 'ss', 'stats', 'tracker',
-    'userstats', 'serverstats', 'serveranalytics', 'useranalytics', 'u', 'usr', 'user', 'profile',
+    'userstats', 'useranalytics', 'u', 'usr', 'user', 'profile',
     'topmessages', 'msgstats', 'messages', 'chat', 'topmsg', 'msgs', 'msg', 'topm',
     'topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'vc', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct',
     'topinvites', 'invitestats', 'invites', 'topinv', 'invs', 'inv',
@@ -506,7 +530,7 @@ module.exports = {
       else sub = 'messages';
     } else if (['lbm', 'topmessages', 'msgstats', 'messages', 'chat', 'topmsg', 'msgs', 'msg', 'topm'].includes(invoked)) {
       sub = 'messages';
-    } else if (['lbvc', 'topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'vc', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct'].includes(invoked)) {
+    } else if (['lbvc', 'topvoice', 'topvoices', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'vc', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct'].includes(invoked)) {
       sub = 'voice';
     } else if (['lbi', 'topinvites', 'invitestats', 'invites', 'topinv', 'invs', 'inv'].includes(invoked)) {
       sub = 'invites';
@@ -534,16 +558,77 @@ module.exports = {
       let activeTf = 'lifetime';
       let activeCat = 'overview';
       let embed = renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
-      let tfRow = buildTimeframeRow(activeTf);
+      let tfRow = buildTimeframeRow(activeTf, 'stf_');
       let catRow = buildServerStatsCategoryRow(activeCat);
       const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId.startsWith('tf_') || i.customId.startsWith('stf_')) activeTf = i.customId.replace(/^(tf_|stf_)/, '');
-        else if (i.customId.startsWith('scat_')) {
-          activeCat = i.customId.replace('scat_', '');
-        }
-        return i.update({ embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)], components: [buildTimeframeRow(activeTf), buildServerStatsCategoryRow(activeCat)] });
+        if (i.customId.startsWith('stf_')) activeTf = i.customId.replace('stf_', '');
+        else if (i.customId.startsWith('scat_')) activeCat = i.customId.replace('scat_', '');
+        return i.update({
+          embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)],
+          components: [buildTimeframeRow(activeTf, 'stf_'), buildServerStatsCategoryRow(activeCat)]
+        });
+      });
+      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
+      return;
+    }
+
+    if (sub === 'messages') {
+      let activeTf = 'lifetime';
+      let activeCat = 'chat';
+      let embed = renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
+      let tfRow = buildTimeframeRow(activeTf, 'stf_');
+      let catRow = buildServerStatsCategoryRow(activeCat);
+      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
+      const collector = msg.createMessageComponentCollector({ time: 300000 });
+      collector.on('collect', async (i) => {
+        if (i.customId.startsWith('stf_')) activeTf = i.customId.replace('stf_', '');
+        else if (i.customId.startsWith('scat_')) activeCat = i.customId.replace('scat_', '');
+        return i.update({
+          embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)],
+          components: [buildTimeframeRow(activeTf, 'stf_'), buildServerStatsCategoryRow(activeCat)]
+        });
+      });
+      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
+      return;
+    }
+
+    if (sub === 'voice') {
+      let activeTf = 'lifetime';
+      let activeCat = 'voice';
+      let embed = renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
+      let tfRow = buildTimeframeRow(activeTf, 'stf_');
+      let catRow = buildServerStatsCategoryRow(activeCat);
+      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
+      const collector = msg.createMessageComponentCollector({ time: 300000 });
+      collector.on('collect', async (i) => {
+        if (i.customId.startsWith('stf_')) activeTf = i.customId.replace('stf_', '');
+        else if (i.customId.startsWith('scat_')) activeCat = i.customId.replace('scat_', '');
+        return i.update({
+          embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)],
+          components: [buildTimeframeRow(activeTf, 'stf_'), buildServerStatsCategoryRow(activeCat)]
+        });
+      });
+      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
+      return;
+    }
+
+    if (sub === 'invites') {
+      let activeTf = 'lifetime';
+      let activeCat = 'invites';
+      let embed = renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
+      let tfRow = buildTimeframeRow(activeTf, 'stf_');
+      let catRow = buildServerStatsCategoryRow(activeCat);
+      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
+      const collector = msg.createMessageComponentCollector({ time: 300000 });
+      collector.on('collect', async (i) => {
+        if (i.customId.startsWith('stf_')) activeTf = i.customId.replace('stf_', '');
+        else if (i.customId.startsWith('scat_')) activeCat = i.customId.replace('scat_', '');
+        return i.update({
+          embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)],
+          components: [buildTimeframeRow(activeTf, 'stf_'), buildServerStatsCategoryRow(activeCat)]
+        });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
