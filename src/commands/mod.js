@@ -57,7 +57,7 @@ module.exports = {
     'nuke', 'purge', 'purgebots',
     'unban', 'unbanall',
     'role', 'rolemenu', 'list',
-    'warn', 'warnings', 'clearwarns',
+    'warn', 'unwarn', 'rmwarn', 'warnremove', 'warnings', 'clearwarns',
     'case', 'cases', 'modlogs', 'caseinfo'
   ],
 
@@ -467,18 +467,75 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 14. ⚠️ WARN [@user] [reason]
-    // 14. ⚠️ WARN [@user] [reason]
-    if (invoked === 'warn') {
+    // 14. ⚠️ WARN / UNWARN / CLEARWARNS
+    if (['warn', 'unwarn', 'rmwarn', 'warnremove', 'clearwarns'].includes(invoked)) {
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Moderate Members');
 
-      const target = message.mentions.members?.first() || guild.members.cache.get(args[0]);
-      if (!target) return message.reply(`${emojis.WARNING} Usage: \`.warn @user [reason]\``);
+      const isRemove = invoked === 'unwarn' || invoked === 'rmwarn' || invoked === 'warnremove' || (invoked === 'warn' && args[0] === 'remove');
+      const isClear = invoked === 'clearwarns' || (invoked === 'warn' && args[0] === 'clear');
 
-      const reason = args.slice(1).join(' ') || 'No reason provided.';
-      
+      const targetIndex = (invoked === 'warn' && (args[0] === 'remove' || args[0] === 'clear')) ? 1 : 0;
+      const target = message.mentions.members?.first() || guild.members.cache.get(args[targetIndex]);
+
+      if (!target) {
+        return message.reply(
+          `${emojis.WARNING} Usage:\n` +
+          `• \`.warn @user [reason]\` — Add warning\n` +
+          `• \`.unwarn @user [reason]\` — Remove 1 warning\n` +
+          `• \`.clearwarns @user\` — Clear all warnings`
+        );
+      }
+
       const userObj = db.getUser(target.id);
-      const warnCount = (userObj.warns || 0) + 1;
+      const currentWarns = userObj.warns || 0;
+
+      if (isClear) {
+        db.updateUser(target.id, u => { u.warns = 0; });
+        const cData = recordAndLogCase(guild, {
+          action: 'CLEARWARNS',
+          targetId: target.id,
+          targetTag: target.user.tag,
+          executorId: message.author.id,
+          executorTag: message.author.tag,
+          reason: `Cleared all warnings (Previous: ${currentWarns})`
+        });
+
+        const embed = createStyledEmbed({
+          title: `🧹 All Warnings Cleared [Case #${cData.caseId}]`,
+          description: `**Member:** <@${target.id}> (\`${target.user.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Cleared Warnings:** \`${currentWarns}\` → \`0\``,
+          requestedBy: message.author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      if (isRemove) {
+        if (currentWarns <= 0) return message.reply(`${emojis.INFO} <@${target.id}> has 0 active warnings.`);
+        const newWarns = currentWarns - 1;
+        db.updateUser(target.id, u => { u.warns = newWarns; });
+
+        const reason = args.slice(targetIndex + 1).join(' ') || 'Warning removed by staff.';
+        const cData = recordAndLogCase(guild, {
+          action: 'UNWARN',
+          targetId: target.id,
+          targetTag: target.user.tag,
+          executorId: message.author.id,
+          executorTag: message.author.tag,
+          reason
+        });
+
+        const embed = createStyledEmbed({
+          title: `✅ Warning Removed [Case #${cData.caseId}]`,
+          description: `**Member:** <@${target.id}> (\`${target.user.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Remaining Warnings:** \`${newWarns}\`\n**Reason:** ${reason}`,
+          requestedBy: message.author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      // Standard .warn @user
+      const reason = args.slice(1).join(' ') || 'No reason provided.';
+      const warnCount = currentWarns + 1;
       db.updateUser(target.id, u => { u.warns = warnCount; });
 
       const cData = recordAndLogCase(guild, {
