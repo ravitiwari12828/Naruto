@@ -24,14 +24,14 @@ module.exports = {
 
       const boxText =
         '```\n' +
-        '╭───────────────────────────────────────────────────╮\n' +
-        '│              SERVER ACTIVITY OVERVIEW             │\n' +
-        '├───────────────────────────────────────────────────┤\n' +
-        '│ Guild Name    : ' + String(message.guild.name).slice(0, 33).padEnd(33, ' ') + ' │\n' +
-        '│ Total Members : ' + String(message.guild.memberCount).padEnd(33, ' ') + ' │\n' +
-        '│ Total Messages: ' + String(totalMsgs).padEnd(33, ' ') + ' │\n' +
-        '│ Active Shinobi: ' + String(totalShinobi).padEnd(33, ' ') + ' │\n' +
-        '╰───────────────────────────────────────────────────╯\n' +
+        '╭──────────────────────────────────╮\n' +
+        '│     SERVER ACTIVITY OVERVIEW     │\n' +
+        '├──────────────────────────────────┤\n' +
+        '│ Guild Name : ' + String(message.guild.name).slice(0, 18).padEnd(18, ' ') + ' │\n' +
+        '│ Members    : ' + String(message.guild.memberCount).padEnd(18, ' ') + ' │\n' +
+        '│ Messages   : ' + String(totalMsgs).padEnd(18, ' ') + ' │\n' +
+        '│ Shinobi    : ' + String(totalShinobi).padEnd(18, ' ') + ' │\n' +
+        '╰──────────────────────────────────╯\n' +
         '```';
 
       const embed = createStyledEmbed({
@@ -45,14 +45,14 @@ module.exports = {
     if (sub === 'chat') {
       const boxText =
         '```\n' +
-        '╭───────────────────────────────────────────────────╮\n' +
-        '│                CHAT ACTIVITY STATS                │\n' +
-        '├───────────────────────────────────────────────────┤\n' +
-        '│ Username      : ' + String(targetUser.username).slice(0, 33).padEnd(33, ' ') + ' │\n' +
-        '│ Total Messages: ' + String(userData.messages).padEnd(33, ' ') + ' │\n' +
-        '│ Shinobi Level : ' + String('Level ' + userData.level).padEnd(33, ' ') + ' │\n' +
-        '│ Total XP      : ' + String(userData.xp + ' XP').padEnd(33, ' ') + ' │\n' +
-        '╰───────────────────────────────────────────────────╯\n' +
+        '╭──────────────────────────────────╮\n' +
+        '│       CHAT ACTIVITY STATS        │\n' +
+        '├──────────────────────────────────┤\n' +
+        '│ Username   : ' + String(targetUser.username).slice(0, 18).padEnd(18, ' ') + ' │\n' +
+        '│ Messages   : ' + String(userData.messages).padEnd(18, ' ') + ' │\n' +
+        '│ Level      : ' + String('Level ' + userData.level).padEnd(18, ' ') + ' │\n' +
+        '│ Total XP   : ' + String(userData.xp + ' XP').padEnd(18, ' ') + ' │\n' +
+        '╰──────────────────────────────────╯\n' +
         '```';
 
       const embed = createStyledEmbed({
@@ -66,12 +66,12 @@ module.exports = {
     if (sub === 'invites') {
       const boxText =
         '```\n' +
-        '╭───────────────────────────────────────────────────╮\n' +
-        '│               INVITE ACTIVITY STATS               │\n' +
-        '├───────────────────────────────────────────────────┤\n' +
-        '│ Username      : ' + String(targetUser.username).slice(0, 33).padEnd(33, ' ') + ' │\n' +
-        '│ Real Invites  : ' + String(userData.invites).padEnd(33, ' ') + ' │\n' +
-        '╰───────────────────────────────────────────────────╯\n' +
+        '╭──────────────────────────────────╮\n' +
+        '│      INVITE ACTIVITY STATS       │\n' +
+        '├──────────────────────────────────┤\n' +
+        '│ Username   : ' + String(targetUser.username).slice(0, 18).padEnd(18, ' ') + ' │\n' +
+        '│ Invites    : ' + String(userData.invites).padEnd(18, ' ') + ' │\n' +
+        '╰──────────────────────────────────╯\n' +
         '```';
 
       const embed = createStyledEmbed({
@@ -107,15 +107,15 @@ module.exports = {
     // Default stats embed
     const boxText =
       '```\n' +
-      '╭───────────────────────────────────────────────────╮\n' +
-      '│               SHINOBI ACTIVITY PROFILE            │\n' +
-      '├───────────────────────────────────────────────────┤\n' +
-      '│ Username      : ' + String(targetUser.username).slice(0, 33).padEnd(33, ' ') + ' │\n' +
-      '│ Shinobi Rank  : ' + String(userData.rank).slice(0, 33).padEnd(33, ' ') + ' │\n' +
-      '│ Messages Sent : ' + String(userData.messages).padEnd(33, ' ') + ' │\n' +
-      '│ Real Invites  : ' + String(userData.invites).padEnd(33, ' ') + ' │\n' +
-      '│ Shinobi Level : ' + String('Level ' + userData.level + ' (' + userData.xp + ' XP)').slice(0, 33).padEnd(33, ' ') + ' │\n' +
-      '╰───────────────────────────────────────────────────╯\n' +
+      '╭──────────────────────────────────╮\n' +
+      '│     SHINOBI ACTIVITY PROFILE     │\n' +
+      '├──────────────────────────────────┤\n' +
+      '│ Username   : ' + String(targetUser.username).slice(0, 18).padEnd(18, ' ') + ' │\n' +
+      '│ Rank       : ' + String(userData.rank).slice(0, 18).padEnd(18, ' ') + ' │\n' +
+      '│ Messages   : ' + String(userData.messages).padEnd(18, ' ') + ' │\n' +
+      '│ Invites    : ' + String(userData.invites).padEnd(18, ' ') + ' │\n' +
+      '│ Level      : ' + String('Level ' + userData.level + ' (' + userData.xp + ' XP)').slice(0, 18).padEnd(18, ' ') + ' │\n' +
+      '╰──────────────────────────────────╯\n' +
       '```';
 
     const embed = createStyledEmbed({

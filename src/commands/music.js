@@ -110,14 +110,14 @@ function buildMusicPlayerEmbed(track, player) {
 
   const boxText =
     '```\n' +
-    '╭───────────────────────────────────────────────────╮\n' +
-    '│                 TRACK INFORMATION                 │\n' +
-    '├───────────────────────────────────────────────────┤\n' +
-    '│ Title    : ' + String(title).slice(0, 38).padEnd(38, ' ') + ' │\n' +
-    '│ Artist   : ' + String(artist).slice(0, 38).padEnd(38, ' ') + ' │\n' +
-    '│ Duration : ' + String(durationStr).padEnd(38, ' ') + ' │\n' +
-    '│ Playback : STREAMING NOW [LIVE]                   │\n' +
-    '╰───────────────────────────────────────────────────╯\n' +
+    '╭──────────────────────────────────╮\n' +
+    '│        TRACK INFORMATION         │\n' +
+    '├──────────────────────────────────┤\n' +
+    '│ Title    : ' + String(title).slice(0, 21).padEnd(21, ' ') + ' │\n' +
+    '│ Artist   : ' + String(artist).slice(0, 21).padEnd(21, ' ') + ' │\n' +
+    '│ Duration : ' + String(durationStr).padEnd(21, ' ') + ' │\n' +
+    '│ Playback : STREAMING NOW         │\n' +
+    '╰──────────────────────────────────╯\n' +
     '```';
 
   return new EmbedBuilder()

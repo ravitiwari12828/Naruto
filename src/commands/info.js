@@ -212,19 +212,19 @@ module.exports = {
       afkStore.set(authorId, afkData);
 
       function buildAfkEmbed(data) {
-        const scopeText = data.scope === 'global' ? 'Global (All Servers)' : 'Server Only';
+        const scopeText = data.scope === 'global' ? 'Global' : 'Server Only';
         const dmText = data.notifyDM ? 'Enabled' : 'Disabled';
 
         const boxText =
           '```\n' +
-          '╭───────────────────────────────────────────────────╮\n' +
-          '│                AFK STATUS SETTINGS                │\n' +
-          '├───────────────────────────────────────────────────┤\n' +
-          '│ Status        : ACTIVE (AFK)                      │\n' +
-          '│ Reason        : ' + String(data.reason || 'I am afk :)').slice(0, 33).padEnd(33, ' ') + ' │\n' +
-          '│ AFK Scope     : ' + scopeText.padEnd(33, ' ') + ' │\n' +
-          '│ DM On Mention : ' + dmText.padEnd(33, ' ') + ' │\n' +
-          '╰───────────────────────────────────────────────────╯\n' +
+          '╭──────────────────────────────────╮\n' +
+          '│           AFK SETTINGS           │\n' +
+          '├──────────────────────────────────┤\n' +
+          '│ Status     : ACTIVE (AFK)        │\n' +
+          '│ Reason     : ' + String(data.reason || 'I am afk :)').slice(0, 19).padEnd(19, ' ') + ' │\n' +
+          '│ AFK Scope  : ' + scopeText.padEnd(19, ' ') + ' │\n' +
+          '│ DM Mention : ' + dmText.padEnd(19, ' ') + ' │\n' +
+          '╰──────────────────────────────────╯\n' +
           '```';
 
         return createStyledEmbed({
@@ -369,17 +369,17 @@ module.exports = {
 
       const boxText =
         '```\n' +
-        '╭───────────────────────────────────────────────────╮\n' +
-        '│               ROLE INFORMATION PANEL              │\n' +
-        '├───────────────────────────────────────────────────┤\n' +
-        '│ Role Name     : ' + String('@' + role.name).slice(0, 33).padEnd(33, ' ') + ' │\n' +
-        '│ Role ID       : ' + String(role.id).padEnd(33, ' ') + ' │\n' +
-        '│ Color Hex     : ' + String(role.hexColor).padEnd(33, ' ') + ' │\n' +
-        '│ Total Members : ' + String(role.members.size).padEnd(33, ' ') + ' │\n' +
-        '│ Hierarchy Pos : ' + String('#' + role.position).padEnd(33, ' ') + ' │\n' +
-        '│ Mentionable   : ' + (role.mentionable ? 'YES' : 'NO').padEnd(33, ' ') + ' │\n' +
-        '│ Hoisted       : ' + (role.hoist ? 'YES' : 'NO').padEnd(33, ' ') + ' │\n' +
-        '╰───────────────────────────────────────────────────╯\n' +
+        '╭──────────────────────────────────╮\n' +
+        '│         ROLE INFORMATION         │\n' +
+        '├──────────────────────────────────┤\n' +
+        '│ Role Name  : ' + String('@' + role.name).slice(0, 19).padEnd(19, ' ') + ' │\n' +
+        '│ Role ID    : ' + String(role.id).slice(0, 19).padEnd(19, ' ') + ' │\n' +
+        '│ Color Hex  : ' + String(role.hexColor).padEnd(19, ' ') + ' │\n' +
+        '│ Members    : ' + String(role.members.size).padEnd(19, ' ') + ' │\n' +
+        '│ Position   : ' + String('#' + role.position).padEnd(19, ' ') + ' │\n' +
+        '│ Mentionable: ' + (role.mentionable ? 'YES' : 'NO').padEnd(19, ' ') + ' │\n' +
+        '│ Hoisted    : ' + (role.hoist ? 'YES' : 'NO').padEnd(19, ' ') + ' │\n' +
+        '╰──────────────────────────────────╯\n' +
         '```';
 
       const embed = createStyledEmbed({
@@ -487,16 +487,16 @@ module.exports = {
 
       const boxText =
         '```\n' +
-        '╭───────────────────────────────────────────────────╮\n' +
-        '│            USER PROFILE & PERMISSIONS             │\n' +
-        '├───────────────────────────────────────────────────┤\n' +
-        '│ Username      : ' + String(user.username).slice(0, 33).padEnd(33, ' ') + ' │\n' +
-        '│ User ID       : ' + String(user.id).padEnd(33, ' ') + ' │\n' +
-        '│ Account Type  : ' + (user.bot ? 'BOT ACCOUNT' : 'HUMAN MEMBER').padEnd(33, ' ') + ' │\n' +
-        '│ Created At    : ' + String(createdStr).padEnd(33, ' ') + ' │\n' +
-        '│ Joined Server : ' + String(joinedStr).padEnd(33, ' ') + ' │\n' +
-        '│ Top Role      : ' + String(topRoleName).slice(0, 33).padEnd(33, ' ') + ' │\n' +
-        '╰───────────────────────────────────────────────────╯\n' +
+        '╭──────────────────────────────────╮\n' +
+        '│     USER PROFILE & PERMISSIONS   │\n' +
+        '├──────────────────────────────────┤\n' +
+        '│ Username   : ' + String(user.username).slice(0, 19).padEnd(19, ' ') + ' │\n' +
+        '│ User ID    : ' + String(user.id).slice(0, 19).padEnd(19, ' ') + ' │\n' +
+        '│ Account    : ' + (user.bot ? 'BOT ACCOUNT' : 'HUMAN MEMBER').padEnd(19, ' ') + ' │\n' +
+        '│ Created At : ' + String(createdStr).padEnd(19, ' ') + ' │\n' +
+        '│ Joined     : ' + String(joinedStr).padEnd(19, ' ') + ' │\n' +
+        '│ Top Role   : ' + String(topRoleName).slice(0, 19).padEnd(19, ' ') + ' │\n' +
+        '╰──────────────────────────────────╯\n' +
         '```';
 
       const embed = createStyledEmbed({
