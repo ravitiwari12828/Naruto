@@ -78,64 +78,66 @@ const NARUTO_OST = {
 /**
  * Builds the exact Music Player Card matching screenshots 2 & 5.
  */
-function buildMusicPlayerEmbed(track, player, isPremium = false) {
+function buildMusicPlayerEmbed(track, player) {
   const title = track?.info?.title || 'Unknown Track';
-  const author = track?.info?.author || 'Unknown Author';
+  const author = track?.info?.author || 'Unknown Artist';
   const durationMs = track?.info?.duration || 240000;
   const positionMs = player?.position || 0;
   const durationStr = formatDuration(durationMs);
   const positionStr = formatDuration(positionMs);
   const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
   const volume = player?.volume || 100;
-  const isLoop = player?.repeatMode === 'track' ? '🔂 Track' : player?.repeatMode === 'queue' ? '🔁 Queue' : 'Off';
+  const isLoop = player?.repeatMode === 'track' ? 'Track' : player?.repeatMode === 'queue' ? 'Queue' : 'Off';
   const queueLen = player?.queue?.tracks?.length || 0;
-  const requesterId = track?.requester?.id || player?.textChannelId;
 
-  // Build progress bar
+  let reqUser = '*Server Member*';
+  if (track?.requester) {
+    if (typeof track.requester === 'string') reqUser = `<@${track.requester}>`;
+    else if (track.requester.id) reqUser = `<@${track.requester.id}>`;
+    else if (track.requester.username) reqUser = `**${track.requester.username}**`;
+  }
+
+  // Progress Bar
   const progressPercent = Math.min(1, Math.max(0, positionMs / (durationMs || 1)));
-  const totalBars = 14;
+  const totalBars = 12;
   const filledBars = Math.round(progressPercent * totalBars);
   const barStr = '▬'.repeat(Math.max(0, filledBars)) + '🔘' + '▬'.repeat(Math.max(0, totalBars - filledBars));
 
   return new EmbedBuilder()
-    .setColor(0x1F1F2F)
-    .setTitle(`${emojis.MUSIC} Now Playing`)
-    .setDescription(
-      `**[${title}](${track?.info?.uri || 'https://youtube.com'})**\n\n` +
-      `📁 **Author**\n${author}\n\n` +
-      `🕒 **Progress:** \`${positionStr} / ${durationStr}\`\n` +
-      `\`${barStr}\`\n\n` +
-      `\`🔊 Volume: ${volume}%\` • \`Loop: ➡️ ${isLoop}\` • \`Queue: ${queueLen} songs\`\n` +
-      `Requested by ${requesterId ? `<@${requesterId}>` : 'gojo_katura'} | Autoplay Off`
-    )
+    .setColor(0x00E5FF)
+    .setTitle(`🎵 Now Playing`)
+    .setDescription(`**[${title}](${track?.info?.uri || 'https://youtube.com'})**\nby **${author}**\n\n🕒 **Progress:** \`${positionStr} / ${durationStr}\`\n\`${barStr}\``)
+    .addFields([
+      { name: '📊 Audio Details', value: `🔊 **Volume:** \`${volume}%\` • 🔁 **Loop:** \`${isLoop}\` • 🎵 **Queue:** \`${queueLen} songs\``, inline: false },
+      { name: '👤 Requested By', value: reqUser, inline: true }
+    ])
     .setThumbnail(artworkUrl)
-    .setFooter({ text: 'Lenora • Priority Development' })
+    .setFooter({ text: 'Naruto One Music Engine • High Fidelity Audio' })
     .setTimestamp();
 }
 
 /**
- * Builds the Music Player action buttons & multi-filter dropdown matching screenshots 2 & 5.
+ * Builds the Music Player action buttons & multi-filter dropdown.
+ * Uses 4 buttons per row for 100% perfect horizontal alignment across Mobile & Desktop!
  */
 function buildMusicActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
     new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_voldown').setEmoji('🔉').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_lyrics').setEmoji('👁️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('music_clear').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
   );
 
   const filterSelect = new StringSelectMenuBuilder()
     .setCustomId('music_filter_select')
-    .setPlaceholder('▚ Select Audio Filters (Multiple allowed)...')
+    .setPlaceholder('▚ Select Audio Filters (Bass Boost, 8D, Nightcore...)...')
     .setMinValues(1)
     .setMaxValues(5)
     .addOptions([
