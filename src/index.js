@@ -218,6 +218,56 @@ client.on('guildMemberAdd', async (member) => {
     }
   }
 
+  // 🚪 WICK-STYLE JOINGATE SECURITY ENFORCEMENT
+  const antinukeCmd = client.commands.get('antinuke');
+  if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
+    const antiConfig = antinukeCmd.getOrCreateAntinuke(member.guild.id);
+    const jg = antiConfig.joinGate;
+
+    if (antiConfig.enabled && jg && jg.enabled && !member.user.bot) {
+      // 1. Anti No Avatar Gate
+      if (jg.antiNoAvatar && !member.user.avatar) {
+        await member.kick('JoinGate Protection: No Profile Avatar').catch(() => {});
+        dispatchLog(member.guild, 'antinuke', {
+          color: 0xFEE75C,
+          title: '🚪 JOINGATE: NO AVATAR MEMBER KICKED',
+          description: `**Member Kicked:** <@${member.id}> (\`${member.user.tag}\`) had no profile picture.`,
+          footer: 'JoinGate Security'
+        });
+        return;
+      }
+
+      // 2. Anti Account Age Gate (Younger than X days)
+      if (jg.antiAccountAge) {
+        const accountAgeDays = (Date.now() - member.user.createdTimestamp) / (1000 * 60 * 60 * 24);
+        if (accountAgeDays < jg.minAccountAgeDays) {
+          await member.kick(`JoinGate Protection: Account age under ${jg.minAccountAgeDays} days`).catch(() => {});
+          dispatchLog(member.guild, 'antinuke', {
+            color: 0xED4245,
+            title: '🚪 JOINGATE: YOUNG ACCOUNT KICKED',
+            description: `**Young Account Blocked:** <@${member.id}> (\`${member.user.tag}\`)\n• **Created:** <t:${Math.floor(member.user.createdTimestamp / 1000)}:R>\n• **Requirement:** Minimum ${jg.minAccountAgeDays} Days.`,
+            footer: 'JoinGate Security'
+          });
+          return;
+        }
+      }
+
+      // 3. Anti Advertising Name Gate (Discord invite link in username)
+      if (jg.antiAdvertisingName) {
+        const hasAd = /(discord\.(gg|com\/invite)|.gg\/|https?:\/\/)/i.test(member.user.username);
+        if (hasAd) {
+          await member.timeout(24 * 60 * 60 * 1000, 'JoinGate Protection: Invite link in username').catch(() => {});
+          dispatchLog(member.guild, 'antinuke', {
+            color: 0xFEE75C,
+            title: '🚪 JOINGATE: ADVERTISING USERNAME TIMED OUT',
+            description: `**Advertising Username Intercepted:** <@${member.id}> (\`${member.user.tag}\`) timed out for 24h due to invite link in username.`,
+            footer: 'JoinGate Security'
+          });
+        }
+      }
+    }
+  }
+
   // 1. Welcome Channel & DM System
   const welcomeCmd = client.commands.get('welcome');
   if (welcomeCmd && welcomeCmd.getOrCreateWelcomeConfig) {
@@ -743,6 +793,57 @@ client.on('roleDelete', async (role) => {
     description: `**Role Name:** \`${role.name}\``,
     footer: `Role ID: ${role.id}`
   });
+});
+
+// 🛡️ AUTO QUARANTINE & PUBLIC ROLES (@everyone) PROTECTION LISTENER
+client.on('roleUpdate', async (oldRole, newRole) => {
+  const guild = newRole.guild;
+  const antinukeCmd = client.commands.get('antinuke');
+  if (!antinukeCmd || !antinukeCmd.getOrCreateAntinuke) return;
+
+  const config = antinukeCmd.getOrCreateAntinuke(guild.id);
+  const aq = config.autoQuarantine;
+
+  if (config.enabled && aq && aq.enabled) {
+    const dangerousFlags = [
+      PermissionsBitField.Flags.Administrator,
+      PermissionsBitField.Flags.ManageGuild,
+      PermissionsBitField.Flags.ManageRoles,
+      PermissionsBitField.Flags.ManageChannels,
+      PermissionsBitField.Flags.BanMembers,
+      PermissionsBitField.Flags.KickMembers,
+      PermissionsBitField.Flags.MentionEveryone
+    ];
+
+    const gainedDangerousPerm = dangerousFlags.some(flag => !oldRole.permissions.has(flag) && newRole.permissions.has(flag));
+
+    // A. PUBLIC ROLES (@everyone) GUARD
+    if (newRole.id === guild.roles.everyone.id && gainedDangerousPerm && aq.monitorPublicRoles) {
+      // Revert @everyone permissions immediately
+      await newRole.setPermissions(oldRole.permissions).catch(() => {});
+
+      try {
+        const { AuditLogEvent } = require('discord.js');
+        const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.RoleUpdate }).catch(() => null);
+        const log = logs?.entries.first();
+        if (log && (Date.now() - log.createdTimestamp) < 15000) {
+          const executor = log.executor;
+          if (executor && executor.id !== guild.ownerId) {
+            const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'role');
+            if (!isWhitelisted) {
+              await punishRogueAdmin(guild, executor.id, 'Unauthorized Dangerous Permission Grant to @everyone');
+              dispatchLog(guild, 'antinuke', {
+                color: 0xED4245,
+                title: '☣️ AUTO QUARANTINE: PUBLIC ROLE GUARD INTERCEPTED',
+                description: `**Rogue Admin Intercepted:** <@${executor.id}>\n• **Attempt:** Granted dangerous perms to \`@everyone\`\n• **Action Taken:** Reverted perms & admin quarantined!`,
+                footer: 'Auto Quarantine Security'
+              });
+            }
+          }
+        }
+      } catch (e) {}
+    }
+  }
 });
 
 // 🛡️ 4. ANTIGUILD UPDATE & VANITY THEFT PROTECTION LISTENER

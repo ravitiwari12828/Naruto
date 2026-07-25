@@ -2,7 +2,8 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  StringSelectMenuBuilder
+  StringSelectMenuBuilder,
+  UserFlags
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
@@ -23,6 +24,52 @@ function getOrCreateAntinuke(guildId) {
       ]),
       extraOwners: new Set(['1529362747047805029', '1420687548807905324', '1514546738055348237']),
       bypassRoles: new Set(),
+
+      // Wick-style JoinGate General Settings
+      joinGate: {
+        enabled: true,
+        dmOnPunish: true,
+        antiBotAdd: true,
+        antiUnverifiedBot: true,
+        antiNoAvatar: false,
+        antiSuspiciousAccount: true,
+        antiAdvertisingName: true,
+        antiAccountAge: true,
+        minAccountAgeDays: 7,
+        botAddAction: 'kick', // 'kick', 'ban', 'quarantine'
+        unverifiedBotAction: 'kick',
+        noAvatarAction: 'kick',
+        suspiciousAction: 'kick',
+        advertisingAction: 'timeout',
+        accountAgeAction: 'kick'
+      },
+
+      // Wick-style Auto Quarantine & Perm Monitoring
+      autoQuarantine: {
+        enabled: true,
+        strictMode: true, // Punish unauthorized admins giving dangerous perms to any role
+        strictMemberRole: true, // Punish unauthorized admins giving dangerous perms to members
+        monitorPublicRoles: true, // Protect @everyone & default roles from getting dangerous perms
+        monitorChannelPerms: true, // Protect @everyone & public roles from dangerous channel perms
+        quarantineWhitelist: new Set(['1529362747047805029', '1420687548807905324', '1514546738055348237'])
+      },
+
+      // Wick-style Action Rate Limits
+      rateLimits: {
+        kickBanLimitMin: 5,
+        kickBanLimitHour: 15,
+        roleCreateLimitMin: 5,
+        roleCreateLimitHour: 15,
+        roleDeleteLimitMin: 3,
+        roleDeleteLimitHour: 10,
+        channelCreateLimitMin: 4,
+        channelCreateLimitHour: 12,
+        channelDeleteLimitMin: 3,
+        channelDeleteLimitHour: 8,
+        webhookCreateLimitMin: 3,
+        webhookCreateLimitHour: 10
+      },
+
       filters: {
         antiBan: true,
         antiKick: true,
@@ -54,6 +101,54 @@ function getOrCreateAntinuke(guildId) {
     const map = new Map();
     cfg.whitelistedUsers.forEach(id => map.set(id, new Set(['all'])));
     cfg.whitelistedUsers = map;
+  }
+
+  if (!cfg.joinGate) {
+    cfg.joinGate = {
+      enabled: true,
+      dmOnPunish: true,
+      antiBotAdd: true,
+      antiUnverifiedBot: true,
+      antiNoAvatar: false,
+      antiSuspiciousAccount: true,
+      antiAdvertisingName: true,
+      antiAccountAge: true,
+      minAccountAgeDays: 7,
+      botAddAction: 'kick',
+      unverifiedBotAction: 'kick',
+      noAvatarAction: 'kick',
+      suspiciousAction: 'kick',
+      advertisingAction: 'timeout',
+      accountAgeAction: 'kick'
+    };
+  }
+
+  if (!cfg.autoQuarantine) {
+    cfg.autoQuarantine = {
+      enabled: true,
+      strictMode: true,
+      strictMemberRole: true,
+      monitorPublicRoles: true,
+      monitorChannelPerms: true,
+      quarantineWhitelist: new Set(['1529362747047805029', '1420687548807905324', '1514546738055348237'])
+    };
+  }
+
+  if (!cfg.rateLimits) {
+    cfg.rateLimits = {
+      kickBanLimitMin: 5,
+      kickBanLimitHour: 15,
+      roleCreateLimitMin: 5,
+      roleCreateLimitHour: 15,
+      roleDeleteLimitMin: 3,
+      roleDeleteLimitHour: 10,
+      channelCreateLimitMin: 4,
+      channelCreateLimitHour: 12,
+      channelDeleteLimitMin: 3,
+      channelDeleteLimitHour: 8,
+      webhookCreateLimitMin: 3,
+      webhookCreateLimitHour: 10
+    };
   }
 
   if (!cfg.filters) {
@@ -147,6 +242,10 @@ function isUserWhitelistedForFeature(config, userId, featureName) {
 
 function renderAntinukeDashboard(config, author, clientUser) {
   const f = config.filters;
+  const jg = config.joinGate;
+  const aq = config.autoQuarantine;
+  const rl = config.rateLimits;
+
   const filterStatusText =
     `• **Anti Ban**: ${f.antiBan ? '`ON` ✅' : '`OFF` ❌'} | **Anti Kick**: ${f.antiKick ? '`ON` ✅' : '`OFF` ❌'}\n` +
     `• **Anti Bot Add**: ${f.antiBotAdd ? '`ON` ✅' : '`OFF` ❌'} | **Anti Channel**: ${f.antiChannelCreate ? '`ON` ✅' : '`OFF` ❌'}\n` +
@@ -154,17 +253,40 @@ function renderAntinukeDashboard(config, author, clientUser) {
     `• **Anti Server**: ${f.antiGuildUpdate ? '`ON` ✅' : '`OFF` ❌'} | **Anti MassPing**: ${f.antiEveryone ? '`ON` ✅' : '`OFF` ❌'}\n` +
     `• **Anti Spam**: ${f.antiSpam ? '`ON` ✅' : '`OFF` ❌'} | **Anti Raid**: ${f.antiRaid ? '`ON` ✅' : '`OFF` ❌'}`;
 
+  const joinGateText =
+    `• **Bot Additions**: ${jg.antiBotAdd ? '`ENABLED` ✅' : '`DISABLED` ❌'} (Action: \`${jg.botAddAction.toUpperCase()}\`)\n` +
+    `• **Unverified Bots**: ${jg.antiUnverifiedBot ? '`ENABLED` ✅' : '`DISABLED` ❌'} (Action: \`${jg.unverifiedBotAction.toUpperCase()}\`)\n` +
+    `• **No Avatar Gate**: ${jg.antiNoAvatar ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
+    `• **Advertising Name**: ${jg.antiAdvertisingName ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
+    `• **Account Age Gate**: ${jg.antiAccountAge ? `\`ENABLED\` ✅ (Min \`${jg.minAccountAgeDays} days\`)` : '`DISABLED` ❌'}`;
+
+  const autoQuarantineText =
+    `• **Auto Quarantine Module**: ${aq.enabled ? '`ACTIVE` 🟢' : '`DISABLED` 🔴'}\n` +
+    `• **Strict Admin Role Guard**: ${aq.strictMode ? '`ON` ✅' : '`OFF` ❌'}\n` +
+    `• **Strict Member Role Guard**: ${aq.strictMemberRole ? '`ON` ✅' : '`OFF` ❌'}\n` +
+    `• **Public Roles (@everyone) Protection**: ${aq.monitorPublicRoles ? '`ACTIVE` ✅' : '`OFF` ❌'}\n` +
+    `• **Channel Permissions Guard**: ${aq.monitorChannelPerms ? '`ACTIVE` ✅' : '`OFF` ❌'}`;
+
+  const limitsText =
+    `• **Kicks/Bans**: \`${rl.kickBanLimitMin}/min\` (\`${rl.kickBanLimitHour}/hr\`)\n` +
+    `• **Role Creations**: \`${rl.roleCreateLimitMin}/min\` | **Deletions**: \`${rl.roleDeleteLimitMin}/min\`\n` +
+    `• **Channel Creations**: \`${rl.channelCreateLimitMin}/min\` | **Deletions**: \`${rl.channelDeleteLimitMin}/min\`\n` +
+    `• **Webhook Creations**: \`${rl.webhookCreateLimitMin}/min\``;
+
   const extraOwnersList = Array.from(config.extraOwners).map(id => `<@${id}>`).join(', ') || 'None';
   const whitelistCount = config.whitelistedUsers.size;
 
   return createStyledEmbed({
-    title: `${emojis.SHIELD || '🛡️'} AntiNuke Control Hub`,
-    subtitle: `Server Protection Suite & Interactive Controls`,
+    title: `${emojis.SHIELD || '🛡️'} AntiNuke & Security Control Suite`,
+    subtitle: `Wick-Grade Server Protection, Join Gate & Auto Quarantine`,
     fields: [
-      { name: `🛡️ Main Shield`, value: config.enabled ? '`ENABLED` ✅' : '`DISABLED` ❌', inline: true },
+      { name: `🛡️ Main AntiNuke Status`, value: config.enabled ? '`ENABLED` ✅' : '`DISABLED` ❌', inline: true },
       { name: `🚨 Panic Mode`, value: config.panicmode ? `\`ACTIVE (Lvl ${config.panicLevel})\`` : '`NORMAL` ✅', inline: true },
       { name: `👥 Security Users`, value: `• **Extra Owners:** ${config.extraOwners.size}\n• **Whitelisted:** ${whitelistCount}`, inline: true },
-      { name: `⚡ Protection Filters Status`, value: filterStatusText, inline: false },
+      { name: `🚪 Join Gate Security (Account Guard)`, value: joinGateText, inline: false },
+      { name: `☣️ Auto Quarantine & Dangerous Perm Guard`, value: autoQuarantineText, inline: false },
+      { name: `📊 Rate Heat Limits per Action`, value: limitsText, inline: false },
+      { name: `⚡ Standard Protection Filters`, value: filterStatusText, inline: false },
       { name: `👑 Registered Extra Owners`, value: extraOwnersList, inline: false }
     ],
     requestedBy: author,
@@ -174,6 +296,8 @@ function renderAntinukeDashboard(config, author, clientUser) {
 
 function renderPanicComponents(config) {
   const f = config.filters;
+  const jg = config.joinGate;
+  const aq = config.autoQuarantine;
 
   // Row 1: Executive Master Controls
   const row1 = new ActionRowBuilder().addComponents(
@@ -188,15 +312,20 @@ function renderPanicComponents(config) {
       .setEmoji(config.panicmode ? '🚨' : '🟢')
       .setStyle(config.panicmode ? ButtonStyle.Danger : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId('an_whitelist_mgr')
-      .setLabel('Whitelist Perms')
-      .setEmoji('👥')
-      .setStyle(ButtonStyle.Primary),
+      .setCustomId('toggle_joingate')
+      .setLabel(jg.enabled ? 'JoinGate: ON' : 'JoinGate: OFF')
+      .setEmoji('🚪')
+      .setStyle(jg.enabled ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId('an_extraowner_mgr')
-      .setLabel('Extra Owners')
-      .setEmoji('👑')
-      .setStyle(ButtonStyle.Secondary)
+      .setCustomId('toggle_quarantine')
+      .setLabel(aq.enabled ? 'Quarantine: ON' : 'Quarantine: OFF')
+      .setEmoji('☣️')
+      .setStyle(aq.enabled ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('an_whitelist_mgr')
+      .setLabel('Whitelist')
+      .setEmoji('👥')
+      .setStyle(ButtonStyle.Primary)
   );
 
   // Row 2: Filter Perms Group 1
@@ -222,9 +351,10 @@ function renderPanicComponents(config) {
 
 module.exports = {
   name: 'antinuke',
-  description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, BypassRole & Granular Perm Panels',
+  description: 'Wick-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite',
   aliases: [
-    'panicmode', 'whitelist', 'extraowner', 'bypassrole', 'security', 'protection'
+    'panicmode', 'whitelist', 'extraowner', 'bypassrole', 'security', 'protection',
+    'joingate', 'quarantine', 'ratelimits', 'limits'
   ],
   antinukeConfigs,
   getOrCreateAntinuke,
@@ -233,13 +363,16 @@ module.exports = {
   renderPanicComponents,
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
     if (invoked === 'panicmode') sub = 'panicmode';
     if (invoked === 'whitelist') sub = 'whitelist';
     if (invoked === 'extraowner') sub = 'extraowner';
-    if (invoked === 'bypassrole') sub = 'bypassrole';
+    if (invoked === 'joingate') sub = 'joingate';
+    if (invoked === 'quarantine') sub = 'quarantine';
+    if (invoked === 'limits' || invoked === 'ratelimits') sub = 'limits';
 
     const author = message.author;
     const guild = message.guild;
@@ -255,7 +388,98 @@ module.exports = {
     const isExtraOwner = config.extraOwners.has(author.id) || ['1420687548807905324', '1529362747047805029', '1514546738055348237'].includes(author.id);
 
     if (!isServerOwner && !isExtraOwner) {
-      return message.reply(`${emojis.WARNING || '⚠️'} **Access Denied**: Only the **Server Owner** and **Extra Owners** can configure AntiNuke security, Whitelists, Extra Owners, Bypass Roles, or Panic Mode!`);
+      return message.reply(`${emojis.WARNING || '⚠️'} **Access Denied**: Only the **Server Owner** and **Extra Owners** can configure AntiNuke security, Whitelists, Extra Owners, JoinGate, or Auto Quarantine!`);
+    }
+
+    // ─────────────────────────────────────────
+    // JOIN GATE SUBCOMMAND (.joingate / .antinuke joingate)
+    // ─────────────────────────────────────────
+    if (sub === 'joingate' || sub === 'gate') {
+      const toggle = args[1]?.toLowerCase();
+      const jg = config.joinGate;
+
+      if (toggle === 'noavatar' || toggle === 'avatar') {
+        jg.antiNoAvatar = !jg.antiNoAvatar;
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`🚪 **JoinGate No Avatar Gate** is now **${jg.antiNoAvatar ? 'ENABLED' : 'DISABLED'}**.`);
+      }
+      if (toggle === 'unverifiedbot' || toggle === 'unverified') {
+        jg.antiUnverifiedBot = !jg.antiUnverifiedBot;
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`🚪 **JoinGate Anti-Unverified Bot** is now **${jg.antiUnverifiedBot ? 'ENABLED' : 'DISABLED'}**.`);
+      }
+      if (toggle === 'adname' || toggle === 'advertising') {
+        jg.antiAdvertisingName = !jg.antiAdvertisingName;
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`🚪 **JoinGate Advertising Name Gate** is now **${jg.antiAdvertisingName ? 'ENABLED' : 'DISABLED'}**.`);
+      }
+      if (toggle === 'accage' || toggle === 'accountage') {
+        jg.antiAccountAge = !jg.antiAccountAge;
+        if (args[2] && !isNaN(parseInt(args[2]))) {
+          jg.minAccountAgeDays = parseInt(args[2]);
+        }
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`🚪 **JoinGate Account Age Gate** is now **${jg.antiAccountAge ? 'ENABLED' : 'DISABLED'}** (Min Age: **${jg.minAccountAgeDays} days**).`);
+      }
+
+      const embed = createStyledEmbed({
+        title: `🚪 Join Gate Security Controls`,
+        description:
+          `• **Bot Additions Protection**: ${jg.antiBotAdd ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
+          `• **Unverified Bot Gate**: ${jg.antiUnverifiedBot ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
+          `• **No Avatar Gate**: ${jg.antiNoAvatar ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
+          `• **Advertising Name Gate**: ${jg.antiAdvertisingName ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
+          `• **Minimum Account Age**: ${jg.antiAccountAge ? `\`${jg.minAccountAgeDays} Days\` ✅` : '`DISABLED` ❌'}\n\n` +
+          `**Commands to Toggle:**\n` +
+          `\`.antinuke joingate noavatar\`\n` +
+          `\`.antinuke joingate unverified\`\n` +
+          `\`.antinuke joingate adname\`\n` +
+          `\`.antinuke joingate accage <days>\``,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // ─────────────────────────────────────────
+    // AUTO QUARANTINE SUBCOMMAND (.quarantine / .antinuke quarantine)
+    // ─────────────────────────────────────────
+    if (sub === 'quarantine' || sub === 'autoquarantine') {
+      const toggle = args[1]?.toLowerCase();
+      const aq = config.autoQuarantine;
+
+      if (toggle === 'strict' || toggle === 'mode') {
+        aq.strictMode = !aq.strictMode;
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`☣️ **Strict Role Creation Guard** is now **${aq.strictMode ? 'ENABLED' : 'DISABLED'}**.`);
+      }
+      if (toggle === 'member' || toggle === 'strictmember') {
+        aq.strictMemberRole = !aq.strictMemberRole;
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`☣️ **Strict Member Role Assignment Guard** is now **${aq.strictMemberRole ? 'ENABLED' : 'DISABLED'}**.`);
+      }
+      if (toggle === 'everyone' || toggle === 'publicroles') {
+        aq.monitorPublicRoles = !aq.monitorPublicRoles;
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`☣️ **Public Roles (@everyone) Protection** is now **${aq.monitorPublicRoles ? 'ENABLED' : 'DISABLED'}**.`);
+      }
+
+      const embed = createStyledEmbed({
+        title: `☣️ Auto Quarantine & Dangerous Permission Protection`,
+        description:
+          `• **Auto Quarantine Suite**: ${aq.enabled ? '`ACTIVE` 🟢' : '`DISABLED` 🔴'}\n` +
+          `• **Strict Admin Role Guard**: ${aq.strictMode ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
+          `• **Strict Member Role Assignment Guard**: ${aq.strictMemberRole ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
+          `• **Public Roles (@everyone) Protection**: ${aq.monitorPublicRoles ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n` +
+          `• **Channel Permissions Overwrite Guard**: ${aq.monitorChannelPerms ? '`ENABLED` ✅' : '`DISABLED` ❌'}\n\n` +
+          `**Commands to Toggle:**\n` +
+          `\`.antinuke quarantine strict\`\n` +
+          `\`.antinuke quarantine member\`\n` +
+          `\`.antinuke quarantine publicroles\``,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
     }
 
     // ─────────────────────────────────────────
@@ -490,6 +714,8 @@ module.exports = {
 
       const id = interaction.customId;
       const f = config.filters;
+      const jg = config.joinGate;
+      const aq = config.autoQuarantine;
 
       if (id === 'an_whitelist_mgr') {
         const entries = [];
@@ -502,15 +728,11 @@ module.exports = {
         });
       }
 
-      if (id === 'an_extraowner_mgr') {
-        const list = Array.from(config.extraOwners).map(uid => `• <@${uid}>`).join('\n') || 'None';
-        return interaction.reply({
-          content: `👑 **Extra Owners List**\n${list}\n\nUse \`.extraowner add @user\` or \`.extraowner remove @user\` to manage!`,
-          flags: 64
-        });
-      }
-
-      if (id === 'toggle_panic') {
+      if (id === 'toggle_joingate') {
+        jg.enabled = !jg.enabled;
+      } else if (id === 'toggle_quarantine') {
+        aq.enabled = !aq.enabled;
+      } else if (id === 'toggle_panic') {
         config.panicmode = !config.panicmode;
         if (config.panicmode) config.enabled = true;
       } else if (id === 'toggle_shield') {
@@ -556,4 +778,5 @@ module.exports = {
     });
   }
 };
+
 
