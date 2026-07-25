@@ -375,7 +375,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     .setDescription(
       `Below is the complete list of commands for **${cat.label}**.\n` +
       `Type \`.help <command>\` for detailed usage on any command.\n\n` +
-      cat.commands.map(cmd => `${emojis.DOT} **\`${cmd}\`**`).join('\n')
+      cat.commands.slice().sort().map(cmd => `${emojis.DOT} **\`${cmd}\`**`).join('\n')
     )
     .setFooter({
       text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
@@ -386,7 +386,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
 }
 
 function buildDropdownMenu() {
-  const options = CATEGORIES.map(cat => {
+  const options = CATEGORIES.slice().sort((a,b) => a.label.localeCompare(b.label)).map(cat => {
     return {
       label: cat.label,
       value: cat.value,

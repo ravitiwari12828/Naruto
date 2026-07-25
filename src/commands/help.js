@@ -53,7 +53,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
       `Active Modules :  ${CATEGORIES.length}\n` +
       `\`\`\`\n\n` +
       `**${emojis.SCROLL} All Modules**\n` +
-      CATEGORIES.map(cat => {
+      CATEGORIES.slice().sort((a,b) => a.label.localeCompare(b.label)).map(cat => {
         const customEmoji = EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
         return `${customEmoji} » **${cat.label}**`;
       }).join('\n') +
