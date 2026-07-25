@@ -1208,8 +1208,14 @@ client.on('messageCreate', async (message) => {
   }
 
   // 📌 ROCK-SOLID STICKY NOTES ENGINE (Always kept at the bottom)
+  const isStickyRemoveCmd = message.content.toLowerCase().includes('remove') ||
+                            message.content.toLowerCase().includes('delete') ||
+                            message.content.toLowerCase().includes('clear') ||
+                            message.content.toLowerCase().includes('off') ||
+                            message.content.toLowerCase().includes('unsticky');
+
   const stickyCmd = client.commands.get('stickynote');
-  if (stickyCmd && stickyCmd.stickyNotesStore) {
+  if (stickyCmd && stickyCmd.stickyNotesStore && !isStickyRemoveCmd) {
     const stickyData = stickyCmd.stickyNotesStore.get(message.channel.id);
     if (stickyData && stickyData.text) {
       // Delete previous sticky message if present
@@ -1224,7 +1230,13 @@ client.on('messageCreate', async (message) => {
       });
       // Send fresh sticky message at the bottom
       setTimeout(() => {
+        // Re-verify that sticky note wasn't deleted during timeout delay
+        if (!stickyCmd.stickyNotesStore.has(message.channel.id)) return;
         message.channel.send({ embeds: [stickyEmbed] }).then(sentMsg => {
+          if (!stickyCmd.stickyNotesStore.has(message.channel.id)) {
+            sentMsg.delete().catch(() => {});
+            return;
+          }
           stickyData.lastMsgId = sentMsg.id;
           stickyCmd.stickyNotesStore.set(message.channel.id, stickyData);
         }).catch(() => {});
