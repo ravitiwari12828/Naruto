@@ -575,61 +575,6 @@ module.exports = {
     }
 
     if (sub === 'messages') {
-      let activeTf = 'lifetime';
-      let activeCat = 'chat';
-      let embed = renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
-      let tfRow = buildTimeframeRow(activeTf, 'stf_');
-      let catRow = buildServerStatsCategoryRow(activeCat);
-      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
-      const collector = msg.createMessageComponentCollector({ time: 300000 });
-      collector.on('collect', async (i) => {
-        if (i.customId.startsWith('stf_')) activeTf = i.customId.replace('stf_', '');
-        else if (i.customId.startsWith('scat_')) activeCat = i.customId.replace('scat_', '');
-        return i.update({
-          embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)],
-          components: [buildTimeframeRow(activeTf, 'stf_'), buildServerStatsCategoryRow(activeCat)]
-        });
-      });
-      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
-      return;
-    }
-
-    if (sub === 'voice') {
-      let activeTf = 'lifetime';
-      let activeCat = 'voice';
-      let embed = renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
-      let tfRow = buildTimeframeRow(activeTf, 'stf_');
-      let catRow = buildServerStatsCategoryRow(activeCat);
-      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
-      const collector = msg.createMessageComponentCollector({ time: 300000 });
-      collector.on('collect', async (i) => {
-        if (i.customId.startsWith('stf_')) activeTf = i.customId.replace('stf_', '');
-        else if (i.customId.startsWith('scat_')) activeCat = i.customId.replace('scat_', '');
-        return i.update({
-          embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)],
-          components: [buildTimeframeRow(activeTf, 'stf_'), buildServerStatsCategoryRow(activeCat)]
-        });
-      });
-      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
-      return;
-    }
-
-    if (sub === 'invites') {
-      let activeTf = 'lifetime';
-      let activeCat = 'invites';
-      let embed = renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
-      let tfRow = buildTimeframeRow(activeTf, 'stf_');
-      let catRow = buildServerStatsCategoryRow(activeCat);
-      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
-      const collector = msg.createMessageComponentCollector({ time: 300000 });
-      collector.on('collect', async (i) => {
-        if (i.customId.startsWith('stf_')) activeTf = i.customId.replace('stf_', '');
-        else if (i.customId.startsWith('scat_')) activeCat = i.customId.replace('scat_', '');
-        return i.update({
-          embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)],
-          components: [buildTimeframeRow(activeTf, 'stf_'), buildServerStatsCategoryRow(activeCat)]
-        });
-      });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
     }

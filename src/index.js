@@ -2510,10 +2510,13 @@ client.on('interactionCreate', async (interaction) => {
     }
   }
 
-  // 12. ANALYTICS BUTTONS (stf_, scat_, jltf_, cmdtf_, tktf_, ucat_, utf_)
+  // 12. ANALYTICS BUTTONS (stf_, scat_, msgtf_, vctf_, invtf_, jltf_, cmdtf_, tktf_, ucat_, utf_)
   if (interaction.customId && (
     interaction.customId.startsWith('stf_') ||
     interaction.customId.startsWith('scat_') ||
+    interaction.customId.startsWith('msgtf_') ||
+    interaction.customId.startsWith('vctf_') ||
+    interaction.customId.startsWith('invtf_') ||
     interaction.customId.startsWith('jltf_') ||
     interaction.customId.startsWith('cmdtf_') ||
     interaction.customId.startsWith('tktf_') ||
@@ -2552,6 +2555,24 @@ client.on('interactionCreate', async (interaction) => {
         const row1 = analyticsCmd.buildTimeframeRow(timeframeKey, 'stf_');
         const row2 = analyticsCmd.buildServerStatsCategoryRow(activeCat);
         await interaction.message.edit({ embeds: [embed], components: [row1, row2] }).catch(() => {});
+      } else if (customId.startsWith('msgtf_')) {
+        const tf = customId.replace('msgtf_', '');
+        const res = analyticsCmd.renderMessagesLeaderboard(interaction.guild, tf, 1, interaction.user, client.user);
+        const row1 = analyticsCmd.buildTimeframeRow(tf, 'msgtf_');
+        const row2 = analyticsCmd.buildPaginationRow(res.currentPage, res.totalPages);
+        await interaction.message.edit({ embeds: [res.embed], components: [row1, row2] }).catch(() => {});
+      } else if (customId.startsWith('vctf_')) {
+        const tf = customId.replace('vctf_', '');
+        const res = analyticsCmd.renderVoiceLeaderboard(interaction.guild, tf, 1, interaction.user, client.user);
+        const row1 = analyticsCmd.buildTimeframeRow(tf, 'vctf_');
+        const row2 = analyticsCmd.buildPaginationRow(res.currentPage, res.totalPages);
+        await interaction.message.edit({ embeds: [res.embed], components: [row1, row2] }).catch(() => {});
+      } else if (customId.startsWith('invtf_')) {
+        const tf = customId.replace('invtf_', '');
+        const res = analyticsCmd.renderInvitesLeaderboard(interaction.guild, tf, 1, interaction.user, client.user);
+        const row1 = analyticsCmd.buildTimeframeRow(tf, 'invtf_');
+        const row2 = analyticsCmd.buildPaginationRow(res.currentPage, res.totalPages);
+        await interaction.message.edit({ embeds: [res.embed], components: [row1, row2] }).catch(() => {});
       } else if (customId.startsWith('jltf_')) {
         const tf = customId.replace('jltf_', '');
         const embed = analyticsCmd.renderJoinsLeavesPanel(interaction.guild, tf, interaction.user, client.user);
