@@ -13,42 +13,27 @@ const emojis = require('../utils/emojis');
 function renderAutomodFiltersEmbed(config, guild, author, clientUser) {
   const f = config;
 
+  const boxText =
+    '```\n' +
+    '╭───────────────────────────────────────────────────╮\n' +
+    '│         AUTOMOD SECURITY CONTROL HUB              │\n' +
+    '├───────────────────────────────────────────────────┤\n' +
+    '│ Anti-Spam Filter : ' + (f.antiSpam ? 'ENABLED  [OK]' : 'DISABLED [OFF]').padEnd(30, ' ') + ' │\n' +
+    '│ Invite Links     : ' + (f.inviteLinks ? 'ENABLED  [OK]' : 'DISABLED [OFF]').padEnd(30, ' ') + ' │\n' +
+    '│ Malicious Links  : ' + (f.maliciousLinks ? 'ENABLED  [OK]' : 'DISABLED [OFF]').padEnd(30, ' ') + ' │\n' +
+    '│ NSFW Links       : ' + (f.nsfwLinks ? 'ENABLED  [OK]' : 'DISABLED [OFF]').padEnd(30, ' ') + ' │\n' +
+    '│ Word Blacklist   : ' + (f.profanity ? 'ENABLED  [OK]' : 'DISABLED [OFF]').padEnd(16, ' ') + ' (' + String((f.wordBlacklist || []).length).padStart(2, '0') + ' words)    │\n' +
+    '│ Link Blacklist   : ' + (f.linkBlacklist && f.linkBlacklist.length > 0 ? 'ACTIVE   [OK]' : 'EMPTY    [OFF]').padEnd(16, ' ') + ' (' + String((f.linkBlacklist || []).length).padStart(2, '0') + ' links)    │\n' +
+    '╰───────────────────────────────────────────────────╯\n' +
+    '```';
+
   return createStyledEmbed({
     title: `🛡️ AutoMod Security Control Hub — ${guild.name}`,
     subtitle: `Interactive Content Guard & Link Protection Suite`,
-    description: `Select a category from the dropdown menu below or click the compact emoji buttons to toggle filters!`,
-    fields: [
-      {
-        name: `💬 ANTI SPAM`,
-        value: `Target message, mention, attachment spam & rapid chats.\nStatus: ${f.antiSpam ? '`ENABLED` ✅' : '`DISABLED` ❌'}`,
-        inline: true
-      },
-      {
-        name: `📢 INVITE LINKS`,
-        value: `Target Discord invites sent by advertisers.\nStatus: ${f.inviteLinks ? '`ENABLED` ✅' : '`DISABLED` ❌'}`,
-        inline: true
-      },
-      {
-        name: `🛡️ MALICIOUS LINKS`,
-        value: `Target phishing/scam websites & IP loggers.\nStatus: ${f.maliciousLinks ? '`ENABLED` ✅' : '`DISABLED` ❌'}`,
-        inline: true
-      },
-      {
-        name: `🔞 NSFW LINKS`,
-        value: `Target NSFW websites in SFW channels.\nStatus: ${f.nsfwLinks ? '`ENABLED` ✅' : '`DISABLED` ❌'}`,
-        inline: true
-      },
-      {
-        name: `🔤 WORD BLACKLIST`,
-        value: `Target profanity & custom words.\nStatus: ${f.profanity ? '`ENABLED` ✅' : '`DISABLED` ❌'} | Words: \`${(f.wordBlacklist || []).length}\``,
-        inline: true
-      },
-      {
-        name: `🔗 LINK BLACKLIST`,
-        value: `Target custom blacklisted URL domains.\nStatus: ${f.linkBlacklist && f.linkBlacklist.length > 0 ? '`ACTIVE` ✅' : '`EMPTY` ❌'} | Links: \`${(f.linkBlacklist || []).length}\``,
-        inline: true
-      }
-    ],
+    description:
+      `Welcome **${author.username}**! Configure live content guards & security filters.\n\n` +
+      boxText + `\n\n` +
+      `*Select a category from the dropdown menu below or click the compact emoji buttons to toggle filters!*`,
     requestedBy: author,
     clientUser
   });
@@ -61,20 +46,30 @@ function renderMiscSettingsEmbed(config, guild, author, clientUser) {
   const modlogsChan = m.modlogsChannelId ? `<#${m.modlogsChannelId}>` : '`Not Set`';
   const quarRole = m.quarantineRoleId ? `<@&${m.quarantineRoleId}>` : '`Quarantine`';
 
+  const boxText =
+    '```\n' +
+    '╭───────────────────────────────────────────────────╮\n' +
+    '│         MISCELLANEOUS & MODERATION CONFIG         │\n' +
+    '├───────────────────────────────────────────────────┤\n' +
+    '│ Prefix           : ' + String(m.prefix || '.').padEnd(30, ' ') + ' │\n' +
+    '│ Confirm Msgs     : ' + (m.moderatorConfirmation !== false ? 'ENABLED  [YES]' : 'DISABLED [NO]').padEnd(30, ' ') + ' │\n' +
+    '│ Always DM        : ' + (m.alwaysDmPunished !== false ? 'ENABLED  [YES]' : 'DISABLED [NO]').padEnd(30, ' ') + ' │\n' +
+    '│ Anon Staff       : ' + (m.hideStaffIdentity ? 'ENABLED  [ON]' : 'DISABLED [OFF]').padEnd(30, ' ') + ' │\n' +
+    '│ Default Timeout  : ' + (String(m.defaultTimeoutMinutes || 2880) + 'm').padEnd(30, ' ') + ' │\n' +
+    '│ Ban Purge Days   : ' + (String(m.daysPurgedOnBan || 7) + ' days').padEnd(30, ' ') + ' │\n' +
+    '╰───────────────────────────────────────────────────╯\n' +
+    '```';
+
   return createStyledEmbed({
     title: `⚙️ Miscellaneous & Moderation Config — ${guild.name}`,
     subtitle: `Global Bot Settings, Log Channels & Punishment Policies`,
-    fields: [
-      { name: `⚙️ Prefix`, value: `\`${m.prefix || '.'}\``, inline: true },
-      { name: `📜 Logs Channel`, value: logsChan, inline: true },
-      { name: `🛡️ ModLogs Channel`, value: modlogsChan, inline: true },
-      { name: `☣️ Quarantine Role`, value: quarRole, inline: true },
-      { name: `📝 Confirm Msgs`, value: m.moderatorConfirmation !== false ? '`YES` ✅' : '`NO` ❌', inline: true },
-      { name: `📬 Always DM`, value: m.alwaysDmPunished !== false ? '`YES` ✅' : '`NO` ❌', inline: true },
-      { name: `🎭 Anon Staff`, value: m.hideStaffIdentity ? '`ENABLED` ✅' : '`DISABLED` ❌', inline: true },
-      { name: `⏰ Default Timeout`, value: `\`${m.defaultTimeoutMinutes || 2880}m\``, inline: true },
-      { name: `🔨 Ban Purge Days`, value: `\`${m.daysPurgedOnBan || 7} days\``, inline: true }
-    ],
+    description:
+      `Welcome **${author.username}**! Configure global server moderation settings.\n\n` +
+      boxText + `\n\n` +
+      `**📜 Channel Mappings:**\n` +
+      `• Logs Channel: ${logsChan}\n` +
+      `• ModLogs Channel: ${modlogsChan}\n` +
+      `• Quarantine Role: ${quarRole}`,
     requestedBy: author,
     clientUser
   });
