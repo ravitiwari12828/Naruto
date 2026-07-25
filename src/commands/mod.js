@@ -3,6 +3,8 @@ const emojis = require('../utils/emojis');
 const db = require('../database/db');
 const { PermissionsBitField } = require('discord.js');
 
+const { dispatchLog } = require('../utils/logger');
+
 function missingPerms(message, perm) {
   return message.reply(`${emojis.WARNING} You need the **${perm}** permission to use this command.`);
 }
@@ -10,15 +12,53 @@ function botMissingPerms(message, perm) {
   return message.reply(`${emojis.WARNING} I need the **${perm}** permission to do that!`);
 }
 
+function recordAndLogCase(guild, { action, targetId, targetTag, executorId, executorTag, reason }) {
+  const caseData = db.createCase(guild.id, {
+    action,
+    targetId,
+    targetTag,
+    executorId,
+    executorTag,
+    reason
+  });
+
+  const colors = {
+    BAN: 0xED4245,
+    HACKBAN: 0xED4245,
+    KICK: 0xFEE75C,
+    MUTE: 0xE91E63,
+    UNMUTE: 0x57F287,
+    UNBAN: 0x57F287,
+    WARN: 0xFEE75C,
+    UNWARN: 0x57F287,
+    CLEARWARNS: 0x57F287
+  };
+
+  const color = colors[action.toUpperCase()] || 0x7E0808;
+
+  dispatchLog(guild, 'modcases', {
+    color,
+    title: `🛡️ Case #${caseData.caseId} | ${caseData.action}`,
+    description:
+      `• **Target:** <@${caseData.targetId}> (\`${caseData.targetTag}\`)\n` +
+      `• **Moderator:** <@${caseData.executorId}> (\`${caseData.executorTag}\`)\n` +
+      `• **Reason:** ${caseData.reason}`,
+    footer: `Case #${caseData.caseId} • Server Audit Logs`
+  });
+
+  return caseData;
+}
+
 module.exports = {
   name: 'mod',
-  description: 'Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn',
+  description: 'Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs',
   aliases: [
     'ban', 'hackban', 'kick', 'mute', 'unmute',
     'nuke', 'purge', 'purgebots',
     'unban', 'unbanall',
     'role', 'rolemenu', 'list',
-    'warn', 'warnings', 'clearwarns'
+    'warn', 'warnings', 'clearwarns',
+    'case', 'cases', 'modlogs', 'caseinfo'
   ],
 
   async execute(message, args) {
@@ -60,9 +100,18 @@ module.exports = {
       const reason = args.slice(1).join(' ') || 'No reason provided.';
       await target.ban({ reason, deleteMessageSeconds: 86400 });
 
+      const cData = recordAndLogCase(guild, {
+        action: 'BAN',
+        targetId: target.id,
+        targetTag: target.user.tag,
+        executorId: message.author.id,
+        executorTag: message.author.tag,
+        reason
+      });
+
       const embed = createStyledEmbed({
-        title: `🔨 User Banned`,
-        description: `**${target.user.tag}** has been banished from the village!\n\n**Reason:** ${reason}`,
+        title: `🔨 User Banned [Case #${cData.caseId}]`,
+        description: `**${target.user.tag}** has been banished from the village!\n\n**Case ID:** \`#${cData.caseId}\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
       });
@@ -90,9 +139,18 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Failed to ban user ID \`${userId}\`: ${err.message}`);
       });
 
+      const cData = recordAndLogCase(guild, {
+        action: 'HACKBAN',
+        targetId: userId,
+        targetTag: `User ID: ${userId}`,
+        executorId: message.author.id,
+        executorTag: message.author.tag,
+        reason
+      });
+
       const embed = createStyledEmbed({
-        title: `🔨 Hackban Executed`,
-        description: `User ID **\`${userId}\`** has been pre-emptively banned.\n\n**Reason:** ${reason}`,
+        title: `🔨 Hackban Executed [Case #${cData.caseId}]`,
+        description: `User ID **\`${userId}\`** has been pre-emptively banned.\n\n**Case ID:** \`#${cData.caseId}\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
       });
@@ -111,9 +169,18 @@ module.exports = {
       const reason = args.slice(1).join(' ') || 'No reason provided.';
       await target.kick(reason);
 
+      const cData = recordAndLogCase(guild, {
+        action: 'KICK',
+        targetId: target.id,
+        targetTag: target.user.tag,
+        executorId: message.author.id,
+        executorTag: message.author.tag,
+        reason
+      });
+
       const embed = createStyledEmbed({
-        title: `👢 User Kicked`,
-        description: `**${target.user.tag}** has been sent flying out of the village!\n\n**Reason:** ${reason}`,
+        title: `👢 User Kicked [Case #${cData.caseId}]`,
+        description: `**${target.user.tag}** has been sent flying out of the village!\n\n**Case ID:** \`#${cData.caseId}\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
       });
@@ -136,9 +203,18 @@ module.exports = {
 
       await target.timeout(duration, reason);
 
+      const cData = recordAndLogCase(guild, {
+        action: 'MUTE',
+        targetId: target.id,
+        targetTag: target.user.tag,
+        executorId: message.author.id,
+        executorTag: message.author.tag,
+        reason: `[${timeArg || '10m'}] ${reason}`
+      });
+
       const embed = createStyledEmbed({
-        title: `🔇 User Muted`,
-        description: `**${target.user.tag}** has been silenced!\n\n**Duration:** \`${timeArg || '10m'}\`\n**Reason:** ${reason}`,
+        title: `🔇 User Muted [Case #${cData.caseId}]`,
+        description: `**${target.user.tag}** has been silenced!\n\n**Case ID:** \`#${cData.caseId}\`\n**Duration:** \`${timeArg || '10m'}\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
       });
@@ -154,8 +230,17 @@ module.exports = {
 
       await target.timeout(null);
 
+      const cData = recordAndLogCase(guild, {
+        action: 'UNMUTE',
+        targetId: target.id,
+        targetTag: target.user.tag,
+        executorId: message.author.id,
+        executorTag: message.author.tag,
+        reason: 'Manual Unmute'
+      });
+
       const embed = createStyledEmbed({
-        title: `🔊 User Unmuted`,
+        title: `🔊 User Unmuted [Case #${cData.caseId}]`,
         description: `**${target.user.tag}** can speak again in the village!`,
         requestedBy: message.author,
         clientUser
@@ -172,8 +257,17 @@ module.exports = {
 
       await guild.bans.remove(userId).catch(() => null);
 
+      const cData = recordAndLogCase(guild, {
+        action: 'UNBAN',
+        targetId: userId,
+        targetTag: `User ID: ${userId}`,
+        executorId: message.author.id,
+        executorTag: message.author.tag,
+        reason: 'Manual Unban'
+      });
+
       const embed = createStyledEmbed({
-        title: `✅ User Unbanned`,
+        title: `✅ User Unbanned [Case #${cData.caseId}]`,
         description: `User ID \`${userId}\` has been pardoned and may return to the village.`,
         requestedBy: message.author,
         clientUser
@@ -374,6 +468,7 @@ module.exports = {
     }
 
     // 14. ⚠️ WARN [@user] [reason]
+    // 14. ⚠️ WARN [@user] [reason]
     if (invoked === 'warn') {
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Moderate Members');
 
@@ -386,15 +481,79 @@ module.exports = {
       const warnCount = (userObj.warns || 0) + 1;
       db.updateUser(target.id, u => { u.warns = warnCount; });
 
+      const cData = recordAndLogCase(guild, {
+        action: 'WARN',
+        targetId: target.id,
+        targetTag: target.user.tag,
+        executorId: message.author.id,
+        executorTag: message.author.tag,
+        reason: `[Warning #${warnCount}] ${reason}`
+      });
+
       try {
-        await target.user.send(`⚠️ You have received Warning #${warnCount} in **${guild.name}**.\n**Reason:** ${reason}`);
+        await target.user.send(`⚠️ You have received Warning #${warnCount} [Case #${cData.caseId}] in **${guild.name}**.\n**Reason:** ${reason}`);
       } catch (e) {}
 
       const embed = createStyledEmbed({
-        title: `⚠️ User Warned — Warning #${warnCount}`,
-        description: `**Member:** <@${target.id}> (\`${target.user.tag}\`)\n**Warning Count:** \`${warnCount} warning(s)\`\n**Reason:** ${reason}`,
+        title: `⚠️ User Warned [Case #${cData.caseId}]`,
+        description: `**Member:** <@${target.id}> (\`${target.user.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Warning Count:** \`${warnCount} warning(s)\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 15. 🛡️ CASE / CASES / MODLOGS (.case <id> | .cases [@user])
+    if (['case', 'cases', 'modlogs', 'caseinfo'].includes(invoked)) {
+      const targetUser = message.mentions.users.first();
+      const caseIdInput = args[0] && !isNaN(args[0]) ? parseInt(args[0]) : null;
+
+      if (caseIdInput) {
+        const c = db.getCase(guild.id, caseIdInput);
+        if (!c) return message.reply(`${emojis.WARNING} Case **#${caseIdInput}** not found in this server.`);
+
+        const embed = createStyledEmbed({
+          title: `🛡️ Moderation Case #${c.caseId}`,
+          description:
+            `• **Action:** \`${c.action}\`\n` +
+            `• **Target:** <@${c.targetId}> (\`${c.targetTag}\`)\n` +
+            `• **Moderator:** <@${c.executorId}> (\`${c.executorTag}\`)\n` +
+            `• **Reason:** ${c.reason}\n` +
+            `• **Date:** <t:${Math.floor(c.timestamp / 1000)}:F> (<t:${Math.floor(c.timestamp / 1000)}:R>)`,
+          requestedBy: message.author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      const userId = targetUser ? targetUser.id : (args[0] && args[0].length > 10 ? args[0] : null);
+      if (userId) {
+        const userCases = db.getUserCases(guild.id, userId);
+        if (userCases.length === 0) return message.reply(`${emojis.INFO} No moderation cases found for <@${userId}>.`);
+
+        const lines = userCases.map(c => `\`Case #${c.caseId}\` | **${c.action}** — ${c.reason.length > 40 ? c.reason.slice(0, 40) + '...' : c.reason} (By <@${c.executorId}>)`);
+        const embed = createStyledEmbed({
+          title: `🛡️ Cases for User`,
+          description: lines.join('\n'),
+          requestedBy: message.author,
+          clientUser,
+          footerText: `Total Cases: ${userCases.length}`
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      const allCases = db.getCases(guild.id);
+      if (allCases.length === 0) return message.reply(`${emojis.INFO} No moderation cases recorded yet.`);
+
+      const recentCases = allCases.slice(-15).reverse();
+      const lines = recentCases.map(c => `\`Case #${c.caseId}\` | **${c.action}** on <@${c.targetId}> — *${c.reason.length > 30 ? c.reason.slice(0, 30) + '...' : c.reason}*`);
+
+      const embed = createStyledEmbed({
+        title: `🛡️ Server Moderation Cases`,
+        description: lines.join('\n'),
+        requestedBy: message.author,
+        clientUser,
+        footerText: `Total Guild Cases: ${allCases.length}`
       });
       return message.channel.send({ embeds: [embed] });
     }

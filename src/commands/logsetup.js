@@ -24,7 +24,8 @@ function getOrCreateLoggingConfig(guildId) {
       messageLogs: null,
       voiceLogs: null,
       ticketLogs: null,
-      emojiLogs: null
+      emojiLogs: null,
+      modCaseLogs: null
     });
   }
   return loggingConfigs.get(guildId);
@@ -32,7 +33,7 @@ function getOrCreateLoggingConfig(guildId) {
 
 module.exports = {
   name: 'logsetup',
-  description: 'Setup and deploy audit logging channels (Unified single channel or 7 Specialized Pro channels)',
+  description: 'Setup and deploy audit logging channels (Unified single channel or 8 Specialized Pro channels)',
   aliases: ['logs', 'logging', 'auditlogs', 'setuplogs'],
   loggingConfigs,
 
@@ -66,7 +67,8 @@ module.exports = {
           `• Message Logs: ${config.messageLogs ? `<#${config.messageLogs}>` : '*Not Set*'}\n` +
           `• Voice Logs: ${config.voiceLogs ? `<#${config.voiceLogs}>` : '*Not Set*'}\n` +
           `• Ticket Transcripts: ${config.ticketLogs ? `<#${config.ticketLogs}>` : '*Not Set*'}\n` +
-          `• Emoji & Sticker Logs: ${config.emojiLogs ? `<#${config.emojiLogs}>` : '*Not Set*'}\n\n` +
+          `• Emoji & Sticker Logs: ${config.emojiLogs ? `<#${config.emojiLogs}>` : '*Not Set*'}\n` +
+          `• Moderation Case Logs: ${config.modCaseLogs ? `<#${config.modCaseLogs}>` : '*Not Set*'}\n\n` +
           (actionText ? `> 💡 **Action:** ${actionText}\n\n` : '') +
           `**Choose your preferred setup method below:**`,
         requestedBy: author,
@@ -83,7 +85,7 @@ module.exports = {
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId('log_setup_multi')
-            .setLabel('🛡️ 1-Click Pro Setup (7 Channels)')
+            .setLabel('🛡️ 1-Click Pro Setup (8 Channels)')
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
             .setCustomId('log_setup_disable')
@@ -144,7 +146,8 @@ module.exports = {
           { key: 'messageLogs', name: 'naruto-message-logs', topic: 'Message Deletions, Edits & Snipe Logs' },
           { key: 'voiceLogs', name: 'naruto-voice-logs', topic: 'Voice State Changes & Temp VCs' },
           { key: 'ticketLogs', name: 'naruto-ticket-logs', topic: 'Ticket Transcripts & Support Logs' },
-          { key: 'emojiLogs', name: 'naruto-emoji-logs', topic: 'Emoji & Sticker Add, Delete, Update Events' }
+          { key: 'emojiLogs', name: 'naruto-emoji-logs', topic: 'Emoji & Sticker Add, Delete, Update Events' },
+          { key: 'modCaseLogs', name: 'naruto-mod-cases', topic: 'Moderation Cases (Warn, Ban, Kick, Mute Logs with Case IDs)' }
         ];
 
         config.enabled = true;
@@ -168,7 +171,7 @@ module.exports = {
         }
 
         loggingConfigs.set(guild.id, config);
-        actionStatus = `All 7 Pro specialized log channels created and linked!`;
+        actionStatus = `All 8 Pro specialized log channels created and linked!`;
       }
 
       else if (interaction.customId === 'log_setup_disable') {

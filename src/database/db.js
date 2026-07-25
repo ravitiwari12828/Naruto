@@ -37,6 +37,7 @@ class ResilientDatabase {
       autoroles: {},
       autoresponses: {},
       autoreacts: {},
+      cases: {},
       automod: {},
       settings: {},
       analytics: []
@@ -114,6 +115,19 @@ class ResilientDatabase {
         emoji TEXT
       )`);
 
+      this.sqliteDb.run(`CREATE TABLE IF NOT EXISTS cases (
+        caseId INTEGER,
+        guildId TEXT,
+        action TEXT,
+        targetId TEXT,
+        targetTag TEXT,
+        executorId TEXT,
+        executorTag TEXT,
+        reason TEXT,
+        timestamp INTEGER,
+        PRIMARY KEY (guildId, caseId)
+      )`);
+
       this.sqliteDb.run(`CREATE TABLE IF NOT EXISTS automod (
         guildId TEXT PRIMARY KEY,
         enabled INTEGER DEFAULT 1,
@@ -178,6 +192,25 @@ class ResilientDatabase {
         rows.forEach(r => {
           if (!this.data.autoresponses[r.guildId]) this.data.autoresponses[r.guildId] = [];
           this.data.autoresponses[r.guildId].push({ id: r.id, trigger: r.trigger, response: r.response });
+        });
+      }
+    });
+
+    this.sqliteDb.all(`SELECT * FROM cases ORDER BY caseId ASC`, [], (err, rows) => {
+      if (!err && rows) {
+        rows.forEach(r => {
+          if (!this.data.cases[r.guildId]) this.data.cases[r.guildId] = [];
+          this.data.cases[r.guildId].push({
+            caseId: r.caseId,
+            guildId: r.guildId,
+            action: r.action,
+            targetId: r.targetId,
+            targetTag: r.targetTag,
+            executorId: r.executorId,
+            executorTag: r.executorTag,
+            reason: r.reason,
+            timestamp: r.timestamp
+          });
         });
       }
     });
@@ -542,6 +575,51 @@ class ResilientDatabase {
     }
     this.saveJSON();
     return true;
+  }
+
+  // --- MODERATION CASES ---
+  createCase(guildId, { action, targetId, targetTag, executorId, executorTag, reason }) {
+    if (!this.data.cases) this.data.cases = {};
+    if (!this.data.cases[guildId]) this.data.cases[guildId] = [];
+
+    const caseId = this.data.cases[guildId].length + 1;
+    const caseData = {
+      caseId,
+      guildId,
+      action: (action || 'MODERATION').toUpperCase(),
+      targetId: targetId || 'Unknown',
+      targetTag: targetTag || 'Unknown User',
+      executorId: executorId || 'Unknown',
+      executorTag: executorTag || 'Unknown Mod',
+      reason: reason || 'No reason provided',
+      timestamp: Date.now()
+    };
+
+    this.data.cases[guildId].push(caseData);
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `INSERT OR REPLACE INTO cases (caseId, guildId, action, targetId, targetTag, executorId, executorTag, reason, timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [caseId, guildId, caseData.action, caseData.targetId, caseData.targetTag, caseData.executorId, caseData.executorTag, caseData.reason, caseData.timestamp]
+      );
+    }
+    this.saveJSON();
+    return caseData;
+  }
+
+  getCases(guildId) {
+    if (!this.data.cases) this.data.cases = {};
+    return this.data.cases[guildId] || [];
+  }
+
+  getCase(guildId, caseId) {
+    const cases = this.getCases(guildId);
+    return cases.find(c => c.caseId === parseInt(caseId));
+  }
+
+  getUserCases(guildId, targetId) {
+    const cases = this.getCases(guildId);
+    return cases.filter(c => c.targetId === targetId);
   }
 
   // --- SERVER BACKUPS ---

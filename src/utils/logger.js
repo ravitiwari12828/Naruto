@@ -46,6 +46,7 @@ async function dispatchLog(guild, logType, embedData) {
       modmaillogs: ['modmail-logs'],
       modmailtranscripts: ['modmail-transcripts'],
       emojis: ['emoji-logs', 'naruto-emoji-logs', 'emojis-log'],
+      modcases: ['mod-cases', 'naruto-mod-cases', 'cases-log', 'mod-logs', 'naruto-mod-logs'],
       server: ['server-logs', 'server-log']
     };
 
