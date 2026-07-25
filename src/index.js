@@ -1938,6 +1938,37 @@ client.on('interactionCreate', async (interaction) => {
         return interaction.editReply({ content: `⏮️ Replayed track from beginning.` }).catch(() => {});
       }
     }
+    if (action === 'queue_playnow') {
+      if (player.queue.tracks.length > 0) {
+        const lastTrack = player.queue.tracks.pop();
+        if (lastTrack) {
+          player.queue.tracks.unshift(lastTrack);
+          await player.skip();
+          return interaction.editReply({ content: `▶️ Playing now: **${lastTrack.info.title}**!` }).catch(() => {});
+        }
+      }
+      return interaction.editReply({ content: `⚠️ No track found to play now.` }).catch(() => {});
+    }
+
+    if (action === 'queue_playnext') {
+      if (player.queue.tracks.length > 1) {
+        const lastTrack = player.queue.tracks.pop();
+        if (lastTrack) {
+          player.queue.tracks.unshift(lastTrack);
+          return interaction.editReply({ content: `⏭️ **${lastTrack.info.title}** will play next!` }).catch(() => {});
+        }
+      }
+      return interaction.editReply({ content: `ℹ️ Track is already set to play next.` }).catch(() => {});
+    }
+
+    if (action === 'queue_remove') {
+      if (player.queue.tracks.length > 0) {
+        const removed = player.queue.tracks.pop();
+        return interaction.editReply({ content: `🗑️ Removed **${removed?.info?.title || 'Track'}** from queue.` }).catch(() => {});
+      }
+      return interaction.editReply({ content: `⚠️ Queue is empty.` }).catch(() => {});
+    }
+
     if (action === 'music_autoplay') {
       player.autoplay = !player.autoplay;
       const status = player.autoplay ? '🟢 **ENABLED**' : '🔴 **DISABLED**';

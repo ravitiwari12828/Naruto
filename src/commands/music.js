@@ -132,38 +132,61 @@ function buildMusicPlayerEmbed(track, player) {
     .setTimestamp();
 }
 
+const { isGuildPremium, isUserPremium } = require('./premium');
+
 /**
- * Builds the STELLAR BEATS "Added to Queue" Card for playing next tracks.
+ * Builds the STELLAR BEATS "Added to Queue" Card for playing next tracks matching requested UI.
  */
-function buildAddedToQueueEmbed(track, position, author) {
+function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
+  const isPrem = (guildId && isGuildPremium(guildId)) || (author && isUserPremium(author.id));
+  const maxQueue = isPrem ? 200 : 50;
+  const queueType = isPrem ? 'Premium' : 'Standard';
+  const statusText = isPrem ? 'Premium active' : 'Free Tier (50 max)';
+  const footerNote = isPrem ? '*Premium features unlocked*' : '*Upgrade to Premium for 200 max queue*';
+
   const title = track?.info?.title || 'Unknown Track';
   const artist = track?.info?.author || 'Unknown Artist';
   const durationMs = track?.info?.duration || 0;
   const durationStr = formatDuration(durationMs);
   const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
 
-  let reqName = 'Member';
-  let reqAvatar = 'https://cdn.discordapp.com/embed/avatars/0.png';
-  if (author) {
-    reqName = author.username || author.displayName || 'Member';
-    if (typeof author.displayAvatarURL === 'function') {
-      reqAvatar = author.displayAvatarURL({ dynamic: true });
-    }
-  }
-
   return new EmbedBuilder()
-    .setColor(0xFF007F)
-    .setAuthor({ name: '➕ Added to Queue', iconURL: 'https://i.imgur.com/8Q9Z9zG.png' })
-    .setTitle(`**${title}**`)
-    .setURL(track?.info?.uri || 'https://spotify.com')
-    .addFields([
-      { name: '👤 Author:', value: artist, inline: true },
-      { name: '📍 Position:', value: `#${position}`, inline: true },
-      { name: '🌐 Duration:', value: durationStr, inline: true }
-    ])
+    .setColor(isPrem ? 0x7289DA : 0x00E5FF)
+    .setAuthor({ name: '🎶 Added to Queue', iconURL: 'https://cdn-icons-png.flaticon.com/512/4403/4403157.png' })
     .setThumbnail(artworkUrl)
-    .setFooter({ text: `Requested By ${reqName}`, iconURL: reqAvatar })
+    .setDescription(
+      `### Track Information\n\n` +
+      `• 🗸 **Title:** ${title}\n` +
+      `• 💼 **Artist:** ${artist}\n` +
+      `• ⌛ **Duration:** \`${durationStr}\`\n` +
+      `• ➕ **Status:** Position ${position}\n\n` +
+      `*Track has been queued successfully*\n\n` +
+      `---\n\n` +
+      `### Queue Information\n\n` +
+      `• ➕ **Position:** ${position}\n` +
+      `• 💼 **Queue Type:** ${queueType}\n` +
+      `• ⌛ **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
+      `• 🗸 **Status:** ${statusText}\n\n` +
+      `${footerNote}`
+    )
     .setTimestamp();
+}
+
+function buildAddedToQueueRow() {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('queue_playnow')
+      .setLabel('Play Now')
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId('queue_playnext')
+      .setLabel('Play Next')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('queue_remove')
+      .setLabel('Remove')
+      .setStyle(ButtonStyle.Danger)
+  );
 }
 
 /**
@@ -377,20 +400,34 @@ module.exports = {
             return message.reply(`${emojis.WARNING} No tracks found for **${query}**.`);
           }
 
+          const isPrem = isGuildPremium(message.guild.id) || isUserPremium(author.id);
+          const maxQueue = isPrem ? 200 : 50;
+          const currentQueueCount = player.queue.tracks.length;
+
           // Handle Playlists & Albums
           if (res.loadType === 'playlist' || res.playlist) {
             const playlistName = res.playlist?.name || res.playlistInfo?.name || 'Playlist';
-            const tracks = res.tracks;
-            await player.queue.add(tracks);
+            const roomLeft = maxQueue - currentQueueCount;
+
+            if (roomLeft <= 0) {
+              return message.reply(`${emojis.WARNING} **Queue Limit Reached!** ${isPrem ? 'Premium limit is **200 songs**.' : 'Free Tier limit is **50 songs**. Upgrade to **Premium** (\`.premium\`) to queue up to **200 songs**!'}`);
+            }
+
+            const tracksToAdd = res.tracks.slice(0, roomLeft);
+            await player.queue.add(tracksToAdd);
 
             if (!player.playing && !player.paused) {
               await player.play();
             }
 
-            return message.reply(`🎶 **Queued Playlist:** Added **${tracks.length} tracks** from **${playlistName}** to queue!`);
+            return message.reply(`🎶 **Queued Playlist:** Added **${tracksToAdd.length} tracks** from **${playlistName}** to queue! (Queue Usage: \`${player.queue.tracks.length}/${maxQueue}\`)`);
           }
 
           // Single Track Playback
+          if (currentQueueCount >= maxQueue) {
+            return message.reply(`${emojis.WARNING} **Queue Limit Reached!** ${isPrem ? 'Premium limit is **200 songs**.' : 'Free Tier limit is **50 songs**. Upgrade to **Premium** (\`.premium\`) to queue up to **200 songs**!'}`);
+          }
+
           const track = res.tracks[0];
           await player.queue.add(track);
 
@@ -401,15 +438,15 @@ module.exports = {
             } catch (e) {}
             return;
           } else {
-            const addedEmbed = buildAddedToQueueEmbed(track, player.queue.tracks.length, author);
-            const addedMsg = await message.reply({ embeds: [addedEmbed] }).catch(() => {});
+            const addedEmbed = buildAddedToQueueEmbed(track, player.queue.tracks.length, author, message.guild.id, player.queue.tracks.length);
+            const addedRow = buildAddedToQueueRow();
+            const addedMsg = await message.reply({ embeds: [addedEmbed], components: [addedRow] }).catch(() => {});
             if (player && addedMsg) {
               player.tempMessages = player.tempMessages || [];
               player.tempMessages.push(addedMsg);
-              // Auto-delete after 8 seconds if not already deleted by trackStart
               setTimeout(() => {
                 addedMsg.delete().catch(() => {});
-              }, 8000);
+              }, 12000);
             }
             return addedMsg;
           }
