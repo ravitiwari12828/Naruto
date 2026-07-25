@@ -423,8 +423,10 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
 
   // Executive Codeblock Box Layout for all modules
   const sortedCmds = cat.commands.slice().sort();
-  const cleanHeading = cat.label.toUpperCase() + ' COMMANDS';
-  const titlePadded = cleanHeading.slice(0, 24).padStart(Math.floor((24 + cleanHeading.length) / 2), ' ').padEnd(24, ' ');
+  let rawTitle = cat.label.includes('&') ? cat.label.split('&')[0].trim() : cat.label;
+  rawTitle = rawTitle.toUpperCase() + ' COMMANDS';
+  if (rawTitle.length > 24) rawTitle = rawTitle.slice(0, 24);
+  const titlePadded = rawTitle.padStart(Math.floor((24 + rawTitle.length) / 2), ' ').padEnd(24, ' ');
 
   const boxLines = [
     '╭──────────────────────────╮',

@@ -233,8 +233,7 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
   return createStyledEmbed({
     title,
     subtitle: `Member Activity Audit — ${guild.name}`,
-    description: description || undefined,
-    fields: fields.length > 0 ? fields : undefined,
+    description: boxText,
     thumbnailUrl: targetUser.displayAvatarURL({ dynamic: true, size: 512 }),
     footerText: `Timeframe: ${label} • Live Sync • Naruto One`,
     requestedBy: author,
