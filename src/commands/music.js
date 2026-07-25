@@ -108,7 +108,7 @@ function buildMusicPlayerEmbed(track, player) {
   const artworkUrl = track?.info?.artworkUrl || track?.pluginInfo?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
 
   return new EmbedBuilder()
-    .setColor(0x131a2a)
+    .setColor(0xFF007F)
     .setAuthor({ name: '♪ Now Playing' })
     .setTitle('Track Information')
     .setThumbnail(artworkUrl)
