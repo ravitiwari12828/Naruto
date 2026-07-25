@@ -1,5 +1,155 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+
+const GAUGE_TITLES = {
+  smartrate: { title: '🧠 Intelligence Scan', emoji: '🧠' },
+  rizzmeter: { title: '💅 Rizz Meter', emoji: '💅' },
+  shipname: { title: '🚢 Shinobi Ship Name', emoji: '🚢' },
+  wanted: { title: '🤠 Bingo Book Wanted Level', emoji: '🤠' },
+  wasted: { title: '💀 Battle Wasted Level', emoji: '💀' },
+  powerlevel: { title: '⚡ Power Level Scan', emoji: '⚡' },
+  coolrate: { title: '❄️ Coolness Rate', emoji: '❄️' },
+  bonk: { title: '🔨 Horny Bonk Level', emoji: '🔨' }
+};
+
+function renderGaugeBox(cmdName, score = null) {
+  if (score === null) {
+    return '```\n' +
+      '╭───────────────────────────────────────────────────╮\n' +
+      '│            SHINOBI LEVEL CALCULATOR               │\n' +
+      '│                                                   │\n' +
+      '│      0       5       10      50     100    1,000  │\n' +
+      '│   ( ─── ─── ─── ─── ─── ─── ─── ─── ─── ─── ─── ) │\n' +
+      '│                                                   │\n' +
+      '│               STATUS: ⏹️ IDLE                       │\n' +
+      '╰───────────────────────────────────────────────────╯\n' +
+      '```';
+  }
+
+  const info = GAUGE_TITLES[cmdName] || { title: 'LEVEL CALCULATOR' };
+  const filledCount = Math.round((score / 100) * 11);
+  const emptyCount = 11 - filledCount;
+  const arcGauge = '█'.repeat(filledCount) + '░'.repeat(emptyCount);
+  const bar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
+
+  return '```\n' +
+    '╭───────────────────────────────────────────────────╮\n' +
+    '│    ' + info.title.padEnd(40, ' ') + '       │\n' +
+    '│                                                   │\n' +
+    '│      0       5       10      50     100    1,000  │\n' +
+    '│   ( ' + arcGauge.split('').join('  ') + ' )       │\n' +
+    '│                                                   │\n' +
+    '│            CALCULATED LEVEL: ' + String(score).padStart(3, ' ') + '%               │\n' +
+    '╰───────────────────────────────────────────────────╯\n' +
+    '```\n' +
+    '`[' + bar + '] ' + score + '%`';
+}
+
+function getAssessmentText(cmdName, score, targetUser, author, user2) {
+  if (cmdName === 'smartrate') {
+    return score > 80 ? '🧠 **Super Genius** — Shikamaru IQ: 200+' : score > 50 ? '📜 **Above Average** — Kakashi-level reading speed' : '🌿 **Dense as a Rock** — Might Guy energy!';
+  }
+  if (cmdName === 'rizzmeter') {
+    return score > 80 ? '🔥 **Full Minato Yellow Flash Charm Unlocked**' : score > 50 ? '⚡ **Solid Chunin-Level Rizz**' : '🥹 **Naruto before Hinata noticed him**';
+  }
+  if (cmdName === 'shipname') {
+    const name1 = author.username.slice(0, Math.ceil(author.username.length / 2));
+    const name2 = (user2 || author).username.slice(Math.floor((user2 || author).username.length / 2));
+    const ship = name1 + name2;
+    return `🚢 **Ship Name:** \`${ship}\`\n\n` + (score >= 80 ? '🌸 A love story worthy of a Naruto ending arc!' : score >= 50 ? '⚡ There is potential — keep fighting for it!' : '💔 Awkward silence in Ichiraku ramen...');
+  }
+  if (cmdName === 'wanted') {
+    return score > 80 ? '☠️ **S-Rank Rogue Ninja** — Maximum Bounty! Report to Hokage!' : score > 50 ? '📜 **B-Rank Wanted** — Watch out for ANBU Black Ops' : '🌱 **Low-Level Rascal** — Only stole ramen!';
+  }
+  if (cmdName === 'wasted') {
+    return score > 80 ? '💀 **CRITICAL WASTED** — Defeated by a forbidden jutsu!' : score > 50 ? '⚔️ **Severe Battle Damage** — Needs Medical Ninja!' : '🍃 **Minor Scratches** — Ready for next mission!';
+  }
+  if (cmdName === 'powerlevel') {
+    return score > 80 ? '🔥 **BEYOND HOKAGE LEVEL** — Divine Chakra Unlocked!' : score > 50 ? '🏯 **Jonin / Kage-Class Shinobi** ⚔️' : '🌿 **Genin Level** — Keep training!';
+  }
+  if (cmdName === 'coolrate') {
+    return score > 80 ? '😤 **Sasuke-level Coolness** & Cold Aura 🔥' : score > 50 ? '📖 **Kakashi Mysterious Reading Vibes** ⚡' : '💪 **Rock Lee without eyebrows energy!**';
+  }
+  if (cmdName === 'bonk') {
+    return score > 80 ? '🔨 **MAXIMUM BONK LEVEL** — Sent to Horny Jail immediately!' : score > 50 ? '⚠️ **Moderate Horny Energy** — Caution advised!' : '😇 **Pure Soul** — Pure Konoha Shinobi!';
+  }
+  return '✨ Scan completed!';
+}
+
+function renderGaugeResultEmbed(cmdName, targetUser, userWhoClicked, clientUser, score, author = targetUser, user2 = null) {
+  const info = GAUGE_TITLES[cmdName] || { title: 'Level Calculator', emoji: '📊' };
+  const assessment = getAssessmentText(cmdName, score, targetUser, author, user2);
+
+  const activeEmbed = createStyledEmbed({
+    title: `${info.emoji} ${info.title} — ${targetUser.username}`,
+    subtitle: `Calculation Complete for ${targetUser.username}`,
+    description:
+      renderGaugeBox(cmdName, score) + `\n\n` +
+      `**Calculated Score:** \`${score} / 100\` (\`${score}%\`)\n\n` +
+      `${assessment}`,
+    requestedBy: userWhoClicked,
+    clientUser
+  });
+
+  const doneRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`gauge_done_${cmdName}`)
+      .setLabel(`✅ Scan Complete (${score}%)`)
+      .setStyle(ButtonStyle.Success)
+      .setDisabled(true)
+  );
+
+  return { activeEmbed, doneRow };
+}
+
+async function sendInteractiveGaugeCalculator(message, cmdName, targetUser, author, clientUser, user2 = null) {
+  const info = GAUGE_TITLES[cmdName] || { title: 'Level Calculator', emoji: '📊' };
+
+  const initialEmbed = createStyledEmbed({
+    title: `${info.emoji} ${info.title} — ${targetUser.username}`,
+    subtitle: `Click "Start Scan" below to run the gauge calculation!`,
+    description:
+      renderGaugeBox(cmdName, null) + `\n\n` +
+      `*Click the **▶️ Start Scan** button below to calculate level percentage (1-100%)!*`,
+    requestedBy: author,
+    clientUser
+  });
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`gauge_start_${cmdName}_${targetUser.id}_${author.id}`)
+      .setLabel('▶️ Start Scan')
+      .setStyle(ButtonStyle.Primary)
+  );
+
+  const msg = await message.channel.send({ embeds: [initialEmbed], components: [row] });
+
+  const collector = msg.createMessageComponentCollector({ time: 120000 });
+
+  collector.on('collect', async (interaction) => {
+    await interaction.deferUpdate().catch(() => {});
+
+    const score = Math.floor(Math.random() * 100) + 1;
+    const { activeEmbed, doneRow } = renderGaugeResultEmbed(cmdName, targetUser, interaction.user, clientUser, score, author, user2);
+
+    await msg.edit({ embeds: [activeEmbed], components: [doneRow] }).catch(() => {});
+    collector.stop();
+  });
+
+  collector.on('end', (collected, reason) => {
+    if (reason === 'time' && collected.size === 0) {
+      const timeoutRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setCustomId('gauge_timeout')
+          .setLabel('⏱️ Scan Timed Out')
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(true)
+      );
+      msg.edit({ components: [timeoutRow] }).catch(() => {});
+    }
+  });
+}
 
 function rng(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -423,103 +573,49 @@ async function fetchActionAnimeGif(action) {
 
     // 🧠 Smart Rate
     if (invoked === 'smartrate') {
-      const score = rng(1, 100);
-      const label = pick(SMART);
-      const embed = createStyledEmbed({
-        title: `🧠 Intelligence Scan — ${targetUser.username}`,
-        description: `**IQ Score: \`${score}/100\`**\n\n${label}`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      return sendInteractiveGaugeCalculator(message, 'smartrate', targetUser, author, clientUser);
     }
 
     // 💅 Rizz Meter
     if (invoked === 'rizzmeter') {
-      const score = rng(0, 100);
-      const label = RIZO.find((r, i) => score <= (i + 1) * (100 / RIZO.length)) || RIZO[RIZO.length - 1];
-      const bar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
-      const embed = createStyledEmbed({
-        title: `💅 Rizz Meter — ${targetUser.username}`,
-        description: `**Rizz Score: \`${score}%\`**\n\`${bar}\`\n\n${label}`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      return sendInteractiveGaugeCalculator(message, 'rizzmeter', targetUser, author, clientUser);
     }
 
     // 🚢 Ship Name
     if (invoked === 'shipname') {
       const user2 = message.mentions.users.first();
-      const name1 = author.username.slice(0, Math.ceil(author.username.length / 2));
-      const name2 = (user2 || author).username.slice(Math.floor((user2 || author).username.length / 2));
-      const ship = name1 + name2;
-      const compat = rng(50, 100);
-      const embed = createStyledEmbed({
-        title: `🚢 Shinobi Ship Name`,
-        subtitle: `${author.username} ❤️ ${(user2 || author).username}`,
-        description: `**Ship Name: \`${ship}\`**\n**Compatibility: \`${compat}%\`**\n\n${compat >= 80 ? '🌸 A love story worthy of a Naruto ending arc!' : '⚡ There\'s potential — keep fighting for it!'}`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      return sendInteractiveGaugeCalculator(message, 'shipname', targetUser, author, clientUser, user2);
     }
 
     // 🤠 Wanted Poster
     if (invoked === 'wanted') {
-      const bounty = rng(1000, 9999999).toLocaleString();
-      const crimes = ['Excessive use of Shadow Clone Jutsu in public', 'Eating all the Ichiraku ramen', 'Stealing Kakashi\'s Icha Icha book', 'Running in Chunin Exam corridors', 'Being too powerful and scaring villagers'];
-      const embed = createStyledEmbed({
-        title: `🤠 BINGO BOOK — WANTED`,
-        subtitle: `☠️ ${targetUser.username} — DANGEROUS MISSING-NIN`,
-        description: `**Bounty: \`${bounty} Ryo\`**\n\n**Crime:** *${pick(crimes)}*\n\nReport to the nearest Kage office immediately.`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      return sendInteractiveGaugeCalculator(message, 'wanted', targetUser, author, clientUser);
     }
 
     // 💀 Wasted
     if (invoked === 'wasted') {
-      const embed = createStyledEmbed({
-        title: `💀 WASTED — Game Over`,
-        subtitle: `${targetUser.username} has fallen in battle!`,
-        description: `*${author.username} defeated ${targetUser.username} using a forbidden jutsu.*\n\n**WASTED** — Respawning at the Leaf Village entrance in 3... 2... 1...`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      return sendInteractiveGaugeCalculator(message, 'wasted', targetUser, author, clientUser);
     }
 
     // ⚡ Power Level
     if (invoked === 'powerlevel') {
-      const power = rng(100, 999999).toLocaleString();
-      const ranks = ['Below Genin 😬', 'Genin Territory 🌿', 'Chunin Worthy 📜', 'Jonin Level ⚔️', 'Kage-Class 🏯', 'Sannin Tier 🐍', 'Legendary Shinobi 🌟', 'BEYOND HOKAGE LEVEL 🔥'];
-      const label = power.replace(/,/g, '') > 500000 ? ranks[7] : power.replace(/,/g, '') > 300000 ? ranks[5] : power.replace(/,/g, '') > 100000 ? ranks[4] : ranks[rng(0, 3)];
-      const embed = createStyledEmbed({
-        title: `⚡ Power Level Scan — ${targetUser.username}`,
-        description: `**Power Level: \`${power}\`**\n\n**Assessment: ${label}**`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      return sendInteractiveGaugeCalculator(message, 'powerlevel', targetUser, author, clientUser);
     }
 
     // ❄️ Cool Rate
     if (invoked === 'coolrate') {
-      const score = rng(0, 100);
-      const bar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
-      const label = score >= 90 ? 'Sasuke-level coolness 😤🔥' : score >= 70 ? 'Kakashi mysterious vibes 📖' : score >= 50 ? 'Solid Jonin energy ⚔️' : score >= 30 ? 'Naruto before the timeskip 🍥' : 'Rock Lee without his eyebrows 💪';
-      const embed = createStyledEmbed({
-        title: `❄️ Cool Rate — ${targetUser.username}`,
-        description: `**Cool Score: \`${score}%\`**\n\`${bar}\`\n\n${label}`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      return sendInteractiveGaugeCalculator(message, 'coolrate', targetUser, author, clientUser);
+    }
+
+    // 🔨 Bonk
+    if (invoked === 'bonk') {
+      return sendInteractiveGaugeCalculator(message, 'bonk', targetUser, author, clientUser);
     }
 
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
     return renderModuleHelpPanel(message, 'fun');
-  }
+  },
+
+  renderGaugeResultEmbed
 };
+

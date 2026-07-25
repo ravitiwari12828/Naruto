@@ -2462,6 +2462,32 @@ client.on('interactionCreate', async (interaction) => {
         return interaction.reply({ content: `⚙️ VoiceMaster action executed.`, flags: 64 });
     }
   }
+
+  // 10. LEVEL CALCULATOR GAUGE BUTTONS
+  if (interaction.customId && interaction.customId.startsWith('gauge_start_')) {
+    try {
+      await interaction.deferUpdate().catch(() => {});
+      const parts = interaction.customId.split('_');
+      const cmdName = parts[2] || 'smartrate';
+      const targetUserId = parts[3] || interaction.user.id;
+      const authorId = parts[4] || interaction.user.id;
+
+      let targetUser = interaction.user;
+      try {
+        targetUser = await client.users.fetch(targetUserId);
+      } catch (e) {}
+
+      const score = Math.floor(Math.random() * 100) + 1;
+      const funCmd = client.commands.get('fun');
+
+      if (funCmd && funCmd.renderGaugeResultEmbed) {
+        const { activeEmbed, doneRow } = funCmd.renderGaugeResultEmbed(cmdName, targetUser, interaction.user, client.user, score);
+        await interaction.message.edit({ embeds: [activeEmbed], components: [doneRow] }).catch(() => {});
+      }
+    } catch (e) {
+      console.error('gauge_start_ button error:', e);
+    }
+  }
 });
 
 // 🏷️ AUTONICK & AUTOROLE LISTENER ON MEMBER JOIN
