@@ -279,12 +279,12 @@ function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, a
   } else {
     pageEntries.forEach((item, idx) => {
       const rankNum = '#' + (startIdx + idx + 1);
-      const rankStr = rankNum.padEnd(3, ' ');
+      const rankStr = rankNum.padEnd(4, ' ');
       const member = guild.members.cache.get(item.userId);
       const rawName = member ? member.user.username : `User${item.userId}`;
       const nameStr = rawName.slice(0, 8).padEnd(8, ' ');
-      const valStr = `${item.total.toLocaleString()} msgs`.slice(0, 9).padEnd(9, ' ');
-      boxLines.push('│ ' + rankStr + ' ' + nameStr + ': ' + valStr + ' │');
+      const valStr = `${item.total.toLocaleString()} msgs`.slice(0, 10).padEnd(10, ' ');
+      boxLines.push('│ ' + rankStr + nameStr + ': ' + valStr + ' │');
     });
   }
 
@@ -327,12 +327,12 @@ function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, auth
   } else {
     pageEntries.forEach((item, idx) => {
       const rankNum = '#' + (startIdx + idx + 1);
-      const rankStr = rankNum.padEnd(3, ' ');
+      const rankStr = rankNum.padEnd(4, ' ');
       const member = guild.members.cache.get(item.userId);
       const rawName = member ? member.user.username : `User${item.userId}`;
       const nameStr = rawName.slice(0, 8).padEnd(8, ' ');
-      const valStr = formatDuration(item.total).slice(0, 9).padEnd(9, ' ');
-      boxLines.push('│ ' + rankStr + ' ' + nameStr + ': ' + valStr + ' │');
+      const valStr = formatDuration(item.total).slice(0, 10).padEnd(10, ' ');
+      boxLines.push('│ ' + rankStr + nameStr + ': ' + valStr + ' │');
     });
   }
 
@@ -375,12 +375,12 @@ function renderInvitesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, au
   } else {
     pageEntries.forEach((item, idx) => {
       const rankNum = '#' + (startIdx + idx + 1);
-      const rankStr = rankNum.padEnd(3, ' ');
+      const rankStr = rankNum.padEnd(4, ' ');
       const member = guild.members.cache.get(item.userId);
       const rawName = member ? member.user.username : `User${item.userId}`;
       const nameStr = rawName.slice(0, 8).padEnd(8, ' ');
-      const valStr = `${item.total.toLocaleString()} joins`.slice(0, 9).padEnd(9, ' ');
-      boxLines.push('│ ' + rankStr + ' ' + nameStr + ': ' + valStr + ' │');
+      const valStr = `${item.total.toLocaleString()} joins`.slice(0, 10).padEnd(10, ' ');
+      boxLines.push('│ ' + rankStr + nameStr + ': ' + valStr + ' │');
     });
   }
 
