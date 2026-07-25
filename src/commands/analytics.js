@@ -235,8 +235,8 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
     titleText = 'USER ACTIVITY STATS';
     rows = [
       { key: 'Username', val: targetUser.username },
-      { key: 'Msgs (' + label + ')', val: `${sTf.messages.toLocaleString()} msgs` },
-      { key: 'Voice(' + label + ')', val: formatDuration(sTf.voiceSeconds) },
+      { key: 'Messages', val: `${(sTf.messages || 0).toLocaleString()} msgs` },
+      { key: 'Voice', val: formatDuration(sTf.voiceSeconds || 0) },
       { key: 'Invites', val: `${(dbUser.invites || sLife.invites || 0).toLocaleString()} joins` },
       { key: 'Level', val: `Lvl ${dbUser.level || 1}` },
       { key: 'Rank', val: dbUser.rank || 'Student' }
@@ -252,8 +252,8 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
 
   const boxLines = [top, titleLine, mid];
   rows.forEach(r => {
-    const keyStr = r.key.slice(0, 11).padEnd(11, ' ');
-    const valStr = r.val.slice(0, 11).padEnd(11, ' ');
+    const keyStr = r.key.slice(0, 10).padEnd(10, ' ');
+    const valStr = r.val.slice(0, 12).padEnd(12, ' ');
     boxLines.push('│ ' + keyStr + ': ' + valStr + ' │');
   });
   boxLines.push(bot);
