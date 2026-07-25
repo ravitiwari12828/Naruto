@@ -27,24 +27,25 @@ async function dispatchLog(guild, logType, embedData) {
   // Fallback search by channel name in guild cache if not mapped explicitly
   if (!channelId) {
     const channelNameMap = {
+      narutologs: ['naruto-logs', 'all-logs'],
       modlogs: ['mod-logs', 'modlogs'],
       antinuke: ['antinuke-logs', 'bot-antinuke-logs'],
       automod: ['automod-logs', 'olympus-automod'],
-      messages: ['message-logs', 'msgs-log'],
+      messages: ['message-logs', 'msgs-log', 'message-log'],
       invites: ['invite-logs', 'invites-log'],
-      channels: ['channel-logs'],
-      roles: ['role-logs'],
-      members: ['member-logs'],
-      joinleave: ['join-leave-logs'],
-      voice: ['vc-logs', 'voice-logs'],
-      vc: ['vc-logs', 'voice-logs'],
+      channels: ['channel-logs', 'channel-log'],
+      roles: ['role-logs', 'role-log'],
+      members: ['member-logs', 'member-log'],
+      joinleave: ['join-leave-logs', 'join-leave-log', 'welcome-logs'],
+      voice: ['voice-logs', 'vc-logs', 'voice-log'],
+      vc: ['voice-logs', 'vc-logs', 'voice-log'],
       webhooks: ['webhook-logs'],
       banunban: ['ban-unban-logs'],
-      ticketlogs: ['ticket-logs'],
+      ticketlogs: ['ticket-logs', 'tickets-log'],
       transcripts: ['ticket-transcripts'],
       modmaillogs: ['modmail-logs'],
       modmailtranscripts: ['modmail-transcripts'],
-      server: ['server-logs']
+      server: ['server-logs', 'server-log']
     };
 
     const targets = channelNameMap[logType] || [logType];
@@ -53,6 +54,12 @@ async function dispatchLog(guild, logType, embedData) {
       channelId = foundChan.id;
       store.channels.set(logType, channelId);
     }
+  }
+
+  // Master Fallback: If specific channel is missing, try naruto-logs
+  if (!channelId) {
+    const narutoChan = guild.channels.cache.find(c => c.name === 'naruto-logs' || c.name === 'all-logs');
+    if (narutoChan) channelId = narutoChan.id;
   }
 
   if (!channelId) return;
