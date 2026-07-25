@@ -301,6 +301,35 @@ class ResilientDatabase {
     return user;
   }
 
+  updateUser(userId, updateFn) {
+    const user = this.getUser(userId);
+    if (typeof updateFn === 'function') {
+      updateFn(user);
+    }
+    user.level = Math.floor(0.1 * Math.sqrt(user.xp || 0)) + 1;
+    user.rank = calculateRank(user.level);
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `INSERT OR REPLACE INTO users (id, messages, voiceSeconds, invites, xp, level, rank, chakra, ryo, jutsuList) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [userId, user.messages, user.voiceSeconds, user.invites, user.xp, user.level, user.rank, user.chakra, user.ryo, JSON.stringify(user.jutsuList)]
+      );
+    }
+    this.saveJSON();
+    return user;
+  }
+
+  getTopUsersByXP(limit = 10) {
+    const allUsers = Object.entries(this.data.users || {}).map(([id, u]) => ({
+      userId: id,
+      xp: u.xp || 0,
+      level: u.level || 1,
+      rank: u.rank || 'Academy Student',
+      messages: u.messages || 0
+    })).sort((a, b) => b.xp - a.xp);
+    return allUsers.slice(0, limit);
+  }
+
   // --- TIME-WINDOWED ANALYTICS tracking ---
   recordAnalyticsEvent(guildId, userId, eventType, value = 1) {
     const now = Date.now();

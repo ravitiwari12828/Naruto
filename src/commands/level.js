@@ -249,7 +249,7 @@ module.exports = {
 
     // 5. .level leaderboard / .lb
     if (sub === 'leaderboard' || sub === 'lb' || sub === 'top') {
-      const top10 = db.getTopUsers('xp', 10);
+      const top10 = db.getTopUsersByXP(10);
       const lines = top10.map((u, i) => `\`#${i + 1}\` **<@${u.userId}>** — Level \`${u.level}\` (\`${u.xp} XP\`) • Rank: *${u.rank}*`);
 
       const embed = createStyledEmbed({
