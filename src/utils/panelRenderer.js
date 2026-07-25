@@ -328,10 +328,10 @@ const CATEGORIES = [
     unicodeFallback: '💾',
     heading: `💾 Server Backup Commands`,
     commands: [
-      'backup list', 'backup save',
+      'backup save',
+      'backup list',
       'backup restore <backupId>',
-      'backup delete <backupId>',
-      'serverbackup', 'bk save', 'bk list'
+      'backup delete <backupId>'
     ]
   }
 ];
