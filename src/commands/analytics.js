@@ -159,26 +159,26 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', author
   const textChannels = guild.channels.cache.filter(c => c.isTextBased()).size;
   const voiceChannels = guild.channels.cache.filter(c => c.isVoiceBased()).size;
 
+  const boxText =
+    '```\n' +
+    '╭──────────────────────────╮\n' +
+    '│  EXECUTIVE SERVER STATS  │\n' +
+    '├──────────────────────────┤\n' +
+    '│ Members   : ' + String(guild.memberCount).padEnd(12, ' ') + ' │\n' +
+    '│ Humans    : ' + String(humans).padEnd(12, ' ') + ' │\n' +
+    '│ Bots      : ' + String(bots).padEnd(12, ' ') + ' │\n' +
+    '│ Messages  : ' + String(stats.messages + ' msgs').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Voice     : ' + String(formatDuration(stats.voiceSeconds)).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Joins     : ' + String(stats.invites + ' joins').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Text Chans: ' + String(textChannels).padEnd(12, ' ') + ' │\n' +
+    '│ VoiceChans: ' + String(voiceChannels).padEnd(12, ' ') + ' │\n' +
+    '│ Roles     : ' + String(guild.roles.cache.size).padEnd(12, ' ') + ' │\n' +
+    '╰──────────────────────────╯\n' +
+    '```';
+
   const description =
     `Welcome **${author.username}**! Below is the executive **Server Analytics** dashboard.\n\n` +
-    `**${emojis.ROLES || '👥'} Member Metrics**\n` +
-    `\`\`\`\n` +
-    `Total Members : ${guild.memberCount.toLocaleString()}\n` +
-    `Human Users   : ${humans.toLocaleString()}\n` +
-    `Server Bots   : ${bots.toLocaleString()}\n` +
-    `\`\`\`\n\n` +
-    `**${emojis.MESSAGES || '💬'} Activity Overview (${label})**\n` +
-    `\`\`\`\n` +
-    `Messages Sent : ${stats.messages.toLocaleString()} msgs\n` +
-    `Voice Time    : ${formatDuration(stats.voiceSeconds)}\n` +
-    `Joins Tracked : ${stats.invites.toLocaleString()} members\n` +
-    `\`\`\`\n\n` +
-    `**📌 Guild Channels & Roles**\n` +
-    `\`\`\`\n` +
-    `Text Channels : ${textChannels}\n` +
-    `Voice Channels: ${voiceChannels}\n` +
-    `Server Roles  : ${guild.roles.cache.size}\n` +
-    `\`\`\`\n\n` +
+    boxText + `\n\n` +
     `**🏆 Top Active Chatters (${label})**\n` +
     `\`\`\`\n` +
     `${topChattersBlock}\n` +
@@ -207,46 +207,28 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
 
   let title = `${emojis.PROFILE || '👤'} ${targetUser.username} — Activity`;
   let description = '';
-  let fields = [];
 
-  if (activeCat === 'messages') {
-    title = `${emojis.MESSAGES || '💬'} ${targetUser.username} — Chat Messages`;
-    description =
-      `• **Today (24h):** \`${s1d.messages.toLocaleString()}\` msgs\n` +
-      `• **7 Days:** \`${s7d.messages.toLocaleString()}\` msgs\n` +
-      `• **30 Days:** \`${s30d.messages.toLocaleString()}\` msgs\n` +
-      `• **All Time:** \`${(dbUser.messages || sLife.messages).toLocaleString()}\` msgs`;
-  } else if (activeCat === 'voice') {
-    title = `${emojis.VOICE || '🔊'} ${targetUser.username} — Voice Time`;
-    description =
-      `• **Today (24h):** \`${formatDuration(s1d.voiceSeconds)}\`\n` +
-      `• **7 Days:** \`${formatDuration(s7d.voiceSeconds)}\`\n` +
-      `• **30 Days:** \`${formatDuration(s30d.voiceSeconds)}\`\n` +
-      `• **All Time:** \`${formatDuration(dbUser.voiceSeconds || sLife.voiceSeconds)}\``;
-  } else if (activeCat === 'invites') {
-    title = `${emojis.INVITES || '📨'} ${targetUser.username} — Invites`;
-    description =
-      `• **Today (24h):** \`${s1d.invites.toLocaleString()}\` joins\n` +
-      `• **7 Days:** \`${s7d.invites.toLocaleString()}\` joins\n` +
-      `• **30 Days:** \`${s30d.invites.toLocaleString()}\` joins\n` +
-      `• **All Time:** \`${(dbUser.invites || sLife.invites).toLocaleString()}\` joins`;
-  } else if (activeCat === 'shinobi') {
-    title = `${emojis.SHINOBI || '🍥'} ${targetUser.username} — Shinobi Rank`;
-    fields = [
-      { name: '📜 Ninja Rank', value: `\`${dbUser.rank || 'Academy Student'}\``, inline: true },
-      { name: '⚡ Level / XP', value: `\`Lvl ${dbUser.level || 1}\` (${dbUser.xp || 0} XP)`, inline: true },
-      { name: '🔮 Chakra & Ryo', value: `\`${dbUser.chakra || 100} Chakra\` | \`${dbUser.ryo || 500} Ryo\``, inline: false },
-      { name: '🌀 Jutsu List', value: `\`${(dbUser.jutsuList || ['Rasengan']).join(', ')}\``, inline: false }
-    ];
-  } else {
-    fields = [
-      { name: '💬 Messages (24h / Total)', value: `\`${s1d.messages.toLocaleString()}\` / \`${(dbUser.messages || sLife.messages).toLocaleString()}\``, inline: true },
-      { name: '🔊 Voice Time (24h / Total)', value: `\`${formatDuration(s1d.voiceSeconds)}\` / \`${formatDuration(dbUser.voiceSeconds || sLife.voiceSeconds)}\``, inline: true },
-      { name: '📨 Invites (24h / Total)', value: `\`${s1d.invites.toLocaleString()}\` / \`${(dbUser.invites || sLife.invites).toLocaleString()}\``, inline: true },
-      { name: '📜 Shinobi Rank', value: `\`${dbUser.rank || 'Academy Student'}\` (Lvl \`${dbUser.level || 1}\`)`, inline: true },
-      { name: '🔮 Chakra & Ryo', value: `\`${dbUser.chakra || 100} Chakra\` | \`${dbUser.ryo || 500} Ryo\``, inline: true }
-    ];
-  }
+  const totalMsgs = (dbUser.messages || sLife.messages || 0);
+  const totalVoice = formatDuration(dbUser.voiceSeconds || sLife.voiceSeconds || 0);
+  const totalInvites = (dbUser.invites || sLife.invites || 0);
+
+  const boxText =
+    '```\n' +
+    '╭──────────────────────────╮\n' +
+    '│    USER ACTIVITY STATS   │\n' +
+    '├──────────────────────────┤\n' +
+    '│ Username  : ' + String(targetUser.username).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Msgs (24h): ' + String(s1d.messages).padEnd(12, ' ') + ' │\n' +
+    '│ Msgs Total: ' + String(totalMsgs).padEnd(12, ' ') + ' │\n' +
+    '│ Voice(24h): ' + String(formatDuration(s1d.voiceSeconds)).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Voice Total: ' + String(totalVoice).slice(0, 11).padEnd(11, ' ') + ' │\n' +
+    '│ Invites   : ' + String(totalInvites).padEnd(12, ' ') + ' │\n' +
+    '│ Rank      : ' + String(dbUser.rank || 'Student').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+    '│ Level     : ' + String('Lvl ' + (dbUser.level || 1)).padEnd(12, ' ') + ' │\n' +
+    '╰──────────────────────────╯\n' +
+    '```';
+
+  description = boxText;
 
   return createStyledEmbed({
     title,

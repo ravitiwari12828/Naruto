@@ -421,9 +421,22 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     return embed;
   }
 
-  // Executive Codeblock Box Layout for all other modules
+  // Executive Codeblock Box Layout for all modules
   const sortedCmds = cat.commands.slice().sort();
-  const formattedCmds = sortedCmds.map(cmd => `.${cmd}`).join('\n');
+  const cleanHeading = cat.label.toUpperCase() + ' COMMANDS';
+  const titlePadded = cleanHeading.slice(0, 24).padStart(Math.floor((24 + cleanHeading.length) / 2), ' ').padEnd(24, ' ');
+
+  const boxLines = [
+    '╭──────────────────────────╮',
+    '│ ' + titlePadded + ' │',
+    '├──────────────────────────┤'
+  ];
+
+  sortedCmds.forEach(cmd => {
+    boxLines.push('│ ' + ('.' + cmd).slice(0, 24).padEnd(24, ' ') + ' │');
+  });
+
+  boxLines.push('╰──────────────────────────╯');
 
   const embed = new EmbedBuilder()
     .setColor(0x7E0808)
@@ -433,10 +446,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     .setDescription(
       `Welcome **${message.author.username}**! Below is the executive suite for **${cat.label}**.\n` +
       `Type any command below in your server to execute.\n\n` +
-      `**${cat.heading}**\n` +
-      `\`\`\`\n` +
-      `${formattedCmds}\n` +
-      `\`\`\``
+      '```\n' + boxLines.join('\n') + '\n```'
     )
     .setFooter({
       text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
