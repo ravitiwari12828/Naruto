@@ -217,14 +217,14 @@ module.exports = {
 
         const boxText =
           '```\n' +
-          '╭──────────────────────────────────╮\n' +
-          '│           AFK SETTINGS           │\n' +
-          '├──────────────────────────────────┤\n' +
-          '│ Status     : ACTIVE (AFK)        │\n' +
-          '│ Reason     : ' + String(data.reason || 'I am afk :)').slice(0, 19).padEnd(19, ' ') + ' │\n' +
-          '│ AFK Scope  : ' + scopeText.padEnd(19, ' ') + ' │\n' +
-          '│ DM Mention : ' + dmText.padEnd(19, ' ') + ' │\n' +
-          '╰──────────────────────────────────╯\n' +
+          '╭──────────────────────────╮\n' +
+          '│       AFK SETTINGS       │\n' +
+          '├──────────────────────────┤\n' +
+          '│ Status   : ACTIVE (AFK)  │\n' +
+          '│ Reason   : ' + String(data.reason || 'I am afk :)').slice(0, 13).padEnd(13, ' ') + ' │\n' +
+          '│ Scope    : ' + scopeText.padEnd(13, ' ') + ' │\n' +
+          '│ DM Notify: ' + dmText.padEnd(13, ' ') + ' │\n' +
+          '╰──────────────────────────╯\n' +
           '```';
 
         return createStyledEmbed({
@@ -369,17 +369,17 @@ module.exports = {
 
       const boxText =
         '```\n' +
-        '╭──────────────────────────────────╮\n' +
-        '│         ROLE INFORMATION         │\n' +
-        '├──────────────────────────────────┤\n' +
-        '│ Role Name  : ' + String('@' + role.name).slice(0, 19).padEnd(19, ' ') + ' │\n' +
-        '│ Role ID    : ' + String(role.id).slice(0, 19).padEnd(19, ' ') + ' │\n' +
-        '│ Color Hex  : ' + String(role.hexColor).padEnd(19, ' ') + ' │\n' +
-        '│ Members    : ' + String(role.members.size).padEnd(19, ' ') + ' │\n' +
-        '│ Position   : ' + String('#' + role.position).padEnd(19, ' ') + ' │\n' +
-        '│ Mentionable: ' + (role.mentionable ? 'YES' : 'NO').padEnd(19, ' ') + ' │\n' +
-        '│ Hoisted    : ' + (role.hoist ? 'YES' : 'NO').padEnd(19, ' ') + ' │\n' +
-        '╰──────────────────────────────────╯\n' +
+        '╭──────────────────────────╮\n' +
+        '│     ROLE INFORMATION     │\n' +
+        '├──────────────────────────┤\n' +
+        '│ Role Name: ' + String('@' + role.name).slice(0, 13).padEnd(13, ' ') + ' │\n' +
+        '│ Role ID  : ' + String(role.id).slice(0, 13).padEnd(13, ' ') + ' │\n' +
+        '│ Color Hex: ' + String(role.hexColor).padEnd(13, ' ') + ' │\n' +
+        '│ Members  : ' + String(role.members.size).padEnd(13, ' ') + ' │\n' +
+        '│ Position : ' + String('#' + role.position).padEnd(13, ' ') + ' │\n' +
+        '│ Mention  : ' + (role.mentionable ? 'YES' : 'NO').padEnd(13, ' ') + ' │\n' +
+        '│ Hoisted  : ' + (role.hoist ? 'YES' : 'NO').padEnd(13, ' ') + ' │\n' +
+        '╰──────────────────────────╯\n' +
         '```';
 
       const embed = createStyledEmbed({
@@ -487,16 +487,16 @@ module.exports = {
 
       const boxText =
         '```\n' +
-        '╭──────────────────────────────────╮\n' +
-        '│     USER PROFILE & PERMISSIONS   │\n' +
-        '├──────────────────────────────────┤\n' +
-        '│ Username   : ' + String(user.username).slice(0, 19).padEnd(19, ' ') + ' │\n' +
-        '│ User ID    : ' + String(user.id).slice(0, 19).padEnd(19, ' ') + ' │\n' +
-        '│ Account    : ' + (user.bot ? 'BOT ACCOUNT' : 'HUMAN MEMBER').padEnd(19, ' ') + ' │\n' +
-        '│ Created At : ' + String(createdStr).padEnd(19, ' ') + ' │\n' +
-        '│ Joined     : ' + String(joinedStr).padEnd(19, ' ') + ' │\n' +
-        '│ Top Role   : ' + String(topRoleName).slice(0, 19).padEnd(19, ' ') + ' │\n' +
-        '╰──────────────────────────────────╯\n' +
+        '╭──────────────────────────╮\n' +
+        '│       USER PROFILE       │\n' +
+        '├──────────────────────────┤\n' +
+        '│ Username : ' + String(user.username).slice(0, 13).padEnd(13, ' ') + ' │\n' +
+        '│ User ID  : ' + String(user.id).slice(0, 13).padEnd(13, ' ') + ' │\n' +
+        '│ Account  : ' + (user.bot ? 'BOT ACCOUNT' : 'HUMAN MEMBER').padEnd(13, ' ') + ' │\n' +
+        '│ Created  : ' + String(createdStr).padEnd(13, ' ') + ' │\n' +
+        '│ Joined   : ' + String(joinedStr).padEnd(13, ' ') + ' │\n' +
+        '│ Top Role : ' + String(topRoleName).slice(0, 13).padEnd(13, ' ') + ' │\n' +
+        '╰──────────────────────────╯\n' +
         '```';
 
       const embed = createStyledEmbed({
