@@ -1122,27 +1122,36 @@ client.on('messageCreate', async (message) => {
       const chanName = `ticket-${cleanName}`;
 
       try {
-        const ticketChan = await guild.channels.create({
-          name: chanName,
-          type: ChannelType.GuildText,
-          parent: category ? category.id : undefined,
-          permissionOverwrites: [
-            { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
-          ]
-        });
+        let ticketChan = guild.channels.cache.find(c => c.name === chanName && c.parentId === (category ? category.id : c.parentId));
+        let isNew = false;
 
-        // Staff Alert Embed matching Screenshot 2
-        const alertEmbed = new EmbedBuilder()
-          .setColor(0x57F287)
-          .setTitle(`New Ticket: ${message.author.username}`)
-          .addFields(
-            { name: 'User', value: `<@${message.author.id}> 🚩`, inline: true },
-            { name: 'ID', value: `\`${message.author.id}\``, inline: true }
-          )
-          .setDescription(`Use \`.r <message>\` to reply to the user.\nUse \`.close [reason]\` to end the ticket.\nUse \`.modmailtranscript\` to generate HTML transcript.`)
-          .setFooter({ text: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}` });
+        if (!ticketChan) {
+          isNew = true;
+          ticketChan = await guild.channels.create({
+            name: chanName,
+            type: ChannelType.GuildText,
+            parent: category ? category.id : undefined,
+            permissionOverwrites: [
+              { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
+            ]
+          });
+        }
 
-        await ticketChan.send({ content: '@here', embeds: [alertEmbed] });
+        if (isNew) {
+          // Staff Alert Embed matching Screenshot 2
+          const alertEmbed = new EmbedBuilder()
+            .setColor(0x57F287)
+            .setTitle(`New Ticket: ${message.author.username}`)
+            .addFields(
+              { name: 'User', value: `<@${message.author.id}> 🚩`, inline: true },
+              { name: 'ID', value: `\`${message.author.id}\``, inline: true }
+            )
+            .setDescription(`Use \`.r <message>\` to reply to the user.\nUse \`.close [reason]\` to end the ticket.\nUse \`.modmailtranscript\` to generate HTML transcript.`)
+            .setFooter({ text: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}` });
+
+          await ticketChan.send({ content: '@here', embeds: [alertEmbed] });
+          await message.reply(`📬 **ModMail Opened**: Your message has been received by support staff. We will reply shortly!`);
+        }
 
         ticket = {
           channelId: ticketChan.id,
@@ -1152,7 +1161,6 @@ client.on('messageCreate', async (message) => {
         };
 
         modmailCmd.activeModmailTickets.set(message.author.id, ticket);
-        await message.reply(`📬 **ModMail Opened**: Your message has been received by support staff. We will reply shortly!`);
       } catch (e) {
         console.error('Failed to create ModMail channel:', e.message);
         return;
