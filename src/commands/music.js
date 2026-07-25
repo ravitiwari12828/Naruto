@@ -120,6 +120,40 @@ function buildMusicPlayerEmbed(track, player) {
 }
 
 /**
+ * Builds the STELLAR BEATS "Added to Queue" Card for playing next tracks.
+ */
+function buildAddedToQueueEmbed(track, position, author) {
+  const title = track?.info?.title || 'Unknown Track';
+  const artist = track?.info?.author || 'Unknown Artist';
+  const durationMs = track?.info?.duration || 0;
+  const durationStr = formatDuration(durationMs);
+  const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
+
+  let reqName = 'Member';
+  let reqAvatar = 'https://cdn.discordapp.com/embed/avatars/0.png';
+  if (author) {
+    reqName = author.username || author.displayName || 'Member';
+    if (typeof author.displayAvatarURL === 'function') {
+      reqAvatar = author.displayAvatarURL({ dynamic: true });
+    }
+  }
+
+  return new EmbedBuilder()
+    .setColor(0xFF007F)
+    .setAuthor({ name: '➕ Added to Queue', iconURL: 'https://i.imgur.com/8Q9Z9zG.png' })
+    .setTitle(`**${title}**`)
+    .setURL(track?.info?.uri || 'https://spotify.com')
+    .addFields([
+      { name: '👤 Author:', value: artist, inline: true },
+      { name: '📍 Position:', value: `#${position}`, inline: true },
+      { name: '🌐 Duration:', value: durationStr, inline: true }
+    ])
+    .setThumbnail(artworkUrl)
+    .setFooter({ text: `Requested By ${reqName}`, iconURL: reqAvatar })
+    .setTimestamp();
+}
+
+/**
  * Builds the exact 3-row 4-button grid layout + dropdown menus.
  */
 function buildMusicActionRows(player = null) {
@@ -335,7 +369,8 @@ module.exports = {
             } catch (e) {}
             return;
           } else {
-            return message.reply({ content: `✅ **Added to Queue:** [${track.info.title}](${track.info.uri || 'https://spotify.com'}) at position **#${player.queue.tracks.length}**.` });
+            const addedEmbed = buildAddedToQueueEmbed(track, player.queue.tracks.length, author);
+            return message.reply({ embeds: [addedEmbed] });
           }
         } catch (err) {
           console.error('[Music Play Error]', err.message || err);
