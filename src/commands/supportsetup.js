@@ -50,7 +50,7 @@ module.exports = {
       if (!staffRole) {
         staffRole = await guild.roles.create({
           name: 'ANBU Staff',
-          color: 0x00E5FF, // Cyan
+          color: 0x7E0808,
           hoist: true,
           reason: 'Support Server Auto Setup'
         });

@@ -63,7 +63,7 @@ function buildWelcomeCard(config, member) {
   }
 
   const embed = new EmbedBuilder()
-    .setColor(0x00E5FF)
+    .setColor(0x7E0808)
     .setAuthor({ name: user.tag, iconURL: user.displayAvatarURL({ dynamic: true }) })
     .setTitle(title || `Welcome to ${guild.name}`)
     .setDescription(description)

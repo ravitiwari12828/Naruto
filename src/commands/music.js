@@ -151,7 +151,7 @@ function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
   const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
 
   return new EmbedBuilder()
-    .setColor(isPrem ? 0x7289DA : 0x00E5FF)
+    .setColor(isPrem ? 0x7289DA : 0x7E0808)
     .setAuthor({ name: '🎶 Added to Queue', iconURL: 'https://cdn-icons-png.flaticon.com/512/4403/4403157.png' })
     .setThumbnail(artworkUrl)
     .setDescription(

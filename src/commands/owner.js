@@ -30,7 +30,7 @@ module.exports = {
     const devPortalBanner = client.botBannerURL || null;
 
     const embed = new EmbedBuilder()
-      .setColor(0x00E5FF)
+      .setColor(0x7E0808)
       .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatar })
       .setThumbnail(botAvatar)
       .setTitle(`${emojis.OWNER_CROWN} Bot Owner Executive Commands`)

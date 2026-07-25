@@ -341,7 +341,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
 
   if (cat.value === 'fun') {
     const embed = new EmbedBuilder()
-      .setColor(0x00E5FF)
+      .setColor(0x7E0808)
       .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
       .setThumbnail(botAvatarURL)
       .setTitle(`${emojis.FUN || '🎉'} Shinobi Fun & Entertainment Suite`)
@@ -368,7 +368,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   }
 
   const embed = new EmbedBuilder()
-    .setColor(0x00E5FF)
+    .setColor(0x7E0808)
     .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
     .setThumbnail(botAvatarURL)
     .setTitle(`${cat.heading}`)

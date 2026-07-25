@@ -73,7 +73,7 @@ async function dispatchLog(guild, logType, embedData) {
       embed = embedData;
     } else {
       embed = new EmbedBuilder()
-        .setColor(embedData.color || 0x00E5FF)
+        .setColor(embedData.color || 0x7E0808)
         .setTitle(embedData.title || `📜 ${logType.toUpperCase()} Log`)
         .setDescription(embedData.description || '')
         .setTimestamp();

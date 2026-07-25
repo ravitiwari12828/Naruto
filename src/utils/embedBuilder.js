@@ -1,6 +1,6 @@
 const { EmbedBuilder } = require('discord.js');
 
-const ACCENT_COLOR = process.env.DEFAULT_EMBED_COLOR || 0x00E5FF;
+const ACCENT_COLOR = process.env.DEFAULT_EMBED_COLOR || 0x7E0808;
 
 function getBannerFiles() {
   return [];

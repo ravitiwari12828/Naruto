@@ -101,7 +101,7 @@ function buildServerInfoMainEmbed(guild, owner, activeTab = 'overview', author, 
   }
 
   const embed = new EmbedBuilder()
-    .setColor(0x00E5FF)
+    .setColor(0x7E0808)
     .setAuthor({ name: title, iconURL: guild.iconURL({ dynamic: true }) || clientUser.displayAvatarURL({ dynamic: true }) })
     .setThumbnail(guild.iconURL({ dynamic: true, size: 512 }) || clientUser.displayAvatarURL({ dynamic: true }))
     .setDescription(description)

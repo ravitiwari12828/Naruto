@@ -50,7 +50,7 @@ module.exports = {
       if (channel && channel.isTextBased()) {
         try {
           const testEmbed = new EmbedBuilder()
-            .setColor(0x00E5FF)
+            .setColor(0x7E0808)
             .setTitle(`✅ Log Test: ${item.title}`)
             .setDescription(`This is an automated verification test sent by **Naruto Bot** to confirm that <#${channel.id}> is active and receiving logs correctly.`)
             .addFields([

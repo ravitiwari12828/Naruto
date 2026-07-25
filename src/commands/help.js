@@ -42,7 +42,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
   const totalCommands = message.client.commands && message.client.commands.size > 0 ? message.client.commands.size : 285;
 
   const embed = new EmbedBuilder()
-    .setColor(0x00E5FF)
+    .setColor(0x7E0808)
     .setAuthor({ name: 'Naruto Help Panel', iconURL: botAvatar })
     .setThumbnail(botAvatar)
     .setDescription(
