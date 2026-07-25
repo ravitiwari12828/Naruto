@@ -97,33 +97,74 @@ function initLavalink(client) {
   });
 
   // ─────────────────────────────────────────
-  // AUTOPLAY ENGINE: Automatically fetch & queue recommended songs
+  // AUTOPLAY ENGINE: Smart recommendation engine for distinct similar songs
   // ─────────────────────────────────────────
   lavalink.on('trackEnd', async (player, track, reason) => {
     if (!player) return;
 
+    // Initialize Autoplay History Set on player
+    if (!player.autoplayHistory) player.autoplayHistory = new Set();
+
+    if (track?.info) {
+      if (track.info.identifier) player.autoplayHistory.add(track.info.identifier);
+      if (track.info.title) player.autoplayHistory.add(track.info.title.toLowerCase().trim());
+    }
+
     // Check if Autoplay is enabled and queue is empty
     if (player.autoplay && player.queue.tracks.length === 0) {
       try {
-        console.log(`♾️ [Autoplay] Queue ended for guild ${player.guildId}. Searching related tracks for "${track?.info?.title}"...`);
+        console.log(`♾️ [Autoplay] Finding smart similar recommendations for "${track?.info?.title}" by "${track?.info?.author}"...`);
 
-        // Search YouTube Music for related artist & genre tracks
-        const searchQuery = `${track?.info?.author || ''} ${track?.info?.title || ''} song`.trim();
-        let res = await player.search({ query: searchQuery, source: 'ytmsearch' }, client.user);
-        if (!res || !res.tracks.length) {
-          res = await player.search({ query: searchQuery, source: 'ytsearch' }, client.user);
-        }
+        const artist = track?.info?.author || '';
+        const title = track?.info?.title || '';
 
-        if (res && res.tracks.length) {
-          // Filter out the exact same song
-          const nextTrack = res.tracks.find(t => t.info.identifier !== track?.info?.identifier) || res.tracks[0];
-          await player.queue.add(nextTrack);
+        // Clean title for search
+        const cleanTitle = title.replace(/\(Official Video\)/gi, '').replace(/\[Official Music Video\]/gi, '').trim();
 
-          const channel = client.channels.cache.get(player.textChannelId);
-          if (channel) {
-            channel.send(`♾️ **Autoplay:** Automatically playing recommended track **[${nextTrack.info.title}](${nextTrack.info.uri})**!`).catch(() => {});
+        // Multi-query search candidates for distinct similar tracks
+        const searchQueries = [
+          `${artist} hits playlist`,
+          `${artist} radio mix`,
+          `${cleanTitle} similar songs`,
+          `${artist} top songs`
+        ];
+
+        let nextTrack = null;
+
+        for (const query of searchQueries) {
+          if (!query.trim()) continue;
+
+          // Search Spotify first, then YTM, then YT
+          const sources = ['spsearch', 'ytmsearch', 'ytsearch'];
+          for (const src of sources) {
+            try {
+              const res = await player.search({ query, source: src }, client.user);
+              if (res && res.tracks && res.tracks.length) {
+                // Find a track that hasn't been played in this session
+                const candidate = res.tracks.find(t => {
+                  const tId = t.info.identifier;
+                  const tTitle = t.info.title.toLowerCase().trim();
+                  return tId !== track?.info?.identifier &&
+                         !player.autoplayHistory.has(tId) &&
+                         !player.autoplayHistory.has(tTitle);
+                });
+
+                if (candidate) {
+                  nextTrack = candidate;
+                  break;
+                }
+              }
+            } catch (e) {}
           }
 
+          if (nextTrack) break;
+        }
+
+        if (nextTrack) {
+          player.autoplayHistory.add(nextTrack.info.identifier);
+          player.autoplayHistory.add(nextTrack.info.title.toLowerCase().trim());
+
+          await player.queue.add(nextTrack);
           await player.play();
         }
       } catch (err) {
