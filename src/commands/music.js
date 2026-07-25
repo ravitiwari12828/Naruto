@@ -484,7 +484,6 @@ module.exports = {
 
             if (!player.playing && !player.paused) {
               await player.play();
-              await sendMusicCard(message.channel, tracks[0], player);
             }
 
             return message.reply(`🎶 **Queued Playlist:** Added **${tracks.length} tracks** from **${playlistName}** to queue!`);
@@ -496,9 +495,9 @@ module.exports = {
 
           if (!player.playing && !player.paused) {
             await player.play();
-            return await sendMusicCard(message.channel, track, player);
+            return message.reply(`▶️ **Now Playing:** [${track.info.title}](${track.info.uri || 'https://spotify.com'})`);
           } else {
-            return message.reply(`✅ **Added to Queue:** [${track.info.title}](${track.info.uri || 'https://youtube.com'}) at position **#${player.queue.tracks.length}**.`);
+            return message.reply(`✅ **Added to Queue:** [${track.info.title}](${track.info.uri || 'https://spotify.com'}) at position **#${player.queue.tracks.length}**.`);
           }
         } catch (err) {
           console.error('[Music Play Error]', err.message || err);
