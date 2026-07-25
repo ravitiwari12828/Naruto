@@ -154,6 +154,13 @@ class ResilientDatabase {
         timestamp INTEGER
       )`);
 
+      this.sqliteDb.run(`CREATE TABLE IF NOT EXISTS log_channels (
+        guildId TEXT,
+        logType TEXT,
+        channelId TEXT,
+        PRIMARY KEY (guildId, logType)
+      )`);
+
       this.loadFromSQLite();
     });
   }
@@ -211,6 +218,16 @@ class ResilientDatabase {
             reason: r.reason,
             timestamp: r.timestamp
           });
+        });
+      }
+    });
+
+    this.sqliteDb.all(`SELECT * FROM log_channels`, [], (err, rows) => {
+      if (!err && rows) {
+        if (!this.data.logChannels) this.data.logChannels = {};
+        rows.forEach(r => {
+          if (!this.data.logChannels[r.guildId]) this.data.logChannels[r.guildId] = {};
+          this.data.logChannels[r.guildId][r.logType] = r.channelId;
         });
       }
     });
@@ -692,6 +709,26 @@ class ResilientDatabase {
     this.data.favorites[userId] = [];
     this.saveJSON();
     return true;
+  }
+
+  // --- LOG CHANNELS PERSISTENCE ---
+  saveLogChannel(guildId, logType, channelId) {
+    if (!this.data.logChannels) this.data.logChannels = {};
+    if (!this.data.logChannels[guildId]) this.data.logChannels[guildId] = {};
+    this.data.logChannels[guildId][logType] = channelId;
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `INSERT OR REPLACE INTO log_channels (guildId, logType, channelId) VALUES (?, ?, ?)`,
+        [guildId, logType, channelId]
+      );
+    }
+    this.saveJSON();
+  }
+
+  getLogChannels(guildId) {
+    if (!this.data.logChannels || !this.data.logChannels[guildId]) return {};
+    return this.data.logChannels[guildId];
   }
 }
 

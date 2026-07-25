@@ -63,11 +63,15 @@ async function ensureTicketLogChannels(guild) {
   }
 
   // 2. Ticket Logs Category & Channels
-  let category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && c.name.toLowerCase().includes('ticket logs'));
+  const db = require('../database/db');
+  const { getOrCreateAdvLogStore } = require('../utils/logger');
+  const advStore = getOrCreateAdvLogStore(guild.id);
+
+  let category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name.includes('Ticket') || c.name.includes('ticket')));
   if (!category) {
     try {
       category = await guild.channels.create({
-        name: '♡. Ticket Logs ♡',
+        name: '🎟️ · Ticket & ModMail Logs ·',
         type: ChannelType.GuildCategory,
         permissionOverwrites: [
           { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
@@ -88,8 +92,15 @@ async function ensureTicketLogChannels(guild) {
         ]
       });
     } catch (e) {}
+  } else if (category && logChan.parentId !== category.id) {
+    await logChan.setParent(category.id).catch(() => {});
   }
-  if (logChan) config.logChanId = logChan.id;
+
+  if (logChan) {
+    config.logChanId = logChan.id;
+    advStore.channels.set('ticketlogs', logChan.id);
+    db.saveLogChannel(guild.id, 'ticketlogs', logChan.id);
+  }
 
   let transcriptChan = guild.channels.cache.find(c => c.name === 'ticket-transcripts');
   if (!transcriptChan) {
@@ -103,8 +114,15 @@ async function ensureTicketLogChannels(guild) {
         ]
       });
     } catch (e) {}
+  } else if (category && transcriptChan.parentId !== category.id) {
+    await transcriptChan.setParent(category.id).catch(() => {});
   }
-  if (transcriptChan) config.transcriptChanId = transcriptChan.id;
+
+  if (transcriptChan) {
+    config.transcriptChanId = transcriptChan.id;
+    advStore.channels.set('transcripts', transcriptChan.id);
+    db.saveLogChannel(guild.id, 'transcripts', transcriptChan.id);
+  }
 
   ticketConfigs.set(guild.id, config);
   return { logChan, transcriptChan, category, staffRole };

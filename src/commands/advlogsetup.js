@@ -10,10 +10,12 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { getOrCreateAdvLogStore } = require('../utils/logger');
 
+const db = require('../database/db');
+
 module.exports = {
   name: 'advlogsetup',
   description: 'Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs)',
-  aliases: ['logmodule', 'createlogcategory', 'logssetup', 'advlogs'],
+  aliases: ['logmodule', 'createlogcategory', 'logssetup', 'advlogs', 'logsetupadvlog', 'advlogsetuplog'],
 
   async execute(message, args) {
     const author = message.author;
@@ -37,12 +39,12 @@ module.exports = {
         description:
           `Deploy organized logging categories and channels for complete server activity tracking.\n\n` +
           `**Configured Logging Categories:**\n` +
-          `• 🛡️ **Security & Moderation**: \`mod-logs\`, \`antinuke-logs\`, \`automod-logs\`\n` +
+          `• 🛡️ **Security Logs**: \`noprefix-audit\`, \`security-defense\`, \`naruto-logs\`, \`naruto-automod-logs\`, \`naruto-emoji-logs\`, \`naruto-mod-cases\`, \`naruto-security-logs\`, \`naruto-mod-logs\`\n` +
           `• 📁 **Server Audit Logs**: \`server-logs\`, \`message-logs\`, \`channel-logs\`, \`role-logs\`, \`member-logs\`, \`voice-logs\`, \`join-leave-logs\`\n` +
           `• 🎟️ **Ticket & ModMail Logs**: \`ticket-logs\`, \`ticket-transcripts\`, \`modmail-logs\`, \`modmail-transcripts\`\n\n` +
           `• Active Mapped Channels: **\`${store.channels.size}\` Channels**\n\n` +
           (actionText ? `> 💡 **Status:** ${actionText}\n\n` : '') +
-          `*Click the button below to automatically create and bind all audit categories & channels!*`,
+          `*Click the button below to automatically create and save all audit categories & channels in DB!*`,
         requestedBy: author,
         clientUser
       });
@@ -87,9 +89,14 @@ module.exports = {
           {
             name: '🛡️ · Security Logs ·',
             channels: [
-              { key: 'modlogs', name: 'mod-logs' },
-              { key: 'antinuke', name: 'antinuke-logs' },
-              { key: 'automod', name: 'automod-logs' }
+              { key: 'noprefix', name: 'noprefix-audit' },
+              { key: 'securitydef', name: 'security-defense' },
+              { key: 'narutologs', name: 'naruto-logs' },
+              { key: 'automod', name: 'naruto-automod-logs' },
+              { key: 'emojis', name: 'naruto-emoji-logs' },
+              { key: 'modcases', name: 'naruto-mod-cases' },
+              { key: 'antinuke', name: 'naruto-security-logs' },
+              { key: 'modlogs', name: 'naruto-mod-logs' }
             ]
           },
           {
@@ -118,7 +125,7 @@ module.exports = {
         let createdCount = 0;
 
         for (const catDef of categoryStructure) {
-          let categoryChan = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && c.name === catDef.name);
+          let categoryChan = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name === catDef.name || c.name.toLowerCase().includes(catDef.name.replace(/[^a-zA-Z]/g, '').toLowerCase())));
           if (!categoryChan) {
             try {
               categoryChan = await guild.channels.create({
@@ -145,15 +152,19 @@ module.exports = {
                 });
                 createdCount++;
               } catch (e) {}
+            } else if (categoryChan && textChan.parentId !== categoryChan.id) {
+              await textChan.setParent(categoryChan.id).catch(() => {});
             }
+
             if (textChan) {
               store.channels.set(chDef.key, textChan.id);
+              db.saveLogChannel(guild.id, chDef.key, textChan.id);
             }
           }
         }
 
         store.enabled = true;
-        actionStatus = `Successfully deployed ${createdCount} new channels across 3 audit logging categories! All server events are live routed.`;
+        actionStatus = `Successfully deployed and saved ${createdCount} channels across 3 categories into Database!`;
       }
 
       else if (interaction.customId === 'advlog_toggle') {

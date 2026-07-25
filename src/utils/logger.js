@@ -1,4 +1,5 @@
 const { EmbedBuilder } = require('discord.js');
+const db = require('../database/db');
 
 // Global Advanced Log Configuration Store (guildId -> { enabled, channels: Map(type -> channelId) })
 const advLogStore = new Map();
@@ -23,6 +24,14 @@ async function dispatchLog(guild, logType, embedData) {
 
   // Find target channel ID for this log type
   let channelId = store.channels.get(logType);
+
+  if (!channelId) {
+    const dbChannels = db.getLogChannels(guild.id);
+    if (dbChannels && dbChannels[logType]) {
+      channelId = dbChannels[logType];
+      store.channels.set(logType, channelId);
+    }
+  }
 
   // Fallback search by channel name in guild cache if not mapped explicitly
   if (!channelId) {

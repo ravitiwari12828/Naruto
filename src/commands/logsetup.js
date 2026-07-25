@@ -160,43 +160,93 @@ async function getOrCreateLogCategory(guild) {
       }
 
       else if (interaction.customId === 'log_setup_multi') {
-        const category = await getOrCreateLogCategory(guild);
-        const channelDefs = [
-          { key: 'modLogs', name: 'naruto-mod-logs', topic: 'Kicks, Bans, Mutes, Purges & Warns' },
-          { key: 'securityLogs', name: 'naruto-security-logs', topic: 'AntiNuke Triggers & Panic Mode Events' },
-          { key: 'automodLogs', name: 'naruto-automod-logs', topic: 'Profanity, AntiSpam & AntiBot Kicks' },
-          { key: 'messageLogs', name: 'naruto-message-logs', topic: 'Message Deletions, Edits & Snipe Logs' },
-          { key: 'voiceLogs', name: 'naruto-voice-logs', topic: 'Voice State Changes & Temp VCs' },
-          { key: 'ticketLogs', name: 'naruto-ticket-logs', topic: 'Ticket Transcripts & Support Logs' },
-          { key: 'emojiLogs', name: 'naruto-emoji-logs', topic: 'Emoji & Sticker Add, Delete, Update Events' },
-          { key: 'modCaseLogs', name: 'naruto-mod-cases', topic: 'Moderation Cases (Warn, Ban, Kick, Mute Logs with Case IDs)' }
+        const db = require('../database/db');
+        const { getOrCreateAdvLogStore } = require('../utils/logger');
+        const store = getOrCreateAdvLogStore(guild.id);
+
+        const categoryStructure = [
+          {
+            name: '🛡️ · Security Logs ·',
+            channels: [
+              { key: 'noprefix', name: 'noprefix-audit' },
+              { key: 'securitydef', name: 'security-defense' },
+              { key: 'narutologs', name: 'naruto-logs' },
+              { key: 'automod', name: 'naruto-automod-logs' },
+              { key: 'emojis', name: 'naruto-emoji-logs' },
+              { key: 'modcases', name: 'naruto-mod-cases' },
+              { key: 'antinuke', name: 'naruto-security-logs' },
+              { key: 'modlogs', name: 'naruto-mod-logs' }
+            ]
+          },
+          {
+            name: '📁 · Server Audit Logs ·',
+            channels: [
+              { key: 'server', name: 'server-logs' },
+              { key: 'messages', name: 'message-logs' },
+              { key: 'channels', name: 'channel-logs' },
+              { key: 'roles', name: 'role-logs' },
+              { key: 'members', name: 'member-logs' },
+              { key: 'voice', name: 'voice-logs' },
+              { key: 'joinleave', name: 'join-leave-logs' }
+            ]
+          },
+          {
+            name: '🎟️ · Ticket & ModMail Logs ·',
+            channels: [
+              { key: 'ticketlogs', name: 'ticket-logs' },
+              { key: 'transcripts', name: 'ticket-transcripts' },
+              { key: 'modmaillogs', name: 'modmail-logs' },
+              { key: 'modmailtranscripts', name: 'modmail-transcripts' }
+            ]
+          }
         ];
 
         config.enabled = true;
         config.mode = 'multi';
+        let createdCount = 0;
 
-        for (const def of channelDefs) {
-          let chan = guild.channels.cache.find(c => c.name === def.name);
-          if (!chan) {
+        for (const catDef of categoryStructure) {
+          let categoryChan = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name === catDef.name || c.name.toLowerCase().includes(catDef.name.replace(/[^a-zA-Z]/g, '').toLowerCase())));
+          if (!categoryChan) {
             try {
-              chan = await guild.channels.create({
-                name: def.name,
-                type: ChannelType.GuildText,
-                parent: category ? category.id : undefined,
-                topic: def.topic,
+              categoryChan = await guild.channels.create({
+                name: catDef.name,
+                type: ChannelType.GuildCategory,
                 permissionOverwrites: [
                   { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
                 ]
               });
             } catch (e) {}
-          } else if (category && chan.parentId !== category.id) {
-            await chan.setParent(category.id).catch(() => {});
           }
-          config[def.key] = chan?.id || null;
+
+          for (const chDef of catDef.channels) {
+            let textChan = guild.channels.cache.find(c => c.name === chDef.name);
+            if (!textChan) {
+              try {
+                textChan = await guild.channels.create({
+                  name: chDef.name,
+                  type: ChannelType.GuildText,
+                  parent: categoryChan ? categoryChan.id : undefined,
+                  permissionOverwrites: [
+                    { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
+                  ]
+                });
+                createdCount++;
+              } catch (e) {}
+            } else if (categoryChan && textChan.parentId !== categoryChan.id) {
+              await textChan.setParent(categoryChan.id).catch(() => {});
+            }
+
+            if (textChan) {
+              config[chDef.key] = textChan.id;
+              store.channels.set(chDef.key, textChan.id);
+              db.saveLogChannel(guild.id, chDef.key, textChan.id);
+            }
+          }
         }
 
         loggingConfigs.set(guild.id, config);
-        actionStatus = `All 8 Pro specialized log channels created inside category **${category?.name || 'Audit Logs'}**!`;
+        actionStatus = `All categories and specialized log channels created and saved into Database!`;
       }
 
       else if (interaction.customId === 'log_setup_disable') {
