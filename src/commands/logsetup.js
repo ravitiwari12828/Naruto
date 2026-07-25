@@ -60,10 +60,10 @@ module.exports = {
       };
 
       return createStyledEmbed({
-        title: `📜 Audit Logging System Architecture`,
-        subtitle: `${emojis.SHIELD || '🛡️'} Server Event & Moderation Logging Grid`,
+        title: `${emojis.SCROLL} Audit Logging System Architecture`,
+        subtitle: `${emojis.SHIELD} Server Event & Moderation Logging Grid`,
         description:
-          `**🛡️ Security Logs Category**\n` +
+          `**${emojis.SHIELD} Security Logs Category**\n` +
           `\`\`\`\n` +
           `noprefix-audit      : ${config.mode === 'multi' ? 'Deployed' : 'Use Pro Setup'}\n` +
           `security-defense    : ${config.mode === 'multi' ? 'Deployed' : 'Use Pro Setup'}\n` +
@@ -74,7 +74,7 @@ module.exports = {
           `naruto-security-logs: ${config.securityLogs ? 'Deployed' : 'Not Set'}\n` +
           `naruto-mod-logs     : ${config.modLogs ? 'Deployed' : 'Not Set'}\n` +
           `\`\`\`\n\n` +
-          `**📁 Server Audit Logs Category**\n` +
+          `**${emojis.TOOLS} Server Audit Logs Category**\n` +
           `\`\`\`\n` +
           `server-logs   : ${config.messageLogs ? 'Deployed' : 'Not Set'}\n` +
           `message-logs  : ${config.messageLogs ? 'Deployed' : 'Not Set'}\n` +
@@ -84,14 +84,14 @@ module.exports = {
           `voice-logs    : ${config.voiceLogs ? 'Deployed' : 'Not Set'}\n` +
           `join-leave-logs: Not Set\n` +
           `\`\`\`\n\n` +
-          `**🎟️ Ticket & ModMail Logs Category**\n` +
+          `**${emojis.TICKETS} Ticket & ModMail Logs Category**\n` +
           `\`\`\`\n` +
           `ticket-logs        : ${config.ticketLogs ? 'Deployed' : 'Not Set'}\n` +
           `ticket-transcripts : Not Set\n` +
           `modmail-logs       : Not Set\n` +
           `modmail-transcripts: Not Set\n` +
           `\`\`\`\n\n` +
-          (actionText ? `> ✅ **Status:** ${actionText}\n\n` : '') +
+          (actionText ? `> ${emojis.SUCCESS} **Status:** ${actionText}\n\n` : '') +
           `**Mode:** \`${config.mode.toUpperCase()}\` | **Choose your setup method below:**`,
         requestedBy: author,
         clientUser

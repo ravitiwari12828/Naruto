@@ -326,7 +326,7 @@ const CATEGORIES = [
     description: 'Backup & restore server roles, channels, and settings',
     customEmoji: emojis.OBJ_TOOLS || '💾',
     unicodeFallback: '💾',
-    heading: `💾 Server Backup Commands`,
+    heading: `${emojis.TOOLS} Server Backup Commands`,
     commands: [
       'backup save',
       'backup list',

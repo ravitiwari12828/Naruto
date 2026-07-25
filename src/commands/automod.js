@@ -28,7 +28,7 @@ function renderAutomodFiltersEmbed(config, guild, author, clientUser) {
     '```';
 
   return createStyledEmbed({
-    title: `🛡️ AutoMod Security Control Hub — ${guild.name}`,
+    title: `${emojis.SHIELD} AutoMod Security Control Hub — ${guild.name}`,
     subtitle: `Interactive Content Guard & Link Protection Suite`,
     description:
       `Welcome **${author.username}**! Configure live content guards & security filters.\n\n` +
@@ -61,7 +61,7 @@ function renderMiscSettingsEmbed(config, guild, author, clientUser) {
     '```';
 
   return createStyledEmbed({
-    title: `⚙️ Miscellaneous & Moderation Config — ${guild.name}`,
+    title: `${emojis.GEAR} Miscellaneous & Moderation Config — ${guild.name}`,
     subtitle: `Global Bot Settings, Log Channels & Punishment Policies`,
     description:
       `Welcome **${author.username}**! Configure global server moderation settings.\n\n` +

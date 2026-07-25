@@ -34,10 +34,10 @@ module.exports = {
 
     function buildDashboardEmbed(actionText = '') {
       return createStyledEmbed({
-        title: `📜 Server Audit & Event Logging Suite`,
-        subtitle: `${emojis.SHIELD || '🛡️'} Clean & Dedicated Event Routing`,
+        title: `${emojis.SCROLL} Server Audit & Event Logging Suite`,
+        subtitle: `${emojis.SHIELD} Clean & Dedicated Event Routing`,
         description:
-          `**🛡️ Security Logs Category**\n` +
+          `**${emojis.SHIELD} Security Logs Category**\n` +
           `\`\`\`\n` +
           `noprefix-audit       ✓\n` +
           `security-defense     ✓\n` +
@@ -48,7 +48,7 @@ module.exports = {
           `naruto-security-logs ✓\n` +
           `naruto-mod-logs      ✓\n` +
           `\`\`\`\n\n` +
-          `**📁 Server Audit Logs Category**\n` +
+          `**${emojis.TOOLS} Server Audit Logs Category**\n` +
           `\`\`\`\n` +
           `server-logs      ✓\n` +
           `message-logs     ✓\n` +
@@ -58,7 +58,7 @@ module.exports = {
           `voice-logs       ✓\n` +
           `join-leave-logs  ✓\n` +
           `\`\`\`\n\n` +
-          `**🎟️ Ticket & ModMail Logs Category**\n` +
+          `**${emojis.TICKETS} Ticket & ModMail Logs Category**\n` +
           `\`\`\`\n` +
           `ticket-logs         ✓\n` +
           `ticket-transcripts  ✓\n` +
@@ -66,7 +66,7 @@ module.exports = {
           `modmail-transcripts ✓\n` +
           `\`\`\`\n\n` +
           `Active Mapped: \`${store.channels.size}\` channels\n` +
-          (actionText ? `\n> ✅ **Status:** ${actionText}\n` : '') +
+          (actionText ? `\n> ${emojis.SUCCESS} **Status:** ${actionText}\n` : '') +
           `\n*Click below to deploy all 3 categories & 19 channels into DB!*`,
         requestedBy: author,
         clientUser

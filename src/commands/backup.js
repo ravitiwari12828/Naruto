@@ -104,14 +104,14 @@ module.exports = {
         await loadingMsg.delete().catch(() => {});
 
         const embed = createStyledEmbed({
-          title: `📦 Server Snapshot Saved Successfully!`,
+          title: `${emojis.SCROLL} Server Snapshot Saved Successfully!`,
           subtitle: `Full Server Backup ID: [ ${backupId} ]`,
           fields: [
             { name: '🆔 Backup ID', value: `\`${backupId}\``, inline: true },
-            { name: '🎭 Roles Backed Up', value: `\`${roles.length}\` Roles`, inline: true },
-            { name: '📁 Channels Backed Up', value: `\`${channels.length}\` Channels`, inline: true },
+            { name: `${emojis.ROLES} Roles Backed Up`, value: `\`${roles.length}\` Roles`, inline: true },
+            { name: `${emojis.TOOLS} Channels Backed Up`, value: `\`${channels.length}\` Channels`, inline: true },
             { name: '📅 Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: false },
-            { name: '💡 Restoration Command', value: `Type \`.backup restore ${backupId}\` to restore this snapshot!`, inline: false }
+            { name: `${emojis.BULB} Restoration Command`, value: `Type \`.backup restore ${backupId}\` to restore this snapshot!`, inline: false }
           ],
           thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
           requestedBy: author,
