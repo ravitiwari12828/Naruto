@@ -12,6 +12,7 @@ module.exports = {
   OWNER_CROWN: '<:emoji_owner_crown:1529910236062810142>',
   MODMAIL_ENVELOPE: '<:emoji_modmail_envelope:1529910230534586449>',
   ANALYTICS_ZAP: '<:emoji_analytics_zap:1529910228345163978>',
+  DOT: '<a:lyf_Sharingan:1530533008694579250>',
 
   // --- MODULE CATEGORY EMOJIS ---
   FUN: '<:emoji_fun:1529474957934067892>',

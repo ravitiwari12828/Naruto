@@ -398,9 +398,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     .setDescription(
       `Below is the complete list of commands for **${cat.label}**.\n` +
       `Type \`.help <command>\` for detailed usage on any command.\n\n` +
-      `\`\`\`\n` +
-      cat.commands.map(cmd => `.${cmd}`).join('\n') +
-      `\n\`\`\``
+      cat.commands.map(cmd => `${emojis.DOT} **\`${cmd}\`**`).join('\n')
     )
     .setFooter({
       text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
