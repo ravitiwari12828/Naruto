@@ -13,13 +13,12 @@ const SUPPORT_SERVER_INVITE = 'https://discord.gg/ZPKcPreUMT';
 
 module.exports = {
   name: 'supportsetup',
-  description: 'Automated 1-Click Support Server Architecture Builder with Shinobi & Olympus themes',
+  description: 'Automated 1-Click Support Server Architecture Builder with Konoha Shinobi Theme',
   aliases: ['createsupportserver', 'buildsupportserver', 'supportserversetup'],
 
   async execute(message, args) {
     const author = message.author;
     const guild = message.guild;
-    const theme = args[0]?.toLowerCase() || 'shinobi';
 
     // Admin check
     if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -31,26 +30,26 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const statusMsg = await message.channel.send(`⏳ **Building Support Server Architecture (Theme: ${theme.toUpperCase()})...**`);
+    const statusMsg = await message.channel.send(`⏳ **Building Konoha Shinobi Support Server Architecture...**`);
 
     try {
       // ─────────────────────────────────────────
       // 1. CREATE ALL SPECIAL ROLES
       // ─────────────────────────────────────────
-      let ownerRole = guild.roles.cache.find(r => r.name === 'Hokage Owner' || r.name === 'Owner');
+      let ownerRole = guild.roles.cache.find(r => r.name === 'Hokage Owner');
       if (!ownerRole) {
         ownerRole = await guild.roles.create({
-          name: theme === 'shinobi' ? 'Hokage Owner' : 'Owner',
+          name: 'Hokage Owner',
           color: 0xFFD700, // Gold
           hoist: true,
           reason: 'Support Server Auto Setup'
         });
       }
 
-      let staffRole = guild.roles.cache.find(r => r.name === 'ANBU Staff' || r.name === 'Staff');
+      let staffRole = guild.roles.cache.find(r => r.name === 'ANBU Staff');
       if (!staffRole) {
         staffRole = await guild.roles.create({
-          name: theme === 'shinobi' ? 'ANBU Staff' : 'Staff',
+          name: 'ANBU Staff',
           color: 0x00E5FF, // Cyan
           hoist: true,
           reason: 'Support Server Auto Setup'
@@ -66,30 +65,30 @@ module.exports = {
         });
       }
 
-      let vipRole = guild.roles.cache.find(r => r.name === 'Sanin VIP' || r.name === 'VIP');
+      let vipRole = guild.roles.cache.find(r => r.name === 'Sanin VIP');
       if (!vipRole) {
         vipRole = await guild.roles.create({
-          name: theme === 'shinobi' ? 'Sanin VIP' : 'VIP',
+          name: 'Sanin VIP',
           color: 0xFF4081, // Pink Gold
           hoist: true,
           reason: 'Support Server Auto Setup'
         });
       }
 
-      let premiumRole = guild.roles.cache.find(r => r.name === 'Chakra Premium' || r.name === 'Premium User');
+      let premiumRole = guild.roles.cache.find(r => r.name === 'Chakra Premium');
       if (!premiumRole) {
         premiumRole = await guild.roles.create({
-          name: theme === 'shinobi' ? 'Chakra Premium' : 'Premium User',
+          name: 'Chakra Premium',
           color: 0xAA00FF, // Purple
           hoist: true,
           reason: 'Support Server Auto Setup'
         });
       }
 
-      let noPrefixRole = guild.roles.cache.find(r => r.name === 'Minato No-Prefix' || r.name === 'No Prefix User');
+      let noPrefixRole = guild.roles.cache.find(r => r.name === 'Minato No-Prefix');
       if (!noPrefixRole) {
         noPrefixRole = await guild.roles.create({
-          name: theme === 'shinobi' ? 'Minato No-Prefix' : 'No Prefix User',
+          name: 'Minato No-Prefix',
           color: 0xFF6D00, // Vibrant Orange
           hoist: true,
           reason: 'Support Server Auto Setup'
@@ -100,109 +99,99 @@ module.exports = {
         { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.SendMessages] }
       ];
 
-      let infoCatName = theme === 'shinobi' ? '「 🍥 · HOKAGE MANDATE 」' : '★━━━━✦ INFORMATIONS ✦━━━━★';
-      let updateCatName = theme === 'shinobi' ? '「 📰 · NINJA SCROLLS & NEWS 」' : '★━━━━✦ UPDATES & NEWS ✦━━━━★';
-      let generalCatName = theme === 'shinobi' ? '「 ⛩️ · KONOHA PLAZA 」' : '★━━━━✦ GENERAL AREA ✦━━━━★';
-      let supportCatName = theme === 'shinobi' ? '「 🏮 · ANBU SUPPORT DESK 」' : '★━━━━✦ SUPPORT CENTRE ✦━━━━★';
-      let techCatName = theme === 'shinobi' ? '「 ⚡ · SHINOBI DACT LABS 」' : '★━━━━✦ TECHNICIANS AREA ✦━━━━★';
-      let vipCatName = theme === 'shinobi' ? '「 💎 · SANIN & VIP VAULT 」' : '★━━━━✦ VIP & PREMIUM LOUNGE ✦━━━━★';
-      let staffCatName = theme === 'shinobi' ? '「 👑 · HOKAGE & ANBU COUNCIL 」' : '★━━━━✦ STAFF AREA ✦━━━━★';
-      let voiceCatName = theme === 'shinobi' ? '「 🎧 · RAMEN SHOP VC AREA 」' : '★━━━━✦ VOICE & LOGS AREA ✦━━━━★';
-      let logsCatName = theme === 'shinobi' ? '「 🛡️ · ANBU AUDIT LOGS 」' : '★━━━━✦ BOT LOGS AREA ✦━━━━★';
-
       // ─────────────────────────────────────────
-      // 2. CATEGORY 1: INFORMATIONS
+      // 2. CATEGORY 1: HOKAGE MANDATE (INFORMATION)
       // ─────────────────────────────────────────
-      const infoCat = await guild.channels.create({ name: infoCatName, type: ChannelType.GuildCategory });
+      const infoCat = await guild.channels.create({ name: '「 🍥 · HOKAGE MANDATE 」', type: ChannelType.GuildCategory });
 
       const aboutChan = await guild.channels.create({
-        name: theme === 'shinobi' ? '📜・shinobi-rules' : '📋-about-naruto',
+        name: '📜・shinobi-rules',
         type: ChannelType.GuildText,
         parent: infoCat.id,
         permissionOverwrites: readOnlyOverwrites
       });
 
       await guild.channels.create({
-        name: theme === 'shinobi' ? '📢・village-verification' : '📢-verification',
+        name: '📢・village-verification',
         type: ChannelType.GuildText,
         parent: infoCat.id,
         permissionOverwrites: readOnlyOverwrites
       });
 
       const aboutPremium = await guild.channels.create({
-        name: theme === 'shinobi' ? '💎・chakra-premium' : '💎-about-premium',
+        name: '💎・chakra-premium',
         type: ChannelType.GuildText,
         parent: infoCat.id,
         permissionOverwrites: readOnlyOverwrites
       });
 
       await guild.channels.create({
-        name: theme === 'shinobi' ? '👑・hokage-team-info' : '👑-team-information',
+        name: '👑・hokage-team-info',
         type: ChannelType.GuildText,
         parent: infoCat.id,
         permissionOverwrites: readOnlyOverwrites
       });
 
       await guild.channels.create({
-        name: theme === 'shinobi' ? '⚡・rasengan-noprefix' : '⚡-no-prefix',
+        name: '⚡・rasengan-noprefix',
         type: ChannelType.GuildText,
         parent: infoCat.id,
         permissionOverwrites: readOnlyOverwrites
       });
 
       // ─────────────────────────────────────────
-      // 3. CATEGORY 2: UPDATES & NEWS
+      // 3. CATEGORY 2: NINJA SCROLLS & NEWS
       // ─────────────────────────────────────────
-      const updateCat = await guild.channels.create({ name: updateCatName, type: ChannelType.GuildCategory });
+      const updateCat = await guild.channels.create({ name: '「 📰 · NINJA SCROLLS & NEWS 」', type: ChannelType.GuildCategory });
 
-      await guild.channels.create({ name: theme === 'shinobi' ? '📢・anbu-announcements' : '📢-announcements', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🚀・jutsu-bot-updates' : '🚀-updates', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🟢・konoha-status' : '🟢-status', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
-      await guild.channels.create({ name: theme === 'shinobi' ? '📜・patch-changelogs' : '📜-changelogs', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🎉・ryo-giveaways' : '🎉-giveaways', type: ChannelType.GuildText, parent: updateCat.id });
-
-      // ─────────────────────────────────────────
-      // 4. CATEGORY 3: GENERAL AREA
-      // ─────────────────────────────────────────
-      const generalCat = await guild.channels.create({ name: generalCatName, type: ChannelType.GuildCategory });
-
-      await guild.channels.create({ name: theme === 'shinobi' ? '💬・ninja-lounge' : '💬-chat', type: ChannelType.GuildText, parent: generalCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🖼️・scroll-art-media' : '🖼️-media', type: ChannelType.GuildText, parent: generalCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🤖・jutsu-commands' : '🤖-commands', type: ChannelType.GuildText, parent: generalCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🎶・bijuu-music-playground' : '🎶-music-commands', type: ChannelType.GuildText, parent: generalCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🎮・shinobi-rpg-games' : '🎮-owo', type: ChannelType.GuildText, parent: generalCat.id });
+      await guild.channels.create({ name: '📢・anbu-announcements', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
+      await guild.channels.create({ name: '🚀・jutsu-bot-updates', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
+      await guild.channels.create({ name: '🟢・konoha-status', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
+      await guild.channels.create({ name: '📜・patch-changelogs', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
+      await guild.channels.create({ name: '🎉・ryo-giveaways', type: ChannelType.GuildText, parent: updateCat.id });
 
       // ─────────────────────────────────────────
-      // 5. CATEGORY 4: SUPPORT CENTRE & TICKETS
+      // 4. CATEGORY 3: KONOHA PLAZA (GENERAL AREA)
       // ─────────────────────────────────────────
-      const supportCat = await guild.channels.create({ name: supportCatName, type: ChannelType.GuildCategory });
+      const generalCat = await guild.channels.create({ name: '「 ⛩️ · KONOHA PLAZA 」', type: ChannelType.GuildCategory });
+
+      await guild.channels.create({ name: '💬・ninja-lounge', type: ChannelType.GuildText, parent: generalCat.id });
+      await guild.channels.create({ name: '🖼️・scroll-art-media', type: ChannelType.GuildText, parent: generalCat.id });
+      await guild.channels.create({ name: '🤖・jutsu-commands', type: ChannelType.GuildText, parent: generalCat.id });
+      await guild.channels.create({ name: '🎶・bijuu-music-playground', type: ChannelType.GuildText, parent: generalCat.id });
+      await guild.channels.create({ name: '🎮・shinobi-rpg-games', type: ChannelType.GuildText, parent: generalCat.id });
+
+      // ─────────────────────────────────────────
+      // 5. CATEGORY 4: ANBU SUPPORT DESK (TICKETS)
+      // ─────────────────────────────────────────
+      const supportCat = await guild.channels.create({ name: '「 🏮 · ANBU SUPPORT DESK 」', type: ChannelType.GuildCategory });
 
       const ticketChan = await guild.channels.create({
-        name: theme === 'shinobi' ? '🎟️・request-assistance' : '🎟️-tickets',
+        name: '🎟️・request-assistance',
         type: ChannelType.GuildText,
         parent: supportCat.id,
         permissionOverwrites: readOnlyOverwrites
       });
 
-      await guild.channels.create({ name: theme === 'shinobi' ? '🐛・bug-scrolls' : '🐛-bug-reports', type: ChannelType.GuildText, parent: supportCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '❓・ninja-faq' : '❓-faq', type: ChannelType.GuildText, parent: supportCat.id, permissionOverwrites: readOnlyOverwrites });
-      await guild.channels.create({ name: theme === 'shinobi' ? '💡・hokage-suggestions' : '💡-feedback', type: ChannelType.GuildText, parent: supportCat.id });
+      await guild.channels.create({ name: '🐛・bug-scrolls', type: ChannelType.GuildText, parent: supportCat.id });
+      await guild.channels.create({ name: '❓・ninja-faq', type: ChannelType.GuildText, parent: supportCat.id, permissionOverwrites: readOnlyOverwrites });
+      await guild.channels.create({ name: '💡・hokage-suggestions', type: ChannelType.GuildText, parent: supportCat.id });
 
       // ─────────────────────────────────────────
-      // 6. CATEGORY 5: TECHNICIANS LABS
+      // 6. CATEGORY 5: TECHNICIANS DACT LABS
       // ─────────────────────────────────────────
-      const techCat = await guild.channels.create({ name: techCatName, type: ChannelType.GuildCategory });
+      const techCat = await guild.channels.create({ name: '「 ⚡ · SHINOBI DACT LABS 」', type: ChannelType.GuildCategory });
 
-      await guild.channels.create({ name: theme === 'shinobi' ? '🐍・python-jutsu' : '🌐-python', type: ChannelType.GuildText, parent: techCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🛡️・cyber-defense' : '🌐-cyber-security', type: ChannelType.GuildText, parent: techCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '⚡・javascript-jutsu' : '🌐-javascript', type: ChannelType.GuildText, parent: techCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '⚙️・java-jutsu' : '🌐-java', type: ChannelType.GuildText, parent: techCat.id });
+      await guild.channels.create({ name: '🐍・python-jutsu', type: ChannelType.GuildText, parent: techCat.id });
+      await guild.channels.create({ name: '🛡️・cyber-defense', type: ChannelType.GuildText, parent: techCat.id });
+      await guild.channels.create({ name: '⚡・javascript-jutsu', type: ChannelType.GuildText, parent: techCat.id });
+      await guild.channels.create({ name: '⚙️・java-jutsu', type: ChannelType.GuildText, parent: techCat.id });
 
       // ─────────────────────────────────────────
-      // 7. CATEGORY 6: VIP & PREMIUM AREA (LOCKED)
+      // 7. CATEGORY 6: SANIN & VIP VAULT (LOCKED)
       // ─────────────────────────────────────────
       const vipCat = await guild.channels.create({
-        name: vipCatName,
+        name: '「 💎 · SANIN & VIP VAULT 」',
         type: ChannelType.GuildCategory,
         permissionOverwrites: [
           { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -214,15 +203,15 @@ module.exports = {
         ]
       });
 
-      await guild.channels.create({ name: theme === 'shinobi' ? '⭐・sanin-vip-lounge' : '⭐-vip-lounge', type: ChannelType.GuildText, parent: vipCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '💎・kyuubi-premium-vault' : '💎-premium-lounge', type: ChannelType.GuildText, parent: vipCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '⚡・minato-noprefix-sanctuary' : '⚡-no-prefix-lounge', type: ChannelType.GuildText, parent: vipCat.id });
+      await guild.channels.create({ name: '⭐・sanin-vip-lounge', type: ChannelType.GuildText, parent: vipCat.id });
+      await guild.channels.create({ name: '💎・kyuubi-premium-vault', type: ChannelType.GuildText, parent: vipCat.id });
+      await guild.channels.create({ name: '⚡・minato-noprefix-sanctuary', type: ChannelType.GuildText, parent: vipCat.id });
 
       // ─────────────────────────────────────────
-      // 8. CATEGORY 7: STAFF & OWNER AREA (LOCKED)
+      // 8. CATEGORY 7: HOKAGE & ANBU COUNCIL (LOCKED)
       // ─────────────────────────────────────────
       const staffCat = await guild.channels.create({
-        name: staffCatName,
+        name: '「 👑 · HOKAGE & ANBU COUNCIL 」',
         type: ChannelType.GuildCategory,
         permissionOverwrites: [
           { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -231,20 +220,20 @@ module.exports = {
         ]
       });
 
-      await guild.channels.create({ name: theme === 'shinobi' ? '🔒・anbu-staff-headquarters' : '🔒-staff-chat', type: ChannelType.GuildText, parent: staffCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '👑・hokage-owner-sanctuary' : '👑-owner-lounge', type: ChannelType.GuildText, parent: staffCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🔒 ANBU Command VC' : '🔒 Staff VC', type: ChannelType.GuildVoice, parent: staffCat.id });
+      await guild.channels.create({ name: '🔒・anbu-staff-headquarters', type: ChannelType.GuildText, parent: staffCat.id });
+      await guild.channels.create({ name: '👑・hokage-owner-sanctuary', type: ChannelType.GuildText, parent: staffCat.id });
+      await guild.channels.create({ name: '🔒 ANBU Command VC', type: ChannelType.GuildVoice, parent: staffCat.id });
 
       // ─────────────────────────────────────────
-      // 9. CATEGORY 8: VOICE & LOGS AREA
+      // 9. CATEGORY 8: RAMEN SHOP VC & LOGS
       // ─────────────────────────────────────────
-      const voiceCat = await guild.channels.create({ name: voiceCatName, type: ChannelType.GuildCategory });
+      const voiceCat = await guild.channels.create({ name: '「 🎧 · RAMEN SHOP VC AREA 」', type: ChannelType.GuildCategory });
 
-      await guild.channels.create({ name: theme === 'shinobi' ? '🎧 Nine-Tails Music VC' : '🎧 Music Lounge VC', type: ChannelType.GuildVoice, parent: voiceCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🔊 Ichiraku Ramen VC' : '🔊 General VC', type: ChannelType.GuildVoice, parent: voiceCat.id });
+      await guild.channels.create({ name: '🎧 Nine-Tails Music VC', type: ChannelType.GuildVoice, parent: voiceCat.id });
+      await guild.channels.create({ name: '🔊 Ichiraku Ramen VC', type: ChannelType.GuildVoice, parent: voiceCat.id });
 
       const logsCat = await guild.channels.create({
-        name: logsCatName,
+        name: '「 🛡️ · ANBU AUDIT LOGS 」',
         type: ChannelType.GuildCategory,
         permissionOverwrites: [
           { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -253,8 +242,8 @@ module.exports = {
         ]
       });
 
-      await guild.channels.create({ name: theme === 'shinobi' ? '📢・noprefix-audit-logs' : '📢-np-add-logs', type: ChannelType.GuildText, parent: logsCat.id });
-      await guild.channels.create({ name: theme === 'shinobi' ? '🛡️・security-defense-logs' : '🛡️-security-logs', type: ChannelType.GuildText, parent: logsCat.id });
+      await guild.channels.create({ name: '📢・noprefix-audit-logs', type: ChannelType.GuildText, parent: logsCat.id });
+      await guild.channels.create({ name: '🛡️・security-defense-logs', type: ChannelType.GuildText, parent: logsCat.id });
 
       // ─────────────────────────────────────────
       // POPULATE EMBEDS & TICKET PANEL
@@ -297,7 +286,7 @@ module.exports = {
 
       // Final Success Message
       const completeEmbed = createStyledEmbed({
-        title: `🎉 ${theme === 'shinobi' ? 'Konoha Shinobi' : 'Olympus'} Support Server Built Successfully!`,
+        title: `🎉 Konoha Shinobi Support Server Built Successfully!`,
         subtitle: `9 Categories, 25+ Styled Channels & 6 Custom Roles Deployed`,
         description:
           `**Custom Created Roles:**\n` +
@@ -312,7 +301,7 @@ module.exports = {
         clientUser
       });
 
-      return statusMsg.edit({ content: `✅ ${theme.toUpperCase()} Support Server Setup Complete!`, embeds: [completeEmbed] });
+      return statusMsg.edit({ content: `✅ Konoha Shinobi Support Server Setup Complete!`, embeds: [completeEmbed] });
     } catch (e) {
       return statusMsg.edit(`❌ Support server setup failed: ${e.message}`);
     }
