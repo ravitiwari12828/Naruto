@@ -495,9 +495,12 @@ module.exports = {
 
           if (!player.playing && !player.paused) {
             await player.play();
-            return message.reply(`▶️ **Now Playing:** [${track.info.title}](${track.info.uri || 'https://spotify.com'})`);
+            try {
+              if (message.deletable) await message.delete().catch(() => {});
+            } catch (e) {}
+            return;
           } else {
-            return message.reply(`✅ **Added to Queue:** [${track.info.title}](${track.info.uri || 'https://spotify.com'}) at position **#${player.queue.tracks.length}**.`);
+            return message.reply({ content: `✅ **Added to Queue:** [${track.info.title}](${track.info.uri || 'https://spotify.com'}) at position **#${player.queue.tracks.length}**.` });
           }
         } catch (err) {
           console.error('[Music Play Error]', err.message || err);
