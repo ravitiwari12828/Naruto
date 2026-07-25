@@ -2488,6 +2488,105 @@ client.on('interactionCreate', async (interaction) => {
       console.error('gauge_start_ button error:', e);
     }
   }
+
+  // 11. SERVERINFO TAB BUTTONS
+  if (interaction.customId && interaction.customId.startsWith('sinfo_')) {
+    try {
+      await interaction.deferUpdate().catch(() => {});
+      const action = interaction.customId.replace('sinfo_', '');
+      const infoCmd = client.commands.get('info');
+      if (!infoCmd || !interaction.guild) return;
+
+      const owner = await interaction.guild.fetchOwner().catch(() => null);
+
+      if (action === 'icon') {
+        const iconURL = interaction.guild.iconURL({ dynamic: true, size: 1024 });
+        if (!iconURL) return interaction.followUp({ content: `⚠️ This server does not have an icon.`, flags: 64 }).catch(() => {});
+        return interaction.followUp({ content: iconURL, flags: 64 }).catch(() => {});
+      }
+      if (action === 'banner') {
+        const bannerURL = interaction.guild.bannerURL({ dynamic: true, size: 1024 });
+        if (!bannerURL) return interaction.followUp({ content: `⚠️ This server does not have a banner.`, flags: 64 }).catch(() => {});
+        return interaction.followUp({ content: bannerURL, flags: 64 }).catch(() => {});
+      }
+      if (action === 'splash') {
+        const splashURL = interaction.guild.splashURL({ dynamic: true, size: 1024 });
+        if (!splashURL) return interaction.followUp({ content: `⚠️ This server does not have an invite splash.`, flags: 64 }).catch(() => {});
+        return interaction.followUp({ content: splashURL, flags: 64 }).catch(() => {});
+      }
+
+      const activeTab = action === 'refresh' ? 'overview' : action;
+      const embed = infoCmd.buildServerInfoMainEmbed(interaction.guild, owner, activeTab, interaction.user, client.user);
+      const row1 = infoCmd.buildServerInfoRow1(activeTab);
+      const row2 = infoCmd.buildServerInfoRow2(interaction.guild);
+
+      await interaction.message.edit({ embeds: [embed], components: [row1, row2] }).catch(() => {});
+    } catch (e) {
+      console.error('sinfo_ button error:', e);
+    }
+  }
+
+  // 12. ANALYTICS TIMEFRAME (tf_) & CATEGORY (scat_) BUTTONS
+  if (interaction.customId && (interaction.customId.startsWith('tf_') || interaction.customId.startsWith('scat_'))) {
+    try {
+      await interaction.deferUpdate().catch(() => {});
+      const analyticsCmd = client.commands.get('analytics');
+      if (!analyticsCmd || !interaction.guild) return;
+
+      let timeframeKey = 'lifetime';
+      let activeCat = 'overview';
+
+      if (interaction.customId.startsWith('tf_')) {
+        timeframeKey = interaction.customId.replace('tf_', '');
+      } else if (interaction.customId.startsWith('scat_')) {
+        activeCat = interaction.customId.replace('scat_', '');
+      }
+
+      const messageComponents = interaction.message.components;
+      if (messageComponents && messageComponents.length) {
+        const tfRow = messageComponents.find(row => row.components.some(c => c.customId && c.customId.startsWith('tf_')));
+        if (tfRow && !interaction.customId.startsWith('tf_')) {
+          const activeTfBtn = tfRow.components.find(c => c.style === 1);
+          if (activeTfBtn && activeTfBtn.customId) {
+            timeframeKey = activeTfBtn.customId.replace('tf_', '');
+          }
+        }
+
+        const scatRow = messageComponents.find(row => row.components.some(c => c.customId && c.customId.startsWith('scat_')));
+        if (scatRow && !interaction.customId.startsWith('scat_')) {
+          const activeScatBtn = scatRow.components.find(c => c.style === 1);
+          if (activeScatBtn && activeScatBtn.customId) {
+            activeCat = activeScatBtn.customId.replace('scat_', '');
+          }
+        }
+      }
+
+      const embed = analyticsCmd.renderServerStatsOverviewPanel(interaction.guild, timeframeKey, interaction.user, client.user);
+      const row1 = analyticsCmd.buildTimeframeRow(timeframeKey);
+      const row2 = analyticsCmd.buildServerStatsCategoryRow(activeCat);
+
+      await interaction.message.edit({ embeds: [embed], components: [row1, row2] }).catch(() => {});
+    } catch (e) {
+      console.error('tf_/scat_ button error:', e);
+    }
+  }
+
+  // 13. USER ANALYTICS METRIC (ucat_) BUTTONS
+  if (interaction.customId && interaction.customId.startsWith('ucat_')) {
+    try {
+      await interaction.deferUpdate().catch(() => {});
+      const analyticsCmd = client.commands.get('analytics');
+      if (!analyticsCmd || !interaction.guild) return;
+
+      const activeCat = interaction.customId.replace('ucat_', '');
+      const embed = analyticsCmd.renderUserStatsPanel(interaction.guild, interaction.user, activeCat, '1d', interaction.user, client.user);
+      const row1 = analyticsCmd.buildUserMetricRow(activeCat);
+
+      await interaction.message.edit({ embeds: [embed], components: [row1] }).catch(() => {});
+    } catch (e) {
+      console.error('ucat_ button error:', e);
+    }
+  }
 });
 
 // 🏷️ AUTONICK & AUTOROLE LISTENER ON MEMBER JOIN

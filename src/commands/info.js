@@ -178,6 +178,9 @@ function buildServerInfoRow2(guild) {
 module.exports = {
   name: 'info',
   description: 'Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo',
+  buildServerInfoMainEmbed,
+  buildServerInfoRow1,
+  buildServerInfoRow2,
   aliases: [
     'ping', 'about', 'invite', 'node',
     'profile', 'serverinfo', 'server', 'si',

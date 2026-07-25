@@ -607,5 +607,10 @@ module.exports = {
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
     }
-  }
+  },
+  renderServerStatsOverviewPanel,
+  renderUserStatsPanel,
+  buildTimeframeRow,
+  buildServerStatsCategoryRow,
+  buildUserMetricRow
 };
