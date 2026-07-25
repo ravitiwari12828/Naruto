@@ -2304,7 +2304,61 @@ client.on('interactionCreate', async (interaction) => {
     }, 5000);
   }
 
-  // 8. VOICEMASTER INTERFACE CONTROLLER BUTTONS
+  // 8b. ADD MEMBER TO TICKET BUTTON
+  if (interaction.customId === 'ticket_addmember_btn') {
+    const user = interaction.user;
+    const member = interaction.member;
+    const channel = interaction.channel;
+    const ticketCmd = client.commands.get('ticket');
+    const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(interaction.guild.id) : { staffRoles: new Set() };
+
+    const isStaff = member.permissions.has(PermissionsBitField.Flags.Administrator) ||
+                    Array.from(config.staffRoles).some(rId => member.roles.cache.has(rId));
+
+    if (!isStaff) {
+      return interaction.reply({ content: `❌ Only support staff members can add users to tickets!`, flags: 64 }).catch(() => {});
+    }
+
+    return interaction.reply({
+      content: `➕ **Add Member to Ticket**\nUse \`.ticket add @user\` command in this channel to add a member to this ticket.`,
+      flags: 64
+    }).catch(() => {});
+  }
+
+  // 8c. TICKET CREATE DEFAULT BUTTON (fallback from old panels — redirect to dropdown)
+  if (interaction.customId === 'ticket_create_default') {
+    const ticketCmd = client.commands.get('ticket');
+    const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(interaction.guild.id) : null;
+    const categories = config ? config.categories : [
+      { id: 'cat_support', name: 'General Support', emoji: '🎫', description: 'Need help or general assistance?' },
+      { id: 'cat_promo', name: 'Promotion', emoji: '📢', description: 'Inquire about promotional deals' },
+      { id: 'cat_report', name: 'Report', emoji: '🚨', description: 'Report a user or server violation' },
+      { id: 'cat_reward', name: 'Reward', emoji: '🎁', description: 'Claim your event or activity rewards' },
+      { id: 'cat_staff', name: 'Staff Apply', emoji: '💼', description: 'Apply for staff position' },
+      { id: 'cat_server_promo', name: 'Server Promo', emoji: '🌐', description: 'Request server cross-promotions' }
+    ];
+
+    const { StringSelectMenuBuilder } = require('discord.js');
+    const selectMenu = new StringSelectMenuBuilder()
+      .setCustomId('ticket_category_select')
+      .setPlaceholder('🏷️ Select a support category...')
+      .addOptions(
+        categories.map(c => ({
+          label: c.name,
+          value: c.id,
+          description: c.description,
+          emoji: c.emoji
+        }))
+      );
+
+    return interaction.reply({
+      content: `🎟️ **Choose a ticket category to open your private support ticket:**`,
+      components: [new ActionRowBuilder().addComponents(selectMenu)],
+      flags: 64
+    }).catch(() => {});
+  }
+
+  // 9. VOICEMASTER INTERFACE CONTROLLER BUTTONS
   if (interaction.customId.startsWith('vm_')) {
     const voiceState = interaction.member?.voice;
     const channel = voiceState?.channel;

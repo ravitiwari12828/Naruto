@@ -262,25 +262,51 @@ module.exports = {
       });
       await aboutChan.send({ embeds: [rulesEmbed] });
 
-      const ticketPanelEmbed = createStyledEmbed({
-        title: `🎟️ Naruto One Support Ticket Portal`,
-        subtitle: `Get Instant 24/7 Assistance from ANBU Support Staff`,
-        description:
-          `Need assistance with AntiNuke, JoinGate, AutoMod, VoiceMaster, or Custom Emojis?\n\n` +
-          `• Click **Create Ticket** below to open a private assistance thread.\n` +
-          `• ANBU Staff <@&${staffRole.id}> & <@&${ticketStaffRole.id}> will be automatically notified!\n` +
-          `• Support priority defaults to **Low** so staff can assist smoothly!`,
-        requestedBy: author,
-        clientUser
-      });
+      const { StringSelectMenuBuilder } = require('discord.js');
+      const ticketCmd = message.client.commands.get('ticket');
+      const ticketConfig = ticketCmd ? ticketCmd.getOrCreateTicketConfig(guild.id) : null;
 
-      const ticketBtn = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-          .setCustomId('ticket_create_default')
-          .setLabel('Create Support Ticket')
-          .setEmoji('🎟️')
-          .setStyle(ButtonStyle.Primary)
-      );
+      // Register staffRole in ticket config so notifications work
+      if (ticketConfig) {
+        ticketConfig.staffRoles.add(ticketStaffRole.id);
+        ticketConfig.staffRoles.add(staffRole.id);
+        ticketConfig.panelChanId = ticketChan.id;
+      }
+
+      const ticketCategories = ticketConfig ? ticketConfig.categories : [
+        { id: 'cat_support', name: 'General Support', emoji: '🎫', description: 'Need help or general assistance?' },
+        { id: 'cat_promo', name: 'Promotion', emoji: '📢', description: 'Inquire about promotional deals' },
+        { id: 'cat_report', name: 'Report', emoji: '🚨', description: 'Report a user or server violation' },
+        { id: 'cat_reward', name: 'Reward', emoji: '🎁', description: 'Claim your event or activity rewards' },
+        { id: 'cat_staff', name: 'Staff Apply', emoji: '💼', description: 'Apply for staff position' },
+        { id: 'cat_server_promo', name: 'Server Promo', emoji: '🌐', description: 'Request server cross-promotions' }
+      ];
+
+      const ticketPanelEmbed = new EmbedBuilder()
+        .setColor(0x00FFBB)
+        .setTitle(`🎟️ ${guild.name} Private Support Desk`)
+        .setDescription(
+          `Welcome to **${guild.name}** Support Center!\n\n` +
+          `Select a category from the dropdown menu below to open a private support ticket.\n\n` +
+          `**Available Support Categories:**\n` +
+          ticketCategories.map(c => `• ${c.emoji || '🎫'} **${c.name}** — ${c.description}`).join('\n') + `\n\n` +
+          `**Support Staff:** <@&${staffRole.id}> & <@&${ticketStaffRole.id}>`
+        )
+        .setFooter({ text: 'Naruto Ticket System • Fast Private Support' });
+
+      const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId('ticket_category_select')
+        .setPlaceholder('🏷️ Select a support category...')
+        .addOptions(
+          ticketCategories.map(c => ({
+            label: c.name,
+            value: c.id,
+            description: c.description,
+            emoji: c.emoji
+          }))
+        );
+
+      const ticketBtn = new ActionRowBuilder().addComponents(selectMenu);
 
       await ticketChan.send({ embeds: [ticketPanelEmbed], components: [ticketBtn] });
 
