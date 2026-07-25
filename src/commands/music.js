@@ -807,6 +807,37 @@ module.exports = {
       return message.reply({ embeds: [favEmbed] });
     }
 
-    return message.reply(`ℹ️ **Music Commands:** \`.play <song>\`, \`.pause\`, \`.resume\`, \`.skip\`, \`.prev\`, \`.queue\`, \`.np\`, \`.loop\`, \`.shuffle\`, \`.clear\`, \`.seek\`, \`.volume\`, \`.filter\`, \`.autoplay\`, \`.fav\`, \`.stop\`.`);
+    const embed = createStyledEmbed({
+      title: `🎶 Music Player Suite & Control Panel`,
+      subtitle: `High-Fidelity Lavalink Music Control Suite`,
+      description:
+        `Welcome **${author.username}**! Below are the available **Music Player** commands.\n\n` +
+        `**🎵 Player Controls**\n` +
+        `\`\`\`\n` +
+        `.play <song/URL> - Play song or YouTube/Spotify link\n` +
+        `.pause / .resume - Pause or resume playback\n` +
+        `.skip / .prev    - Skip current song or play previous\n` +
+        `.stop / .clear   - Stop playback or clear queue\n` +
+        `.volume <1-150>  - Set playback volume\n` +
+        `\`\`\`\n\n` +
+        `**🎶 Queue & Track Info**\n` +
+        `\`\`\`\n` +
+        `.queue           - View server music queue\n` +
+        `.nowplaying / .np- View currently playing song\n` +
+        `.loop <track|q>  - Toggle track or queue looping\n` +
+        `.shuffle         - Shuffle queue tracks\n` +
+        `.seek <seconds>  - Seek to specific timestamp\n` +
+        `\`\`\`\n\n` +
+        `**✨ Advanced Features**\n` +
+        `\`\`\`\n` +
+        `.247             - Toggle 24/7 Voice Channel Stay\n` +
+        `.autoplay        - Toggle smart autoplay recommendations\n` +
+        `.filter <preset> - Apply audio filters (bassboost, 8d, etc.)\n` +
+        `.fav add/list    - Save & play favorite tracks\n` +
+        `\`\`\``,
+      requestedBy: author,
+      clientUser
+    });
+    return message.channel.send({ embeds: [embed] });
   }
 };
