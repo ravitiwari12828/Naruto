@@ -47,7 +47,7 @@ function buildTimeframeRow(activeKey) {
       .setStyle(activeKey === '30d' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('tf_lifetime')
-      .setLabel('All Time')
+      .setLabel('All')
       .setStyle(activeKey === 'lifetime' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 }
@@ -90,17 +90,17 @@ function buildServerStatsCategoryRow(activeCategory = 'overview') {
       .setStyle(activeCategory === 'overview' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('scat_chat')
-      .setLabel('Chat Rank')
+      .setLabel('Chat')
       .setEmoji(emojis.OBJ_MESSAGES || '💬')
       .setStyle(activeCategory === 'chat' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('scat_voice')
-      .setLabel('Voice Rank')
+      .setLabel('Voice')
       .setEmoji(emojis.OBJ_VOICE || '🔊')
       .setStyle(activeCategory === 'voice' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('scat_invites')
-      .setLabel('Invites Rank')
+      .setLabel('Invites')
       .setEmoji(emojis.OBJ_INVITES || '📨')
       .setStyle(activeCategory === 'invites' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
@@ -140,17 +140,14 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', author
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
 
-  const stats1d = db.getAnalyticsStats(guild.id, WINDOWS['1d']);
-  const stats7d = db.getAnalyticsStats(guild.id, WINDOWS['7d']);
   const stats = db.getAnalyticsStats(guild.id, windowMs);
-
   const topMembers = db.getTopLeaderboard(guild.id, 'message', windowMs, 3);
   const bots = guild.members.cache.filter(m => m.user.bot).size;
   const humans = guild.memberCount - bots;
 
   let membersText = '';
   if (topMembers.length === 0) {
-    membersText = '`No recorded activity yet.`';
+    membersText = '`No activity recorded.`';
   } else {
     membersText = topMembers.map((item, idx) => {
       let icon = idx === 0 ? `${emojis.OWNER_CROWN || '👑'} **#1**` : idx === 1 ? `${emojis.STAR || '⭐'} **#2**` : `${emojis.SHINOBI || '🍥'} **#3**`;
@@ -163,7 +160,7 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', author
 
   return createStyledEmbed({
     title: `${emojis.STATS || '📊'} ${guild.name} Analytics`,
-    subtitle: `Server Performance Dashboard [${label}]`,
+    subtitle: `Server Performance Dashboard (${label})`,
     fields: [
       {
         name: `${emojis.ROLES || '👥'} Member Metrics`,
