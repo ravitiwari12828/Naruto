@@ -234,13 +234,20 @@ module.exports = {
 
     // 4. .level status
     if (sub === 'status') {
+      const boxText =
+        '```\n' +
+        '╭──────────────────────────╮\n' +
+        '│   LEVELING SYSTEM STATUS │\n' +
+        '├──────────────────────────┤\n' +
+        '│ Status    : ' + (config.enabled ? 'ENABLED' : 'DISABLED').padEnd(12, ' ') + ' │\n' +
+        '│ Announce  : ' + (config.channelId ? `<#${config.channelId}>` : 'CURRENT CHAN').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+        '│ Perk Roles: ' + String((config.levelRoles ? config.levelRoles.size : 0) + ' ROLES').padEnd(12, ' ') + ' │\n' +
+        '╰──────────────────────────╯\n' +
+        '```';
+
       const embed = createStyledEmbed({
         title: `${emojis.LEVEL} Leveling System Status`,
-        fields: [
-          { name: `${emojis.GEAR} Status`, value: config.enabled ? '`ENABLED ✅`' : '`DISABLED ❌`', inline: true },
-          { name: `${emojis.MESSAGES} Announcement Channel`, value: config.channelId ? `<#${config.channelId}>` : '*Current Channel*', inline: true },
-          { name: `${emojis.ROLES} Shinobi Rank & Perk Roles`, value: config.levelRoles.size > 0 ? `\`${config.levelRoles.size} Configured\`` : '`Run .level setup`', inline: true }
-        ],
+        description: boxText,
         requestedBy: author,
         clientUser
       });
@@ -250,10 +257,10 @@ module.exports = {
     // 5. .level leaderboard / .lb
     if (sub === 'leaderboard' || sub === 'lb' || sub === 'top') {
       const top10 = db.getTopUsersByXP(10);
-      const lines = top10.map((u, i) => `\`#${i + 1}\` **<@${u.userId}>** — Level \`${u.level}\` (\`${u.xp} XP\`) • Rank: *${u.rank}*`);
+      const lines = top10.map((u, i) => `\`#${i + 1}\` **<@${u.userId}>** — Level \`${u.level}\` (\`${u.xp} XP\`) • *${u.rank}*`);
 
       const embed = createStyledEmbed({
-        title: `${emojis.STAR} Shinobi Level Leaderboard`,
+        title: `${emojis.STAR} Shinobi Level Leaderboard — Top Chatters`,
         description: lines.join('\n') || '*No leveling data available yet.*',
         requestedBy: author,
         clientUser
@@ -299,17 +306,26 @@ module.exports = {
       const userData = db.getUser(targetUser.id);
       const nextLvlXp = userData.level * 75;
       const progress = Math.min(100, Math.floor((userData.xp / nextLvlXp) * 100));
-      const bar = '█'.repeat(Math.floor(progress / 10)) + '░'.repeat(10 - Math.floor(progress / 10));
+      const filledCount = Math.floor(progress / 10);
+      const bar = '#'.repeat(filledCount) + '-'.repeat(10 - filledCount);
+
+      const boxText =
+        '```\n' +
+        '╭──────────────────────────╮\n' +
+        '│   SHINOBI RANK PROFILE   │\n' +
+        '├──────────────────────────┤\n' +
+        '│ Username  : ' + String(targetUser.username).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+        '│ Rank      : ' + String(userData.rank).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+        '│ Level     : ' + String('Level ' + userData.level).padEnd(12, ' ') + ' │\n' +
+        '│ Total XP  : ' + String(userData.xp + ' XP').padEnd(12, ' ') + ' │\n' +
+        '│ Progress  : ' + String('[' + bar + ']').padEnd(12, ' ') + ' │\n' +
+        '╰──────────────────────────╯\n' +
+        '```';
 
       const embed = createStyledEmbed({
         title: `${emojis.LEVEL} Shinobi Rank Card — ${targetUser.username}`,
         subtitle: `${emojis.NINJA_RANK} ${userData.rank}`,
-        fields: [
-          { name: `${emojis.STAR} Level`, value: `\`Level ${userData.level}\``, inline: true },
-          { name: `${emojis.ZAP} Total XP`, value: `\`${userData.xp} XP\``, inline: true },
-          { name: `${emojis.MESSAGES} Messages Sent`, value: `\`${userData.messages}\``, inline: true },
-          { name: `${emojis.LEVEL} Level Progress`, value: `\`${userData.xp} / ${nextLvlXp} XP\` (${progress}%)\n\`${bar}\``, inline: false }
-        ],
+        description: boxText,
         requestedBy: author,
         clientUser
       });

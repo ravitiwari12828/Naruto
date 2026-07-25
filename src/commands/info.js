@@ -45,19 +45,29 @@ function buildServerInfoMainEmbed(guild, owner, activeTab = 'overview', author, 
   if (activeTab === 'channels') {
     title = `${guild.name} • Channels Breakdown`;
     description =
-      `${emojis.TOOLS} **Channels Structure**\n` +
-      `• **Total Channels:** \`${channels.size}\`\n` +
-      `• **Text Channels:** \`${textChannels}\`\n` +
-      `• **Voice Channels:** \`${voiceChannels}\`\n` +
-      `• **Categories:** \`${categoryChannels}\`\n` +
-      `• **Forum Channels:** \`${forumChannels}\``;
+      '```\n' +
+      '╭──────────────────────────╮\n' +
+      '│    CHANNELS BREAKDOWN    │\n' +
+      '├──────────────────────────┤\n' +
+      '│ Total     : ' + String(channels.size).padEnd(12, ' ') + ' │\n' +
+      '│ Text      : ' + String(textChannels).padEnd(12, ' ') + ' │\n' +
+      '│ Voice     : ' + String(voiceChannels).padEnd(12, ' ') + ' │\n' +
+      '│ Categories: ' + String(categoryChannels).padEnd(12, ' ') + ' │\n' +
+      '│ Forum     : ' + String(forumChannels).padEnd(12, ' ') + ' │\n' +
+      '╰──────────────────────────╯\n' +
+      '```';
   } else if (activeTab === 'emojis') {
     title = `${guild.name} • Emojis Information`;
     description =
-      `${emojis.REACTIONROLES} **Emoji Stats & Allowance**\n` +
-      `• **Regular Emojis:** \`${regularEmojis}/250\`\n` +
-      `• **Animated Emojis:** \`${animatedEmojis}/250\`\n` +
-      `• **Total Emojis:** \`${totalEmojis}/500\``;
+      '```\n' +
+      '╭──────────────────────────╮\n' +
+      '│    EMOJI INFORMATION     │\n' +
+      '├──────────────────────────┤\n' +
+      '│ Regular   : ' + String(regularEmojis + '/250').padEnd(12, ' ') + ' │\n' +
+      '│ Animated  : ' + String(animatedEmojis + '/250').padEnd(12, ' ') + ' │\n' +
+      '│ Total     : ' + String(totalEmojis + '/500').padEnd(12, ' ') + ' │\n' +
+      '╰──────────────────────────╯\n' +
+      '```';
   } else if (activeTab === 'features') {
     title = `${guild.name} • Guild Features`;
     description =
@@ -70,34 +80,27 @@ function buildServerInfoMainEmbed(guild, owner, activeTab = 'overview', author, 
       `${rolesList}${rolesFooter}`;
   } else {
     // OVERVIEW
+    const ownerName = owner ? owner.user.username : 'Unknown';
+    const boxText =
+      '```\n' +
+      '╭──────────────────────────╮\n' +
+      '│     SERVER OVERVIEW      │\n' +
+      '├──────────────────────────┤\n' +
+      '│ Server    : ' + String(guild.name).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Server ID : ' + String(guild.id).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Owner     : ' + String(ownerName).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Members   : ' + String(guild.memberCount).padEnd(12, ' ') + ' │\n' +
+      '│ Channels  : ' + String(channels.size).padEnd(12, ' ') + ' │\n' +
+      '│ Roles     : ' + String(roleCount).padEnd(12, ' ') + ' │\n' +
+      '│ Boosts    : ' + String('Lvl ' + guild.premiumTier + ' (' + (guild.premiumSubscriptionCount || 0) + ')').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '╰──────────────────────────╯\n' +
+      '```';
+
     description =
-      `${emojis.INFO} **About**\n` +
-      `• **Name:** ${guild.name}\n` +
-      `• **ID:** \`${guild.id}\`\n` +
-      `• **Owner ${emojis.OWNER_CROWN} :** ${owner ? owner.user.username : 'Unknown'} (<@${guild.ownerId}>)\n` +
-      `• **Created At:** ${createdAt}\n` +
-      `• **Members:** **${guild.memberCount.toLocaleString()}**\n\n` +
-      (guild.description ? `${emojis.SCROLL} **Description**\n${guild.description}\n\n` : '') +
-      `──────────────────────────────────────────\n\n` +
-      `${emojis.STATS} **General Stats**\n` +
-      `• **Verification Level:** \`${guild.verificationLevel || 'None'}\`\n` +
-      `• **Channels:** \`${channels.size}\` | **Roles:** \`${roleCount}\` | **Emojis:** \`${totalEmojis}\`\n` +
-      `• **Boost Status:** Level ${guild.premiumTier} (${guild.premiumSubscriptionCount || 0} Boosts)\n\n` +
-      `──────────────────────────────────────────\n\n` +
-      `${emojis.TOOLS} **Channels**\n` +
-      `• **Total:** \`${channels.size}\` (${textChannels} text, ${voiceChannels} voice, ${categoryChannels} categories, ${forumChannels} forum)\n\n` +
-      `──────────────────────────────────────────\n\n` +
-      `${emojis.REACTIONROLES} **Emoji Info**\n` +
-      `• Regular: \`${regularEmojis}/250\` | Animated: \`${animatedEmojis}/250\` | Total Emoji: \`${totalEmojis}/500\`\n\n` +
-      `──────────────────────────────────────────\n\n` +
-      `${emojis.PREMIUM} **Boost Status**\n` +
-      `• Level: \`${guild.premiumTier}\` [ \`${guild.premiumSubscriptionCount || 0}\` boosts ]\n\n` +
-      `──────────────────────────────────────────\n\n` +
-      `${emojis.ANTINUKE} **Guild Features**\n` +
-      `${featuresList}\n\n` +
-      `──────────────────────────────────────────\n\n` +
-      `${emojis.ROLES} **Server Roles [ ${roleCount} ]**\n` +
-      `${rolesList}${rolesFooter}`;
+      boxText + `\n\n` +
+      `**Owner:** <@${guild.ownerId}> • **Created:** ${createdAt}\n\n` +
+      `${emojis.ANTINUKE} **Guild Features**\n${featuresList}\n\n` +
+      `${emojis.ROLES} **Top Server Roles [ ${roleCount} ]**\n${rolesList}${rolesFooter}`;
   }
 
   const embed = new EmbedBuilder()
