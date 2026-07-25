@@ -136,23 +136,38 @@ function buildUserMetricRow(activeCat) {
   );
 }
 
-function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', author, clientUser) {
+function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', activeCategory = 'overview', author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey];
 
+  let metricType = 'message';
+  let headerTitle = '🏆 Top Active Chatters';
+  let emptyMsg = 'No recorded chat activity yet.';
+
+  if (activeCategory === 'voice') {
+    metricType = 'voice';
+    headerTitle = '🏆 Top Voice Active Members';
+    emptyMsg = 'No recorded voice activity yet.';
+  } else if (activeCategory === 'invites') {
+    metricType = 'invite';
+    headerTitle = '🏆 Top Invite Recruiters';
+    emptyMsg = 'No recorded invite activity yet.';
+  }
+
   const stats = db.getAnalyticsStats(guild.id, windowMs);
-  const topMembers = db.getTopLeaderboard(guild.id, 'message', windowMs, 3);
+  const topMembers = db.getTopLeaderboard(guild.id, metricType, windowMs, 3);
   const bots = guild.members.cache.filter(m => m.user.bot).size;
   const humans = guild.memberCount - bots;
 
-  let topChattersBlock = '';
+  let topBlock = '';
   if (topMembers.length === 0) {
-    topChattersBlock = 'No recorded chat activity yet.';
+    topBlock = emptyMsg;
   } else {
-    topChattersBlock = topMembers.map((item, idx) => {
+    topBlock = topMembers.map((item, idx) => {
       const member = guild.members.cache.get(item.userId);
       const name = member ? member.user.username : `User ${item.userId}`;
-      return `#${idx + 1} ${name} — ${item.total.toLocaleString()} msgs`;
+      const valStr = metricType === 'voice' ? formatDuration(item.total) : metricType === 'invite' ? `${item.total.toLocaleString()} joins` : `${item.total.toLocaleString()} msgs`;
+      return `#${idx + 1} ${name} — ${valStr}`;
     }).join('\n');
   }
 
@@ -179,9 +194,9 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', author
   const description =
     `Welcome **${author.username}**! Below is the executive **Server Analytics** dashboard.\n\n` +
     boxText + `\n\n` +
-    `**🏆 Top Active Chatters (${label})**\n` +
+    `**${headerTitle} (${label})**\n` +
     `\`\`\`\n` +
-    `${topChattersBlock}\n` +
+    `${topBlock}\n` +
     `\`\`\``;
 
   return createStyledEmbed({
@@ -469,21 +484,17 @@ module.exports = {
     if (sub === 'server') {
       let activeTf = 'lifetime';
       let activeCat = 'overview';
-      let embed = renderServerStatsOverviewPanel(guild, activeTf, author, clientUser);
+      let embed = renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
       let tfRow = buildTimeframeRow(activeTf);
       let catRow = buildServerStatsCategoryRow(activeCat);
       const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId.startsWith('stf_')) activeTf = i.customId.replace('stf_', '');
+        if (i.customId.startsWith('tf_') || i.customId.startsWith('stf_')) activeTf = i.customId.replace(/^(tf_|stf_)/, '');
         else if (i.customId.startsWith('scat_')) {
           activeCat = i.customId.replace('scat_', '');
-          if (activeCat === 'chat') {
-            const res = renderMessagesLeaderboard(guild, activeTf, 1, author, clientUser);
-            return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeTf), buildPaginationRow(res.currentPage, res.totalPages)] });
-          }
         }
-        return i.update({ embeds: [renderServerStatsOverviewPanel(guild, activeTf, author, clientUser)], components: [buildTimeframeRow(activeTf), buildServerStatsCategoryRow(activeCat)] });
+        return i.update({ embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)], components: [buildTimeframeRow(activeTf), buildServerStatsCategoryRow(activeCat)] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;

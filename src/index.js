@@ -2561,7 +2561,7 @@ client.on('interactionCreate', async (interaction) => {
         }
       }
 
-      const embed = analyticsCmd.renderServerStatsOverviewPanel(interaction.guild, timeframeKey, interaction.user, client.user);
+      const embed = analyticsCmd.renderServerStatsOverviewPanel(interaction.guild, timeframeKey, activeCat, interaction.user, client.user);
       const row1 = analyticsCmd.buildTimeframeRow(timeframeKey);
       const row2 = analyticsCmd.buildServerStatsCategoryRow(activeCat);
 
