@@ -563,12 +563,13 @@ module.exports = {
       const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
+        await i.deferUpdate().catch(() => {});
         if (i.customId.startsWith('stf_')) activeTf = i.customId.replace('stf_', '');
         else if (i.customId.startsWith('scat_')) activeCat = i.customId.replace('scat_', '');
-        return i.update({
+        await i.message.edit({
           embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)],
           components: [buildTimeframeRow(activeTf, 'stf_'), buildServerStatsCategoryRow(activeCat)]
-        });
+        }).catch(() => {});
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -582,14 +583,15 @@ module.exports = {
       const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'msgtf_'), buildPaginationRow(currentPage, totalPages)] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId === 'page_stop') { collector.stop(); return i.update({ components: [] }); }
+        await i.deferUpdate().catch(() => {});
+        if (i.customId === 'page_stop') { collector.stop(); return i.message.edit({ components: [] }).catch(() => {}); }
         else if (i.customId.startsWith('msgtf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(msgtf_|tf_)/, ''); page = 1; }
         else if (i.customId === 'page_first') page = 1;
         else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
         else if (i.customId === 'page_next') page++;
         else if (i.customId === 'page_last') page = 999;
         const res = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
-        return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'msgtf_'), buildPaginationRow(res.currentPage, res.totalPages)] });
+        await i.message.edit({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'msgtf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -603,14 +605,15 @@ module.exports = {
       const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'vctf_'), buildPaginationRow(currentPage, totalPages)] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId === 'page_stop') { collector.stop(); return i.update({ components: [] }); }
+        await i.deferUpdate().catch(() => {});
+        if (i.customId === 'page_stop') { collector.stop(); return i.message.edit({ components: [] }).catch(() => {}); }
         else if (i.customId.startsWith('vctf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(vctf_|tf_)/, ''); page = 1; }
         else if (i.customId === 'page_first') page = 1;
         else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
         else if (i.customId === 'page_next') page++;
         else if (i.customId === 'page_last') page = 999;
         const res = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
-        return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'vctf_'), buildPaginationRow(res.currentPage, res.totalPages)] });
+        await i.message.edit({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'vctf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -624,14 +627,15 @@ module.exports = {
       const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'invtf_'), buildPaginationRow(currentPage, totalPages)] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId === 'page_stop') { collector.stop(); return i.update({ components: [] }); }
+        await i.deferUpdate().catch(() => {});
+        if (i.customId === 'page_stop') { collector.stop(); return i.message.edit({ components: [] }).catch(() => {}); }
         else if (i.customId.startsWith('invtf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(invtf_|tf_)/, ''); page = 1; }
         else if (i.customId === 'page_first') page = 1;
         else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
         else if (i.customId === 'page_next') page++;
         else if (i.customId === 'page_last') page = 999;
         const res = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
-        return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'invtf_'), buildPaginationRow(res.currentPage, res.totalPages)] });
+        await i.message.edit({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'invtf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -643,9 +647,10 @@ module.exports = {
       const msg = await message.channel.send({ embeds: [renderJoinsLeavesPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'jltf_')] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
+        await i.deferUpdate().catch(() => {});
         if (i.customId.startsWith('jltf_') || i.customId.startsWith('tf_')) {
           activeKey = i.customId.replace(/^(jltf_|tf_)/, '');
-          return i.update({ embeds: [renderJoinsLeavesPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'jltf_')] });
+          await i.message.edit({ embeds: [renderJoinsLeavesPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'jltf_')] }).catch(() => {});
         }
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
@@ -658,9 +663,10 @@ module.exports = {
       const msg = await message.channel.send({ embeds: [renderTopCommandsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'cmdtf_')] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
+        await i.deferUpdate().catch(() => {});
         if (i.customId.startsWith('cmdtf_') || i.customId.startsWith('tf_')) {
           activeKey = i.customId.replace(/^(cmdtf_|tf_)/, '');
-          return i.update({ embeds: [renderTopCommandsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'cmdtf_')] });
+          await i.message.edit({ embeds: [renderTopCommandsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'cmdtf_')] }).catch(() => {});
         }
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
@@ -673,9 +679,10 @@ module.exports = {
       const msg = await message.channel.send({ embeds: [renderTicketStatsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'tktf_')] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
+        await i.deferUpdate().catch(() => {});
         if (i.customId.startsWith('tktf_') || i.customId.startsWith('tf_')) {
           activeKey = i.customId.replace(/^(tktf_|tf_)/, '');
-          return i.update({ embeds: [renderTicketStatsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'tktf_')] });
+          await i.message.edit({ embeds: [renderTicketStatsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'tktf_')] }).catch(() => {});
         }
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
