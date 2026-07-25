@@ -110,14 +110,14 @@ function buildMusicPlayerEmbed(track, player) {
 
   return new EmbedBuilder()
     .setColor(0xFF007F)
-    .setAuthor({ name: '♪ Now Playing' })
-    .setTitle('Track Information')
+    .setAuthor({ name: '🎶 Now Playing' })
+    .setTitle('✨ Track Information')
     .setThumbnail(artworkUrl)
     .setDescription(
-      `• 🗸 **Title:** ${title}\n` +
-      `• 💼 **Artist:** ${artist}\n` +
-      `• ⌛ **Duration:** \`${durationStr}\`\n` +
-      `• ➕ **Status:** Now playing\n\n` +
+      `• 🎵 **Title:** ${title}\n` +
+      `• 🎤 **Artist:** ${artist}\n` +
+      `• ⏱️ **Duration:** \`${durationStr}\`\n` +
+      `• ⚡ **Status:** Now playing\n\n` +
       `*Currently streaming in voice channel*`
     );
 }
@@ -130,9 +130,9 @@ const { isGuildPremium, isUserPremium } = require('./premium');
 function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
   const isPrem = (guildId && isGuildPremium(guildId)) || (author && isUserPremium(author.id));
   const maxQueue = isPrem ? 200 : 50;
-  const queueType = isPrem ? 'Premium' : 'Standard';
-  const statusText = isPrem ? 'Premium active' : 'Free Tier (50 max)';
-  const footerNote = isPrem ? '*Premium features unlocked*' : '*Upgrade to Premium for 200 max queue*';
+  const queueType = isPrem ? 'Premium Tier ✨' : 'Standard Tier';
+  const statusText = isPrem ? 'Premium active 👑' : 'Free Tier (50 max)';
+  const footerNote = isPrem ? '*Premium features unlocked ⭐*' : '*Upgrade to Premium for 200 max queue*';
 
   const title = track?.info?.title || 'Unknown Track';
   const artist = track?.info?.author || 'Unknown Artist';
@@ -141,22 +141,22 @@ function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
   const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
 
   return new EmbedBuilder()
-    .setColor(isPrem ? 0x7289DA : 0x7E0808)
-    .setAuthor({ name: '🎶 Added to Queue', iconURL: 'https://cdn-icons-png.flaticon.com/512/4403/4403157.png' })
+    .setColor(isPrem ? 0x7289DA : 0xFF007F)
+    .setAuthor({ name: '🎶 Added to Queue' })
     .setThumbnail(artworkUrl)
     .setDescription(
-      `### Track Information\n\n` +
-      `• 🗸 **Title:** ${title}\n` +
-      `• 💼 **Artist:** ${artist}\n` +
-      `• ⌛ **Duration:** \`${durationStr}\`\n` +
-      `• ➕ **Status:** Position ${position}\n\n` +
+      `### ✨ Track Information\n\n` +
+      `• 🎵 **Title:** ${title}\n` +
+      `• 🎤 **Artist:** ${artist}\n` +
+      `• ⏱️ **Duration:** \`${durationStr}\`\n` +
+      `• ⚡ **Status:** Position #${position}\n\n` +
       `*Track has been queued successfully*\n\n` +
       `---\n\n` +
-      `### Queue Information\n\n` +
-      `• ➕ **Position:** ${position}\n` +
-      `• 💼 **Queue Type:** ${queueType}\n` +
-      `• ⌛ **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
-      `• 🗸 **Status:** ${statusText}\n\n` +
+      `### 📊 Queue Information\n\n` +
+      `• 📍 **Position:** #${position}\n` +
+      `• 👑 **Queue Type:** ${queueType}\n` +
+      `• 📈 **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
+      `• 🌟 **Status:** ${statusText}\n\n` +
       `${footerNote}`
     )
     .setTimestamp();
