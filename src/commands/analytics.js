@@ -267,24 +267,34 @@ function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, a
   const startIdx = (currentPage - 1) * perPage;
   const pageEntries = allLeaderboard.slice(startIdx, startIdx + perPage);
 
-  let listText = '';
+  const titlePadded = 'TOP 10 CHATTER LEADER'.padStart(Math.floor((24 + 21) / 2), ' ').padEnd(24, ' ');
+  const boxLines = [
+    '╭──────────────────────────╮',
+    '│ ' + titlePadded + ' │',
+    '├──────────────────────────┤'
+  ];
+
   if (pageEntries.length === 0) {
-    listText = '*No recorded chat activity for this timeframe.*';
+    boxLines.push('│ No recorded chat data    │');
   } else {
-    listText = pageEntries.map((item, idx) => {
-      const rankNum = startIdx + idx + 1;
-      let medal = `#${rankNum}`;
-      if (rankNum === 1) medal = `${emojis.OWNER_CROWN || '👑'} #1`;
-      else if (rankNum === 2) medal = `${emojis.STAR || '⭐'} #2`;
-      else if (rankNum === 3) medal = `${emojis.SHINOBI || '🍥'} #3`;
-      return `**${medal}** <@${item.userId}> — **${item.total.toLocaleString()}** msgs`;
-    }).join('\n');
+    pageEntries.forEach((item, idx) => {
+      const rankNum = '#' + (startIdx + idx + 1);
+      const rankStr = rankNum.padEnd(3, ' ');
+      const member = guild.members.cache.get(item.userId);
+      const rawName = member ? member.user.username : `User${item.userId}`;
+      const nameStr = rawName.slice(0, 8).padEnd(8, ' ');
+      const valStr = `${item.total.toLocaleString()} msgs`.slice(0, 9).padEnd(9, ' ');
+      boxLines.push('│ ' + rankStr + ' ' + nameStr + ': ' + valStr + ' │');
+    });
   }
+
+  boxLines.push('╰──────────────────────────╯');
+  const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   const embed = createStyledEmbed({
     title: `${emojis.MESSAGES || '💬'} Chat Leaderboard [${label}]`,
     subtitle: `Top Chatters in ${guild.name}`,
-    description: listText,
+    description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
     footerText: `Page ${currentPage}/${totalPages} • Timeframe: ${label} • Naruto One`,
     requestedBy: author,
@@ -305,24 +315,34 @@ function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, auth
   const startIdx = (currentPage - 1) * perPage;
   const pageEntries = allLeaderboard.slice(startIdx, startIdx + perPage);
 
-  let listText = '';
+  const titlePadded = 'TOP 10 VOICE LEADER'.padStart(Math.floor((24 + 19) / 2), ' ').padEnd(24, ' ');
+  const boxLines = [
+    '╭──────────────────────────╮',
+    '│ ' + titlePadded + ' │',
+    '├──────────────────────────┤'
+  ];
+
   if (pageEntries.length === 0) {
-    listText = '*No recorded voice activity for this timeframe.*';
+    boxLines.push('│ No recorded voice data   │');
   } else {
-    listText = pageEntries.map((item, idx) => {
-      const rankNum = startIdx + idx + 1;
-      let medal = `#${rankNum}`;
-      if (rankNum === 1) medal = `${emojis.OWNER_CROWN || '👑'} #1`;
-      else if (rankNum === 2) medal = `${emojis.STAR || '⭐'} #2`;
-      else if (rankNum === 3) medal = `${emojis.SHINOBI || '🍥'} #3`;
-      return `**${medal}** <@${item.userId}> — **${formatDuration(item.total)}** voice`;
-    }).join('\n');
+    pageEntries.forEach((item, idx) => {
+      const rankNum = '#' + (startIdx + idx + 1);
+      const rankStr = rankNum.padEnd(3, ' ');
+      const member = guild.members.cache.get(item.userId);
+      const rawName = member ? member.user.username : `User${item.userId}`;
+      const nameStr = rawName.slice(0, 8).padEnd(8, ' ');
+      const valStr = formatDuration(item.total).slice(0, 9).padEnd(9, ' ');
+      boxLines.push('│ ' + rankStr + ' ' + nameStr + ': ' + valStr + ' │');
+    });
   }
+
+  boxLines.push('╰──────────────────────────╯');
+  const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   const embed = createStyledEmbed({
     title: `${emojis.VOICE || '🔊'} Voice Leaderboard [${label}]`,
     subtitle: `Top Voice Members in ${guild.name}`,
-    description: listText,
+    description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
     footerText: `Page ${currentPage}/${totalPages} • Timeframe: ${label} • Naruto One`,
     requestedBy: author,
@@ -343,24 +363,34 @@ function renderInvitesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, au
   const startIdx = (currentPage - 1) * perPage;
   const pageEntries = allLeaderboard.slice(startIdx, startIdx + perPage);
 
-  let listText = '';
+  const titlePadded = 'TOP 10 INVITE LEADER'.padStart(Math.floor((24 + 20) / 2), ' ').padEnd(24, ' ');
+  const boxLines = [
+    '╭──────────────────────────╮',
+    '│ ' + titlePadded + ' │',
+    '├──────────────────────────┤'
+  ];
+
   if (pageEntries.length === 0) {
-    listText = '*No recorded invite activity for this timeframe.*';
+    boxLines.push('│ No recorded invite data  │');
   } else {
-    listText = pageEntries.map((item, idx) => {
-      const rankNum = startIdx + idx + 1;
-      let medal = `#${rankNum}`;
-      if (rankNum === 1) medal = `${emojis.OWNER_CROWN || '👑'} #1`;
-      else if (rankNum === 2) medal = `${emojis.STAR || '⭐'} #2`;
-      else if (rankNum === 3) medal = `${emojis.SHINOBI || '🍥'} #3`;
-      return `**${medal}** <@${item.userId}> — **${item.total.toLocaleString()}** invites`;
-    }).join('\n');
+    pageEntries.forEach((item, idx) => {
+      const rankNum = '#' + (startIdx + idx + 1);
+      const rankStr = rankNum.padEnd(3, ' ');
+      const member = guild.members.cache.get(item.userId);
+      const rawName = member ? member.user.username : `User${item.userId}`;
+      const nameStr = rawName.slice(0, 8).padEnd(8, ' ');
+      const valStr = `${item.total.toLocaleString()} joins`.slice(0, 9).padEnd(9, ' ');
+      boxLines.push('│ ' + rankStr + ' ' + nameStr + ': ' + valStr + ' │');
+    });
   }
+
+  boxLines.push('╰──────────────────────────╯');
+  const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   const embed = createStyledEmbed({
     title: `${emojis.INVITES || '📨'} Invites Leaderboard [${label}]`,
     subtitle: `Top Recruiters in ${guild.name}`,
-    description: listText,
+    description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
     footerText: `Page ${currentPage}/${totalPages} • Timeframe: ${label} • Naruto One`,
     requestedBy: author,
