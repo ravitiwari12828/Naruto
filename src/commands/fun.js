@@ -203,15 +203,51 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
+async function fetchActionAnimeGif(action) {
+  const sources = [
+    `https://api.otakugifs.xyz/gif?reaction=${action}`,
+    `https://nekos.life/api/v2/img/${action}`,
+    `https://purrbot.site/api/img/sfw/${action}/gif`
+  ];
+
+  for (const url of sources) {
+    try {
+      const res = await fetch(url, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+        signal: AbortSignal.timeout(3500)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const img = data.url || data.link || data.response;
+        if (img && typeof img === 'string' && img.startsWith('http')) return img;
+      }
+    } catch(e) {}
+  }
+
+  const fallbacks = [
+    'https://cdn.nekos.life/avatar/avatar_01.png',
+    'https://cdn.nekos.life/avatar/avatar_05.png',
+    'https://cdn.nekos.life/neko/neko046.png'
+  ];
+  return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+}
+
     // 2. EMOTES COMMANDS
     if (EMOTES_MAP[invoked]) {
       const actionText = EMOTES_MAP[invoked];
+      const imageUrl = await fetchActionAnimeGif(invoked);
+
       const embed = createStyledEmbed({
         title: `😃 ${author.username} ${invoked}!`,
         description: `**${author.username}** ${actionText}`,
+        bannerUrl: imageUrl,
+        showBanner: true,
+        showThumbnail: false,
         requestedBy: author,
         clientUser
       });
+      if (imageUrl) embed.setImage(imageUrl);
+
       return message.channel.send({ embeds: [embed] });
     }
 
@@ -220,13 +256,19 @@ module.exports = {
       const verb = ACTIONS_MAP[invoked];
       const isSelf = targetUser.id === author.id;
       const targetText = isSelf ? 'themselves! *Awkward...*' : `<@${targetUser.id}>!`;
+      const imageUrl = await fetchActionAnimeGif(invoked);
 
       const embed = createStyledEmbed({
         title: `🤗 ${invoked.toUpperCase()}!`,
         description: `**<@${author.id}>** ${verb} ${targetText}`,
+        bannerUrl: imageUrl,
+        showBanner: true,
+        showThumbnail: false,
         requestedBy: author,
         clientUser
       });
+      if (imageUrl) embed.setImage(imageUrl);
+
       return message.channel.send({ embeds: [embed] });
     }
 
