@@ -212,14 +212,25 @@ module.exports = {
       afkStore.set(authorId, afkData);
 
       function buildAfkEmbed(data) {
+        const scopeText = data.scope === 'global' ? 'Global (All Servers)' : 'Server Only';
+        const dmText = data.notifyDM ? 'Enabled' : 'Disabled';
+
+        const boxText =
+          '```\n' +
+          '╭───────────────────────────────────────────────────╮\n' +
+          '│                AFK STATUS SETTINGS                │\n' +
+          '├───────────────────────────────────────────────────┤\n' +
+          '│ Status        : ACTIVE (AFK)                      │\n' +
+          '│ Reason        : ' + String(data.reason || 'I am afk :)').slice(0, 33).padEnd(33, ' ') + ' │\n' +
+          '│ AFK Scope     : ' + scopeText.padEnd(33, ' ') + ' │\n' +
+          '│ DM On Mention : ' + dmText.padEnd(33, ' ') + ' │\n' +
+          '╰───────────────────────────────────────────────────╯\n' +
+          '```';
+
         return createStyledEmbed({
-          title: `${emojis.SUCCESS || '✔️'} Success`,
+          title: `${emojis.SUCCESS} AFK Status Configured`,
           subtitle: `<@${authorId}>, you are now marked as AFK.`,
-          description:
-            `**Reason:** ${data.reason}\n\n` +
-            `───────────── Settings ─────────────\n` +
-            `${emojis.INFO || '🌐'} **AFK Scope:** \`${data.scope === 'global' ? 'Global (All Servers)' : 'Server Only'}\` ${data.scope === 'global' ? (emojis.ENABLED || '✅') : (emojis.DISABLED || '🏠')}\n` +
-            `${emojis.MODMAIL_ENVELOPE || '🔔'} **DM Notification on Mention:** \`${data.notifyDM ? 'Enabled' : 'Disabled'}\` ${data.notifyDM ? (emojis.ENABLED || '✅') : (emojis.DISABLED || '❌')}`,
+          description: boxText,
           requestedBy: author,
           clientUser
         });
@@ -356,16 +367,24 @@ module.exports = {
       const role = message.mentions.roles.first() || guild.roles.cache.get(args[0]);
       if (!role) return message.reply(`${emojis.WARNING} Usage: \`.roleinfo <@role>\``);
 
+      const boxText =
+        '```\n' +
+        '╭───────────────────────────────────────────────────╮\n' +
+        '│               ROLE INFORMATION PANEL              │\n' +
+        '├───────────────────────────────────────────────────┤\n' +
+        '│ Role Name     : ' + String('@' + role.name).slice(0, 33).padEnd(33, ' ') + ' │\n' +
+        '│ Role ID       : ' + String(role.id).padEnd(33, ' ') + ' │\n' +
+        '│ Color Hex     : ' + String(role.hexColor).padEnd(33, ' ') + ' │\n' +
+        '│ Total Members : ' + String(role.members.size).padEnd(33, ' ') + ' │\n' +
+        '│ Hierarchy Pos : ' + String('#' + role.position).padEnd(33, ' ') + ' │\n' +
+        '│ Mentionable   : ' + (role.mentionable ? 'YES' : 'NO').padEnd(33, ' ') + ' │\n' +
+        '│ Hoisted       : ' + (role.hoist ? 'YES' : 'NO').padEnd(33, ' ') + ' │\n' +
+        '╰───────────────────────────────────────────────────╯\n' +
+        '```';
+
       const embed = createStyledEmbed({
-        title: `🎭 Role Info — ${role.name}`,
-        fields: [
-          { name: '🆔 Role ID', value: `\`${role.id}\``, inline: true },
-          { name: '🎨 Color', value: `\`${role.hexColor}\``, inline: true },
-          { name: '👥 Members', value: `\`${role.members.size}\``, inline: true },
-          { name: '📍 Position', value: `\`${role.position}\``, inline: true },
-          { name: '⚙️ Mentionable', value: role.mentionable ? 'Yes' : 'No', inline: true },
-          { name: '📌 Hoisted', value: role.hoist ? 'Yes' : 'No', inline: true }
-        ],
+        title: `${emojis.ROLES} Role Info — ${role.name}`,
+        description: boxText,
         requestedBy: author,
         clientUser
       });
@@ -462,18 +481,31 @@ module.exports = {
 
       const keyPermissions = member.permissions.toArray().slice(0, 8).map(p => `\`${p.replace(/_/g, ' ')}\``).join(', ') || '`None`';
 
+      const createdStr = user.createdAt ? user.createdAt.toISOString().split('T')[0] : 'Unknown';
+      const joinedStr = member.joinedAt ? member.joinedAt.toISOString().split('T')[0] : 'Unknown';
+      const topRoleName = member.roles.highest ? member.roles.highest.name : 'None';
+
+      const boxText =
+        '```\n' +
+        '╭───────────────────────────────────────────────────╮\n' +
+        '│            USER PROFILE & PERMISSIONS             │\n' +
+        '├───────────────────────────────────────────────────┤\n' +
+        '│ Username      : ' + String(user.username).slice(0, 33).padEnd(33, ' ') + ' │\n' +
+        '│ User ID       : ' + String(user.id).padEnd(33, ' ') + ' │\n' +
+        '│ Account Type  : ' + (user.bot ? 'BOT ACCOUNT' : 'HUMAN MEMBER').padEnd(33, ' ') + ' │\n' +
+        '│ Created At    : ' + String(createdStr).padEnd(33, ' ') + ' │\n' +
+        '│ Joined Server : ' + String(joinedStr).padEnd(33, ' ') + ' │\n' +
+        '│ Top Role      : ' + String(topRoleName).slice(0, 33).padEnd(33, ' ') + ' │\n' +
+        '╰───────────────────────────────────────────────────╯\n' +
+        '```';
+
       const embed = createStyledEmbed({
-        title: `👤 User Information — ${user.username}`,
+        title: `${emojis.PROFILE} User Information — ${user.username}`,
         thumbnailUrl: user.displayAvatarURL({ dynamic: true, size: 256 }),
-        fields: [
-          { name: '🆔 User ID', value: `\`${user.id}\``, inline: true },
-          { name: '🏷️ Tag / Username', value: `\`${user.tag || user.username}\``, inline: true },
-          { name: '🤖 Bot Account', value: user.bot ? '`Yes ✅`' : '`No ❌`', inline: true },
-          { name: '📅 Account Created', value: `<t:${createdTimestamp}:F> (<t:${createdTimestamp}:R>)`, inline: false },
-          { name: '📥 Joined Server', value: joinedTimestamp ? `<t:${joinedTimestamp}:F> (<t:${joinedTimestamp}:R>)` : '*Unknown*', inline: false },
-          { name: `🎭 Server Roles [ ${Math.max(0, member.roles.cache.size - 1)} ]`, value: rolesList, inline: false },
-          { name: '🛡️ Key Permissions', value: keyPermissions, inline: false }
-        ],
+        description:
+          boxText + `\n\n` +
+          `**${emojis.ROLES} Server Roles [ ${Math.max(0, member.roles.cache.size - 1)} ]**\n${rolesList}\n\n` +
+          `**${emojis.SHIELD} Key Permissions**\n${keyPermissions}`,
         requestedBy: author,
         clientUser
       });

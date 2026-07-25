@@ -108,18 +108,23 @@ function buildMusicPlayerEmbed(track, player) {
   const durationStr = formatDuration(durationMs);
   const artworkUrl = track?.info?.artworkUrl || track?.pluginInfo?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
 
+  const boxText =
+    '```\n' +
+    '╭───────────────────────────────────────────────────╮\n' +
+    '│                 TRACK INFORMATION                 │\n' +
+    '├───────────────────────────────────────────────────┤\n' +
+    '│ Title    : ' + String(title).slice(0, 38).padEnd(38, ' ') + ' │\n' +
+    '│ Artist   : ' + String(artist).slice(0, 38).padEnd(38, ' ') + ' │\n' +
+    '│ Duration : ' + String(durationStr).padEnd(38, ' ') + ' │\n' +
+    '│ Playback : STREAMING NOW [LIVE]                   │\n' +
+    '╰───────────────────────────────────────────────────╯\n' +
+    '```';
+
   return new EmbedBuilder()
     .setColor(0xFF007F)
     .setAuthor({ name: '🎶 Now Playing' })
-    .setTitle('✨ Track Information')
     .setThumbnail(artworkUrl)
-    .setDescription(
-      `• 🎵 **Title:** ${title}\n` +
-      `• 🎤 **Artist:** ${artist}\n` +
-      `• ⏱️ **Duration:** \`${durationStr}\`\n` +
-      `• ⚡ **Status:** Now playing\n\n` +
-      `*Currently streaming in voice channel*`
-    );
+    .setDescription(boxText + `\n*Currently streaming in voice channel*`);
 }
 
 const { isGuildPremium, isUserPremium } = require('./premium');
