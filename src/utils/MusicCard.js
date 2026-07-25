@@ -426,15 +426,13 @@ class MusicCard {
     ctx.textBaseline = 'middle';
     ctx.fillText(source.toUpperCase(), badgeX + badgeWidth / 2, badgeY + badgeHeight / 2);
 
-    // --- Naruto branding (bottom-right) ---
+    // --- Requester / User tag (bottom-right) ---
     ctx.save();
     ctx.textAlign = 'right';
     ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(255, 160, 50, 0.6)';
-    ctx.shadowBlur = 12;
-    ctx.fillStyle = '#ffa020';
-    ctx.font = '15px "Inter SemiBold"';
-    ctx.fillText('🍥 Naruto', width - margin - 5, bottomY);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 15px "Inter SemiBold"';
+    ctx.fillText(opts.requester || 'Synn', width - margin - 5, bottomY);
     ctx.restore();
 
     return canvas.toBuffer('image/png');

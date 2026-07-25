@@ -48,7 +48,17 @@ async function sendMusicCard(channel, track, player) {
   }
 
   const rows = buildMusicActionRows(player);
+  const embed = buildMusicPlayerEmbed(track, player);
   let sentMsg = null;
+
+  let reqName = 'Synn';
+  if (track?.requester) {
+    if (typeof track.requester === 'object') {
+      reqName = track.requester.username || track.requester.displayName || 'Synn';
+    } else if (typeof track.requester === 'string') {
+      reqName = track.requester;
+    }
+  }
 
   if (musicCardRenderer) {
     try {
@@ -58,19 +68,13 @@ async function sendMusicCard(channel, track, player) {
         artworkUrl: track?.info?.artworkUrl || track?.pluginInfo?.artworkUrl || null,
         position: player?.position || 0,
         duration: track?.info?.duration || 0,
-        source: track?.info?.sourceName || 'Spotify',
+        source: track?.info?.sourceName || 'spotify',
         isLive: !track?.info?.duration || track.info.duration <= 0,
+        requester: reqName
       });
 
       const attachment = new AttachmentBuilder(buf, { name: 'nowplaying.png' });
-      const cardEmbed = new EmbedBuilder()
-        .setColor(0xFF007F)
-        .setImage('attachment://nowplaying.png')
-        .setFooter({
-          text: `🍥 Naruto Music • Queue: ${player?.queue?.tracks?.length || 0} songs • Vol: ${player?.volume || 100}%`,
-        });
-
-      sentMsg = await channel.send({ embeds: [cardEmbed], files: [attachment], components: rows });
+      sentMsg = await channel.send({ embeds: [embed], files: [attachment], components: rows });
       if (player) player.lastMessage = sentMsg;
       return sentMsg;
     } catch (e) {
@@ -78,7 +82,6 @@ async function sendMusicCard(channel, track, player) {
     }
   }
 
-  const embed = buildMusicPlayerEmbed(track, player);
   sentMsg = await channel.send({ embeds: [embed], components: rows });
   if (player) player.lastMessage = sentMsg;
   return sentMsg;
@@ -95,41 +98,27 @@ const NARUTO_OST = {
 };
 
 /**
- * Builds the STELLAR BEATS Music Player Card.
+ * Builds the Track Information Embed matching requested UI.
  */
 function buildMusicPlayerEmbed(track, player) {
   const title = track?.info?.title || 'Unknown Track';
-  const author = track?.info?.author || 'Unknown Artist';
-  const durationMs = track?.info?.duration || 240000;
+  const artist = track?.info?.author || 'Unknown Artist';
+  const durationMs = track?.info?.duration || 0;
   const durationStr = formatDuration(durationMs);
-  const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
-  const volume = player?.volume || 100;
-
-  let reqName = 'Member';
-  let reqAvatar = 'https://cdn.discordapp.com/embed/avatars/0.png';
-  if (track?.requester) {
-    if (typeof track.requester === 'object') {
-      reqName = track.requester.username || track.requester.displayName || 'Member';
-      if (typeof track.requester.displayAvatarURL === 'function') {
-        reqAvatar = track.requester.displayAvatarURL({ dynamic: true });
-      }
-    }
-  }
-
-  const engineName = track?.info?.sourceName ? (track.info.sourceName.charAt(0).toUpperCase() + track.info.sourceName.slice(1)) : 'Spotify';
+  const artworkUrl = track?.info?.artworkUrl || track?.pluginInfo?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
 
   return new EmbedBuilder()
-    .setColor(0xFF007F)
-    .setAuthor({ name: '💿 Starting playing...', iconURL: 'https://i.imgur.com/8Q9Z9zG.png' })
-    .setDescription(`**[${title}](${track?.info?.uri || 'https://spotify.com'})**`)
-    .addFields([
-      { name: '👤 Author:', value: author, inline: true },
-      { name: '🔊 Volume:', value: `${volume}%`, inline: true },
-      { name: '🌐 Duration:', value: durationStr, inline: true }
-    ])
-    .setImage(artworkUrl)
-    .setFooter({ text: `Engine: ${engineName} | Requested By ${reqName}`, iconURL: reqAvatar })
-    .setTimestamp();
+    .setColor(0x131a2a)
+    .setAuthor({ name: '♪ Now Playing' })
+    .setTitle('Track Information')
+    .setThumbnail(artworkUrl)
+    .setDescription(
+      `• 🗸 **Title:** ${title}\n` +
+      `• 💼 **Artist:** ${artist}\n` +
+      `• ⌛ **Duration:** \`${durationStr}\`\n` +
+      `• ➕ **Status:** Now playing\n\n` +
+      `*Currently streaming in voice channel*`
+    );
 }
 
 const { isGuildPremium, isUserPremium } = require('./premium');
