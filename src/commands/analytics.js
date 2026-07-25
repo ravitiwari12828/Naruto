@@ -575,41 +575,19 @@ module.exports = {
     }
 
     if (sub === 'messages') {
-      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
-      return;
-    }
-
-    if (sub === 'user') {
-      const mentionOrId = (invoked === 'lb' || invoked === 'leaderboard') ? args[1] : args[0];
-      const targetUser = message.mentions.users.first() || (mentionOrId ? await message.client.users.fetch(mentionOrId).catch(() => null) : null) || author;
-      let activeCat = 'all';
-      let activeTf = '1d';
-      let embed = renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser);
-      const msg = await message.channel.send({ embeds: [embed], components: [buildUserMetricRow(activeCat), buildTimeframeRow(activeTf)] });
-      const collector = msg.createMessageComponentCollector({ time: 300000 });
-      collector.on('collect', async (i) => {
-        if (i.customId.startsWith('ucat_')) activeCat = i.customId.replace('ucat_', '');
-        else if (i.customId.startsWith('tf_')) activeTf = i.customId.replace('tf_', '');
-        return i.update({ embeds: [renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser)], components: [buildUserMetricRow(activeCat), buildTimeframeRow(activeTf)] });
-      });
-      collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
-      return;
-    }
-
-    if (sub === 'messages') {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || 'lifetime') : (arg0 || 'lifetime');
       if (!WINDOWS[activeKey]) activeKey = 'lifetime';
       let page = 1;
       let { embed, currentPage, totalPages } = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
-      const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey), buildPaginationRow(currentPage, totalPages)] });
+      const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'msgtf_'), buildPaginationRow(currentPage, totalPages)] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
         if (i.customId === 'page_stop') { collector.stop(); return i.update({ components: [] }); }
-        else if (i.customId.startsWith('tf_')) { activeKey = i.customId.replace('tf_', ''); page = 1; }
+        else if (i.customId.startsWith('msgtf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(msgtf_|tf_)/, ''); page = 1; }
         else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
         else if (i.customId === 'page_next') page++;
         const res = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
-        return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey), buildPaginationRow(res.currentPage, res.totalPages)] });
+        return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'msgtf_'), buildPaginationRow(res.currentPage, res.totalPages)] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -620,15 +598,15 @@ module.exports = {
       if (!WINDOWS[activeKey]) activeKey = 'lifetime';
       let page = 1;
       let { embed, currentPage, totalPages } = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
-      const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey), buildPaginationRow(currentPage, totalPages)] });
+      const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'vctf_'), buildPaginationRow(currentPage, totalPages)] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
         if (i.customId === 'page_stop') { collector.stop(); return i.update({ components: [] }); }
-        else if (i.customId.startsWith('tf_')) { activeKey = i.customId.replace('tf_', ''); page = 1; }
+        else if (i.customId.startsWith('vctf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(vctf_|tf_)/, ''); page = 1; }
         else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
         else if (i.customId === 'page_next') page++;
         const res = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
-        return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey), buildPaginationRow(res.currentPage, res.totalPages)] });
+        return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'vctf_'), buildPaginationRow(res.currentPage, res.totalPages)] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -639,15 +617,15 @@ module.exports = {
       if (!WINDOWS[activeKey]) activeKey = 'lifetime';
       let page = 1;
       let { embed, currentPage, totalPages } = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
-      const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey), buildPaginationRow(currentPage, totalPages)] });
+      const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'invtf_'), buildPaginationRow(currentPage, totalPages)] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
         if (i.customId === 'page_stop') { collector.stop(); return i.update({ components: [] }); }
-        else if (i.customId.startsWith('tf_')) { activeKey = i.customId.replace('tf_', ''); page = 1; }
+        else if (i.customId.startsWith('invtf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(invtf_|tf_)/, ''); page = 1; }
         else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
         else if (i.customId === 'page_next') page++;
         const res = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
-        return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey), buildPaginationRow(res.currentPage, res.totalPages)] });
+        return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'invtf_'), buildPaginationRow(res.currentPage, res.totalPages)] });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
