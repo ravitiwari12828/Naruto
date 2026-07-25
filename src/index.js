@@ -2000,7 +2000,49 @@ client.on('interactionCreate', async (interaction) => {
     gw.entries.add(interaction.user.id);
     giveawayCmd.giveaways.set(gwId, gw);
 
-    return interaction.reply({ content: `🎉 **Entry Confirmed!** You entered giveaway **${gwId}** for prize: **${gw.prize}**! Good luck! 🍀`, flags: 64 }).catch(() => {});
+    // Update live giveaway embed participant count in channel
+    try {
+      const origEmbed = interaction.message.embeds[0];
+      if (origEmbed) {
+        const updatedEmbed = EmbedBuilder.from(origEmbed);
+        const endTimestamp = Math.floor(gw.endTime / 1000);
+        updatedEmbed.setDescription(
+          `Click the **🎉 Enter Giveaway** button below to participate!\n\n` +
+          `• **Host:** <@${gw.hostId}>\n` +
+          `• **Prize:** \`${gw.prize}\`\n` +
+          `• **Winners:** \`${gw.winnerCount}\`\n` +
+          `• **Participants:** \`${gw.entries.size}\`\n` +
+          `• **Ends:** <t:${endTimestamp}:F> (<t:${endTimestamp}:R>)\n` +
+          `• **Giveaway ID:** \`${gw.id}\``
+        );
+        await interaction.message.edit({ embeds: [updatedEmbed] }).catch(() => {});
+      }
+    } catch (e) {}
+
+    // Send DM matching Paradox bot aesthetic (Picture 2)
+    const endTimestamp = Math.floor(gw.endTime / 1000);
+    const msgUrl = `https://discord.com/channels/${interaction.guildId}/${interaction.channelId}/${interaction.message.id}`;
+
+    const dmEmbed = new EmbedBuilder()
+      .setColor(0x2B2D31)
+      .setTitle('Giveaway Entry Confirmed! 🎉')
+      .setDescription(
+        `Your entry for **${gw.prize}** has been confirmed!\n\n` +
+        `**Giveaway Info**\n` +
+        `**Server:** ${interaction.guild?.name || 'Server'}\n` +
+        `**Ends:** <t:${endTimestamp}:R>`
+      );
+
+    const dmRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel('View Giveaway')
+        .setStyle(ButtonStyle.Link)
+        .setURL(msgUrl)
+    );
+
+    await interaction.user.send({ embeds: [dmEmbed], components: [dmRow] }).catch(() => {});
+
+    return interaction.reply({ content: `🎉 **Entry Confirmed!** Check your DMs for details! 📩`, flags: 64 }).catch(() => {});
   }
 
   // 3. CALL STAFF BUTTON
