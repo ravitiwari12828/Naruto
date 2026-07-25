@@ -584,8 +584,10 @@ module.exports = {
       collector.on('collect', async (i) => {
         if (i.customId === 'page_stop') { collector.stop(); return i.update({ components: [] }); }
         else if (i.customId.startsWith('msgtf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(msgtf_|tf_)/, ''); page = 1; }
+        else if (i.customId === 'page_first') page = 1;
         else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
         else if (i.customId === 'page_next') page++;
+        else if (i.customId === 'page_last') page = 999;
         const res = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
         return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'msgtf_'), buildPaginationRow(res.currentPage, res.totalPages)] });
       });
@@ -603,8 +605,10 @@ module.exports = {
       collector.on('collect', async (i) => {
         if (i.customId === 'page_stop') { collector.stop(); return i.update({ components: [] }); }
         else if (i.customId.startsWith('vctf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(vctf_|tf_)/, ''); page = 1; }
+        else if (i.customId === 'page_first') page = 1;
         else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
         else if (i.customId === 'page_next') page++;
+        else if (i.customId === 'page_last') page = 999;
         const res = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
         return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'vctf_'), buildPaginationRow(res.currentPage, res.totalPages)] });
       });
@@ -622,8 +626,10 @@ module.exports = {
       collector.on('collect', async (i) => {
         if (i.customId === 'page_stop') { collector.stop(); return i.update({ components: [] }); }
         else if (i.customId.startsWith('invtf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(invtf_|tf_)/, ''); page = 1; }
+        else if (i.customId === 'page_first') page = 1;
         else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
         else if (i.customId === 'page_next') page++;
+        else if (i.customId === 'page_last') page = 999;
         const res = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
         return i.update({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'invtf_'), buildPaginationRow(res.currentPage, res.totalPages)] });
       });
@@ -634,12 +640,12 @@ module.exports = {
     if (sub === 'joins' || sub === 'leaves') {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || '1d') : (arg0 || '1d');
       if (!WINDOWS[activeKey]) activeKey = '1d';
-      const msg = await message.channel.send({ embeds: [renderJoinsLeavesPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey)] });
+      const msg = await message.channel.send({ embeds: [renderJoinsLeavesPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'jltf_')] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId.startsWith('tf_')) {
-          activeKey = i.customId.replace('tf_', '');
-          return i.update({ embeds: [renderJoinsLeavesPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey)] });
+        if (i.customId.startsWith('jltf_') || i.customId.startsWith('tf_')) {
+          activeKey = i.customId.replace(/^(jltf_|tf_)/, '');
+          return i.update({ embeds: [renderJoinsLeavesPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'jltf_')] });
         }
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
@@ -649,12 +655,12 @@ module.exports = {
     if (sub === 'commands') {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || '1d') : (arg0 || '1d');
       if (!WINDOWS[activeKey]) activeKey = '1d';
-      const msg = await message.channel.send({ embeds: [renderTopCommandsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey)] });
+      const msg = await message.channel.send({ embeds: [renderTopCommandsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'cmdtf_')] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId.startsWith('tf_')) {
-          activeKey = i.customId.replace('tf_', '');
-          return i.update({ embeds: [renderTopCommandsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey)] });
+        if (i.customId.startsWith('cmdtf_') || i.customId.startsWith('tf_')) {
+          activeKey = i.customId.replace(/^(cmdtf_|tf_)/, '');
+          return i.update({ embeds: [renderTopCommandsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'cmdtf_')] });
         }
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
@@ -664,12 +670,12 @@ module.exports = {
     if (sub === 'tickets') {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || '1d') : (arg0 || '1d');
       if (!WINDOWS[activeKey]) activeKey = '1d';
-      const msg = await message.channel.send({ embeds: [renderTicketStatsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey)] });
+      const msg = await message.channel.send({ embeds: [renderTicketStatsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'tktf_')] });
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
-        if (i.customId.startsWith('tf_')) {
-          activeKey = i.customId.replace('tf_', '');
-          return i.update({ embeds: [renderTicketStatsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey)] });
+        if (i.customId.startsWith('tktf_') || i.customId.startsWith('tf_')) {
+          activeKey = i.customId.replace(/^(tktf_|tf_)/, '');
+          return i.update({ embeds: [renderTicketStatsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'tktf_')] });
         }
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
