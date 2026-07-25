@@ -348,15 +348,25 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
       .setDescription(
         `Below is the complete list of commands for **${cat.label}**.\n\n` +
         `${emojis.SCROLL || '🌀'} **Shinobi Games & Oracle**\n` +
-        `\`8ball\` \`truth\` \`dare\` \`wyr\` \`pickup\` \`fortune\` \`vibecheck\` \`mood\`\n\n` +
+        `\`\`\`\n` +
+        `.8ball .truth .dare .wyr .pickup .fortune .vibecheck .mood\n` +
+        `\`\`\`\n\n` +
         `${emojis.ZAP || '📊'} **Shinobi Ratings & Mini-Games**\n` +
-        `\`smartrate\` \`rizzmeter\` \`shipname\` \`wanted\` \`wasted\` \`powerlevel\` \`coolrate\` \`bonk\`\n\n` +
+        `\`\`\`\n` +
+        `.smartrate .rizzmeter .shipname .wanted .wasted .powerlevel .coolrate .bonk\n` +
+        `\`\`\`\n\n` +
         `${emojis.FUN || '😂'} **Meme Generation**\n` +
-        `\`spongebobchicken\` \`slapcar\` \`isthisa\` \`drake\` \`distractedbf\` \`communismcat\` \`eject\` \`emergencymeeting\` \`headpat\` \`tradeoffer\` \`waddle\`\n\n` +
+        `\`\`\`\n` +
+        `.spongebobchicken .slapcar .isthisa .drake .distractedbf .communismcat .eject .emergencymeeting .headpat .tradeoffer .waddle\n` +
+        `\`\`\`\n\n` +
         `${emojis.STAR || '😃'} **Emotes**\n` +
-        `\`blush\` \`cry\` \`dance\` \`lewd\` \`pout\` \`shrug\` \`sleepy\` \`smile\` \`smug\` \`thumbsup\` \`wag\` \`thinking\` \`triggered\` \`teehee\` \`deredere\` \`thonking\` \`scoff\` \`happy\` \`thumbs\` \`grin\`\n\n` +
+        `\`\`\`\n` +
+        `.blush .cry .dance .lewd .pout .shrug .sleepy .smile .smug .thumbsup .wag .thinking .triggered .teehee .deredere .thonking .scoff .happy .thumbs .grin\n` +
+        `\`\`\`\n\n` +
         `${emojis.HEART || '🤗'} **Actions**\n` +
-        `\`cuddle\` \`hug\` \`kiss\` \`lick\` \`nom\` \`pat\` \`poke\` \`slap\` \`stare\` \`highfive\` \`bite\` \`greet\` \`punch\` \`handholding\` \`tickle\` \`kill\` \`hold\` \`pats\` \`wave\` \`boop\` \`snuggle\` \`bully\``
+        `\`\`\`\n` +
+        `.cuddle .hug .kiss .lick .nom .pat .poke .slap .stare .highfive .bite .greet .punch .handholding .tickle .kill .hold .pats .wave .boop .snuggle .bully\n` +
+        `\`\`\``
       )
       .setFooter({
         text: `Requested by ${message.author.username} • Total 59 commands`,
@@ -367,15 +377,41 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     return embed;
   }
 
+  // Keep Music suite with standard listing
+  if (cat.value === 'music') {
+    const embed = new EmbedBuilder()
+      .setColor(0x7E0808)
+      .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
+      .setThumbnail(botAvatarURL)
+      .setTitle(`${cat.heading}`)
+      .setDescription(
+        `Below is the complete list of commands for **${cat.label}**.\n` +
+        `Type \`.help <command>\` for detailed usage on any command.\n\n` +
+        cat.commands.slice().sort().map(cmd => `${emojis.DOT} **\`${cmd}\`**`).join('\n')
+      )
+      .setFooter({
+        text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
+        iconURL: message.author.displayAvatarURL({ dynamic: true })
+      });
+    return embed;
+  }
+
+  // Executive Codeblock Box Layout for all other modules
+  const sortedCmds = cat.commands.slice().sort();
+  const formattedCmds = sortedCmds.map(cmd => `.${cmd}`).join('\n');
+
   const embed = new EmbedBuilder()
     .setColor(0x7E0808)
-    .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
+    .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
     .setThumbnail(botAvatarURL)
     .setTitle(`${cat.heading}`)
     .setDescription(
-      `Below is the complete list of commands for **${cat.label}**.\n` +
-      `Type \`.help <command>\` for detailed usage on any command.\n\n` +
-      cat.commands.slice().sort().map(cmd => `${emojis.DOT} **\`${cmd}\`**`).join('\n')
+      `Welcome **${message.author.username}**! Below is the executive suite for **${cat.label}**.\n` +
+      `Type any command below in your server to execute.\n\n` +
+      `**${cat.heading}**\n` +
+      `\`\`\`\n` +
+      `${formattedCmds}\n` +
+      `\`\`\``
     )
     .setFooter({
       text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
