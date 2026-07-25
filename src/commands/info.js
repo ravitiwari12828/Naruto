@@ -152,18 +152,18 @@ function buildServerInfoRow2(guild) {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('sinfo_icon')
-      .setLabel('Server Icon')
+      .setLabel('Icon')
       .setEmoji('🖼️')
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_banner')
-      .setLabel('Server Banner')
+      .setLabel('Banner')
       .setEmoji('🌆')
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(!guild.bannerURL()),
     new ButtonBuilder()
       .setCustomId('sinfo_splash')
-      .setLabel('Invite Splash')
+      .setLabel('Splash')
       .setEmoji('🎨')
       .setStyle(ButtonStyle.Secondary)
       .setDisabled(!guild.splashURL()),

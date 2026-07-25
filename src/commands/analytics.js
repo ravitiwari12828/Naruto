@@ -115,12 +115,12 @@ function buildUserMetricRow(activeCat) {
       .setStyle(activeCat === 'all' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_messages')
-      .setLabel('Messages')
+      .setLabel('Msgs')
       .setEmoji(emojis.OBJ_MESSAGES || '💬')
       .setStyle(activeCat === 'messages' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_voice')
-      .setLabel('Voice Time')
+      .setLabel('Voice')
       .setEmoji(emojis.OBJ_VOICE || '🔊')
       .setStyle(activeCat === 'voice' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
@@ -130,7 +130,7 @@ function buildUserMetricRow(activeCat) {
       .setStyle(activeCat === 'invites' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_shinobi')
-      .setLabel('Shinobi')
+      .setLabel('Rank')
       .setEmoji(emojis.OBJ_NINJUTSU || '🍥')
       .setStyle(activeCat === 'shinobi' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
