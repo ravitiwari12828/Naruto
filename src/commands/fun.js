@@ -15,17 +15,17 @@ const GAUGE_TITLES = {
 
 function renderGaugeBox(cmdName, score = null) {
   const titles = {
-    smartrate: '🧠 Intelligence Scan',
-    rizzmeter: '💅 Rizz Meter',
-    shipname: '🚢 Shinobi Ship Name',
-    wanted: '🤠 Wanted Bounty Level',
-    wasted: '💀 Battle Wasted Level',
-    powerlevel: '⚡ Power Level Scan',
-    coolrate: '❄️ Coolness Rate',
-    bonk: '🔨 Horny Bonk Level'
+    smartrate: 'INTELLIGENCE SCAN',
+    rizzmeter: 'RIZZ METER SCAN',
+    shipname: 'SHINOBI SHIP NAME SCAN',
+    wanted: 'WANTED BOUNTY LEVEL',
+    wasted: 'BATTLE WASTED LEVEL',
+    powerlevel: 'POWER LEVEL SCAN',
+    coolrate: 'COOLNESS RATE SCAN',
+    bonk: 'HORNY BONK LEVEL'
   };
 
-  const title = titles[cmdName] || '📊 Level Calculator';
+  const title = titles[cmdName] || 'LEVEL CALCULATOR';
 
   if (score === null) {
     return '```\n' +
@@ -35,7 +35,7 @@ function renderGaugeBox(cmdName, score = null) {
       '│  0   5   10   50   100   1,000   │\n' +
       '│ ( ─  ─  ─  ─  ─  ─  ─  ─  ─  ─ ) │\n' +
       '│                                  │\n' +
-      '│          STATUS: ⏹️ IDLE          │\n' +
+      '│          STATUS: IDLE            │\n' +
       '╰──────────────────────────────────╯\n' +
       '```';
   }
