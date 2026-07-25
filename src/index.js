@@ -2095,159 +2095,177 @@ client.on('interactionCreate', async (interaction) => {
 
   // 3. CALL STAFF BUTTON
   if (interaction.customId === 'ticket_callstaff_btn') {
-    const user = interaction.user;
-    const channel = interaction.channel;
-    const ticketCmd = client.commands.get('ticket');
-    const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(interaction.guild.id) : { staffRoles: new Set() };
+    try {
+      const user = interaction.user;
+      const channel = interaction.channel;
+      const ticketCmd = client.commands.get('ticket');
+      const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(interaction.guild.id) : { staffRoles: new Set() };
 
-    if (ticketCmd && ticketCmd.staffCallCooldowns) {
-      const lastCall = ticketCmd.staffCallCooldowns.get(channel.id) || 0;
-      const cooldownMs = 60 * 60 * 1000; // 1 Hour
-      const elapsed = Date.now() - lastCall;
-      if (elapsed < cooldownMs) {
-        const remainingMins = Math.ceil((cooldownMs - elapsed) / 60000);
-        return interaction.reply({
-          content: `⏳ **Staff Call Cooldown**: Staff was called recently. You can call staff again in **${remainingMins} minutes**.`,
-          flags: 64
-        }).catch(() => {});
+      if (ticketCmd && ticketCmd.staffCallCooldowns) {
+        const lastCall = ticketCmd.staffCallCooldowns.get(channel.id) || 0;
+        const cooldownMs = 60 * 60 * 1000;
+        const elapsed = Date.now() - lastCall;
+        if (elapsed < cooldownMs) {
+          const remainingMins = Math.ceil((cooldownMs - elapsed) / 60000);
+          return interaction.reply({
+            content: `⏳ **Staff Call Cooldown**: Staff was called recently. Call again in **${remainingMins} minutes**.`,
+            flags: 64
+          }).catch(() => {});
+        }
+        ticketCmd.staffCallCooldowns.set(channel.id, Date.now());
       }
-      ticketCmd.staffCallCooldowns.set(channel.id, Date.now());
-    }
 
-    const staffPings = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(' ') || '@here';
-    await channel.send({ content: `📞 **Call Staff Alert**: ${staffPings}\n<@${user.id}> has requested immediate support staff attendance in this ticket!` }).catch(() => {});
-    return interaction.reply({ content: `📞 Support staff summoned!`, flags: 64 }).catch(() => {});
+      const staffPings = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(' ') || '@here';
+      await channel.send({ content: `📞 **Call Staff Alert**: ${staffPings}\n<@${user.id}> has requested immediate support staff attendance in this ticket!` }).catch(() => {});
+      return interaction.reply({ content: `📞 Support staff summoned!`, flags: 64 }).catch(() => {});
+    } catch (e) {
+      console.error('ticket_callstaff_btn error:', e);
+      return interaction.reply({ content: `❌ Failed to call staff: ${e.message}`, flags: 64 }).catch(() => {});
+    }
   }
 
   // 4. CLAIM TICKET BUTTON
   if (interaction.customId === 'ticket_claim_btn') {
-    const user = interaction.user;
-    const member = interaction.member;
-    const message = interaction.message;
-    const channel = interaction.channel;
+    try {
+      const user = interaction.user;
+      const member = interaction.member;
+      const message = interaction.message;
+      const channel = interaction.channel;
 
-    const ticketCmd = client.commands.get('ticket');
-    const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(interaction.guild.id) : { staffRoles: new Set() };
+      const ticketCmd = client.commands.get('ticket');
+      const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(interaction.guild.id) : { staffRoles: new Set() };
 
-    const isStaff = member.permissions.has(PermissionsBitField.Flags.Administrator) ||
-                    Array.from(config.staffRoles).some(rId => member.roles.cache.has(rId));
+      const isStaff = member.permissions.has(PermissionsBitField.Flags.Administrator) ||
+                      Array.from(config.staffRoles).some(rId => member.roles.cache.has(rId));
 
-    if (!isStaff) {
-      return interaction.reply({ content: `❌ Only support staff members can claim tickets!`, flags: 64 }).catch(() => {});
-    }
-
-    const embed = EmbedBuilder.from(message.embeds[0]);
-    const claimedField = embed.data.fields?.find(f => f.name.includes('Claimed'));
-
-    if (claimedField && !claimedField.value.toLowerCase().includes('unclaimed') && !claimedField.value.toLowerCase().includes('none')) {
-      return interaction.reply({ content: `⚠️ This ticket is already claimed by ${claimedField.value}! A ticket can only be claimed by 1 staff member.`, flags: 64 }).catch(() => {});
-    }
-
-    embed.spliceFields(2, 1, { name: '👑 Claimed By', value: `<@${user.id}> (\`${user.tag}\`)`, inline: true });
-
-    let topic = channel.topic || '';
-    if (topic.includes('claim:')) {
-      topic = topic.replace(/claim:[^|]+/, `claim:${user.id}`);
-    } else {
-      topic += `|claim:${user.id}`;
-    }
-    await channel.setTopic(topic).catch(() => {});
-
-    await message.edit({ embeds: [embed] }).catch(() => {});
-    await interaction.reply({ content: `🛡️ Ticket claimed by <@${user.id}>.` }).catch(() => {});
-
-    if (ticketCmd) {
-      const priorityMatch = topic.match(/priority:([^|]+)/);
-      const prioText = priorityMatch ? priorityMatch[1] : 'Low';
-      ticketCmd.updateTicketStaffReminderTimer(client, channel, prioText, user.id);
-
-      const { logChan } = await ticketCmd.ensureTicketLogChannels(interaction.guild);
-      if (logChan) {
-        const logEmbed = createStyledEmbed({
-          title: `🙋‍♂️ Ticket Claimed`,
-          description: `**Staff Member:** <@${user.id}> (\`${user.tag}\`)\n**Ticket Channel:** ${channel}`,
-          requestedBy: user,
-          clientUser: client.user
-        });
-        await logChan.send({ embeds: [logEmbed] }).catch(() => {});
+      if (!isStaff) {
+        return interaction.reply({ content: `❌ Only support staff members can claim tickets!`, flags: 64 }).catch(() => {});
       }
+
+      if (!message.embeds?.[0]) {
+        return interaction.reply({ content: `❌ Could not read ticket embed. Please re-run ticket setup.`, flags: 64 }).catch(() => {});
+      }
+
+      const embed = EmbedBuilder.from(message.embeds[0]);
+      const claimedField = embed.data.fields?.find(f => f.name.includes('Claimed'));
+
+      if (claimedField && !claimedField.value.toLowerCase().includes('unclaimed') && !claimedField.value.toLowerCase().includes('none')) {
+        return interaction.reply({ content: `⚠️ This ticket is already claimed by ${claimedField.value}!`, flags: 64 }).catch(() => {});
+      }
+
+      embed.spliceFields(2, 1, { name: '👑 Claimed By', value: `<@${user.id}> (\`${user.tag}\`)`, inline: true });
+
+      let topic = channel.topic || '';
+      if (topic.includes('claim:')) {
+        topic = topic.replace(/claim:[^|]+/, `claim:${user.id}`);
+      } else {
+        topic += `|claim:${user.id}`;
+      }
+      await channel.setTopic(topic).catch(() => {});
+      await message.edit({ embeds: [embed] }).catch(() => {});
+      await interaction.reply({ content: `🛡️ Ticket claimed by <@${user.id}>.` }).catch(() => {});
+
+      if (ticketCmd) {
+        const priorityMatch = topic.match(/priority:([^|]+)/);
+        const prioText = priorityMatch ? priorityMatch[1] : 'Low';
+        ticketCmd.updateTicketStaffReminderTimer(client, channel, prioText, user.id);
+        const { logChan } = await ticketCmd.ensureTicketLogChannels(interaction.guild);
+        if (logChan) {
+          const logEmbed = createStyledEmbed({
+            title: `🙋‍♂️ Ticket Claimed`,
+            description: `**Staff Member:** <@${user.id}> (\`${user.tag}\`)\n**Ticket Channel:** ${channel}`,
+            requestedBy: user, clientUser: client.user
+          });
+          await logChan.send({ embeds: [logEmbed] }).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.error('ticket_claim_btn error:', e);
+      return interaction.reply({ content: `❌ Failed to claim ticket: ${e.message}`, flags: 64 }).catch(() => {});
     }
   }
 
   // 5. PRIORITY TICKET BUTTON
   if (interaction.customId === 'ticket_priority_btn') {
-    const user = interaction.user;
-    const message = interaction.message;
-    const channel = interaction.channel;
-    const ticketCmd = client.commands.get('ticket');
+    try {
+      const user = interaction.user;
+      const message = interaction.message;
+      const channel = interaction.channel;
+      const ticketCmd = client.commands.get('ticket');
 
-    let topic = channel.topic || '';
-    const currentPriorityField = message.embeds[0].fields.find(f => f.name.includes('Priority'))?.value || 'Low';
-    let newPriority = 'Normal';
+      if (!message.embeds?.[0]) {
+        return interaction.reply({ content: `❌ Could not read ticket embed.`, flags: 64 }).catch(() => {});
+      }
 
-    if (currentPriorityField.includes('Low')) newPriority = 'Normal';
-    else if (currentPriorityField.includes('Normal')) newPriority = 'Urgent';
-    else if (currentPriorityField.includes('Urgent')) newPriority = 'Low';
+      let topic = channel.topic || '';
+      const priorityField = message.embeds[0].fields?.find(f => f.name.includes('Priority'))?.value || 'Low';
+      let newPriority = priorityField.includes('Low') ? 'Normal' : priorityField.includes('Normal') ? 'Urgent' : 'Low';
 
-    const embed = EmbedBuilder.from(message.embeds[0]);
-    const color = newPriority === 'Urgent' ? 0xFF0055 : newPriority === 'Normal' ? 0xFEE75C : 0x57F287;
-    embed.setColor(color);
-    embed.spliceFields(1, 1, { name: '⚡ Priority Level', value: `\`${newPriority}\``, inline: true });
+      const embed = EmbedBuilder.from(message.embeds[0]);
+      const color = newPriority === 'Urgent' ? 0xFF0055 : newPriority === 'Normal' ? 0xFEE75C : 0x57F287;
+      embed.setColor(color);
+      embed.spliceFields(1, 1, { name: '⚡ Priority Level', value: `\`${newPriority}\``, inline: true });
 
-    if (topic.includes('priority:')) {
-      topic = topic.replace(/priority:[^|]+/, `priority:${newPriority}`);
-    } else {
-      topic += `|priority:${newPriority}`;
-    }
-    await channel.setTopic(topic).catch(() => {});
+      topic = topic.includes('priority:') ? topic.replace(/priority:[^|]+/, `priority:${newPriority}`) : topic + `|priority:${newPriority}`;
+      await channel.setTopic(topic).catch(() => {});
+      await message.edit({ embeds: [embed] }).catch(() => {});
+      await interaction.reply({ content: `⚡ Priority set to **${newPriority}** by <@${user.id}>.` }).catch(() => {});
 
-    await message.edit({ embeds: [embed] }).catch(() => {});
-    await interaction.reply({ content: `⚡ Priority set to **${newPriority}** by <@${user.id}>.` }).catch(() => {});
-
-    if (ticketCmd) {
-      const claimMatch = topic.match(/claim:([^|]+)/);
-      const claimedStaffId = claimMatch ? claimMatch[1] : null;
-      ticketCmd.updateTicketStaffReminderTimer(client, channel, newPriority, claimedStaffId);
+      if (ticketCmd) {
+        const claimMatch = topic.match(/claim:([^|]+)/);
+        ticketCmd.updateTicketStaffReminderTimer(client, channel, newPriority, claimMatch?.[1] || null);
+      }
+    } catch (e) {
+      console.error('ticket_priority_btn error:', e);
+      return interaction.reply({ content: `❌ Failed to update priority: ${e.message}`, flags: 64 }).catch(() => {});
     }
   }
 
   // 6. ANONYMOUS STAFF MODE TOGGLE BUTTON
   if (interaction.customId === 'ticket_anon_btn') {
-    const channel = interaction.channel;
-    let topic = channel.topic || '';
-    const isAnonOn = topic.includes('anon:on');
-    const newAnon = isAnonOn ? 'off' : 'on';
+    try {
+      const channel = interaction.channel;
+      let topic = channel.topic || '';
+      const isAnonOn = topic.includes('anon:on');
+      const newAnon = isAnonOn ? 'off' : 'on';
 
-    if (topic.includes('anon:')) {
-      topic = topic.replace(/anon:(on|off)/, `anon:${newAnon}`);
-    } else {
-      topic += `|anon:${newAnon}`;
+      topic = topic.includes('anon:') ? topic.replace(/anon:(on|off)/, `anon:${newAnon}`) : topic + `|anon:${newAnon}`;
+      await channel.setTopic(topic).catch(() => {});
+
+      const message = interaction.message;
+      if (message.embeds?.[0]) {
+        const embed = EmbedBuilder.from(message.embeds[0]);
+        embed.spliceFields(3, 1, { name: '🎭 Anonymous Mode', value: `\`${newAnon.toUpperCase()}\``, inline: true });
+        await message.edit({ embeds: [embed] }).catch(() => {});
+      }
+
+      return interaction.reply({
+        content: `🎭 **Anonymous Staff Mode** is now **${newAnon.toUpperCase()}**!`,
+        flags: 64
+      }).catch(() => {});
+    } catch (e) {
+      console.error('ticket_anon_btn error:', e);
+      return interaction.reply({ content: `❌ Failed to toggle anon mode: ${e.message}`, flags: 64 }).catch(() => {});
     }
-    await channel.setTopic(topic).catch(() => {});
-
-    const message = interaction.message;
-    const embed = EmbedBuilder.from(message.embeds[0]);
-    embed.spliceFields(3, 1, { name: '🎭 Anonymous Mode', value: `\`${newAnon.toUpperCase()}\``, inline: true });
-    await message.edit({ embeds: [embed] }).catch(() => {});
-
-    return interaction.reply({
-      content: `🎭 **Anonymous Staff Mode** is now **${newAnon.toUpperCase()}** for this ticket! Staff messages will be sent anonymously.`,
-      flags: 64
-    }).catch(() => {});
   }
 
   // 7. LOCK TICKET BUTTON
   if (interaction.customId === 'ticket_lock_btn') {
-    const user = interaction.user;
-    const channel = interaction.channel;
-    const topic = channel.topic || '';
-    const match = topic.match(/owner:(\d+)/);
-    const ownerId = match ? match[1] : null;
+    try {
+      const user = interaction.user;
+      const channel = interaction.channel;
+      const topic = channel.topic || '';
+      const match = topic.match(/owner:(\d+)/);
+      const ownerId = match ? match[1] : null;
 
-    if (ownerId) {
-      await channel.permissionOverwrites.edit(ownerId, { SendMessages: false }).catch(() => {});
+      if (ownerId) {
+        await channel.permissionOverwrites.edit(ownerId, { SendMessages: false }).catch(() => {});
+      }
+      return interaction.reply({ content: `🔒 Ticket locked by <@${user.id}>.` }).catch(() => {});
+    } catch (e) {
+      console.error('ticket_lock_btn error:', e);
+      return interaction.reply({ content: `❌ Failed to lock ticket: ${e.message}`, flags: 64 }).catch(() => {});
     }
-    return interaction.reply({ content: `🔒 Ticket locked by <@${user.id}>.` }).catch(() => {});
   }
 
   // 8. CLOSE TICKET BUTTON
