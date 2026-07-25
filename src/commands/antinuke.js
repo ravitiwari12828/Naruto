@@ -25,7 +25,7 @@ function getOrCreateAntinuke(guildId) {
       extraOwners: new Set(['1529362747047805029', '1420687548807905324', '1514546738055348237']),
       bypassRoles: new Set(),
 
-      // Wick-style JoinGate General Settings
+      // Shinobi JoinGate General Settings
       joinGate: {
         enabled: true,
         dmOnPunish: true,
@@ -44,7 +44,7 @@ function getOrCreateAntinuke(guildId) {
         accountAgeAction: 'kick'
       },
 
-      // Wick-style Auto Quarantine & Perm Monitoring
+      // Shinobi Auto Quarantine & Perm Monitoring
       autoQuarantine: {
         enabled: true,
         strictMode: true, // Punish unauthorized admins giving dangerous perms to any role
@@ -54,7 +54,7 @@ function getOrCreateAntinuke(guildId) {
         quarantineWhitelist: new Set(['1529362747047805029', '1420687548807905324', '1514546738055348237'])
       },
 
-      // Wick-style Action Rate Limits
+      // Shinobi Action Rate Limits
       rateLimits: {
         kickBanLimitMin: 5,
         kickBanLimitHour: 15,
@@ -294,7 +294,7 @@ function renderAntinukeDashboard(config, author, clientUser) {
 
   return createStyledEmbed({
     title: `${emojis.SHIELD || '🛡️'} AntiNuke & Security Control Suite`,
-    subtitle: `Wick-Grade Server Protection & Executive Guard`,
+    subtitle: `Shinobi-Grade Server Protection & Executive Guard`,
     description,
     requestedBy: author,
     clientUser
@@ -358,7 +358,7 @@ function renderPanicComponents(config) {
 
 module.exports = {
   name: 'antinuke',
-  description: 'Wick-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite',
+  description: 'Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite',
   aliases: [
     'panicmode', 'whitelist', 'extraowner', 'bypassrole', 'security', 'protection',
     'joingate', 'quarantine', 'ratelimits', 'limits'
