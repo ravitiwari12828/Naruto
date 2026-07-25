@@ -5,46 +5,67 @@ const db = require('../database/db');
 // Verified Anime Aesthetic Direct Image Collections (100% Guaranteed Render)
 const ANIME_PFP_COLLECTION = {
   animes: [
-    'https://i.imgur.com/8QZ5Z2A.png',
-    'https://i.imgur.com/r8470a1.png',
-    'https://i.imgur.com/W2h0y5l.jpeg',
-    'https://i.imgur.com/Qk9b9vQ.jpeg',
-    'https://i.imgur.com/x0qL0X8.jpeg'
+    'https://cdn.nekos.life/avatar/avatar_01.png',
+    'https://cdn.nekos.life/avatar/avatar_05.png',
+    'https://cdn.nekos.life/avatar/avatar_10.png',
+    'https://cdn.nekos.life/avatar/avatar_15.png',
+    'https://cdn.nekos.life/avatar/avatar_20.png',
+    'https://cdn.nekos.life/avatar/avatar_25.png',
+    'https://cdn.nekos.life/avatar/avatar_30.png',
+    'https://cdn.nekos.life/avatar/avatar_40.png',
+    'https://cdn.nekos.life/avatar/avatar_50.png'
   ],
   boys: [
-    'https://i.imgur.com/4zJqO9V.jpeg',
-    'https://i.imgur.com/5uD8L5q.jpeg',
-    'https://i.imgur.com/X4y1F6K.jpeg',
-    'https://i.imgur.com/3b6p3Xm.jpeg',
-    'https://i.imgur.com/W2h0y5l.jpeg'
+    'https://cdn.nekos.life/avatar/avatar_02.png',
+    'https://cdn.nekos.life/avatar/avatar_06.png',
+    'https://cdn.nekos.life/avatar/avatar_12.png',
+    'https://cdn.nekos.life/avatar/avatar_18.png',
+    'https://cdn.nekos.life/avatar/avatar_24.png',
+    'https://cdn.nekos.life/avatar/avatar_36.png'
   ],
   girls: [
-    'https://i.imgur.com/8W0mZ4K.jpeg',
-    'https://i.imgur.com/1GvK0Xm.jpeg',
-    'https://i.imgur.com/6X9mY3z.jpeg',
-    'https://i.imgur.com/9v8X0y1.jpeg',
-    'https://i.imgur.com/8QZ5Z2A.png'
+    'https://cdn.nekos.life/neko/neko046.png',
+    'https://cdn.nekos.life/neko/neko202.jpeg',
+    'https://cdn.nekos.life/avatar/avatar_03.png',
+    'https://cdn.nekos.life/avatar/avatar_07.png',
+    'https://cdn.nekos.life/avatar/avatar_11.png',
+    'https://cdn.nekos.life/avatar/avatar_21.png'
   ],
   couples: [
-    'https://i.imgur.com/4m0yK1X.jpeg',
-    'https://i.imgur.com/2X9m0K1.jpeg',
-    'https://i.imgur.com/7v1X9m0.jpeg',
-    'https://i.imgur.com/r8470a1.png'
+    'https://cdn.nekos.life/avatar/avatar_08.png',
+    'https://cdn.nekos.life/avatar/avatar_16.png',
+    'https://cdn.nekos.life/avatar/avatar_32.png',
+    'https://cdn.nekos.life/avatar/avatar_48.png'
   ],
   banners: [
-    'https://i.imgur.com/8QZ5Z2A.png',
-    'https://i.imgur.com/r8470a1.png',
-    'https://i.imgur.com/W2h0y5l.jpeg'
+    'https://cdn.nekos.life/wallpaper/sSlML-mWFXA.jpg',
+    'https://cdn.nekos.life/wallpaper/kAw8QHl_wbM.jpg'
   ]
 };
 
 async function fetchDynamicAnimeImage(category) {
   const apis = {
-    girls: ['https://nekos.best/api/v2/neko', 'https://api.waifu.im/search?included_tags=waifu'],
-    boys: ['https://nekos.best/api/v2/husbando'],
-    animes: ['https://nekos.best/api/v2/kitsune'],
-    couples: ['https://nekos.best/api/v2/hug'],
-    banners: ['https://nekos.best/api/v2/neko']
+    girls: [
+      'https://nekos.life/api/v2/img/neko',
+      'https://nekos.life/api/v2/img/fox_girl',
+      'https://nekos.life/api/v2/img/waifu'
+    ],
+    boys: [
+      'https://nekos.life/api/v2/img/avatar'
+    ],
+    animes: [
+      'https://nekos.life/api/v2/img/avatar',
+      'https://nekos.life/api/v2/img/fox_girl',
+      'https://nekos.life/api/v2/img/neko'
+    ],
+    couples: [
+      'https://api.otakugifs.xyz/gif?reaction=hug',
+      'https://purrbot.site/api/img/sfw/hug/gif',
+      'https://kawaii.red/api/gif/hug/token=anonymous/'
+    ],
+    banners: [
+      'https://nekos.life/api/v2/img/wallpaper'
+    ]
   };
 
   const list = apis[category] || apis.animes;
@@ -53,13 +74,12 @@ async function fetchDynamicAnimeImage(category) {
   try {
     const response = await fetch(urlToFetch, {
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-      signal: AbortSignal.timeout(3000)
+      signal: AbortSignal.timeout(4000)
     });
     if (response.ok) {
       const data = await response.json();
-      if (data.results && data.results[0]?.url) return data.results[0].url;
-      if (data.images && data.images[0]?.url) return data.images[0].url;
-      if (data.url) return data.url;
+      const imgUrl = data.url || data.link || data.response || (data.results && data.results[0]?.url) || (data.images && data.images[0]?.url);
+      if (imgUrl && typeof imgUrl === 'string') return imgUrl;
     }
   } catch (e) {}
 

@@ -39,6 +39,7 @@ module.exports = {
   SHINOBI: '<:emoji_rpg_rasengan:1529910238684119171>',
   INVITES: '<:emoji_envelope_invites:1529377701507498044>',
   STAR: '<:emoji_level_star:1529377722642726952>',
+  HEART: '💖',
 
   // --- PRIORITY AI ASSISTANT ---
   PRIORITY: '<:emoji_priority_play:1529377736655900712>',
