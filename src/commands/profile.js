@@ -1,16 +1,15 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 
-// In-memory User Bio Storage (userId -> bioText)
-const userBios = new Map();
-
-// Anime Aesthetic Profile Pictures and Banners Galleries
+// Anime Aesthetic Profile Pictures and Banners Galleries (Fallbacks)
 const ANIME_PFP_COLLECTION = {
   animes: [
     'https://i.pinimg.com/564x/49/71/61/49716183015f3484f29a0076a084c8a2.jpg',
     'https://i.pinimg.com/564x/5a/88/ef/5a88ef3914a1e944747201c1bcbbbc62.jpg',
     'https://i.pinimg.com/564x/6c/13/21/6c13217bcaeeed6649f8728d8b948b8b.jpg',
-    'https://i.pinimg.com/564x/0f/50/66/0f50669b3df9bbba2ff666060c4fb3ee.jpg'
+    'https://i.pinimg.com/564x/0f/50/66/0f50669b3df9bbba2ff666060c4fb3ee.jpg',
+    'https://i.pinimg.com/564x/12/34/56/1234567890abcdef.jpg'
   ],
   boys: [
     'https://i.pinimg.com/564x/8e/32/79/8e3279188e7f1bf509aa009c9103fbdf.jpg',
@@ -31,6 +30,49 @@ const ANIME_PFP_COLLECTION = {
     'https://i.imgur.com/r8470a1.png'
   ]
 };
+
+async function fetchDynamicAnimeImage(category) {
+  const apis = {
+    girls: [
+      'https://api.waifu.pics/sfw/waifu',
+      'https://nekos.best/api/v2/neko',
+      'https://api.waifu.pics/sfw/neko'
+    ],
+    boys: [
+      'https://nekos.best/api/v2/husbando'
+    ],
+    animes: [
+      'https://api.waifu.pics/sfw/shinobu',
+      'https://nekos.best/api/v2/kitsune',
+      'https://api.waifu.pics/sfw/megumin'
+    ],
+    couples: [
+      'https://api.waifu.pics/sfw/cuddle',
+      'https://api.waifu.pics/sfw/hug',
+      'https://nekos.best/api/v2/hug'
+    ],
+    banners: [
+      'https://api.waifu.pics/sfw/waifu',
+      'https://nekos.best/api/v2/neko'
+    ]
+  };
+
+  const list = apis[category] || apis.animes;
+  const urlToFetch = list[Math.floor(Math.random() * list.length)];
+
+  try {
+    const response = await fetch(urlToFetch, { signal: AbortSignal.timeout(4000) });
+    if (response.ok) {
+      const data = await response.json();
+      if (data.url) return data.url;
+      if (data.results && data.results[0]?.url) return data.results[0].url;
+      if (data.images && data.images[0]?.url) return data.images[0].url;
+    }
+  } catch (e) {}
+
+  const fallbacks = ANIME_PFP_COLLECTION[category] || ANIME_PFP_COLLECTION['animes'];
+  return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+}
 
 module.exports = {
   name: 'profile',
@@ -60,10 +102,11 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Bio cannot exceed 300 characters.`);
       }
 
-      userBios.set(author.id, bioText);
+      db.updateUser(author.id, u => { u.bio = bioText; });
+
       const embed = createStyledEmbed({
         title: `✨ Bio Set Successfully`,
-        description: `Your custom bio has been updated:\n\n> *"${bioText}"*`,
+        description: `Your custom bio has been saved to database:\n\n> *"${bioText}"*`,
         requestedBy: author,
         clientUser
       });
@@ -72,10 +115,11 @@ module.exports = {
 
     // .bioreset
     if (invoked === 'bioreset' || (invoked === 'profile' && args[0] === 'bioreset')) {
-      userBios.delete(author.id);
+      db.updateUser(author.id, u => { u.bio = null; });
+
       const embed = createStyledEmbed({
         title: `✨ Bio Reset`,
-        description: `Your custom bio has been cleared.`,
+        description: `Your custom bio has been cleared from database.`,
         requestedBy: author,
         clientUser
       });
@@ -84,7 +128,9 @@ module.exports = {
 
     // .bioshow
     if (invoked === 'bioshow' || invoked === 'bio' || (invoked === 'profile' && args[0] === 'bioshow')) {
-      const bio = userBios.get(targetUser.id) || '*No bio set yet. Use `.bioset <text>` to add one!*';
+      const userObj = db.getUser(targetUser.id);
+      const bio = userObj.bio || '*No bio set yet. Use `.bioset <text>` to add one!*';
+
       const embed = createStyledEmbed({
         title: `👤 Profile Bio — ${targetUser.username}`,
         description: `> ${bio}`,
@@ -97,21 +143,20 @@ module.exports = {
 
     // .animes, .banners, .boys, .couples, .girls
     if (['animes', 'banners', 'boys', 'couples', 'girls'].includes(invoked)) {
-      const arr = ANIME_PFP_COLLECTION[invoked] || ANIME_PFP_COLLECTION['animes'];
-      const randomImg = arr[Math.floor(Math.random() * arr.length)];
+      const imageUrl = await fetchDynamicAnimeImage(invoked);
 
       const titles = {
-        animes: '🎌 Aesthetic Anime PFP',
-        banners: '🖼️ Aesthetic Anime Header Banner',
-        boys: '👦 Anime Boy PFP',
-        girls: '👧 Anime Girl PFP',
-        couples: '👩‍❤️‍👨 Matching Couple PFPs'
+        animes: '🎌 Dynamic Anime PFP',
+        banners: '🖼️ Dynamic Anime Header Banner',
+        boys: '👦 Dynamic Anime Boy PFP',
+        girls: '👧 Dynamic Anime Girl PFP',
+        couples: '👩‍❤️‍👨 Dynamic Matching Couple PFP'
       };
 
       const embed = createStyledEmbed({
         title: titles[invoked] || '🎌 Anime Profile Collection',
-        description: `Here is a random aesthetic **${invoked}** avatar! Type \`.${invoked}\` to get another one.`,
-        bannerUrl: randomImg,
+        description: `Here is a fresh dynamic **${invoked}** image fetched live! Type \`.${invoked}\` to get another one.`,
+        bannerUrl: imageUrl,
         requestedBy: author,
         clientUser
       });
@@ -119,17 +164,27 @@ module.exports = {
     }
 
     // Default Profile Help
+    const userObj = db.getUser(author.id);
+    const currentBio = userObj.bio ? `\n\n> *"${userObj.bio}"*` : '';
+
     const embed = createStyledEmbed({
-      title: `👤 Profile Commands`,
+      title: `👤 Profile Suite`,
       description:
-        `\`.bioset <text>\` — Set your custom profile bio\n` +
-        `\`.bioreset\` — Clear your custom bio\n` +
-        `\`.bioshow [@user]\` — Display custom bio\n` +
-        `\`.animes\` — Random aesthetic anime PFP\n` +
-        `\`.banners\` — Random aesthetic anime header banner\n` +
-        `\`.boys\` — Random anime boy avatar\n` +
-        `\`.girls\` — Random anime girl avatar\n` +
-        `\`.couples\` — Random matching couple avatars`,
+        `Welcome **${author.username}**! Configure your custom bio or fetch dynamic anime avatars.\n\n` +
+        `**👤 Bio Commands**\n` +
+        `\`\`\`\n` +
+        `.bioset <text>    - Save custom profile bio\n` +
+        `.bioreset         - Clear profile bio\n` +
+        `.bioshow [@user]  - Display profile bio\n` +
+        `\`\`\`\n\n` +
+        `**🖼️ Dynamic Avatar Commands**\n` +
+        `\`\`\`\n` +
+        `.animes   - Random aesthetic anime PFP\n` +
+        `.banners  - Random anime header banner\n` +
+        `.boys     - Random anime boy avatar\n` +
+        `.girls    - Random anime girl avatar\n` +
+        `.couples  - Random matching couple avatars\n` +
+        `\`\`\`` + currentBio,
       requestedBy: author,
       clientUser
     });
