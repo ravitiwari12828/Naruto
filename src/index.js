@@ -1958,13 +1958,14 @@ client.on('interactionCreate', async (interaction) => {
       }
       const lyricsCmd = require('./commands/lyrics');
       const cleanTitle = currentTrack.info.title.replace(/\(Official Video\)/gi, '').replace(/\[Official Music Video\]/gi, '').trim();
-      const res = await lyricsCmd.fetchLyrics(cleanTitle);
+      const artist = currentTrack.info.author || '';
+      const res = await lyricsCmd.fetchLyrics(cleanTitle, artist);
       if (!res || !res.lyrics) {
         return interaction.editReply({ content: `❌ **Lyrics Not Found** for **${cleanTitle}**.` }).catch(() => {});
       }
       let lyricsText = res.lyrics;
       if (lyricsText.length > 1900) lyricsText = lyricsText.slice(0, 1900) + '\n...*(truncated)*';
-      return interaction.editReply({ content: `📜 **Lyrics for ${res.title}:**\n\`\`\`\n${lyricsText}\n\`\`\`` }).catch(() => {});
+      return interaction.editReply({ content: `📜 **Lyrics — ${res.title} (${res.artist}):**\n\`\`\`\n${lyricsText}\n\`\`\`` }).catch(() => {});
     }
   }
 

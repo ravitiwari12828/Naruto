@@ -27,29 +27,70 @@ function fetchJson(url) {
   });
 }
 
-async function fetchLyrics(query) {
-  // Method 1: Lyrist API
+async function fetchLyrics(query, artist = '') {
+  const cleanTitle = query
+    .replace(/\(Official Video\)/gi, '')
+    .replace(/\[Official Music Video\]/gi, '')
+    .replace(/\(Lyrics\)/gi, '')
+    .replace(/\[.*\]/g, '')
+    .trim();
+
+  const searchQuery = artist ? `${artist} ${cleanTitle}`.trim() : cleanTitle;
+
+  // Provider 1: LRCLIB API (Best coverage for Bollywood, Punjabi, Pop & Anime)
   try {
-    const encoded = encodeURIComponent(query);
+    const encoded = encodeURIComponent(searchQuery);
+    const data = await fetchJson(`https://lrclib.net/api/search?q=${encoded}`);
+    if (Array.isArray(data) && data.length > 0) {
+      const match = data.find(d => d.plainLyrics || d.syncedLyrics) || data[0];
+      const lyrics = match.plainLyrics || match.syncedLyrics?.replace(/\[\d+:\d+\.\d+\]/g, '').trim();
+      if (lyrics) {
+        return {
+          title: match.trackName || cleanTitle,
+          artist: match.artistName || artist || 'Artist',
+          lyrics: lyrics,
+          image: null
+        };
+      }
+    }
+  } catch (e) {}
+
+  // Provider 2: Lyrist API
+  try {
+    const encoded = encodeURIComponent(searchQuery);
     const data = await fetchJson(`https://lyrist.vercel.app/api/${encoded}`);
     if (data && data.lyrics) {
       return {
-        title: data.title || query,
-        artist: data.artist || 'Unknown Artist',
+        title: data.title || cleanTitle,
+        artist: data.artist || artist || 'Artist',
         lyrics: data.lyrics,
         image: data.image
       };
     }
   } catch (e) {}
 
-  // Method 2: SomeRandomAPI Lyrics
+  // Provider 3: Popcat API
   try {
-    const encoded = encodeURIComponent(query);
+    const encoded = encodeURIComponent(searchQuery);
+    const data = await fetchJson(`https://api.popcat.xyz/lyrics?song=${encoded}`);
+    if (data && data.lyrics) {
+      return {
+        title: data.title || cleanTitle,
+        artist: data.artist || artist || 'Artist',
+        lyrics: data.lyrics,
+        image: data.image
+      };
+    }
+  } catch (e) {}
+
+  // Provider 4: SomeRandomAPI Lyrics
+  try {
+    const encoded = encodeURIComponent(searchQuery);
     const data = await fetchJson(`https://some-random-api.com/lyrics?title=${encoded}`);
     if (data && data.lyrics) {
       return {
-        title: data.title || query,
-        artist: data.author || 'Unknown Artist',
+        title: data.title || cleanTitle,
+        artist: data.author || artist || 'Artist',
         lyrics: data.lyrics,
         image: data.thumbnail?.genius
       };
@@ -69,6 +110,7 @@ module.exports = {
     const guildId = message.guild?.id;
 
     let query = args.join(' ');
+    let artist = '';
 
     // If no query provided, fetch currently playing track from Lavalink
     if (!query && guildId) {
@@ -76,12 +118,8 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       const currentTrack = player?.queue?.current;
       if (currentTrack?.info?.title) {
-        // Clean title (remove (Official Video), [MV], ft., etc.)
-        query = currentTrack.info.title
-          .replace(/\(Official Video\)/gi, '')
-          .replace(/\[Official Music Video\]/gi, '')
-          .replace(/\(Lyrics\)/gi, '')
-          .trim();
+        query = currentTrack.info.title;
+        artist = currentTrack.info.author || '';
       }
     }
 
@@ -91,7 +129,7 @@ module.exports = {
 
     const searchingMsg = await message.channel.send(`🔍 **Searching lyrics for:** \`${query}\`...`);
 
-    const res = await fetchLyrics(query);
+    const res = await fetchLyrics(query, artist);
     if (!res || !res.lyrics) {
       return searchingMsg.edit(`❌ **Lyrics Not Found**: Could not find lyrics for **${query}**.`);
     }
