@@ -29,7 +29,16 @@ const musicCardRenderer = MusicCard ? new MusicCard() : null;
  * Falls back to a plain embed if canvas is unavailable.
  */
 async function sendMusicCard(channel, track, player) {
-  const rows = buildMusicActionRows();
+  // Delete previous music card message if it exists
+  if (player && player.lastMessage) {
+    try {
+      await player.lastMessage.delete().catch(() => {});
+      player.lastMessage = null;
+    } catch (e) {}
+  }
+
+  const rows = buildMusicActionRows(player);
+  let sentMsg = null;
 
   // Try canvas card first
   if (musicCardRenderer) {
@@ -54,7 +63,9 @@ async function sendMusicCard(channel, track, player) {
           text: `🍥 Naruto Music • Queue: ${player?.queue?.tracks?.length || 0} songs • Vol: ${player?.volume || 100}%`,
         });
 
-      return channel.send({ embeds: [cardEmbed], files: [attachment], components: rows });
+      sentMsg = await channel.send({ embeds: [cardEmbed], files: [attachment], components: rows });
+      if (player) player.lastMessage = sentMsg;
+      return sentMsg;
     } catch (e) {
       console.error('[MusicCard] Canvas render failed, falling back to embed:', e.message);
     }
@@ -62,7 +73,9 @@ async function sendMusicCard(channel, track, player) {
 
   // Fallback: styled embed
   const embed = buildMusicPlayerEmbed(track, player);
-  return channel.send({ embeds: [embed], components: rows });
+  sentMsg = await channel.send({ embeds: [embed], components: rows });
+  if (player) player.lastMessage = sentMsg;
+  return sentMsg;
 }
 
 // Naruto OST Presets
@@ -214,6 +227,7 @@ module.exports = {
   afkStore,
   buildMusicPlayerEmbed,
   buildMusicActionRows,
+  sendMusicCard,
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();

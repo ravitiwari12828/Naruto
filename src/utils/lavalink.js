@@ -132,17 +132,15 @@ function initLavalink(client) {
     }
   });
 
-  // Automatically send Now Playing card when a new track starts
+  // Automatically send Now Playing card when a new track starts (and delete old panel)
   lavalink.on('trackStart', async (player, track) => {
     if (!player || !player.textChannelId) return;
     try {
       const channel = client.channels.cache.get(player.textChannelId);
       if (channel) {
         const musicCmd = client.commands?.get('music');
-        if (musicCmd && musicCmd.buildMusicPlayerEmbed) {
-          const embed = musicCmd.buildMusicPlayerEmbed(track, player);
-          const rows = musicCmd.buildMusicActionRows(player);
-          await channel.send({ embeds: [embed], components: rows }).catch(() => {});
+        if (musicCmd && musicCmd.sendMusicCard) {
+          await musicCmd.sendMusicCard(channel, track, player);
         }
       }
     } catch (e) {}
