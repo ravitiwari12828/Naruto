@@ -74,6 +74,7 @@ async function sendMusicCard(channel, track, player) {
       });
 
       const attachment = new AttachmentBuilder(buf, { name: 'nowplaying.png' });
+      embed.setImage('attachment://nowplaying.png');
       sentMsg = await channel.send({ embeds: [embed], files: [attachment], components: rows });
       if (player) player.lastMessage = sentMsg;
       return sentMsg;
