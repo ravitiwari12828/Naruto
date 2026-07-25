@@ -474,6 +474,52 @@ module.exports = {
       const isRemove = invoked === 'unwarn' || invoked === 'rmwarn' || invoked === 'warnremove' || (invoked === 'warn' && args[0] === 'remove');
       const isClear = invoked === 'clearwarns' || (invoked === 'warn' && args[0] === 'clear');
 
+      // Check if an explicit Case ID was passed for unwarn (e.g. .unwarn 5 or .unwarn #5)
+      let caseIdArg = null;
+      if (isRemove) {
+        for (const arg of args) {
+          const cleanArg = arg.replace('#', '');
+          if (!isNaN(cleanArg) && cleanArg.length < 10 && parseInt(cleanArg) > 0) {
+            caseIdArg = parseInt(cleanArg);
+            break;
+          }
+        }
+      }
+
+      if (isRemove && caseIdArg) {
+        const c = db.getCase(guild.id, caseIdArg);
+        if (!c) return message.reply(`${emojis.WARNING} Case **#${caseIdArg}** not found in this server.`);
+        if (c.action !== 'WARN') {
+          return message.reply(`${emojis.WARNING} Case **#${caseIdArg}** is a **${c.action}** case, not a **WARN** case.`);
+        }
+
+        const targetUserId = c.targetId;
+        const userObj = db.getUser(targetUserId);
+        const newWarns = Math.max(0, (userObj.warns || 0) - 1);
+        db.updateUser(targetUserId, u => { u.warns = newWarns; });
+
+        const cData = recordAndLogCase(guild, {
+          action: 'UNWARN',
+          targetId: targetUserId,
+          targetTag: c.targetTag,
+          executorId: message.author.id,
+          executorTag: message.author.tag,
+          reason: `Revoked Warning Case #${caseIdArg}`
+        });
+
+        const embed = createStyledEmbed({
+          title: `✅ Warning Case #${caseIdArg} Revoked [Case #${cData.caseId}]`,
+          description:
+            `• **Revoked Case:** \`#${caseIdArg}\`\n` +
+            `• **Member:** <@${targetUserId}> (\`${c.targetTag}\`)\n` +
+            `• **Remaining Warnings:** \`${newWarns}\`\n` +
+            `• **Reason:** ${c.reason}`,
+          requestedBy: message.author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
       const targetIndex = (invoked === 'warn' && (args[0] === 'remove' || args[0] === 'clear')) ? 1 : 0;
       const target = message.mentions.members?.first() || guild.members.cache.get(args[targetIndex]);
 
@@ -481,7 +527,8 @@ module.exports = {
         return message.reply(
           `${emojis.WARNING} Usage:\n` +
           `• \`.warn @user [reason]\` — Add warning\n` +
-          `• \`.unwarn @user [reason]\` — Remove 1 warning\n` +
+          `• \`.unwarn <caseID>\` — Remove warning by Case ID (e.g. \`.unwarn 5\`)\n` +
+          `• \`.unwarn @user\` — Remove latest warning for member\n` +
           `• \`.clearwarns @user\` — Clear all warnings`
         );
       }
