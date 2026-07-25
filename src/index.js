@@ -2335,6 +2335,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   }
 });
 
+// Load custom event handlers
+require('./events/emojisStickers')(client);
+
 if (process.env.DISCORD_TOKEN && process.env.DISCORD_TOKEN !== 'your_discord_bot_token_here') {
   client.login(process.env.DISCORD_TOKEN).catch(err => {
     console.error('Failed to log in:', err.message);
