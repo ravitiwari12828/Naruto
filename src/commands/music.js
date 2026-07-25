@@ -27,11 +27,24 @@ const musicCardRenderer = MusicCard ? new MusicCard() : null;
  * Sends or updates the Music Player Card in the channel.
  */
 async function sendMusicCard(channel, track, player) {
-  if (player && player.lastMessage) {
-    try {
-      await player.lastMessage.delete().catch(() => {});
-      player.lastMessage = null;
-    } catch (e) {}
+  if (player) {
+    // Delete previous main player card
+    if (player.lastMessage) {
+      try {
+        await player.lastMessage.delete().catch(() => {});
+        player.lastMessage = null;
+      } catch (e) {}
+    }
+
+    // Delete any temporary queue / status notifications
+    if (player.tempMessages && player.tempMessages.length) {
+      for (const msg of player.tempMessages) {
+        try {
+          await msg.delete().catch(() => {});
+        } catch (e) {}
+      }
+      player.tempMessages = [];
+    }
   }
 
   const rows = buildMusicActionRows(player);
@@ -370,7 +383,16 @@ module.exports = {
             return;
           } else {
             const addedEmbed = buildAddedToQueueEmbed(track, player.queue.tracks.length, author);
-            return message.reply({ embeds: [addedEmbed] });
+            const addedMsg = await message.reply({ embeds: [addedEmbed] }).catch(() => {});
+            if (player && addedMsg) {
+              player.tempMessages = player.tempMessages || [];
+              player.tempMessages.push(addedMsg);
+              // Auto-delete after 8 seconds if not already deleted by trackStart
+              setTimeout(() => {
+                addedMsg.delete().catch(() => {});
+              }, 8000);
+            }
+            return addedMsg;
           }
         } catch (err) {
           console.error('[Music Play Error]', err.message || err);
