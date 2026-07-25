@@ -474,12 +474,12 @@ module.exports = {
       const isRemove = invoked === 'unwarn' || invoked === 'rmwarn' || invoked === 'warnremove' || (invoked === 'warn' && args[0] === 'remove');
       const isClear = invoked === 'clearwarns' || (invoked === 'warn' && args[0] === 'clear');
 
-      // Check if an explicit Case ID was passed for unwarn (e.g. .unwarn 5 or .unwarn #5)
+      // Check if Case ID was passed for unwarn (e.g. .unwarn 5, .unwarn #5)
       let caseIdArg = null;
       if (isRemove) {
         for (const arg of args) {
-          const cleanArg = arg.replace('#', '');
-          if (!isNaN(cleanArg) && cleanArg.length < 10 && parseInt(cleanArg) > 0) {
+          const cleanArg = arg.replace('#', '').trim();
+          if (!isNaN(cleanArg) && cleanArg.length > 0 && cleanArg.length < 10 && parseInt(cleanArg) > 0) {
             caseIdArg = parseInt(cleanArg);
             break;
           }
@@ -501,7 +501,7 @@ module.exports = {
         const cData = recordAndLogCase(guild, {
           action: 'UNWARN',
           targetId: targetUserId,
-          targetTag: c.targetTag,
+          targetTag: c.targetTag || 'User',
           executorId: message.author.id,
           executorTag: message.author.tag,
           reason: `Revoked Warning Case #${caseIdArg}`
@@ -521,9 +521,9 @@ module.exports = {
       }
 
       const targetIndex = (invoked === 'warn' && (args[0] === 'remove' || args[0] === 'clear')) ? 1 : 0;
-      const target = message.mentions.members?.first() || guild.members.cache.get(args[targetIndex]);
+      const targetUser = message.mentions.users.first() || (args[targetIndex] && args[targetIndex].match(/^\d{17,20}$/) ? await message.client.users.fetch(args[targetIndex]).catch(() => null) : null);
 
-      if (!target) {
+      if (!targetUser) {
         return message.reply(
           `${emojis.WARNING} Usage:\n` +
           `• \`.warn @user [reason]\` — Add warning\n` +
@@ -533,15 +533,15 @@ module.exports = {
         );
       }
 
-      const userObj = db.getUser(target.id);
+      const userObj = db.getUser(targetUser.id);
       const currentWarns = userObj.warns || 0;
 
       if (isClear) {
-        db.updateUser(target.id, u => { u.warns = 0; });
+        db.updateUser(targetUser.id, u => { u.warns = 0; });
         const cData = recordAndLogCase(guild, {
           action: 'CLEARWARNS',
-          targetId: target.id,
-          targetTag: target.user.tag,
+          targetId: targetUser.id,
+          targetTag: targetUser.tag,
           executorId: message.author.id,
           executorTag: message.author.tag,
           reason: `Cleared all warnings (Previous: ${currentWarns})`
@@ -549,7 +549,7 @@ module.exports = {
 
         const embed = createStyledEmbed({
           title: `🧹 All Warnings Cleared [Case #${cData.caseId}]`,
-          description: `**Member:** <@${target.id}> (\`${target.user.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Cleared Warnings:** \`${currentWarns}\` → \`0\``,
+          description: `**Member:** <@${targetUser.id}> (\`${targetUser.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Cleared Warnings:** \`${currentWarns}\` → \`0\``,
           requestedBy: message.author,
           clientUser
         });
@@ -557,15 +557,15 @@ module.exports = {
       }
 
       if (isRemove) {
-        if (currentWarns <= 0) return message.reply(`${emojis.INFO} <@${target.id}> has 0 active warnings.`);
+        if (currentWarns <= 0) return message.reply(`${emojis.INFO} <@${targetUser.id}> has 0 active warnings.`);
         const newWarns = currentWarns - 1;
-        db.updateUser(target.id, u => { u.warns = newWarns; });
+        db.updateUser(targetUser.id, u => { u.warns = newWarns; });
 
         const reason = args.slice(targetIndex + 1).join(' ') || 'Warning removed by staff.';
         const cData = recordAndLogCase(guild, {
           action: 'UNWARN',
-          targetId: target.id,
-          targetTag: target.user.tag,
+          targetId: targetUser.id,
+          targetTag: targetUser.tag,
           executorId: message.author.id,
           executorTag: message.author.tag,
           reason
@@ -573,7 +573,7 @@ module.exports = {
 
         const embed = createStyledEmbed({
           title: `✅ Warning Removed [Case #${cData.caseId}]`,
-          description: `**Member:** <@${target.id}> (\`${target.user.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Remaining Warnings:** \`${newWarns}\`\n**Reason:** ${reason}`,
+          description: `**Member:** <@${targetUser.id}> (\`${targetUser.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Remaining Warnings:** \`${newWarns}\`\n**Reason:** ${reason}`,
           requestedBy: message.author,
           clientUser
         });
@@ -583,24 +583,24 @@ module.exports = {
       // Standard .warn @user
       const reason = args.slice(1).join(' ') || 'No reason provided.';
       const warnCount = currentWarns + 1;
-      db.updateUser(target.id, u => { u.warns = warnCount; });
+      db.updateUser(targetUser.id, u => { u.warns = warnCount; });
 
       const cData = recordAndLogCase(guild, {
         action: 'WARN',
-        targetId: target.id,
-        targetTag: target.user.tag,
+        targetId: targetUser.id,
+        targetTag: targetUser.tag,
         executorId: message.author.id,
         executorTag: message.author.tag,
         reason: `[Warning #${warnCount}] ${reason}`
       });
 
       try {
-        await target.user.send(`⚠️ You have received Warning #${warnCount} [Case #${cData.caseId}] in **${guild.name}**.\n**Reason:** ${reason}`);
+        await targetUser.send(`⚠️ You have received Warning #${warnCount} [Case #${cData.caseId}] in **${guild.name}**.\n**Reason:** ${reason}`);
       } catch (e) {}
 
       const embed = createStyledEmbed({
         title: `⚠️ User Warned [Case #${cData.caseId}]`,
-        description: `**Member:** <@${target.id}> (\`${target.user.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Warning Count:** \`${warnCount} warning(s)\`\n**Reason:** ${reason}`,
+        description: `**Member:** <@${targetUser.id}> (\`${targetUser.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Warning Count:** \`${warnCount} warning(s)\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
       });
