@@ -35,16 +35,39 @@ module.exports = {
     function buildDashboardEmbed(actionText = '') {
       return createStyledEmbed({
         title: `📜 Server Audit & Event Logging Suite`,
-        subtitle: `${emojis.SHIELD} Clean & Dedicated Event Routing`,
+        subtitle: `${emojis.SHIELD || '🛡️'} Clean & Dedicated Event Routing`,
         description:
-          `Deploy organized logging categories and channels for complete server activity tracking.\n\n` +
-          `**Configured Logging Categories:**\n` +
-          `• 🛡️ **Security Logs**: \`noprefix-audit\`, \`security-defense\`, \`naruto-logs\`, \`naruto-automod-logs\`, \`naruto-emoji-logs\`, \`naruto-mod-cases\`, \`naruto-security-logs\`, \`naruto-mod-logs\`\n` +
-          `• 📁 **Server Audit Logs**: \`server-logs\`, \`message-logs\`, \`channel-logs\`, \`role-logs\`, \`member-logs\`, \`voice-logs\`, \`join-leave-logs\`\n` +
-          `• 🎟️ **Ticket & ModMail Logs**: \`ticket-logs\`, \`ticket-transcripts\`, \`modmail-logs\`, \`modmail-transcripts\`\n\n` +
-          `• Active Mapped Channels: **\`${store.channels.size}\` Channels**\n\n` +
-          (actionText ? `> 💡 **Status:** ${actionText}\n\n` : '') +
-          `*Click the button below to automatically create and save all audit categories & channels in DB!*`,
+          `**🛡️ Security Logs Category**\n` +
+          `\`\`\`\n` +
+          `noprefix-audit       ✓\n` +
+          `security-defense     ✓\n` +
+          `naruto-logs          ✓\n` +
+          `naruto-automod-logs  ✓\n` +
+          `naruto-emoji-logs    ✓\n` +
+          `naruto-mod-cases     ✓\n` +
+          `naruto-security-logs ✓\n` +
+          `naruto-mod-logs      ✓\n` +
+          `\`\`\`\n\n` +
+          `**📁 Server Audit Logs Category**\n` +
+          `\`\`\`\n` +
+          `server-logs      ✓\n` +
+          `message-logs     ✓\n` +
+          `channel-logs     ✓\n` +
+          `role-logs        ✓\n` +
+          `member-logs      ✓\n` +
+          `voice-logs       ✓\n` +
+          `join-leave-logs  ✓\n` +
+          `\`\`\`\n\n` +
+          `**🎟️ Ticket & ModMail Logs Category**\n` +
+          `\`\`\`\n` +
+          `ticket-logs         ✓\n` +
+          `ticket-transcripts  ✓\n` +
+          `modmail-logs        ✓\n` +
+          `modmail-transcripts ✓\n` +
+          `\`\`\`\n\n` +
+          `Active Mapped: \`${store.channels.size}\` channels\n` +
+          (actionText ? `\n> ✅ **Status:** ${actionText}\n` : '') +
+          `\n*Click below to deploy all 3 categories & 19 channels into DB!*`,
         requestedBy: author,
         clientUser
       });

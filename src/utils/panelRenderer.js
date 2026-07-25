@@ -377,22 +377,47 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     return embed;
   }
 
-  // Keep Music suite with standard listing
+  // Keep Music suite with codeblock box layout
   if (cat.value === 'music') {
     const embed = new EmbedBuilder()
       .setColor(0x7E0808)
-      .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
+      .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
       .setThumbnail(botAvatarURL)
-      .setTitle(`${cat.heading}`)
+      .setTitle(`🎶 Music Player Suite & Control Panel`)
       .setDescription(
-        `Below is the complete list of commands for **${cat.label}**.\n` +
-        `Type \`.help <command>\` for detailed usage on any command.\n\n` +
-        cat.commands.slice().sort().map(cmd => `${emojis.DOT} **\`${cmd}\`**`).join('\n')
+        `Welcome **${message.author.username}**! Below is the executive suite for **Music**.\n\n` +
+        `**🎵 Playback Controls**\n` +
+        `\`\`\`\n` +
+        `.play <song>  - Play a track or resume queue\n` +
+        `.pause        - Pause current track\n` +
+        `.resume       - Resume paused track\n` +
+        `.skip         - Skip to next track\n` +
+        `.prev         - Go back to previous track\n` +
+        `.stop         - Stop music and clear queue\n` +
+        `\`\`\`\n\n` +
+        `**📋 Queue & Playlist**\n` +
+        `\`\`\`\n` +
+        `.queue        - View current queue\n` +
+        `.np           - Show now playing\n` +
+        `.loop         - Toggle track or queue looping\n` +
+        `.shuffle      - Shuffle queue tracks\n` +
+        `.seek <secs>  - Seek to specific timestamp\n` +
+        `.clear        - Clear the entire queue\n` +
+        `\`\`\`\n\n` +
+        `**✨ Advanced Features**\n` +
+        `\`\`\`\n` +
+        `.volume <0-200>  - Set playback volume\n` +
+        `.247             - Toggle 24/7 voice stay\n` +
+        `.autoplay        - Smart autoplay on/off\n` +
+        `.filter <preset> - Apply audio filter\n` +
+        `.fav add/list    - Save favorite tracks\n` +
+        `\`\`\``
       )
       .setFooter({
         text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
         iconURL: message.author.displayAvatarURL({ dynamic: true })
       });
+    if (devPortalBanner) embed.setImage(devPortalBanner);
     return embed;
   }
 

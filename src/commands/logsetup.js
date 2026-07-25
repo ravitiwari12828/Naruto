@@ -53,24 +53,46 @@ module.exports = {
     const config = getOrCreateLoggingConfig(guild.id);
 
     function buildDashboardEmbed(actionText = '') {
+      const dbChannels = (() => { try { return require('../database/db').getLogChannels(guild.id); } catch(e) { return {}; } })();
+      const resolve = (key, configKey) => {
+        const id = config[configKey] || dbChannels[key];
+        return id ? `<#${id}>` : '`Not Set`';
+      };
+
       return createStyledEmbed({
         title: `📜 Audit Logging System Architecture`,
-        subtitle: `${emojis.SHIELD} Server Event & Moderation Logging Grid`,
+        subtitle: `${emojis.SHIELD || '🛡️'} Server Event & Moderation Logging Grid`,
         description:
-          `Configure audit logging channels to track every action performed on your server.\n\n` +
-          `**Current Log Configuration:**\n` +
-          `• Mode: \`${config.mode.toUpperCase()}\`\n` +
-          `• Unified Channel: ${config.unifiedChanId ? `<#${config.unifiedChanId}>` : '*Not Created*'}\n` +
-          `• Mod Logs: ${config.modLogs ? `<#${config.modLogs}>` : '*Not Set*'}\n` +
-          `• Security Logs: ${config.securityLogs ? `<#${config.securityLogs}>` : '*Not Set*'}\n` +
-          `• AutoMod Logs: ${config.automodLogs ? `<#${config.automodLogs}>` : '*Not Set*'}\n` +
-          `• Message Logs: ${config.messageLogs ? `<#${config.messageLogs}>` : '*Not Set*'}\n` +
-          `• Voice Logs: ${config.voiceLogs ? `<#${config.voiceLogs}>` : '*Not Set*'}\n` +
-          `• Ticket Transcripts: ${config.ticketLogs ? `<#${config.ticketLogs}>` : '*Not Set*'}\n` +
-          `• Emoji & Sticker Logs: ${config.emojiLogs ? `<#${config.emojiLogs}>` : '*Not Set*'}\n` +
-          `• Moderation Case Logs: ${config.modCaseLogs ? `<#${config.modCaseLogs}>` : '*Not Set*'}\n\n` +
-          (actionText ? `> 💡 **Action:** ${actionText}\n\n` : '') +
-          `**Choose your preferred setup method below:**`,
+          `**🛡️ Security Logs Category**\n` +
+          `\`\`\`\n` +
+          `noprefix-audit      : ${config.mode === 'multi' ? 'Deployed' : 'Use Pro Setup'}\n` +
+          `security-defense    : ${config.mode === 'multi' ? 'Deployed' : 'Use Pro Setup'}\n` +
+          `naruto-logs         : ${config.unifiedChanId ? 'Deployed' : 'Not Created'}\n` +
+          `naruto-automod-logs : ${config.automodLogs ? 'Deployed' : 'Not Set'}\n` +
+          `naruto-emoji-logs   : ${config.emojiLogs ? 'Deployed' : 'Not Set'}\n` +
+          `naruto-mod-cases    : ${config.modCaseLogs ? 'Deployed' : 'Not Set'}\n` +
+          `naruto-security-logs: ${config.securityLogs ? 'Deployed' : 'Not Set'}\n` +
+          `naruto-mod-logs     : ${config.modLogs ? 'Deployed' : 'Not Set'}\n` +
+          `\`\`\`\n\n` +
+          `**📁 Server Audit Logs Category**\n` +
+          `\`\`\`\n` +
+          `server-logs   : ${config.messageLogs ? 'Deployed' : 'Not Set'}\n` +
+          `message-logs  : ${config.messageLogs ? 'Deployed' : 'Not Set'}\n` +
+          `channel-logs  : Not Set\n` +
+          `role-logs     : Not Set\n` +
+          `member-logs   : Not Set\n` +
+          `voice-logs    : ${config.voiceLogs ? 'Deployed' : 'Not Set'}\n` +
+          `join-leave-logs: Not Set\n` +
+          `\`\`\`\n\n` +
+          `**🎟️ Ticket & ModMail Logs Category**\n` +
+          `\`\`\`\n` +
+          `ticket-logs        : ${config.ticketLogs ? 'Deployed' : 'Not Set'}\n` +
+          `ticket-transcripts : Not Set\n` +
+          `modmail-logs       : Not Set\n` +
+          `modmail-transcripts: Not Set\n` +
+          `\`\`\`\n\n` +
+          (actionText ? `> ✅ **Status:** ${actionText}\n\n` : '') +
+          `**Mode:** \`${config.mode.toUpperCase()}\` | **Choose your setup method below:**`,
         requestedBy: author,
         clientUser
       });
