@@ -137,37 +137,31 @@ function buildUserMetricRow(activeCat) {
 }
 
 function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', activeCategory = 'overview', author, clientUser) {
-  const windowMs = WINDOWS[timeframeKey];
-  const label = TIMEFRAME_NAMES[timeframeKey];
-
-  let metricType = 'message';
-  let headerTitle = '🏆 Top Active Chatters';
-  let emptyMsg = 'No recorded chat activity yet.';
-
+  if (activeCategory === 'chat') {
+    return renderMessagesLeaderboard(guild, timeframeKey, 1, author, clientUser).embed;
+  }
   if (activeCategory === 'voice') {
-    metricType = 'voice';
-    headerTitle = '🏆 Top Voice Active Members';
-    emptyMsg = 'No recorded voice activity yet.';
-  } else if (activeCategory === 'invites') {
-    metricType = 'invite';
-    headerTitle = '🏆 Top Invite Recruiters';
-    emptyMsg = 'No recorded invite activity yet.';
+    return renderVoiceLeaderboard(guild, timeframeKey, 1, author, clientUser).embed;
+  }
+  if (activeCategory === 'invites') {
+    return renderInvitesLeaderboard(guild, timeframeKey, 1, author, clientUser).embed;
   }
 
+  const windowMs = WINDOWS[timeframeKey];
+  const label = TIMEFRAME_NAMES[timeframeKey];
   const stats = db.getAnalyticsStats(guild.id, windowMs);
-  const topMembers = db.getTopLeaderboard(guild.id, metricType, windowMs, 3);
+  const topMembers = db.getTopLeaderboard(guild.id, 'message', windowMs, 3);
   const bots = guild.members.cache.filter(m => m.user.bot).size;
   const humans = guild.memberCount - bots;
 
   let topBlock = '';
   if (topMembers.length === 0) {
-    topBlock = emptyMsg;
+    topBlock = 'No recorded chat activity yet.';
   } else {
     topBlock = topMembers.map((item, idx) => {
       const member = guild.members.cache.get(item.userId);
       const name = member ? member.user.username : `User ${item.userId}`;
-      const valStr = metricType === 'voice' ? formatDuration(item.total) : metricType === 'invite' ? `${item.total.toLocaleString()} joins` : `${item.total.toLocaleString()} msgs`;
-      return `#${idx + 1} ${name} — ${valStr}`;
+      return `#${idx + 1} ${name} — ${item.total.toLocaleString()} msgs`;
     }).join('\n');
   }
 
@@ -194,7 +188,7 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
   const description =
     `Welcome **${author.username}**! Below is the executive **Server Analytics** dashboard.\n\n` +
     boxText + `\n\n` +
-    `**${headerTitle} (${label})**\n` +
+    `**🏆 Top Active Chatters (${label})**\n` +
     `\`\`\`\n` +
     `${topBlock}\n` +
     `\`\`\``;
