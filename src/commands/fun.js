@@ -33,7 +33,7 @@ function renderGaugeBox(cmdName, score = null) {
       '│ ' + title.padEnd(32, ' ') + ' │\n' +
       '│                                  │\n' +
       '│  0   5   10   50   100   1,000   │\n' +
-      '│ ( ─  ─  ─  ─  ─  ─  ─  ─  ─  ─ ) │\n' +
+      '│ ( -  -  -  -  -  -  -  -  -  - ) │\n' +
       '│                                  │\n' +
       '│          STATUS: IDLE            │\n' +
       '╰──────────────────────────────────╯\n' +
@@ -42,7 +42,7 @@ function renderGaugeBox(cmdName, score = null) {
 
   const filledCount = Math.round((score / 100) * 10);
   const emptyCount = 10 - filledCount;
-  const arcGauge = '█'.repeat(filledCount) + '░'.repeat(emptyCount);
+  const arcGauge = '#'.repeat(filledCount) + '-'.repeat(emptyCount);
   const bar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
 
   return '```\n' +
@@ -52,7 +52,7 @@ function renderGaugeBox(cmdName, score = null) {
     '│  0   5   10   50   100   1,000   │\n' +
     '│ ( ' + arcGauge.split('').join('  ') + ' ) │\n' +
     '│                                  │\n' +
-    '│        CALCULATED: ' + String(score).padStart(3, ' ') + '%           │\n' +
+    '│        CALCULATED: ' + String(score).padStart(3, ' ') + '%          │\n' +
     '╰──────────────────────────────────╯\n' +
     '```\n' +
     '`[' + bar + '] ' + score + '%`';
