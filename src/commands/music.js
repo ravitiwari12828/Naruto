@@ -120,7 +120,30 @@ function buildMusicPlayerEmbed(track, player) {
 /**
  * Builds the Music Player action buttons & multi-filter dropdown matching Synn layout.
  */
-function buildMusicActionRows() {
+function buildMusicActionRows(player = null) {
+  const isAutoplay = player?.autoplay || false;
+
+  const row1 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
+  );
+
+  const row2 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_clear').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
+  );
+
+  const row3 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_autoplay').setEmoji('♾️').setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_add').setEmoji('❤️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_play').setEmoji('⭐').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_lyrics').setEmoji('💬').setStyle(ButtonStyle.Secondary)
+  );
+
   const controlsSelect = new StringSelectMenuBuilder()
     .setCustomId('music_controls_select')
     .setPlaceholder('🎛️ Controls & Seek...')
@@ -140,7 +163,7 @@ function buildMusicActionRows() {
       { label: 'Stop Player', value: 'ctrl_stop', description: 'Stop music & clear queue', emoji: '⏹️' }
     ]);
 
-  const row1 = new ActionRowBuilder().addComponents(controlsSelect);
+  const row4 = new ActionRowBuilder().addComponents(controlsSelect);
 
   const filterSelect = new StringSelectMenuBuilder()
     .setCustomId('music_filter_select')
@@ -159,23 +182,9 @@ function buildMusicActionRows() {
       { label: 'Distort', value: 'filter_distort', description: 'Heavier, rougher effect for edits and memes', emoji: '💥' }
     ]);
 
-  const row2 = new ActionRowBuilder().addComponents(filterSelect);
+  const row5 = new ActionRowBuilder().addComponents(filterSelect);
 
-  const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
-  );
-
-  const row4 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_clear').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
-  );
-
-  return [row1, row2, row3, row4];
+  return [row1, row2, row3, row4, row5];
 }
 
 function parseTimeToMs(timeStr) {
