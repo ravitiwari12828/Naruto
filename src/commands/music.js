@@ -121,19 +121,23 @@ function buildMusicPlayerEmbed(track, player) {
  * Uses 4 buttons per row for 100% perfect horizontal alignment across Mobile & Desktop!
  */
 function buildMusicActionRows() {
-  const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
-  );
+  const controlsSelect = new StringSelectMenuBuilder()
+    .setCustomId('music_controls_select')
+    .setPlaceholder('🎛️ Controls & Seek...')
+    .addOptions([
+      { label: 'Shuffle Queue', value: 'ctrl_shuffle', description: 'Randomize the order of songs', emoji: '🔀' },
+      { label: 'Loop: Off', value: 'ctrl_loop_off', description: 'No repeat', emoji: '➡️' },
+      { label: 'Loop: Track', value: 'ctrl_loop_track', description: 'Repeat current song', emoji: '🔂' },
+      { label: 'Loop: Queue', value: 'ctrl_loop_queue', description: 'Repeat entire queue', emoji: '🔁' },
+      { label: 'Volume -20%', value: 'ctrl_voldown', description: 'Decrease volume by 20%', emoji: '🔉' },
+      { label: 'Volume +20%', value: 'ctrl_volup', description: 'Increase volume by 20%', emoji: '🔊' },
+      { label: 'Previous Track', value: 'ctrl_prev', description: 'Play previous track', emoji: '⏮️' },
+      { label: 'Pause / Resume', value: 'ctrl_pause', description: 'Toggle playback', emoji: '⏸️' },
+      { label: 'Skip Track', value: 'ctrl_skip', description: 'Skip to next track', emoji: '⏭️' },
+      { label: 'Stop Player', value: 'ctrl_stop', description: 'Stop music & clear queue', emoji: '⏹️' }
+    ]);
 
-  const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_clear').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
-  );
+  const row1 = new ActionRowBuilder().addComponents(controlsSelect);
 
   const filterSelect = new StringSelectMenuBuilder()
     .setCustomId('music_filter_select')
@@ -152,9 +156,23 @@ function buildMusicActionRows() {
       { label: 'Distort', value: 'filter_distort', description: 'Heavier, rougher effect for edits and memes', emoji: '💥' }
     ]);
 
-  const row3 = new ActionRowBuilder().addComponents(filterSelect);
+  const row2 = new ActionRowBuilder().addComponents(filterSelect);
 
-  return [row1, row2, row3];
+  const row3 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
+  );
+
+  const row4 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_clear').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
+  );
+
+  return [row1, row2, row3, row4];
 }
 
 function parseTimeToMs(timeStr) {

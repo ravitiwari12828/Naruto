@@ -1612,7 +1612,66 @@ client.on('interactionCreate', async (interaction) => {
     return interaction.editReply({ content: `🎶 Applied Audio Filters: **${filterNames.join(', ')}**!` }).catch(() => {});
   }
 
-  // 2.5 VOICEMASTER QUICK MENU SELECT MENU
+  // 2.5 SYNNS MUSIC CONTROLS SELECT MENU
+  if (interaction.isStringSelectMenu() && interaction.customId === 'music_controls_select') {
+    await interaction.deferReply({ flags: 64 }).catch(() => {});
+    const val = interaction.values[0];
+    const { getLavalink } = require('./utils/lavalink');
+    const player = getLavalink()?.getPlayer(interaction.guild.id);
+
+    if (!player) {
+      return interaction.editReply({ content: `${emojis.WARNING} No active music player in this server!` }).catch(() => {});
+    }
+
+    if (val === 'ctrl_shuffle') {
+      await player.queue.shuffle();
+      return interaction.editReply({ content: `🔀 Queue order randomized!` }).catch(() => {});
+    }
+    if (val === 'ctrl_loop_off') {
+      await player.setRepeatMode('off');
+      return interaction.editReply({ content: `➡️ Loop mode disabled.` }).catch(() => {});
+    }
+    if (val === 'ctrl_loop_track') {
+      await player.setRepeatMode('track');
+      return interaction.editReply({ content: `🔂 Repeating current track.` }).catch(() => {});
+    }
+    if (val === 'ctrl_loop_queue') {
+      await player.setRepeatMode('queue');
+      return interaction.editReply({ content: `🔁 Repeating entire queue.` }).catch(() => {});
+    }
+    if (val === 'ctrl_voldown') {
+      const vol = Math.max(10, (player.volume || 100) - 20);
+      await player.setVolume(vol);
+      return interaction.editReply({ content: `🔉 Volume reduced to **${vol}%**.` }).catch(() => {});
+    }
+    if (val === 'ctrl_volup') {
+      const vol = Math.min(200, (player.volume || 100) + 20);
+      await player.setVolume(vol);
+      return interaction.editReply({ content: `🔊 Volume increased to **${vol}%**.` }).catch(() => {});
+    }
+    if (val === 'ctrl_prev') {
+      return interaction.editReply({ content: `⏮️ Replaying previous track.` }).catch(() => {});
+    }
+    if (val === 'ctrl_pause') {
+      if (player.paused) {
+        await player.resume();
+        return interaction.editReply({ content: `▶️ Playback resumed.` }).catch(() => {});
+      } else {
+        await player.pause();
+        return interaction.editReply({ content: `⏸️ Playback paused.` }).catch(() => {});
+      }
+    }
+    if (val === 'ctrl_skip') {
+      await player.skip();
+      return interaction.editReply({ content: `⏭️ Skipped track.` }).catch(() => {});
+    }
+    if (val === 'ctrl_stop') {
+      await player.destroy();
+      return interaction.editReply({ content: `⏹️ Stopped music player & cleared queue.` }).catch(() => {});
+    }
+  }
+
+  // 2.6 VOICEMASTER QUICK MENU SELECT MENU
   if (interaction.isStringSelectMenu() && interaction.customId === 'vm_quick_menu') {
     await interaction.deferReply({ flags: 64 }).catch(() => {});
     const val = interaction.values[0];
@@ -1648,6 +1707,57 @@ client.on('interactionCreate', async (interaction) => {
   }
 
   if (!interaction.isButton()) return;
+
+  // MUSIC BUTTON CONTROLS
+  if (interaction.customId.startsWith('music_')) {
+    await interaction.deferReply({ flags: 64 }).catch(() => {});
+    const action = interaction.customId;
+    const { getLavalink } = require('./utils/lavalink');
+    const player = getLavalink()?.getPlayer(interaction.guild.id);
+
+    if (!player) {
+      return interaction.editReply({ content: `${emojis.WARNING} No active music player in this server!` }).catch(() => {});
+    }
+
+    if (action === 'music_pause') {
+      if (player.paused) {
+        await player.resume();
+        return interaction.editReply({ content: `▶️ Playback resumed.` }).catch(() => {});
+      } else {
+        await player.pause();
+        return interaction.editReply({ content: `⏸️ Playback paused.` }).catch(() => {});
+      }
+    }
+    if (action === 'music_skip') {
+      await player.skip();
+      return interaction.editReply({ content: `⏭️ Skipped track.` }).catch(() => {});
+    }
+    if (action === 'music_stop') {
+      await player.destroy();
+      return interaction.editReply({ content: `⏹️ Stopped player & cleared queue.` }).catch(() => {});
+    }
+    if (action === 'music_loop') {
+      const mode = player.repeatMode === 'track' ? 'queue' : player.repeatMode === 'queue' ? 'off' : 'track';
+      await player.setRepeatMode(mode);
+      return interaction.editReply({ content: `🔁 Loop mode set to: **${mode.toUpperCase()}**.` }).catch(() => {});
+    }
+    if (action === 'music_shuffle') {
+      await player.queue.shuffle();
+      return interaction.editReply({ content: `🔀 Queue randomized!` }).catch(() => {});
+    }
+    if (action === 'music_volup') {
+      const vol = Math.min(200, (player.volume || 100) + 15);
+      await player.setVolume(vol);
+      return interaction.editReply({ content: `🔊 Volume set to **${vol}%**.` }).catch(() => {});
+    }
+    if (action === 'music_clear') {
+      await player.queue.clear();
+      return interaction.editReply({ content: `🔄 Cleared queue.` }).catch(() => {});
+    }
+    if (action === 'music_prev') {
+      return interaction.editReply({ content: `⏮️ Replaying track.` }).catch(() => {});
+    }
+  }
 
   // GIVEAWAY ENTER BUTTON
   if (interaction.customId.startsWith('gw_enter_')) {
