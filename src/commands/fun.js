@@ -14,34 +14,46 @@ const GAUGE_TITLES = {
 };
 
 function renderGaugeBox(cmdName, score = null) {
+  const titles = {
+    smartrate: '🧠 Intelligence Scan',
+    rizzmeter: '💅 Rizz Meter',
+    shipname: '🚢 Shinobi Ship Name',
+    wanted: '🤠 Wanted Bounty Level',
+    wasted: '💀 Battle Wasted Level',
+    powerlevel: '⚡ Power Level Scan',
+    coolrate: '❄️ Coolness Rate',
+    bonk: '🔨 Horny Bonk Level'
+  };
+
+  const title = titles[cmdName] || '📊 Level Calculator';
+
   if (score === null) {
     return '```\n' +
-      '╭───────────────────────────────────────────────────╮\n' +
-      '│            SHINOBI LEVEL CALCULATOR               │\n' +
-      '│                                                   │\n' +
-      '│      0       5       10      50     100    1,000  │\n' +
-      '│   ( ─── ─── ─── ─── ─── ─── ─── ─── ─── ─── ─── ) │\n' +
-      '│                                                   │\n' +
-      '│               STATUS: ⏹️ IDLE                       │\n' +
-      '╰───────────────────────────────────────────────────╯\n' +
+      '╭──────────────────────────────────╮\n' +
+      '│ ' + title.padEnd(32, ' ') + ' │\n' +
+      '│                                  │\n' +
+      '│  0   5   10   50   100   1,000   │\n' +
+      '│ ( ─  ─  ─  ─  ─  ─  ─  ─  ─  ─ ) │\n' +
+      '│                                  │\n' +
+      '│          STATUS: ⏹️ IDLE          │\n' +
+      '╰──────────────────────────────────╯\n' +
       '```';
   }
 
-  const info = GAUGE_TITLES[cmdName] || { title: 'LEVEL CALCULATOR' };
-  const filledCount = Math.round((score / 100) * 11);
-  const emptyCount = 11 - filledCount;
+  const filledCount = Math.round((score / 100) * 10);
+  const emptyCount = 10 - filledCount;
   const arcGauge = '█'.repeat(filledCount) + '░'.repeat(emptyCount);
   const bar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
 
   return '```\n' +
-    '╭───────────────────────────────────────────────────╮\n' +
-    '│    ' + info.title.padEnd(40, ' ') + '       │\n' +
-    '│                                                   │\n' +
-    '│      0       5       10      50     100    1,000  │\n' +
-    '│   ( ' + arcGauge.split('').join('  ') + ' )       │\n' +
-    '│                                                   │\n' +
-    '│            CALCULATED LEVEL: ' + String(score).padStart(3, ' ') + '%               │\n' +
-    '╰───────────────────────────────────────────────────╯\n' +
+    '╭──────────────────────────────────╮\n' +
+    '│ ' + title.padEnd(32, ' ') + ' │\n' +
+    '│                                  │\n' +
+    '│  0   5   10   50   100   1,000   │\n' +
+    '│ ( ' + arcGauge.split('').join('  ') + ' ) │\n' +
+    '│                                  │\n' +
+    '│        CALCULATED: ' + String(score).padStart(3, ' ') + '%           │\n' +
+    '╰──────────────────────────────────╯\n' +
     '```\n' +
     '`[' + bar + '] ' + score + '%`';
 }
