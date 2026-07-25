@@ -114,9 +114,32 @@ function buildMusicPlayerEmbed(track, player) {
 }
 
 /**
- * Builds the exact STELLAR BEATS action buttons & multi-dropdown matching screenshot 100%.
+ * Builds the exact 3-row 4-button grid layout matching user screenshot + dropdown menus.
  */
 function buildMusicActionRows(player = null) {
+  const isAutoplay = player?.autoplay || false;
+
+  const row1 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
+  );
+
+  const row2 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_clear').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
+  );
+
+  const row3 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('music_autoplay').setEmoji('♾️').setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_add').setEmoji('❤️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_play').setEmoji('⭐').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_lyrics').setEmoji('💬').setStyle(ButtonStyle.Secondary)
+  );
+
   const suggestedSelect = new StringSelectMenuBuilder()
     .setCustomId('music_suggested_select')
     .setPlaceholder('✨ Suggested songs...')
@@ -128,7 +151,7 @@ function buildMusicActionRows(player = null) {
       { label: 'Tere Baare Mein Jab Socha - Jagjit Singh', value: 'sug_jagjit', description: 'Trending Ghazal Classic', emoji: '✨' }
     ]);
 
-  const row1 = new ActionRowBuilder().addComponents(suggestedSelect);
+  const row4 = new ActionRowBuilder().addComponents(suggestedSelect);
 
   const filterSelect = new StringSelectMenuBuilder()
     .setCustomId('music_filter_select')
@@ -143,25 +166,7 @@ function buildMusicActionRows(player = null) {
       { label: 'Vaporwave', value: 'filter_vaporwave', description: 'Slowed aesthetic retro synthwave vibe', emoji: '☁️' }
     ]);
 
-  const row2 = new ActionRowBuilder().addComponents(filterSelect);
-
-  const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔄').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_prev').setEmoji('◀').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_skip').setEmoji('▶').setStyle(ButtonStyle.Secondary)
-  );
-
-  const row4 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_fav_add').setEmoji('🤍').setStyle(ButtonStyle.Secondary)
-  );
-
-  const row5 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_voldown').setEmoji('🔉').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary)
-  );
+  const row5 = new ActionRowBuilder().addComponents(filterSelect);
 
   return [row1, row2, row3, row4, row5];
 }
