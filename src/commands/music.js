@@ -394,15 +394,44 @@ module.exports = {
       }
     }
 
-    // 5. PLAY (.play, .p)
+    // 5. PLAY (.play, .p, .play yt/ytm/sc/sp/am/dz)
     if (['play', 'p'].includes(invoked) || (invoked === 'music' && args[0] === 'play')) {
       if (!voiceState?.channel) {
         return message.reply(`${emojis.WARNING} You must be in a Voice Channel to play music!`);
       }
 
-      let query = (['play', 'p'].includes(invoked) ? args : args.slice(1)).join(' ');
-      if (!query) {
-        return message.reply(`${emojis.WARNING} Usage: \`.play <song title / URL / preset>\`\nPresets: \`bluebird\`, \`silhouette\`, \`sadness\`, \`theme\`, \`wind\`, \`hero\``);
+      let rawArgs = (['play', 'p'].includes(invoked) ? args : args.slice(1));
+      if (!rawArgs.length) {
+        return message.reply(
+          `${emojis.WARNING} **Usage:** \`.play <song title / URL / preset>\`\n` +
+          `**Explicit Sources:** \`.play yt <query>\` (YouTube), \`.play ytm <query>\` (YT Music), \`.play sc <query>\` (SoundCloud), \`.play sp <query>\` (Spotify), \`.play am <query>\` (Apple Music), \`.play dz <query>\` (Deezer)\n` +
+          `**Presets:** \`bluebird\`, \`silhouette\`, \`sadness\`, \`theme\`, \`wind\`, \`hero\``
+        );
+      }
+
+      let source = null;
+      let query = rawArgs.join(' ');
+
+      // Check explicit source prefix
+      const firstArg = rawArgs[0].toLowerCase();
+      if (['yt', 'youtube'].includes(firstArg)) {
+        source = 'ytsearch';
+        query = rawArgs.slice(1).join(' ');
+      } else if (['ytm', 'ytmusic'].includes(firstArg)) {
+        source = 'ytmsearch';
+        query = rawArgs.slice(1).join(' ');
+      } else if (['sc', 'soundcloud'].includes(firstArg)) {
+        source = 'scsearch';
+        query = rawArgs.slice(1).join(' ');
+      } else if (['sp', 'spotify'].includes(firstArg)) {
+        source = 'spsearch';
+        query = rawArgs.slice(1).join(' ');
+      } else if (['am', 'applemusic'].includes(firstArg)) {
+        source = 'amsearch';
+        query = rawArgs.slice(1).join(' ');
+      } else if (['dz', 'deezer'].includes(firstArg)) {
+        source = 'dzsearch';
+        query = rawArgs.slice(1).join(' ');
       }
 
       const key = query.toLowerCase().replace(/\s+/g, '');
@@ -423,18 +452,45 @@ module.exports = {
             await player.connect();
           }
 
-          let res = await player.search({ query, source: 'ytmsearch' }, author);
-          if (!res || !res.tracks.length) {
-            res = await player.search({ query, source: 'ytsearch' }, author);
-          }
-          if (!res || !res.tracks.length) {
-            res = await player.search({ query, source: 'scsearch' }, author);
+          let res = null;
+          const isUrl = /^https?:\/\//i.test(query);
+
+          if (isUrl) {
+            // Direct URL search (Spotify, YouTube, SoundCloud, Apple Music, Deezer, HLS, Direct MP3)
+            res = await player.search({ query }, author);
+          } else if (source) {
+            // Explicit user-chosen search platform
+            res = await player.search({ query, source }, author);
+          } else {
+            // Ultimate Multi-Source Cascade Engine: YTM -> YT -> SoundCloud -> Spotify -> Apple Music -> Deezer
+            const sources = ['ytmsearch', 'ytsearch', 'scsearch', 'spsearch', 'amsearch', 'dzsearch'];
+            for (const s of sources) {
+              try {
+                res = await player.search({ query, source: s }, author);
+                if (res && res.tracks && res.tracks.length) break;
+              } catch (e) {}
+            }
           }
 
-          if (!res || !res.tracks.length) {
-            return message.reply(`${emojis.WARNING} No tracks found for: **${query}**`);
+          if (!res || !res.tracks || !res.tracks.length) {
+            return message.reply(`${emojis.WARNING} No tracks found for **${query}** across all search engines.`);
           }
 
+          // Handle Playlists & Albums
+          if (res.loadType === 'playlist' || res.playlist) {
+            const playlistName = res.playlist?.name || res.playlistInfo?.name || 'Playlist';
+            const tracks = res.tracks;
+            await player.queue.add(tracks);
+
+            if (!player.playing && !player.paused) {
+              await player.play();
+              await sendMusicCard(message.channel, tracks[0], player);
+            }
+
+            return message.reply(`🎶 **Queued Playlist:** Added **${tracks.length} tracks** from **${playlistName}** to queue!`);
+          }
+
+          // Single Track Playback
           const track = res.tracks[0];
           await player.queue.add(track);
 
@@ -442,11 +498,11 @@ module.exports = {
             await player.play();
             return await sendMusicCard(message.channel, track, player);
           } else {
-            return message.reply(`✅ **Added ${track.info.title}** to queue at position **#${player.queue.tracks.length}**.`);
+            return message.reply(`✅ **Added to Queue:** [${track.info.title}](${track.info.uri || 'https://youtube.com'}) at position **#${player.queue.tracks.length}**.`);
           }
         } catch (err) {
           console.error('[Music Play Error]', err.message || err);
-          return message.reply(`❌ Could not play track: **${err.message || 'Lavalink Search Error'}**. Please try another song title or URL.`);
+          return message.reply(`❌ Could not play track: **${err.message || 'Search Error'}**. Please try another title or direct URL.`);
         }
       }
 
