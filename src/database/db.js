@@ -164,6 +164,23 @@ class ResilientDatabase {
         });
       }
     });
+    this.sqliteDb.all(`SELECT * FROM autoreacts`, [], (err, rows) => {
+      if (!err && rows) {
+        rows.forEach(r => {
+          if (!this.data.autoreacts[r.guildId]) this.data.autoreacts[r.guildId] = [];
+          this.data.autoreacts[r.guildId].push({ id: r.id, trigger: r.trigger, emoji: r.emoji });
+        });
+      }
+    });
+
+    this.sqliteDb.all(`SELECT * FROM autoresponses`, [], (err, rows) => {
+      if (!err && rows) {
+        rows.forEach(r => {
+          if (!this.data.autoresponses[r.guildId]) this.data.autoresponses[r.guildId] = [];
+          this.data.autoresponses[r.guildId].push({ id: r.id, trigger: r.trigger, response: r.response });
+        });
+      }
+    });
   }
 
   // --- USER XP, MESSAGES & VOICE TIMING ---
