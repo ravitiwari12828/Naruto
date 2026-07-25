@@ -397,6 +397,7 @@ class ResilientDatabase {
     if (config.nsfwLinks === undefined) config.nsfwLinks = true;
     if (!config.wordBlacklist) config.wordBlacklist = [];
     if (!config.linkBlacklist) config.linkBlacklist = [];
+    if (!config.customCategories) config.customCategories = {};
     if (!config.misc) {
       config.misc = {
         prefix: '.',
