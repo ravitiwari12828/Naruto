@@ -105,6 +105,24 @@ module.exports = {
       time: 180000
     });
 
+async function getOrCreateLogCategory(guild) {
+  let category = guild.channels.cache.find(
+    c => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes('audit logs') || c.name.toLowerCase().includes('server logs'))
+  );
+  if (!category) {
+    try {
+      category = await guild.channels.create({
+        name: '📜 AUDIT LOGS 📜',
+        type: ChannelType.GuildCategory,
+        permissionOverwrites: [
+          { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
+        ]
+      });
+    } catch (e) {}
+  }
+  return category;
+}
+
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
         return interaction.reply({ content: '❌ Only the administrator can use these buttons.', ephemeral: true });
@@ -115,19 +133,22 @@ module.exports = {
       let actionStatus = '';
 
       if (interaction.customId === 'log_setup_single') {
+        const category = await getOrCreateLogCategory(guild);
         let chan = guild.channels.cache.find(c => c.name === 'naruto-logs');
         if (!chan) {
           try {
             chan = await guild.channels.create({
               name: 'naruto-logs',
               type: ChannelType.GuildText,
+              parent: category ? category.id : undefined,
               topic: 'Unified Moderation, Security & Server Audit Logs',
               permissionOverwrites: [
-                { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] },
-                { id: author.id, allow: [PermissionsBitField.Flags.ViewChannel] }
+                { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
               ]
             });
           } catch (e) {}
+        } else if (category && chan.parentId !== category.id) {
+          await chan.setParent(category.id).catch(() => {});
         }
 
         config.enabled = true;
@@ -135,10 +156,11 @@ module.exports = {
         config.unifiedChanId = chan?.id || null;
         loggingConfigs.set(guild.id, config);
 
-        actionStatus = `Unified single log channel deployed: <#${chan?.id}>!`;
+        actionStatus = `Unified single log channel deployed under **${category?.name || 'Category'}**: <#${chan?.id}>!`;
       }
 
       else if (interaction.customId === 'log_setup_multi') {
+        const category = await getOrCreateLogCategory(guild);
         const channelDefs = [
           { key: 'modLogs', name: 'naruto-mod-logs', topic: 'Kicks, Bans, Mutes, Purges & Warns' },
           { key: 'securityLogs', name: 'naruto-security-logs', topic: 'AntiNuke Triggers & Panic Mode Events' },
@@ -160,18 +182,21 @@ module.exports = {
               chan = await guild.channels.create({
                 name: def.name,
                 type: ChannelType.GuildText,
+                parent: category ? category.id : undefined,
                 topic: def.topic,
                 permissionOverwrites: [
                   { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
                 ]
               });
             } catch (e) {}
+          } else if (category && chan.parentId !== category.id) {
+            await chan.setParent(category.id).catch(() => {});
           }
           config[def.key] = chan?.id || null;
         }
 
         loggingConfigs.set(guild.id, config);
-        actionStatus = `All 8 Pro specialized log channels created and linked!`;
+        actionStatus = `All 8 Pro specialized log channels created inside category **${category?.name || 'Audit Logs'}**!`;
       }
 
       else if (interaction.customId === 'log_setup_disable') {
