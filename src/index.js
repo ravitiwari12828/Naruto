@@ -1662,21 +1662,61 @@ client.on('interactionCreate', async (interaction) => {
     const lavalink = getLavalink();
     const player = lavalink?.getPlayer(interaction.guild.id);
 
-    if (values.includes('filter_reset')) {
-      if (player?.filterManager) await player.filterManager.resetFilters().catch(() => {});
-      return interaction.editReply({ content: `🚫 Reset all audio filters to default.` }).catch(() => {});
+    if (!player) {
+      return interaction.editReply({ content: `${emojis.WARNING} No active music player in this server!` }).catch(() => {});
     }
 
-    if (player?.filterManager) {
-      for (const val of values) {
-        if (val === 'filter_bassboost') await player.filterManager.setBassboost(true).catch(() => {});
-        if (val === 'filter_8d') await player.filterManager.set8D(true).catch(() => {});
-        if (val === 'filter_nightcore') await player.filterManager.setNightcore(true).catch(() => {});
-        if (val === 'filter_vaporwave') await player.filterManager.setVaporwave(true).catch(() => {});
+    try {
+      if (values.includes('filter_reset')) {
+        if (player.filterManager && typeof player.filterManager.resetFilters === 'function') {
+          await player.filterManager.resetFilters().catch(() => {});
+        }
+        return interaction.editReply({ content: `🚫 Reset all audio filters to default.` }).catch(() => {});
       }
-    }
 
-    return interaction.editReply({ content: `🎶 Applied Audio Filters: **${filterNames.join(', ')}**!` }).catch(() => {});
+      if (player.filterManager) {
+        for (const val of values) {
+          try {
+            if (val === 'filter_bassboost') {
+              if (typeof player.filterManager.setBassboost === 'function') {
+                await player.filterManager.setBassboost(0.25).catch(() => {});
+              } else if (typeof player.filterManager.setEqualizer === 'function') {
+                await player.filterManager.setEqualizer([
+                  { band: 0, gain: 0.25 },
+                  { band: 1, gain: 0.20 },
+                  { band: 2, gain: 0.15 },
+                  { band: 3, gain: 0.10 }
+                ]).catch(() => {});
+              }
+            } else if (val === 'filter_8d') {
+              if (typeof player.filterManager.set8D === 'function') {
+                await player.filterManager.set8D(true).catch(() => {});
+              } else if (typeof player.filterManager.setRotation === 'function') {
+                await player.filterManager.setRotation({ rotationHz: 0.2 }).catch(() => {});
+              }
+            } else if (val === 'filter_nightcore') {
+              if (typeof player.filterManager.setNightcore === 'function') {
+                await player.filterManager.setNightcore(true).catch(() => {});
+              } else if (typeof player.filterManager.setTimescale === 'function') {
+                await player.filterManager.setTimescale({ speed: 1.25, pitch: 1.25, rate: 1.0 }).catch(() => {});
+              }
+            } else if (val === 'filter_vaporwave') {
+              if (typeof player.filterManager.setVaporwave === 'function') {
+                await player.filterManager.setVaporwave(true).catch(() => {});
+              } else if (typeof player.filterManager.setTimescale === 'function') {
+                await player.filterManager.setTimescale({ speed: 0.85, pitch: 0.80, rate: 1.0 }).catch(() => {});
+              }
+            }
+          } catch (err) {
+            console.error('[Filter Error]', err.message);
+          }
+        }
+      }
+
+      return interaction.editReply({ content: `🎶 Applied Audio Filters: **${filterNames.join(', ')}**!` }).catch(() => {});
+    } catch (e) {
+      return interaction.editReply({ content: `❌ Error applying audio filters: ${e.message}` }).catch(() => {});
+    }
   }
 
   // 2.5 SYNNS MUSIC CONTROLS SELECT MENU
