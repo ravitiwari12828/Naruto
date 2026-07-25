@@ -13,7 +13,8 @@ const emojis = require('../utils/emojis');
 
 // Global Stores
 const ticketConfigs = new Map();
-const priorityTimers = new Map(); // ticketChannelId -> Timeout/Interval ID
+const priorityTimers = new Map(); // ticketChannelId -> Interval ID
+const staffCallCooldowns = new Map(); // ticketChannelId -> Timestamp
 
 function getOrCreateTicketConfig(guildId) {
   if (!ticketConfigs.has(guildId)) {
@@ -46,6 +47,22 @@ function getOrCreateTicketConfig(guildId) {
 async function ensureTicketLogChannels(guild) {
   const config = getOrCreateTicketConfig(guild.id);
 
+  // 1. Auto-create & link @Ticket Staff role if missing
+  let staffRole = guild.roles.cache.find(r => r.name.toLowerCase() === 'ticket staff');
+  if (!staffRole) {
+    try {
+      staffRole = await guild.roles.create({
+        name: 'Ticket Staff',
+        color: 0x00FFBB,
+        reason: 'Auto-created for Naruto Ticket System'
+      });
+    } catch (e) {}
+  }
+  if (staffRole) {
+    config.staffRoles.add(staffRole.id);
+  }
+
+  // 2. Ticket Logs Category & Channels
   let category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && c.name.toLowerCase().includes('ticket logs'));
   if (!category) {
     try {
@@ -90,7 +107,46 @@ async function ensureTicketLogChannels(guild) {
   if (transcriptChan) config.transcriptChanId = transcriptChan.id;
 
   ticketConfigs.set(guild.id, config);
-  return { logChan, transcriptChan, category };
+  return { logChan, transcriptChan, category, staffRole };
+}
+
+function updateTicketStaffReminderTimer(client, channel, priorityText, claimedStaffId) {
+  // Clear any existing timer for this channel
+  if (priorityTimers.has(channel.id)) {
+    clearInterval(priorityTimers.get(channel.id));
+    priorityTimers.delete(channel.id);
+  }
+
+  if (!claimedStaffId || claimedStaffId === 'none' || claimedStaffId === 'Unclaimed') return;
+
+  let intervalMs = 0;
+  if (priorityText === 'Urgent') {
+    intervalMs = 4 * 60 * 60 * 1000; // 4 Hours
+  } else if (priorityText === 'Normal') {
+    intervalMs = 11 * 60 * 60 * 1000; // 11 Hours
+  } else {
+    return; // Low priority -> No reminder needed
+  }
+
+  const timerId = setInterval(async () => {
+    try {
+      const staffUser = await client.users.fetch(claimedStaffId).catch(() => null);
+      if (staffUser) {
+        const embed = createStyledEmbed({
+          title: `🎟️ Claimed Ticket Reminder`,
+          description:
+            `Hello **${staffUser.username}**! You claimed ticket **#${channel.name}** in **${channel.guild.name}**.\n\n` +
+            `• **Priority:** \`${priorityText}\`\n` +
+            `• **Ticket Channel:** <#${channel.id}>\n\n` +
+            `Please check back on this ticket to assist the user!`,
+          clientUser: client.user
+        });
+        await staffUser.send({ embeds: [embed] }).catch(() => {});
+      }
+    } catch (e) {}
+  }, intervalMs);
+
+  priorityTimers.set(channel.id, timerId);
 }
 
 function generateTranscriptBuffer(channel, messages, closedBy) {
@@ -116,29 +172,30 @@ function generateTranscriptBuffer(channel, messages, closedBy) {
   return Buffer.from(logHeader + lines.join('\n'), 'utf-8');
 }
 
-function buildTicketEmbed(ticketNum, categoryName, opener, priorityText, claimedByText) {
+function buildTicketEmbed(ticketNum, categoryName, opener, priorityText = 'Low', claimedByText = 'Unclaimed', anonMode = 'OFF') {
   const priorityColorMap = {
     'Urgent': 0xFF0055,
     'Normal': 0xFEE75C,
     'Low': 0x57F287
   };
 
-  const color = priorityColorMap[priorityText] || 0xFF0055;
+  const color = priorityColorMap[priorityText] || 0x57F287;
 
   return new EmbedBuilder()
     .setColor(color)
-    .setTitle(`${emojis.TICKETS} ${opener.username}'s Ticket — ${categoryName}`)
+    .setTitle(`🎫 ${opener.username}'s Ticket — ${categoryName}`)
     .setDescription(
       `Welcome <@${opener.id}>! Thanks for reaching out to support.\n` +
-      `Our team will assist you shortly — please explain your request in full detail below.`
+      `Our staff team will assist you shortly — please explain your request in full detail below.`
     )
     .addFields(
-      { name: `${emojis.HUMAN} Opened By`, value: `<@${opener.id}> (\`${opener.tag}\`)`, inline: true },
-      { name: `${emojis.ZAP} Priority Level`, value: `${priorityText === 'Urgent' ? emojis.WARNING : priorityText === 'Normal' ? emojis.STAR : emojis.SUCCESS} ${priorityText}`, inline: true },
-      { name: `${emojis.MOD} Claimed By`, value: claimedByText, inline: true }
+      { name: `👤 Opened By`, value: `<@${opener.id}> (\`${opener.tag}\`)`, inline: true },
+      { name: `⚡ Priority Level`, value: `\`${priorityText}\``, inline: true },
+      { name: `👑 Claimed By`, value: claimedByText, inline: true },
+      { name: `🎭 Anonymous Mode`, value: `\`${anonMode}\``, inline: true }
     )
     .setFooter({
-      text: `Ticket ID #${ticketNum} • Naruto Support Desk`,
+      text: `Ticket ID #${ticketNum} • Support Desk`,
       iconURL: opener.displayAvatarURL({ dynamic: true })
     })
     .setTimestamp();
@@ -146,15 +203,16 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText, claimed
 
 function buildTicketActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket_claim_btn').setLabel('Claim').setEmoji(emojis.OBJ_MOD).setStyle(ButtonStyle.Success),
-    new ButtonBuilder().setCustomId('ticket_callstaff_btn').setLabel('Call Staff').setEmoji(emojis.OBJ_PRIORITY).setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('ticket_priority_btn').setLabel('Priority').setEmoji(emojis.OBJ_ZAP).setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('ticket_claim_btn').setEmoji('👑').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_lock_btn').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_callstaff_btn').setEmoji('📞').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_priority_btn').setEmoji('⚡').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_anon_btn').setEmoji('🎭').setStyle(ButtonStyle.Secondary)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket_addmember_btn').setLabel('Add Member').setEmoji(emojis.OBJ_TOOLS).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_lock_btn').setLabel('Lock').setEmoji(emojis.OBJ_SHIELD).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_close_btn').setLabel('Close').setEmoji(emojis.OBJ_REMOVE).setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('ticket_addmember_btn').setEmoji('➕').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_close_btn').setEmoji('❌').setStyle(ButtonStyle.Danger)
   );
 
   return [row1, row2];
@@ -162,17 +220,19 @@ function buildTicketActionRows() {
 
 module.exports = {
   name: 'ticket',
-  description: 'Complete Ticket System with category_add, category_edit, category_remove, category_list, claim, close, reopen, callstaff & transcript',
+  description: 'Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers',
   aliases: [
     'tickets', 't', 'ticketpanel', 'staffrole',
     'panel_deploy', 'ticket_setup', 'add_member', 'remove_member',
     'category_add', 'category_edit', 'category_remove', 'category_list', 'categories',
-    'claim', 'reopen', 'callstaff', 'ticketinfo'
+    'claim', 'reopen', 'callstaff', 'ticketinfo', 'anonymous'
   ],
   ticketConfigs,
   priorityTimers,
+  staffCallCooldowns,
   getOrCreateTicketConfig,
   ensureTicketLogChannels,
+  updateTicketStaffReminderTimer,
   generateTranscriptBuffer,
   buildTicketEmbed,
   buildTicketActionRows,
@@ -186,13 +246,10 @@ module.exports = {
     if (invoked === 'add_member') sub = 'add';
     if (invoked === 'remove_member') sub = 'remove';
     if (invoked === 'staffrole') sub = 'staff';
-    if (invoked === 'category_add') sub = 'category_add';
-    if (invoked === 'category_edit') sub = 'category_edit';
-    if (invoked === 'category_remove') sub = 'category_remove';
-    if (invoked === 'category_list' || invoked === 'categories') sub = 'categories';
     if (invoked === 'claim') sub = 'claim';
     if (invoked === 'reopen') sub = 'reopen';
     if (invoked === 'callstaff') sub = 'callstaff';
+    if (invoked === 'anonymous') sub = 'anonymous';
 
     const guild = message.guild;
     const author = message.author;
@@ -206,29 +263,28 @@ module.exports = {
     // 1. TICKET SETUP (Deploys multi-category dropdown panel & log channels)
     if (['panel', 'setup', 'panel_deploy', 'wizard'].includes(sub)) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`${emojis.WARNING} Only Administrators can run ticket setup.`);
+        return message.reply(`${emojis.WARNING || '⚠️'} Only Administrators can run ticket setup.`);
       }
 
-      const { logChan, transcriptChan } = await ensureTicketLogChannels(guild);
+      const { logChan, transcriptChan, staffRole } = await ensureTicketLogChannels(guild);
 
-      const staffRoleMentions = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(', ') || '`Administrator`';
+      const staffRoleMentions = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(', ') || (staffRole ? `<@&${staffRole.id}>` : '`Administrator`');
 
       const panelEmbed = new EmbedBuilder()
         .setColor(0x00FFBB)
-        .setTitle(`${emojis.TICKETS} Naruto Private Support Desk`)
+        .setTitle(`🎫 ${guild.name} Private Support Desk`)
         .setDescription(
           `Welcome to **${guild.name}** Support Center!\n\n` +
-          `Select a category from the dropdown menu below to open a private ticket with our staff.\n\n` +
-          `**${emojis.STAR} Available Support Categories:**\n` +
+          `Select a category from the dropdown menu below to open a private support ticket.\n\n` +
+          `**Available Support Categories:**\n` +
           config.categories.map(c => `• ${c.emoji || '🎫'} **${c.name}** — ${c.description}`).join('\n') + `\n\n` +
-          `**${emojis.GEAR} Staff Roles Assigned**: ${staffRoleMentions}`
+          `**Support Staff Role**: ${staffRoleMentions}`
         )
-        .setFooter({ text: 'Naruto Ticket System • Dedicated Fast Support' })
-        .setTimestamp();
+        .setFooter({ text: 'Naruto Ticket System • Fast Private Support' });
 
       const selectMenu = new StringSelectMenuBuilder()
         .setCustomId('ticket_category_select')
-        .setPlaceholder('🏷️ Select a ticket category...')
+        .setPlaceholder('🏷️ Select a support category...')
         .addOptions(
           config.categories.map(c => ({
             label: c.name,
@@ -247,9 +303,10 @@ module.exports = {
       return message.reply({
         embeds: [
           createStyledEmbed({
-            title: `${emojis.SUCCESS} Ticket Desk Deployed Successfully`,
+            title: `✅ Ticket Desk Deployed Successfully`,
             description:
               `• **Ticket Panel**: Active in <#${message.channel.id}>\n` +
+              `• **Staff Role Linked**: ${staffRole ? `<@&${staffRole.id}>` : '`Created`'}\n` +
               `• **Ticket Logs**: ${logChan ? `<#${logChan.id}>` : '`Created`'}\n` +
               `• **Ticket Transcripts**: ${transcriptChan ? `<#${transcriptChan.id}>` : '`Created`'}`,
             requestedBy: author,
@@ -259,10 +316,60 @@ module.exports = {
       });
     }
 
-    // 2. STAFF ROLES MANAGEMENT
+    // 2. ANONYMOUS STAFF MODE TOGGLE (.ticket anonymous on/off)
+    if (sub === 'anonymous' || sub === 'anon') {
+      const mode = args[1]?.toLowerCase();
+      const topic = message.channel.topic || '';
+
+      if (!topic.includes('ticket|')) {
+        return message.reply(`⚠️ Command must be executed inside an active ticket channel!`);
+      }
+
+      const isAnonOn = topic.includes('anon:on');
+      let newAnon = isAnonOn ? 'off' : 'on';
+      if (mode === 'on') newAnon = 'on';
+      if (mode === 'off') newAnon = 'off';
+
+      let updatedTopic = topic;
+      if (updatedTopic.includes('anon:')) {
+        updatedTopic = updatedTopic.replace(/anon:(on|off)/, `anon:${newAnon}`);
+      } else {
+        updatedTopic += `|anon:${newAnon}`;
+      }
+
+      await message.channel.setTopic(updatedTopic).catch(() => {});
+
+      return message.reply({
+        content: `🎭 **Anonymous Staff Mode** is now **${newAnon.toUpperCase()}** for this ticket! Staff responses will be sent under Support Team identity.`,
+        flags: 64
+      });
+    }
+
+    // 3. STAFF CALL COOLDOWN (.ticket callstaff / .callstaff)
+    if (sub === 'callstaff') {
+      const lastCall = staffCallCooldowns.get(message.channel.id) || 0;
+      const cooldownMs = 60 * 60 * 1000; // 1 Hour
+      const elapsed = Date.now() - lastCall;
+
+      if (elapsed < cooldownMs) {
+        const remainingMins = Math.ceil((cooldownMs - elapsed) / 60000);
+        return message.reply({
+          content: `⏳ **Staff Call Cooldown**: Staff was called recently. You can call staff again in **${remainingMins} minutes**.`,
+          flags: 64
+        });
+      }
+
+      staffCallCooldowns.set(message.channel.id, Date.now());
+
+      const staffPings = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(' ') || '@here';
+      await message.channel.send({ content: `📞 **Call Staff Alert**: ${staffPings}\n<@${author.id}> has summoned support staff!` }).catch(() => {});
+      return message.reply({ content: `✅ Support staff summoned!`, flags: 64 });
+    }
+
+    // 4. STAFF ROLES MANAGEMENT
     if (sub === 'staff' || sub === 'staffrole') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`${emojis.WARNING} Only Administrators can manage ticket staff roles.`);
+        return message.reply(`⚠️ Only Administrators can manage ticket staff roles.`);
       }
 
       const action = args[1]?.toLowerCase();
@@ -271,17 +378,17 @@ module.exports = {
       if (action === 'add' && role) {
         config.staffRoles.add(role.id);
         ticketConfigs.set(guild.id, config);
-        return message.reply(`${emojis.SUCCESS} Added <@&${role.id}> as Ticket Support Staff.`);
+        return message.reply(`✅ Added <@&${role.id}> as Ticket Support Staff.`);
       } else if (action === 'remove' && role) {
         config.staffRoles.delete(role.id);
         ticketConfigs.set(guild.id, config);
-        return message.reply(`${emojis.SUCCESS} Removed <@&${role.id}> from Ticket Support Staff.`);
+        return message.reply(`✅ Removed <@&${role.id}> from Ticket Support Staff.`);
       } else {
         const staffList = Array.from(config.staffRoles).map(id => `<@&${id}>`).join('\n') || 'None assigned (Administrators only)';
         return message.reply({
           embeds: [
             createStyledEmbed({
-              title: `${emojis.SHIELD} Ticket Staff Roles`,
+              title: `🛡️ Ticket Staff Roles`,
               description: `**Current Support Staff Roles:**\n${staffList}\n\n**Usage:**\n\`.ticket staff add @role\`\n\`.ticket staff remove @role\``,
               requestedBy: author,
               clientUser
@@ -291,179 +398,19 @@ module.exports = {
       }
     }
 
-    // 3. CATEGORY LIST (.ticket category list / .category_list / .categories)
-    if (sub === 'categories' || sub === 'category_list' || (sub === 'category' && (args[1]?.toLowerCase() === 'list' || !args[1]))) {
-      const catList = config.categories.map((c, i) =>
-        `**${i + 1}.** ${c.emoji || '🎫'} **${c.name}** (\`${c.id}\`)\n` +
-        `   • *${c.description || 'No description'}*`
-      ).join('\n\n') || '*No categories configured.*';
-
-      const embed = createStyledEmbed({
-        title: `${emojis.TICKETS} Ticket Support Categories (${config.categories.length})`,
-        subtitle: `Category Configuration Hub — ${guild.name}`,
-        description:
-          `Below are the active support categories available in your ticket panel dropdown:\n\n` +
-          `${catList}\n\n` +
-          `**${emojis.SCROLL} Category Management Suite:**\n` +
-          `\`\`\`\n` +
-          `.ticket category add <Name> [Emoji] [Description]\n` +
-          `.ticket category edit <ID> <New Name> [Emoji] [Desc]\n` +
-          `.ticket category remove <ID/Name>\n` +
-          `.ticket category list\n` +
-          `\`\`\``,
-        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-        requestedBy: author,
-        clientUser
-      });
-
-      return message.reply({ embeds: [embed] });
-    }
-
-    // 4. CATEGORY ADD (.ticket category add <Name> [Emoji] [Description] / .category_add)
-    if (sub === 'category_add' || (sub === 'category' && args[1]?.toLowerCase() === 'add')) {
-      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`${emojis.WARNING} Only Administrators can add ticket categories.`);
-      }
-
-      const params = sub === 'category_add' ? args : args.slice(2);
-      if (params.length === 0) {
-        return message.reply(`${emojis.WARNING} Usage: \`.ticket category add <Name> [Emoji] [Description]\``);
-      }
-
-      if (config.categories.length >= 25) {
-        return message.reply(`${emojis.WARNING} Reached maximum limit of 25 ticket categories.`);
-      }
-
-      const name = params[0];
-      const emoji = params[1] && params[1].length <= 50 ? params[1] : '🎫';
-      const description = params.slice(2).join(' ') || `Open a ${name} support ticket`;
-      const catId = `cat_${name.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
-
-      config.categories.push({ id: catId, name, emoji, description });
-      ticketConfigs.set(guild.id, config);
-
-      const embed = createStyledEmbed({
-        title: `${emojis.SUCCESS} Ticket Category Created`,
-        description:
-          `Successfully added **${name}** to active ticket categories!\n\n` +
-          `• **Category ID:** \`${catId}\`\n` +
-          `• **Display Name:** ${emoji} **${name}**\n` +
-          `• **Description:** *${description}*\n\n` +
-          `*Run \`.ticket setup\` to redeploy your updated panel!*`,
-        requestedBy: author,
-        clientUser
-      });
-
-      return message.reply({ embeds: [embed] });
-    }
-
-    // 5. CATEGORY EDIT (.ticket category edit <id> <newName> [emoji] [desc] / .category_edit)
-    if (sub === 'category_edit' || (sub === 'category' && args[1]?.toLowerCase() === 'edit')) {
-      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`${emojis.WARNING} Only Administrators can edit ticket categories.`);
-      }
-
-      const params = sub === 'category_edit' ? args : args.slice(2);
-      const targetId = params[0]?.toLowerCase();
-      if (!targetId || !params[1]) {
-        return message.reply(`${emojis.WARNING} Usage: \`.ticket category edit <Category ID or Name> <New Name> [New Emoji] [New Desc]\``);
-      }
-
-      const catObj = config.categories.find(c => c.id.toLowerCase() === targetId || c.name.toLowerCase() === targetId);
-      if (!catObj) {
-        return message.reply(`${emojis.WARNING} Category \`${targetId}\` not found. Run \`.ticket category list\` to view all valid IDs.`);
-      }
-
-      catObj.name = params[1];
-      if (params[2]) catObj.emoji = params[2];
-      if (params.slice(3).length > 0) catObj.description = params.slice(3).join(' ');
-
-      ticketConfigs.set(guild.id, config);
-
-      const embed = createStyledEmbed({
-        title: `${emojis.TOOLS} Ticket Category Updated`,
-        description:
-          `Successfully updated category **${catObj.name}**!\n\n` +
-          `• **Category ID:** \`${catObj.id}\`\n` +
-          `• **New Name:** ${catObj.emoji} **${catObj.name}**\n` +
-          `• **New Description:** *${catObj.description}*`,
-        requestedBy: author,
-        clientUser
-      });
-
-      return message.reply({ embeds: [embed] });
-    }
-
-    // 6. CATEGORY REMOVE (.ticket category remove <id/name> / .category_remove)
-    if (sub === 'category_remove' || (sub === 'category' && args[1]?.toLowerCase() === 'remove')) {
-      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`${emojis.WARNING} Only Administrators can remove ticket categories.`);
-      }
-
-      const params = sub === 'category_remove' ? args : args.slice(2);
-      const targetId = params[0]?.toLowerCase();
-      if (!targetId) {
-        return message.reply(`${emojis.WARNING} Usage: \`.ticket category remove <Category ID or Name>\``);
-      }
-
-      const initialCount = config.categories.length;
-      config.categories = config.categories.filter(c => c.id.toLowerCase() !== targetId && c.name.toLowerCase() !== targetId);
-
-      if (config.categories.length === initialCount) {
-        return message.reply(`${emojis.WARNING} Category \`${targetId}\` not found.`);
-      }
-
-      ticketConfigs.set(guild.id, config);
-
-      const embed = createStyledEmbed({
-        title: `${emojis.REMOVE} Ticket Category Removed`,
-        description:
-          `Successfully removed category \`${targetId}\` from ticket panel!\n` +
-          `Remaining active categories: **${config.categories.length}**`,
-        requestedBy: author,
-        clientUser
-      });
-
-      return message.reply({ embeds: [embed] });
-    }
-
-    // 7. ADD MEMBER TO TICKET (.ticket add @user / .add_member @user)
-    if (sub === 'add' || sub === 'add_member') {
-      const member = message.mentions.members.first() || guild.members.cache.get(args[1]);
-      if (!member) return message.reply(`${emojis.WARNING} Usage: \`.ticket add @user\``);
-
-      await message.channel.permissionOverwrites.edit(member.id, {
-        ViewChannel: true,
-        SendMessages: true,
-        ReadMessageHistory: true
-      }).catch(() => {});
-
-      return message.reply(`${emojis.SUCCESS} Added <@${member.id}> to ticket channel ${message.channel}.`);
-    }
-
-    // 8. REMOVE MEMBER FROM TICKET (.ticket remove @user / .remove_member @user)
-    if (sub === 'remove' || sub === 'remove_member') {
-      const member = message.mentions.members.first() || guild.members.cache.get(args[1]);
-      if (!member) return message.reply(`${emojis.WARNING} Usage: \`.ticket remove @user\``);
-
-      await message.channel.permissionOverwrites.delete(member.id).catch(() => {});
-
-      return message.reply(`${emojis.SUCCESS} Removed <@${member.id}> from ticket channel ${message.channel}.`);
-    }
-
-    // 9. CLAIM TICKET (.ticket claim / .claim)
+    // 5. CLAIM TICKET (.ticket claim / .claim)
     if (sub === 'claim') {
       const isStaff = message.member.permissions.has(PermissionsBitField.Flags.Administrator) ||
                       Array.from(config.staffRoles).some(rId => message.member.roles.cache.has(rId));
 
       if (!isStaff) {
-        return message.reply(`${emojis.WARNING} Only support staff members can claim tickets!`);
+        return message.reply(`⚠️ Only support staff members can claim tickets!`);
       }
 
-      return message.reply(`${emojis.SUCCESS} Ticket claimed by <@${author.id}>.`);
+      return message.reply(`✅ Ticket claimed by <@${author.id}>.`);
     }
 
-    // 10. REOPEN TICKET (.ticket reopen / .reopen)
+    // 6. REOPEN TICKET (.ticket reopen / .reopen)
     if (sub === 'reopen') {
       const topic = message.channel.topic || '';
       const match = topic.match(/owner:(\d+)/);
@@ -476,10 +423,10 @@ module.exports = {
         }).catch(() => {});
       }
 
-      return message.reply(`${emojis.SUCCESS} Ticket reopened by <@${author.id}>.`);
+      return message.reply(`✅ Ticket reopened by <@${author.id}>.`);
     }
 
-    // 11. LOCK TICKET (.ticket lock / .lock)
+    // 7. LOCK TICKET (.ticket lock / .lock)
     if (sub === 'lock') {
       const topic = message.channel.topic || '';
       const match = topic.match(/owner:(\d+)/);
@@ -489,63 +436,26 @@ module.exports = {
         await message.channel.permissionOverwrites.edit(ownerId, { SendMessages: false }).catch(() => {});
       }
 
-      return message.reply(`${emojis.LOCK} Ticket locked by <@${author.id}>.`);
+      return message.reply(`🔒 Ticket locked by <@${author.id}>.`);
     }
 
-    // 12. CALL STAFF (.ticket callstaff / .callstaff)
-    if (sub === 'callstaff') {
-      const staffPings = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(' ') || '@here';
-      await message.channel.send({ content: `📞 **Call Staff Alert**: ${staffPings}\n<@${author.id}> has requested immediate support staff attendance in this ticket!` }).catch(() => {});
-      return message.reply(`${emojis.SUCCESS} Support staff summoned!`);
-    }
-
-    // 13. TICKET INFO (.ticket info / .ticketinfo)
-    if (sub === 'info' || sub === 'ticketinfo') {
-      const topic = message.channel.topic || '';
-      const ownerMatch = topic.match(/owner:(\d+)/);
-      const typeMatch = topic.match(/type:([^|]+)/);
-      const priorityMatch = topic.match(/priority:([^|]+)/);
-      const claimMatch = topic.match(/claim:([^|]+)/);
-
-      const embed = createStyledEmbed({
-        title: `${emojis.TICKETS} Ticket Audit Details`,
-        subtitle: `Channel: #${message.channel.name}`,
-        fields: [
-          { name: `${emojis.HUMAN} Ticket Owner`, value: ownerMatch ? `<@${ownerMatch[1]}>` : 'Unknown', inline: true },
-          { name: `${emojis.TICKETS} Category`, value: typeMatch ? typeMatch[1] : 'General Support', inline: true },
-          { name: `${emojis.ZAP} Priority`, value: priorityMatch ? priorityMatch[1] : 'Urgent', inline: true },
-          { name: `${emojis.MOD} Claimed By`, value: claimMatch ? claimMatch[1] : 'Unclaimed', inline: true },
-          { name: `${emojis.STAR} Channel ID`, value: `\`${message.channel.id}\``, inline: true }
-        ],
-        thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-        requestedBy: author,
-        clientUser
-      });
-
-      return message.reply({ embeds: [embed] });
-    }
-
-    // 14. TICKET TRANSCRIPT (.ticket transcript / .transcript)
+    // 8. TICKET TRANSCRIPT (.ticket transcript / .transcript)
     if (sub === 'transcript') {
       const fetchedMsgs = await message.channel.messages.fetch({ limit: 100 }).catch(() => null);
-      if (!fetchedMsgs) return message.reply(`${emojis.WARNING} Could not fetch ticket message history.`);
+      if (!fetchedMsgs) return message.reply(`⚠️ Could not fetch ticket message history.`);
 
       const buffer = generateTranscriptBuffer(message.channel, fetchedMsgs, author);
       const attachment = new AttachmentBuilder(buffer, { name: `transcript-${message.channel.name}.txt` });
 
       return message.reply({
-        content: `${emojis.SCROLL} **Ticket Transcript Exported:**`,
+        content: `📜 **Ticket Transcript Exported:**`,
         files: [attachment]
       });
     }
 
-    // 15. CLOSE TICKET (.ticket close / .close)
+    // 9. CLOSE TICKET (.ticket close / .close)
     if (sub === 'close') {
-      const modmailCmd = message.client.commands.get('modmail');
-      if (modmailCmd) {
-        return modmailCmd.execute(message, args);
-      }
-      return message.reply(`${emojis.LOCK} Closing ticket channel...`).then(() => {
+      return message.reply(`🔒 Closing ticket channel in 3 seconds...`).then(() => {
         setTimeout(() => message.channel.delete().catch(() => {}), 3000);
       });
     }
@@ -554,3 +464,4 @@ module.exports = {
     return renderModuleHelpPanel(message, 'ticket');
   }
 };
+

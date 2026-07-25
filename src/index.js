@@ -119,7 +119,7 @@ client.once('clientReady', async () => {
   console.log(`Prefix: ${PREFIX}`);
   console.log(`==============================================\n`);
 
-  client.user.setActivity('🍥 Naruto | .help', { type: 3 });
+  client.user.setActivity('💬 DM me for Support | .help', { type: 3 });
 });
 
 // Guild Join Listener — Bot Owner Private Whitelist & Lockdown
@@ -929,6 +929,31 @@ client.on('messageCreate', async (message) => {
 
   if (message.author.bot) return;
 
+  // 🎟️ TICKET MESSAGE RECEIPT REACTION & ANONYMOUS STAFF MODE
+  if (message.guild && message.channel.topic && message.channel.topic.includes('ticket|')) {
+    // React to confirm message receipt for both user & staff
+    await message.react('✅').catch(() => {});
+
+    // Anonymous Staff Mode masking
+    if (message.channel.topic.includes('anon:on')) {
+      const isOpener = message.channel.topic.includes(`owner:${message.author.id}`);
+      if (!isOpener) {
+        const content = message.content;
+        const attachments = Array.from(message.attachments.values()).map(a => a.url);
+
+        await message.delete().catch(() => {});
+
+        const anonEmbed = new EmbedBuilder()
+          .setColor(0x00FFBB)
+          .setAuthor({ name: 'Support Agent (Anonymous Mode)', iconURL: client.user.displayAvatarURL() })
+          .setDescription(content || '*[Attachment]*')
+          .setFooter({ text: 'Naruto Support Desk • Staff Identity Protected' });
+
+        return message.channel.send({ embeds: [anonEmbed], files: attachments }).catch(() => {});
+      }
+    }
+  }
+
   // 📬 DM MODMAIL LISTENER
   if (!message.guild) {
     const modmailCmd = client.commands.get('modmail');
@@ -1465,6 +1490,20 @@ client.on('interactionCreate', async (interaction) => {
     const ticketCmd = client.commands.get('ticket');
     const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(interaction.guild.id) : { staffRoles: new Set() };
 
+    if (ticketCmd && ticketCmd.staffCallCooldowns) {
+      const lastCall = ticketCmd.staffCallCooldowns.get(channel.id) || 0;
+      const cooldownMs = 60 * 60 * 1000; // 1 Hour
+      const elapsed = Date.now() - lastCall;
+      if (elapsed < cooldownMs) {
+        const remainingMins = Math.ceil((cooldownMs - elapsed) / 60000);
+        return interaction.reply({
+          content: `⏳ **Staff Call Cooldown**: Staff was called recently. You can call staff again in **${remainingMins} minutes**.`,
+          flags: 64
+        }).catch(() => {});
+      }
+      ticketCmd.staffCallCooldowns.set(channel.id, Date.now());
+    }
+
     const staffPings = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(' ') || '@here';
     await channel.send({ content: `📞 **Call Staff Alert**: ${staffPings}\n<@${user.id}> has requested immediate support staff attendance in this ticket!` }).catch(() => {});
     return interaction.reply({ content: `📞 Support staff summoned!`, flags: 64 }).catch(() => {});
@@ -1494,12 +1533,24 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.reply({ content: `⚠️ This ticket is already claimed by ${claimedField.value}! A ticket can only be claimed by 1 staff member.`, flags: 64 }).catch(() => {});
     }
 
-    embed.spliceFields(2, 1, { name: '🙋‍♂️ Claimed By', value: `<@${user.id}> (\`${user.tag}\`)`, inline: true });
+    embed.spliceFields(2, 1, { name: '👑 Claimed By', value: `<@${user.id}> (\`${user.tag}\`)`, inline: true });
+
+    let topic = channel.topic || '';
+    if (topic.includes('claim:')) {
+      topic = topic.replace(/claim:[^|]+/, `claim:${user.id}`);
+    } else {
+      topic += `|claim:${user.id}`;
+    }
+    await channel.setTopic(topic).catch(() => {});
 
     await message.edit({ embeds: [embed] }).catch(() => {});
     await interaction.reply({ content: `🛡️ Ticket claimed by <@${user.id}>.` }).catch(() => {});
 
     if (ticketCmd) {
+      const priorityMatch = topic.match(/priority:([^|]+)/);
+      const prioText = priorityMatch ? priorityMatch[1] : 'Low';
+      ticketCmd.updateTicketStaffReminderTimer(client, channel, prioText, user.id);
+
       const { logChan } = await ticketCmd.ensureTicketLogChannels(interaction.guild);
       if (logChan) {
         const logEmbed = createStyledEmbed({
@@ -1517,24 +1568,65 @@ client.on('interactionCreate', async (interaction) => {
   if (interaction.customId === 'ticket_priority_btn') {
     const user = interaction.user;
     const message = interaction.message;
+    const channel = interaction.channel;
+    const ticketCmd = client.commands.get('ticket');
 
-    const currentPriorityField = message.embeds[0].fields.find(f => f.name.includes('Priority'))?.value || '🔴 Urgent';
-    let newPriority = 'Urgent';
+    let topic = channel.topic || '';
+    const currentPriorityField = message.embeds[0].fields.find(f => f.name.includes('Priority'))?.value || 'Low';
+    let newPriority = 'Normal';
 
-    if (currentPriorityField.includes('Urgent')) newPriority = 'Normal';
-    else if (currentPriorityField.includes('Normal')) newPriority = 'Low';
-    else if (currentPriorityField.includes('Low')) newPriority = 'Urgent';
+    if (currentPriorityField.includes('Low')) newPriority = 'Normal';
+    else if (currentPriorityField.includes('Normal')) newPriority = 'Urgent';
+    else if (currentPriorityField.includes('Urgent')) newPriority = 'Low';
 
     const embed = EmbedBuilder.from(message.embeds[0]);
     const color = newPriority === 'Urgent' ? 0xFF0055 : newPriority === 'Normal' ? 0xFEE75C : 0x57F287;
     embed.setColor(color);
-    embed.spliceFields(1, 1, { name: '🚦 Priority Level', value: `${newPriority === 'Urgent' ? '🔴' : newPriority === 'Normal' ? '🟡' : '🟢'} ${newPriority}`, inline: true });
+    embed.spliceFields(1, 1, { name: '⚡ Priority Level', value: `\`${newPriority}\``, inline: true });
+
+    if (topic.includes('priority:')) {
+      topic = topic.replace(/priority:[^|]+/, `priority:${newPriority}`);
+    } else {
+      topic += `|priority:${newPriority}`;
+    }
+    await channel.setTopic(topic).catch(() => {});
 
     await message.edit({ embeds: [embed] }).catch(() => {});
-    await interaction.reply({ content: `🚦 Priority set to **${newPriority}** by <@${user.id}>.` }).catch(() => {});
+    await interaction.reply({ content: `⚡ Priority set to **${newPriority}** by <@${user.id}>.` }).catch(() => {});
+
+    if (ticketCmd) {
+      const claimMatch = topic.match(/claim:([^|]+)/);
+      const claimedStaffId = claimMatch ? claimMatch[1] : null;
+      ticketCmd.updateTicketStaffReminderTimer(client, channel, newPriority, claimedStaffId);
+    }
   }
 
-  // 6. LOCK TICKET BUTTON
+  // 6. ANONYMOUS STAFF MODE TOGGLE BUTTON
+  if (interaction.customId === 'ticket_anon_btn') {
+    const channel = interaction.channel;
+    let topic = channel.topic || '';
+    const isAnonOn = topic.includes('anon:on');
+    const newAnon = isAnonOn ? 'off' : 'on';
+
+    if (topic.includes('anon:')) {
+      topic = topic.replace(/anon:(on|off)/, `anon:${newAnon}`);
+    } else {
+      topic += `|anon:${newAnon}`;
+    }
+    await channel.setTopic(topic).catch(() => {});
+
+    const message = interaction.message;
+    const embed = EmbedBuilder.from(message.embeds[0]);
+    embed.spliceFields(3, 1, { name: '🎭 Anonymous Mode', value: `\`${newAnon.toUpperCase()}\``, inline: true });
+    await message.edit({ embeds: [embed] }).catch(() => {});
+
+    return interaction.reply({
+      content: `🎭 **Anonymous Staff Mode** is now **${newAnon.toUpperCase()}** for this ticket! Staff messages will be sent anonymously.`,
+      flags: 64
+    }).catch(() => {});
+  }
+
+  // 7. LOCK TICKET BUTTON
   if (interaction.customId === 'ticket_lock_btn') {
     const user = interaction.user;
     const channel = interaction.channel;
@@ -1548,11 +1640,16 @@ client.on('interactionCreate', async (interaction) => {
     return interaction.reply({ content: `🔒 Ticket locked by <@${user.id}>.` }).catch(() => {});
   }
 
-  // 7. CLOSE TICKET BUTTON
+  // 8. CLOSE TICKET BUTTON
   if (interaction.customId === 'ticket_close_btn') {
     const user = interaction.user;
     const channel = interaction.channel;
     const ticketCmd = client.commands.get('ticket');
+
+    if (ticketCmd && ticketCmd.priorityTimers.has(channel.id)) {
+      clearInterval(ticketCmd.priorityTimers.get(channel.id));
+      ticketCmd.priorityTimers.delete(channel.id);
+    }
 
     db.recordAnalyticsEvent(interaction.guild.id, user.id, 'ticket_closed', 1);
 
