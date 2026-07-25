@@ -59,7 +59,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
         return `${customEmoji} » **${cat.label}**`;
       }).join('\n') +
       `\n\n**Links**\n` +
-      `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands) | [Support Server](https://discord.gg/) | [Vote](https://top.gg/bot/${message.client.user.id})`
+      `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands) | [Support Server](https://discord.gg/ZPKcPreUMT) | [Vote](https://top.gg/bot/${message.client.user.id})`
     )
     .setFooter({
       text: `Developed with ❤️ by Synn • Select a module below`,
