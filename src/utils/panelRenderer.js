@@ -17,7 +17,7 @@ const CATEGORIES = [
     unicodeFallback: '📊',
     heading: `${emojis.ANALYTICS_ZAP || '📊'} Analytics Commands`,
     commands: [
-      'analytics', 'userstats', 'serverstats',
+      'analytics', 'userstats',
       'topmessages', 'topvoice', 'topinvites',
       'joinsleaves', 'topcommands', 'ticketstats'
     ]
