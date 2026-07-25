@@ -10,24 +10,6 @@ const emojis = require('./emojis');
 // Shared Categories definition matching help.js exactly
 const CATEGORIES = [
   {
-    label: 'Bot Owner Suite',
-    value: 'owner',
-    description: 'Executive Control: No-Prefix, Premium, BotLock, ExtraOwner & PanicMode',
-    customEmoji: emojis.OBJ_OWNER,
-    unicodeFallback: '👑',
-    heading: `${emojis.OWNER_CROWN || '👑'} Bot Owner Executive Commands`,
-    commands: [
-      'owner', 'ownermenu',
-      'noprefix add', 'noprefix remove', 'noprefix list',
-      'premium activate', 'premium revoke', 'premium adduser',
-      'premium revokeuser', 'premium status', 'premium redeem',
-      'botlock enable', 'botlock disable', 'botlock add', 'botlock list',
-      'extraowner add', 'extraowner remove',
-      'panicmode enable', 'panicmode disable', 'panicmode set',
-      'securesetup', 'botstats', 'stat'
-    ]
-  },
-  {
     label: 'Analytics & Tracking',
     value: 'analytics',
     description: 'Track chat, voice timing, invites, joins/leaves, commands & tickets',
@@ -107,9 +89,7 @@ const CATEGORIES = [
     heading: `${emojis.ANTINUKE || '🛡️'} AntiNuke & Security Commands`,
     commands: [
       'antinuke', 'antinuke enable', 'antinuke disable',
-      'panicmode enable', 'panicmode disable', 'panicmode set',
       'whitelist add', 'whitelist remove',
-      'extraowner add', 'extraowner remove',
       'bypassrole add', 'bypassrole remove',
       'quarantine', 'quarantine enable', 'quarantine disable',
       'quarantine set days <1-30>',
@@ -341,20 +321,17 @@ const CATEGORIES = [
     ]
   },
   {
-    label: 'Server Backup & Nuke',
+    label: 'Server Backup',
     value: 'backup',
-    description: 'Backup/restore server data & owner-only nuke commands',
+    description: 'Backup & restore server roles, channels, and settings',
     customEmoji: emojis.OBJ_TOOLS || '💾',
     unicodeFallback: '💾',
-    heading: `💾 Server Backup & Nuke Commands`,
+    heading: `💾 Server Backup Commands`,
     commands: [
       'backup list', 'backup save',
       'backup restore <backupId>',
       'backup delete <backupId>',
-      'serverbackup', 'bk save', 'bk list',
-      'nukeallroles', 'nukechannels',
-      'nukeall', 'nukeserver',
-      'deleteroles', 'deletechannels'
+      'serverbackup', 'bk save', 'bk list'
     ]
   }
 ];

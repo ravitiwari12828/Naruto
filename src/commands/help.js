@@ -9,7 +9,6 @@ const {
 } = require('../utils/panelRenderer');
 
 const EMOJI_MAP = {
-  owner: emojis.OWNER_CROWN,
   analytics: emojis.ANALYTICS_ZAP,
   modmail: emojis.MODMAIL_ENVELOPE,
   noprefix: emojis.PREMIUM,

@@ -73,6 +73,12 @@ module.exports = {
         `.nukeroles\n` +
         `.nukechannels\n` +
         `.nukeserver\n` +
+        `\`\`\`\n\n` +
+        `**${emojis.STATS_NEW || '📈'} Bot Internal Stats & Setup**\n` +
+        `\`\`\`\n` +
+        `.securesetup\n` +
+        `.botstats\n` +
+        `.stat\n` +
         `\`\`\``
       )
       .setFooter({
