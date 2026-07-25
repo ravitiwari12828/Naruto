@@ -11,12 +11,20 @@ function isOwner(authorId, guildOwnerId) {
 module.exports = {
   name: 'backup',
   description: 'Full Server Backup & Restore Suite (Roles, Channels, Categories, Settings)',
-  aliases: ['backup', 'serverbackup', 'backupsave', 'backuprestore', 'bk'],
+  aliases: ['backup', 'serverbackup', 'bk'],
 
   async execute(message, args) {
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
+    let subCmd = args[0] ? args[0].toLowerCase() : 'help';
+
+    if (invoked === 'backupsave') subCmd = 'save';
+    if (invoked === 'backuplist') subCmd = 'list';
+    if (invoked === 'backuprestore') subCmd = 'restore';
+    if (invoked === 'backupdelete') subCmd = 'delete';
+
     const guild = message.guild;
     const author = message.author;
-    const subCmd = args[0] ? args[0].toLowerCase() : 'list';
 
     let clientUser = message.client.user;
     try {
@@ -305,10 +313,10 @@ module.exports = {
       title: `📦 Server Backup & Recovery Suite`,
       subtitle: `Full Server Snapshot & Disaster Recovery`,
       fields: [
-        { name: '📦 `.backup create`', value: 'Generates a full snapshot of all channels, categories, roles & settings.', inline: false },
-        { name: '📋 `.backup list`', value: 'Displays all saved backups for this server.', inline: false },
-        { name: '🔄 `.backup restore <id>`', value: 'Restores a server snapshot (Server Owner only).', inline: false },
-        { name: '🗑️ `.backup delete <id>`', value: 'Deletes a saved backup snapshot.', inline: false }
+        { name: '📦 `.backup save` / `.bk save`', value: 'Generates a full snapshot of all channels, categories, roles & settings.', inline: false },
+        { name: '📋 `.backup list` / `.bk list`', value: 'Displays all saved backups for this server.', inline: false },
+        { name: '🔄 `.backup restore <backupId>`', value: 'Restores a server snapshot (Server Owner only).', inline: false },
+        { name: '🗑️ `.backup delete <backupId>`', value: 'Deletes a saved backup snapshot.', inline: false }
       ],
       requestedBy: author,
       clientUser
