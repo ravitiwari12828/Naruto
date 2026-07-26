@@ -129,20 +129,18 @@ module.exports = {
       }
     }
 
-    // Default Status Overview Card
-    const boxMain = [
-      '╭──────────────────────────╮',
-      '│   QUARANTINE GRID HUB    │',
-      '├──────────────────────────┤',
-      '│ Status     : ' + (config.enabled ? 'ACTIVE  [OK]' : 'DISABLED[X]'),
-      '│ Window     : ' + (String(config.days || 15) + ' Days').padEnd(12, ' '),
-      '│ Enforced   : Admin / Ping│',
-      '╰──────────────────────────╯'
-    ];
+    // Default Status Overview Card using Device-Proof Box Builder
+    const { createDynamicBox } = require('../utils/boxBuilder');
+
+    const boxMain = createDynamicBox('QUARANTINE GRID HUB', [
+      { key: 'Status', value: config.enabled ? 'ACTIVE [OK]' : 'DISABLED[X]' },
+      { key: 'Window', value: `${config.days || 15} Days` },
+      { key: 'Enforced', value: 'Admin / Ping' }
+    ]);
 
     const description =
       `Welcome **${author.username}**! Below is your **New Joiner Security Probation Grid**.\n\n` +
-      '```\n' + boxMain.join('\n') + '\n```';
+      '```\n' + boxMain + '\n```';
 
     const embed = createStyledEmbed({
       title: `☣️ 15-Day New Joiner Security Probation Grid`,
