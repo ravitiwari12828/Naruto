@@ -164,8 +164,15 @@ function resolveEmojiForReaction(client, guild, rawEmoji) {
   const customMatch = str.match(/<a?:([a-zA-Z0-9_]+):(\d+)>/);
   if (customMatch) {
     const [, eName, eId] = customMatch;
+    // Check if exact ID is accessible to bot in cache
     const cached = client?.emojis?.cache?.get(eId) || guild?.emojis?.cache?.get(eId);
     if (cached) return cached;
+
+    // Fallback: If external emoji ID is restricted, search bot cache by name (e.g. devil_dance)
+    const nameMatch = guild?.emojis?.cache?.find(e => e.name.toLowerCase() === eName.toLowerCase()) ||
+                      client?.emojis?.cache?.find(e => e.name.toLowerCase() === eName.toLowerCase());
+    if (nameMatch) return nameMatch;
+
     return `${eName}:${eId}`;
   }
 
@@ -175,7 +182,6 @@ function resolveEmojiForReaction(client, guild, rawEmoji) {
     const cached = guild?.emojis?.cache?.find(e => e.name.toLowerCase() === eName) ||
                    client?.emojis?.cache?.find(e => e.name.toLowerCase() === eName);
     if (cached) return cached;
-    return null;
   }
 
   // 3. Raw emoji ID
