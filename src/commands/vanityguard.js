@@ -58,7 +58,7 @@ module.exports = {
       vanityConfigs.set(guild.id, config);
 
       const embed = createStyledEmbed({
-        title: `${emojis.SHIELD || '${emojis.SHIELD}'} VanityGuard Enabled!`,
+        title: `${emojis.SHIELD || emojis.SHIELD} VanityGuard Enabled!`,
         description: `**Vanity URL Anti-Theft Guard is now ACTIVE!**\n\n` +
                      `• **Protected Vanity:** \`${config.protectedVanity ? 'discord.gg/' + config.protectedVanity : 'Not Set (Run .vanityguard set <code\>)'}\`\n` +
                      `• **Recovery Latency:** \`< 50ms\` (Sub-millisecond Reversion)\n` +

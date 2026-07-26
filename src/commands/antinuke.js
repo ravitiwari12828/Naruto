@@ -294,7 +294,7 @@ function renderAntinukeDashboard(config, author, clientUser) {
     `${extraOwnersList}`;
 
   return createStyledEmbed({
-    title: `${emojis.SHIELD || '${emojis.SHIELD}'} AntiNuke & Security Control Suite`,
+    title: `${emojis.SHIELD || emojis.SHIELD} AntiNuke & Security Control Suite`,
     subtitle: `Shinobi-Grade Server Protection & Executive Guard`,
     description,
     requestedBy: author,
@@ -312,7 +312,7 @@ function renderPanicComponents(config) {
     new ButtonBuilder()
       .setCustomId('toggle_shield')
       .setLabel(config.enabled ? 'Shield: ON' : 'Shield: OFF')
-      .setEmoji(config.enabled ? '${emojis.SHIELD}' : '${emojis.ERROR}')
+      .setEmoji(config.enabled ? emojis.SHIELD : emojis.ERROR)
       .setStyle(config.enabled ? ButtonStyle.Success : ButtonStyle.Danger),
     new ButtonBuilder()
       .setCustomId('toggle_panic')
@@ -338,7 +338,7 @@ function renderPanicComponents(config) {
 
   // Row 2: Filter Perms Group 1
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('toggle_ban').setEmoji('${emojis.MOD}').setStyle(f.antiBan ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('toggle_ban').setEmoji(emojis.OBJ_MOD || emojis.MOD || '🛡️').setStyle(f.antiBan ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('toggle_kick').setEmoji('👢').setStyle(f.antiKick ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('toggle_bot').setEmoji('🤖').setStyle(f.antiBotAdd ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('toggle_channel').setEmoji('📁').setStyle(f.antiChannelCreate ? ButtonStyle.Success : ButtonStyle.Secondary),
@@ -396,7 +396,7 @@ module.exports = {
     const isExtraOwner = config.extraOwners.has(author.id) || ['1420687548807905324', '1529362747047805029', '1514546738055348237'].includes(author.id);
 
     if (!isServerOwner && !isExtraOwner) {
-      return message.reply(`${emojis.WARNING || '${emojis.WARNING}'} **Access Denied**: Only the **Server Owner** and **Extra Owners** can configure AntiNuke security, Whitelists, Extra Owners, JoinGate, or Auto Quarantine!`);
+      return message.reply(`${emojis.WARNING || emojis.WARNING} **Access Denied**: Only the **Server Owner** and **Extra Owners** can configure AntiNuke security, Whitelists, Extra Owners, JoinGate, or Auto Quarantine!`);
     }
 
     // ─────────────────────────────────────────

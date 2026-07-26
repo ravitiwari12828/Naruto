@@ -179,12 +179,12 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId(`confirm_restore_${backupId}`)
           .setLabel('Confirm Restore')
-          .setEmoji('${emojis.SUCCESS}')
+          .setEmoji(emojis.OBJ_SUCCESS || emojis.SUCCESS || '🛡️')
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
           .setCustomId(`cancel_restore_${backupId}`)
           .setLabel('Cancel')
-          .setEmoji('${emojis.ERROR}')
+          .setEmoji(emojis.OBJ_ERROR || emojis.ERROR || '🛡️')
           .setStyle(ButtonStyle.Secondary)
       );
 

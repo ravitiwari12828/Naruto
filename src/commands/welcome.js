@@ -292,7 +292,7 @@ module.exports = {
     if (sub === 'reset') {
       welcomeConfigs.delete(guild.id);
       const embed = createStyledEmbed({
-        title: `${emojis.SUCCESS || '${emojis.SUCCESS}'} Welcome System Reset`,
+        title: `${emojis.SUCCESS || emojis.SUCCESS} Welcome System Reset`,
         description: `Welcome configuration for **${guild.name}** has been restored to factory defaults.`,
         requestedBy: author,
         clientUser

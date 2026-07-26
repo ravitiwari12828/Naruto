@@ -230,7 +230,7 @@ function buildTicketActionRows() {
 
   const row2 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('ticket_addmember_btn').setEmoji(emojis.OBJ_TOOLS || '➕').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_close_btn').setEmoji(emojis.OBJ_REMOVE || '${emojis.ERROR}').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('ticket_close_btn').setEmoji(emojis.OBJ_REMOVE || emojis.ERROR).setStyle(ButtonStyle.Danger)
   );
 
   return [row1, row2];
@@ -281,7 +281,7 @@ module.exports = {
     // 1. TICKET SETUP (Deploys multi-category dropdown panel & log channels)
     if (['panel', 'setup', 'panel_deploy', 'wizard'].includes(sub)) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`${emojis.WARNING || '${emojis.WARNING}'} Only Administrators can run ticket setup.`);
+        return message.reply(`${emojis.WARNING || emojis.WARNING} Only Administrators can run ticket setup.`);
       }
 
       const { logChan, transcriptChan, staffRole } = await ensureTicketLogChannels(guild);

@@ -32,7 +32,7 @@ module.exports = {
     // .sticky set <content>
     if (sub === 'set' || sub === 'add' || sub === 'create') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-        return message.reply(`${emojis.DISABLED || '${emojis.ERROR}'} You need **Manage Messages** permission to set sticky notes.`);
+        return message.reply(`${emojis.DISABLED || emojis.ERROR} You need **Manage Messages** permission to set sticky notes.`);
       }
 
       const content = args[0]?.toLowerCase() === 'set' || args[0]?.toLowerCase() === 'add' ? args.slice(1).join(' ') : args.join(' ');
@@ -68,7 +68,7 @@ module.exports = {
     // .sticky remove / delete / off / .unsticky
     if (['remove', 'delete', 'clear', 'off', 'disable', 'reset'].includes(sub)) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-        return message.reply(`${emojis.DISABLED || '${emojis.ERROR}'} You need **Manage Messages** permission to remove sticky notes.`);
+        return message.reply(`${emojis.DISABLED || emojis.ERROR} You need **Manage Messages** permission to remove sticky notes.`);
       }
 
       const existing = stickyNotes.get(channelId);

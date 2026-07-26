@@ -154,7 +154,7 @@ function buildServerInfoRow1(activeTab = 'overview') {
     new ButtonBuilder()
       .setCustomId('sinfo_features')
       .setLabel('Features')
-      .setEmoji('${emojis.SHIELD}')
+      .setEmoji(emojis.OBJ_SHIELD || emojis.SHIELD || '🛡️')
       .setStyle(activeTab === 'features' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_roles')

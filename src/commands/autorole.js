@@ -46,7 +46,7 @@ module.exports = {
       ];
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR || '${emojis.GEAR}'} Server Automation Control Center`,
+        title: `${emojis.GEAR || emojis.GEAR} Server Automation Control Center`,
         subtitle: `Overview for ${message.guild.name}`,
         description:
           `Welcome **${message.author.username}**! Active automation status:\n\n` +
@@ -155,7 +155,7 @@ module.exports = {
       ];
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR || '${emojis.GEAR}'} Automations Commands`,
+        title: `${emojis.GEAR || emojis.GEAR} Automations Commands`,
         subtitle: `${message.guild.name} Automation Control`,
         description:
           `Welcome **${message.author.username}**! Below is the executive suite for **Automations**.\n` +
@@ -205,7 +205,7 @@ module.exports = {
       boxLines.push('╰──────────────────────────╯');
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR || '${emojis.GEAR}'} AutoRole Configuration`,
+        title: `${emojis.GEAR || emojis.GEAR} AutoRole Configuration`,
         subtitle: `${message.guild.name} Auto-Assign Settings`,
         description:
           `Current AutoRole settings for **${message.guild.name}**:\n\n` +

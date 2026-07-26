@@ -1080,7 +1080,7 @@ client.on('messageCreate', async (message) => {
   // 🎟️ TICKET MESSAGE RECEIPT REACTION & ANONYMOUS STAFF MODE
   if (message.guild && message.channel.topic && message.channel.topic.includes('ticket|')) {
     // React to confirm message receipt for both user & staff
-    await message.react('${emojis.SUCCESS}').catch(() => {});
+    await message.react(emojis.SUCCESS).catch(() => {});
 
     // Anonymous Staff Mode masking
     if (message.channel.topic.includes('anon:on')) {

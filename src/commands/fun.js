@@ -10,7 +10,7 @@ const GAUGE_TITLES = {
   wasted: { title: '💀 Battle Wasted Level', emoji: '💀' },
   powerlevel: { title: '⚡ Power Level Scan', emoji: '⚡' },
   coolrate: { title: '❄️ Coolness Rate', emoji: '❄️' },
-  bonk: { title: '${emojis.MOD} Horny Bonk Level', emoji: '${emojis.MOD}' }
+  bonk: { title: '${emojis.MOD} Horny Bonk Level', emoji: emojis.OBJ_MOD || emojis.MOD || '🛡️' }
 };
 
 function renderGaugeBox(cmdName, score = null) {

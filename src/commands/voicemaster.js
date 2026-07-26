@@ -54,7 +54,7 @@ function buildVoiceMasterActionRows() {
     new ButtonBuilder().setCustomId('vm_status').setEmoji(emojis.OBJ_ZAP || '⚡').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_limit').setEmoji(emojis.OBJ_HUMAN || '👥').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_logs').setEmoji(emojis.OBJ_SCROLL || '📜').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_ban').setEmoji(emojis.OBJ_MOD || '${emojis.MOD}').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_ban').setEmoji(emojis.OBJ_MOD || emojis.MOD).setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_unban').setEmoji(emojis.OBJ_UNLOCK || '🔓').setStyle(ButtonStyle.Secondary)
   );
 

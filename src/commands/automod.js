@@ -86,7 +86,7 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
         label: 'AutoMod Filters Suite',
         value: 'tab_filters',
         description: 'AntiSpam, Invite Links, Malicious Links & NSFW Links',
-        emoji: '${emojis.SHIELD}',
+        emoji: emojis.OBJ_SHIELD || emojis.SHIELD || '🛡️',
         default: activeTab === 'filters'
       },
       {
@@ -100,7 +100,7 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
         label: 'Miscellaneous Settings',
         value: 'tab_misc',
         description: 'Log channels, prefix, timeout duration, DM settings',
-        emoji: '${emojis.GEAR}',
+        emoji: emojis.OBJ_GEAR || emojis.GEAR || '🛡️',
         default: activeTab === 'misc'
       },
       {
@@ -118,7 +118,7 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
   const buttonRow1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('am_btn_spam').setEmoji('💬').setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('am_btn_invites').setEmoji('📢').setStyle(f.inviteLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji('${emojis.SHIELD}').setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji(emojis.OBJ_SHIELD || emojis.SHIELD || '🛡️').setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('am_btn_nsfw').setEmoji('🔞').setStyle(f.nsfwLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('am_btn_words').setEmoji('🔤').setStyle(f.profanity ? ButtonStyle.Success : ButtonStyle.Secondary)
   );
@@ -166,7 +166,7 @@ module.exports = {
 
     // Permission Check
     if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-      return message.reply(`${emojis.WARNING || '${emojis.WARNING}'} You need **Manage Server** permission to configure AutoMod & Miscellaneous settings.`);
+      return message.reply(`${emojis.WARNING || emojis.WARNING} You need **Manage Server** permission to configure AutoMod & Miscellaneous settings.`);
     }
 
     // ─────────────────────────────────────────
