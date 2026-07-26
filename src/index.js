@@ -1464,7 +1464,8 @@ client.on('messageCreate', async (message) => {
     usedPrefix = mentionNicknamePrefix;
   } else if (isNoPrefixUser) {
     const firstWord = message.content.trim().split(/ +/)[0].toLowerCase();
-    if (client.commands.has(firstWord)) {
+    const foundCmd = client.commands.get(firstWord) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(firstWord));
+    if (foundCmd) {
       usedPrefix = '';
     }
   }
@@ -1479,7 +1480,7 @@ client.on('messageCreate', async (message) => {
   const args = message.content.slice(usedPrefix.length).trim().split(/ +/);
   const commandName = args.shift().toLowerCase();
 
-  const command = client.commands.get(commandName);
+  const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
   if (!command) return;
 
   // PROBATION SECURITY GRID INTERCEPTION (Applies to ALL new joiners including Admins < 15 Days)

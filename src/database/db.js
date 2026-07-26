@@ -185,6 +185,18 @@ class ResilientDatabase {
         });
       }
     });
+
+    this.sqliteDb.all(`SELECT * FROM autoroles`, [], (err, rows) => {
+      if (!err && rows) {
+        rows.forEach(r => {
+          this.data.autoroles[r.guildId] = {
+            humans: JSON.parse(r.humans || '[]'),
+            bots: JSON.parse(r.bots || '[]')
+          };
+        });
+      }
+    });
+
     this.sqliteDb.all(`SELECT * FROM autoreacts`, [], (err, rows) => {
       if (!err && rows) {
         rows.forEach(r => {
@@ -532,6 +544,44 @@ class ResilientDatabase {
           JSON.stringify(config.whitelistedBots),
           JSON.stringify(config.ignoredChannels)
         ]
+      );
+    }
+    this.saveJSON();
+    return config;
+  }
+
+  // --- AUTOROLES PERSISTENCE ---
+  getAutoroles(guildId) {
+    if (!this.data.autoroles) this.data.autoroles = {};
+    if (!this.data.autoroles[guildId]) {
+      this.data.autoroles[guildId] = {
+        humans: [],
+        bots: []
+      };
+    }
+    return this.data.autoroles[guildId];
+  }
+
+  setAutorole(guildId, target, roleId, action = 'add') {
+    const config = this.getAutoroles(guildId);
+    if (!config[target]) config[target] = [];
+
+    if (action === 'reset') {
+      config[target] = [];
+    } else if (action === 'add' && roleId) {
+      if (!config[target].includes(roleId)) {
+        config[target].push(roleId);
+      }
+    } else if (action === 'remove' && roleId) {
+      config[target] = config[target].filter(id => id !== roleId);
+    }
+
+    this.data.autoroles[guildId] = config;
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `INSERT OR REPLACE INTO autoroles (guildId, humans, bots) VALUES (?, ?, ?)`,
+        [guildId, JSON.stringify(config.humans), JSON.stringify(config.bots)]
       );
     }
     this.saveJSON();

@@ -9,7 +9,9 @@ module.exports = {
   aliases: ['massrole', 'automation', 'autoroles'],
 
   async execute(message, args) {
-    const invokedName = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const invokedName = message.content.startsWith('.')
+      ? message.content.slice(1).split(/ +/)[0].toLowerCase()
+      : message.content.trim().split(/ +/)[0].toLowerCase();
     let sub = args[0] ? args[0].toLowerCase() : null;
 
     let clientUser = message.client.user;
