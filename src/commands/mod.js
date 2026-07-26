@@ -58,8 +58,14 @@ module.exports = {
     'unban', 'unbanall',
     'role', 'rolemenu', 'list',
     'warn', 'unwarn', 'rmwarn', 'warnremove', 'warnings', 'clearwarns',
-    'case', 'cases', 'modlogs', 'caseinfo'
+    'case', 'cases', 'modlogs', 'caseinfo',
+    'temprole', 'trole', 'addrole', 'giverole'
   ],
+
+  // In-memory store for active temp roles (survives within process lifetime)
+  // Format: Map<`${guildId}:${userId}:${roleId}`, { timer, expiresAt }>
+  _tempRoles: new Map(),
+
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
@@ -393,7 +399,7 @@ module.exports = {
     }
 
     // 11. 🎭 ROLE (add/remove)
-    if (invoked === 'role') {
+    if (invoked === 'role' || invoked === 'addrole' || invoked === 'giverole') {
       if (!author.permissions.has(PermissionsBitField.Flags.ManageRoles)) return missingPerms(message, 'Manage Roles');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) return botMissingPerms(message, 'Manage Roles');
 
@@ -415,11 +421,121 @@ module.exports = {
         await target.roles.add(roleMention);
         const embed = createStyledEmbed({
           title: `🎭 Role Added`,
-          description: `Gave **${roleMention.name}** to **${target.user.tag}**.`,
+          description: `✅ Added **${roleMention.name}** to ${target}`,
           requestedBy: message.author, clientUser
         });
         return message.channel.send({ embeds: [embed] });
       }
+    }
+
+    // 11b. ⏱️ TEMPROLE (add role for a duration, auto-remove after)
+    // Usage: .temprole @user 7d @role
+    //        .temprole @user 30m @role
+    //        .temprole @user 2h @role
+    if (['temprole', 'trole'].includes(invoked)) {
+      if (!author.permissions.has(PermissionsBitField.Flags.ManageRoles)) return missingPerms(message, 'Manage Roles');
+      if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) return botMissingPerms(message, 'Manage Roles');
+
+      const target = message.mentions.members?.first();
+      const roleMention = message.mentions.roles?.first();
+
+      if (!target || !roleMention) {
+        return message.reply(
+          `${emojis.WARNING} Usage: \`.temprole @user <duration> @role\`\n` +
+          `Examples: \`.temprole @user 7d @Management\`, \`.temprole @user 2h @VIP\`, \`.temprole @user 30m @Muted\``
+        );
+      }
+
+      // Parse duration from args (find first arg matching duration pattern)
+      const durationMap = {
+        s: 1000,
+        m: 60 * 1000,
+        h: 60 * 60 * 1000,
+        d: 24 * 60 * 60 * 1000,
+        w: 7 * 24 * 60 * 60 * 1000
+      };
+
+      let durationMs = null;
+      let durationStr = null;
+
+      for (const arg of args) {
+        const match = arg.match(/^(\d+)([smhdw])$/i);
+        if (match) {
+          const amount = parseInt(match[1]);
+          const unit   = match[2].toLowerCase();
+          durationMs  = amount * durationMap[unit];
+          // Pretty format
+          const unitNames = { s: 'Second', m: 'Minute', h: 'Hour', d: 'Day', w: 'Week' };
+          durationStr = `${amount} ${unitNames[unit]}${amount !== 1 ? 's' : ''}`;
+          break;
+        }
+      }
+
+      if (!durationMs) {
+        return message.reply(
+          `${emojis.WARNING} Please provide a valid duration: \`30s\`, \`10m\`, \`2h\`, \`7d\`, \`1w\`\n` +
+          `Example: \`.temprole @user 7d @Management\``
+        );
+      }
+
+      const MAX_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days max
+      if (durationMs > MAX_DURATION) {
+        return message.reply(`${emojis.WARNING} Maximum temp role duration is **30 days**.`);
+      }
+
+      // Add the role
+      await target.roles.add(roleMention, `TempRole by ${message.author.tag} for ${durationStr}`);
+
+      const expiresAt = new Date(Date.now() + durationMs);
+      const expiresTimestamp = Math.floor(expiresAt.getTime() / 1000);
+
+      // Store in _tempRoles map and schedule auto-removal
+      const key = `${guild.id}:${target.id}:${roleMention.id}`;
+      const existingTimer = module.exports._tempRoles.get(key);
+      if (existingTimer) clearTimeout(existingTimer.timer);
+
+      const timer = setTimeout(async () => {
+        try {
+          const guildObj = message.client.guilds.cache.get(guild.id);
+          if (!guildObj) return;
+          const member = await guildObj.members.fetch(target.id).catch(() => null);
+          if (member && member.roles.cache.has(roleMention.id)) {
+            await member.roles.remove(roleMention.id, 'TempRole expired — auto-removed by Naruto Bot');
+          }
+          module.exports._tempRoles.delete(key);
+
+          // Try to notify in the same channel
+          message.channel.send({
+            embeds: [
+              createStyledEmbed({
+                title: `⏱️ TempRole Expired`,
+                description:
+                  `⏰ **Temp Role Auto-Removed!**\n\n` +
+                  `👤 **Member:** ${target}\n` +
+                  `🎭 **Role:** **${roleMention.name}**\n` +
+                  `📋 **Reason:** Duration expired after **${durationStr}**`,
+                requestedBy: message.author,
+                clientUser
+              })
+            ]
+          }).catch(() => {});
+        } catch (e) {}
+      }, durationMs);
+
+      module.exports._tempRoles.set(key, { timer, expiresAt, durationStr, roleId: roleMention.id, userId: target.id });
+
+      // Confirmation embed with Duration field
+      const embed = createStyledEmbed({
+        title: `⏱️ Temp Role Added`,
+        description:
+          `✅ Added **${roleMention.name}** to ${target}\n\n` +
+          `**Duration:** ${durationStr}\n` +
+          `**Expires:** <t:${expiresTimestamp}:R> (<t:${expiresTimestamp}:f>)\n` +
+          `**Auto-Remove:** ✅ Bot will automatically remove this role when it expires.`,
+        requestedBy: message.author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
     }
 
     // 12. 📋 ROLEMENU (list all roles)
