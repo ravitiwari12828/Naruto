@@ -2,12 +2,7 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const db = require('../database/db');
 const emojis = require('../utils/emojis');
 const { PermissionsBitField } = require('discord.js');
-
-function formatBoxLine(key, value) {
-  const k = (key + ' : ').padEnd(11, ' ');
-  const v = String(value).slice(0, 13).padEnd(13, ' ');
-  return '│ ' + k + v + ' │';
-}
+const { createDynamicBox } = require('../utils/boxBuilder');
 
 module.exports = {
   name: 'autorole',
@@ -34,23 +29,19 @@ module.exports = {
       const autoresponderCmd = message.client.commands.get('autoresponder');
       const arTriggers = autoresponderCmd?.autorespondersStore?.get(message.guild.id)?.size || 0;
 
-      const boxLines = [
-        '╭──────────────────────────╮',
-        '│   AUTOMATION OVERVIEW    │',
-        '├──────────────────────────┤',
-        formatBoxLine('AutoRole H', humanCount + ' role(s)'),
-        formatBoxLine('AutoRole B', botCount + ' role(s)'),
-        formatBoxLine('AutoReply', arTriggers + ' trgs'),
-        formatBoxLine('AutoMod', 'Active'),
-        '╰──────────────────────────╯'
-      ];
+      const box = createDynamicBox('AUTOMATION OVERVIEW', [
+        { key: 'AutoRole H', value: humanCount + ' role(s)' },
+        { key: 'AutoRole B', value: botCount + ' role(s)' },
+        { key: 'AutoReply', value: arTriggers + ' trgs' },
+        { key: 'AutoMod', value: 'Active' }
+      ]);
 
       const embed = createStyledEmbed({
         title: `${emojis.GEAR || emojis.GEAR} Server Automation Control Center`,
         subtitle: `Overview for ${message.guild.name}`,
         description:
           `Welcome **${message.author.username}**! Active automation status:\n\n` +
-          '```\n' + boxLines.join('\n') + '\n```',
+          '```\n' + box + '\n```',
         requestedBy: message.author,
         clientUser
       });

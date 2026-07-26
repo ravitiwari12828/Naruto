@@ -10,46 +10,39 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const db = require('../database/db');
 const emojis = require('../utils/emojis');
 
-function formatBoxLine(key, value) {
-  const k = (key + ' : ').padEnd(11, ' ');
-  const v = String(value).slice(0, 13).padEnd(13, ' ');
-  return '│ ' + k + v + ' │';
-}
+const { createDynamicBox } = require('../utils/boxBuilder');
 
 function renderAutomodFiltersEmbed(config, guild, author, clientUser) {
   const f = config;
 
-  const boxLines = [
-    '╭──────────────────────────╮',
-    '│   AUTOMOD CONTROL HUB    │',
-    '├──────────────────────────┤',
-    formatBoxLine('AntiSpam', f.antiSpam ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    formatBoxLine('InviteLink', f.inviteLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    formatBoxLine('Malicious', f.maliciousLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    formatBoxLine('NSFW Links', f.nsfwLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    formatBoxLine('Word List', String((f.wordBlacklist || []).length).padStart(2, '0') + ' words'),
-    formatBoxLine('Link List', String((f.linkBlacklist || []).length).padStart(2, '0') + ' links'),
-    '├──────────────────────────┤',
-    '│     AUTOMOD COMMANDS     │',
-    '├──────────────────────────┤',
-    '│ .automod                 │',
-    '│ .automod config          │',
-    '│ .addword <word>          │',
-    '│ .delword <word>          │',
-    '│ .addlink <domain>        │',
-    '│ .dellink <domain>        │',
-    '│ .antibot wl @bot         │',
-    '│ .antibot unwl @bot       │',
-    '│ .blacklist               │',
-    '╰──────────────────────────╯'
-  ];
+  const statusBox = createDynamicBox('AUTOMOD CONTROL HUB', [
+    { key: 'AntiSpam', value: f.antiSpam ? 'ENABLED [OK]' : 'DISABLED[X]' },
+    { key: 'InviteLink', value: f.inviteLinks ? 'ENABLED [OK]' : 'DISABLED[X]' },
+    { key: 'Malicious', value: f.maliciousLinks ? 'ENABLED [OK]' : 'DISABLED[X]' },
+    { key: 'NSFW Links', value: f.nsfwLinks ? 'ENABLED [OK]' : 'DISABLED[X]' },
+    { key: 'Word List', value: String((f.wordBlacklist || []).length).padStart(2, '0') + ' words' },
+    { key: 'Link List', value: String((f.linkBlacklist || []).length).padStart(2, '0') + ' links' }
+  ]);
+
+  const cmdBox = createDynamicBox('AUTOMOD COMMANDS', [
+    '.automod',
+    '.automod config',
+    '.addword <word>',
+    '.delword <word>',
+    '.addlink <domain>',
+    '.dellink <domain>',
+    '.antibot wl @bot',
+    '.antibot unwl @bot',
+    '.blacklist'
+  ]);
 
   return createStyledEmbed({
     title: `${emojis.SHIELD} AutoMod Security Control Hub — ${guild.name}`,
     subtitle: `Interactive Content Guard & Link Protection Suite`,
     description:
       `Welcome **${author.username}**! Configure live content guards & security filters.\n\n` +
-      '```\n' + boxLines.join('\n') + '\n```\n\n' +
+      '```\n' + statusBox + '\n```\n' +
+      '```\n' + cmdBox + '\n```\n\n' +
       `*Select a category from the dropdown menu below or click the compact emoji buttons to toggle filters!*`,
     requestedBy: author,
     clientUser
@@ -63,33 +56,30 @@ function renderMiscSettingsEmbed(config, guild, author, clientUser) {
   const modlogsChan = m.modlogsChannelId ? `<#${m.modlogsChannelId}>` : '`Not Set`';
   const quarRole = m.quarantineRoleId ? `<@&${m.quarantineRoleId}>` : '`Quarantine`';
 
-  const boxLines = [
-    '╭──────────────────────────╮',
-    '│    MISC & MODERATION     │',
-    '├──────────────────────────┤',
-    formatBoxLine('Prefix', m.prefix || '.'),
-    formatBoxLine('ConfirmMsg', m.moderatorConfirmation !== false ? 'YES   [OK]' : 'NO    [OFF]'),
-    formatBoxLine('Always DM', m.alwaysDmPunished !== false ? 'YES   [OK]' : 'NO    [OFF]'),
-    formatBoxLine('Anon Staff', m.hideStaffIdentity ? 'ON    [OK]' : 'OFF   [OFF]'),
-    formatBoxLine('Timeout', String(m.defaultTimeoutMinutes || 2880) + 'm'),
-    formatBoxLine('Ban Purge', String(m.daysPurgedOnBan || 7) + 'd'),
-    '├──────────────────────────┤',
-    '│      MISC COMMANDS       │',
-    '├──────────────────────────┤',
-    '│ .misc                    │',
-    '│ .automod misc            │',
-    '│ .modlogs #channel        │',
-    '│ .quarantine @user        │',
-    '│ .unquarantine @user      │',
-    '╰──────────────────────────╯'
-  ];
+  const statusBox = createDynamicBox('MISC & MODERATION', [
+    { key: 'Prefix', value: m.prefix || '.' },
+    { key: 'ConfirmMsg', value: m.moderatorConfirmation !== false ? 'YES [OK]' : 'NO [OFF]' },
+    { key: 'Always DM', value: m.alwaysDmPunished !== false ? 'YES [OK]' : 'NO [OFF]' },
+    { key: 'Anon Staff', value: m.hideStaffIdentity ? 'ON [OK]' : 'OFF [OFF]' },
+    { key: 'Timeout', value: String(m.defaultTimeoutMinutes || 2880) + 'm' },
+    { key: 'Ban Purge', value: String(m.daysPurgedOnBan || 7) + 'd' }
+  ]);
+
+  const cmdBox = createDynamicBox('MISC COMMANDS', [
+    '.misc',
+    '.automod misc',
+    '.modlogs #channel',
+    '.quarantine @user',
+    '.unquarantine @user'
+  ]);
 
   return createStyledEmbed({
     title: `${emojis.GEAR} Miscellaneous & Moderation Config — ${guild.name}`,
     subtitle: `Global Bot Settings, Log Channels & Punishment Policies`,
     description:
       `Welcome **${author.username}**! Configure global server moderation settings.\n\n` +
-      '```\n' + boxLines.join('\n') + '\n```\n\n' +
+      '```\n' + statusBox + '\n```\n' +
+      '```\n' + cmdBox + '\n```\n\n' +
       `**📜 Channel Mappings:**\n` +
       `• Logs Channel: ${logsChan}\n` +
       `• ModLogs Channel: ${modlogsChan}\n` +
@@ -103,38 +93,35 @@ function renderAutomodConfigEmbed(config, guild, author, clientUser) {
   const f = config;
   const m = config.misc || {};
 
-  const boxLines = [
-    '╭──────────────────────────╮',
-    '│   AUTOMOD FULL CONFIG    │',
-    '├──────────────────────────┤',
-    formatBoxLine('AntiSpam', f.antiSpam ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    formatBoxLine('InviteLink', f.inviteLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    formatBoxLine('Malicious', f.maliciousLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    formatBoxLine('NSFW Links', f.nsfwLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    formatBoxLine('Word List', String((f.wordBlacklist || []).length).padStart(2, '0') + ' words'),
-    formatBoxLine('Link List', String((f.linkBlacklist || []).length).padStart(2, '0') + ' links'),
-    formatBoxLine('ConfirmMsg', m.moderatorConfirmation !== false ? 'YES   [OK]' : 'NO    [OFF]'),
-    formatBoxLine('Always DM', m.alwaysDmPunished !== false ? 'YES   [OK]' : 'NO    [OFF]'),
-    formatBoxLine('Anon Staff', m.hideStaffIdentity ? 'ON    [OK]' : 'OFF   [OFF]'),
-    formatBoxLine('Timeout', String(m.defaultTimeoutMinutes || 2880) + 'm'),
-    formatBoxLine('Ban Purge', String(m.daysPurgedOnBan || 7) + 'd'),
-    formatBoxLine('Bots WL', String((f.whitelistedBots || []).length) + ' bot(s)'),
-    '├──────────────────────────┤',
-    '│     AUTOMOD COMMANDS     │',
-    '├──────────────────────────┤',
-    '│ .automod                 │',
-    '│ .moderation              │',
-    '│ .blacklist               │',
-    '│ .antibot list            │',
-    '╰──────────────────────────╯'
-  ];
+  const configBox = createDynamicBox('AUTOMOD FULL CONFIG', [
+    { key: 'AntiSpam', value: f.antiSpam ? 'ENABLED [OK]' : 'DISABLED[X]' },
+    { key: 'InviteLink', value: f.inviteLinks ? 'ENABLED [OK]' : 'DISABLED[X]' },
+    { key: 'Malicious', value: f.maliciousLinks ? 'ENABLED [OK]' : 'DISABLED[X]' },
+    { key: 'NSFW Links', value: f.nsfwLinks ? 'ENABLED [OK]' : 'DISABLED[X]' },
+    { key: 'Word List', value: String((f.wordBlacklist || []).length).padStart(2, '0') + ' words' },
+    { key: 'Link List', value: String((f.linkBlacklist || []).length).padStart(2, '0') + ' links' },
+    { key: 'ConfirmMsg', value: m.moderatorConfirmation !== false ? 'YES [OK]' : 'NO [OFF]' },
+    { key: 'Always DM', value: m.alwaysDmPunished !== false ? 'YES [OK]' : 'NO [OFF]' },
+    { key: 'Anon Staff', value: m.hideStaffIdentity ? 'ON [OK]' : 'OFF [OFF]' },
+    { key: 'Timeout', value: String(m.defaultTimeoutMinutes || 2880) + 'm' },
+    { key: 'Ban Purge', value: String(m.daysPurgedOnBan || 7) + 'd' },
+    { key: 'Bots WL', value: String((f.whitelistedBots || []).length) + ' bot(s)' }
+  ]);
+
+  const cmdBox = createDynamicBox('AUTOMOD COMMANDS', [
+    '.automod',
+    '.moderation',
+    '.blacklist',
+    '.antibot list'
+  ]);
 
   return createStyledEmbed({
     title: `${emojis.GEAR || '⚙️'} Full AutoMod Configuration — ${guild.name}`,
     subtitle: `Complete Server Security & Content Protection Summary`,
     description:
       `Welcome **${author.username}**! Below is your server **Full AutoMod Configuration Grid**.\n\n` +
-      '```\n' + boxLines.join('\n') + '\n```',
+      '```\n' + configBox + '\n```\n' +
+      '```\n' + cmdBox + '\n```',
     requestedBy: author,
     clientUser
   });
@@ -150,45 +137,37 @@ function renderEmbedForTab(activeTab, config, guild, author, clientUser) {
   if (activeTab === 'blacklists') {
     const words = (config.wordBlacklist || []).join(', ') || 'None';
     const links = (config.linkBlacklist || []).join(', ') || 'None';
-    const boxLines = [
-      '╭──────────────────────────╮',
-      '│    BLACKLIST COMMANDS    │',
-      '├──────────────────────────┤',
-      '│ .addword <word>          │',
-      '│ .delword <word>          │',
-      '│ .addlink <domain>        │',
-      '│ .dellink <domain>        │',
-      '│ .addcategory <name>      │',
-      '│ .delcategory <name>      │',
-      '│ .blacklist               │',
-      '╰──────────────────────────╯'
-    ];
+    const cmdBox = createDynamicBox('BLACKLIST COMMANDS', [
+      '.addword <word>',
+      '.delword <word>',
+      '.addlink <domain>',
+      '.dellink <domain>',
+      '.addcategory <name>',
+      '.delcategory <name>',
+      '.blacklist'
+    ]);
     return createStyledEmbed({
       title: `🔤 Word & Link Blacklists — ${guild.name}`,
       description:
         `**Active Blacklisted Words:**\n\`\`\`${words}\`\`\`\n` +
         `**Active Blacklisted Link Domains:**\n\`\`\`${links}\`\`\`\n\n` +
-        '```\n' + boxLines.join('\n') + '\n```',
+        '```\n' + cmdBox + '\n```',
       requestedBy: author,
       clientUser
     });
   }
   if (activeTab === 'antibot') {
     const wl = (config.whitelistedBots || []).map(id => `<@${id}>`).join(', ') || '*None*';
-    const boxLines = [
-      '╭──────────────────────────╮',
-      '│     ANTIBOT COMMANDS     │',
-      '├──────────────────────────┤',
-      '│ .antibot wl @bot         │',
-      '│ .antibot unwl @bot       │',
-      '│ .antibot list            │',
-      '╰──────────────────────────╯'
-    ];
+    const cmdBox = createDynamicBox('ANTIBOT COMMANDS', [
+      '.antibot wl @bot',
+      '.antibot unwl @bot',
+      '.antibot list'
+    ]);
     return createStyledEmbed({
       title: `🤖 AntiBot Security Status — ${guild.name}`,
       description:
         `**Whitelisted Authorized Bots:**\n${wl}\n\n` +
-        '```\n' + boxLines.join('\n') + '\n```',
+        '```\n' + cmdBox + '\n```',
       requestedBy: author,
       clientUser
     });
@@ -480,19 +459,15 @@ module.exports = {
       const links = (config.linkBlacklist || []).join(', ') || 'None';
       const cats = Object.entries(config.customCategories || {}).map(([name, wList]) => `• **${name.toUpperCase()}**: ${wList.join(', ') || 'Empty'}`).join('\n') || '*No custom categories.*';
 
-      const boxLines = [
-        '╭──────────────────────────╮',
-        '│    BLACKLIST COMMANDS    │',
-        '├──────────────────────────┤',
-        '│ .addword <word>          │',
-        '│ .delword <word>          │',
-        '│ .addlink <domain>        │',
-        '│ .dellink <domain>        │',
-        '│ .addcategory <name>      │',
-        '│ .delcategory <name>      │',
-        '│ .blacklist               │',
-        '╰──────────────────────────╯'
-      ];
+      const cmdBox = createDynamicBox('BLACKLIST COMMANDS', [
+        '.addword <word>',
+        '.delword <word>',
+        '.addlink <domain>',
+        '.dellink <domain>',
+        '.addcategory <name>',
+        '.delcategory <name>',
+        '.blacklist'
+      ]);
 
       const embed = createStyledEmbed({
         title: `🔤 Server AutoMod Blacklists — ${guild.name}`,
@@ -500,7 +475,7 @@ module.exports = {
           `**Active Blacklisted Words (${(config.wordBlacklist || []).length}):**\n\`\`\`${words}\`\`\`\n` +
           `**Active Link Domains (${(config.linkBlacklist || []).length}):**\n\`\`\`${links}\`\`\`\n\n` +
           `**Custom Word Categories:**\n${cats}\n\n` +
-          '```\n' + boxLines.join('\n') + '\n```',
+          '```\n' + cmdBox + '\n```',
         requestedBy: author,
         clientUser
       });
