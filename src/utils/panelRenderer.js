@@ -361,14 +361,15 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
         `\`\`\`\n` +
         `.spongebobchicken .slapcar .isthisa .drake .distractedbf .communismcat .eject .emergencymeeting .headpat .tradeoffer .waddle\n` +
         `\`\`\`\n\n` +
-        `${emojis.STAR || '😃'} **Emotes**\n` +
+        `${emojis.EMOTES || '😃'} **Emotes**\n` +
         `\`\`\`\n` +
         `.blush .cry .dance .lewd .pout .shrug .sleepy .smile .smug .thumbsup .wag .thinking .triggered .teehee .deredere .thonking .scoff .happy .thumbs .grin\n` +
         `\`\`\`\n\n` +
-        `${emojis.HEART || '🤗'} **Actions**\n` +
+        `${emojis.ACTIONS || '🤗'} **Actions**\n` +
         `\`\`\`\n` +
         `.cuddle .hug .kiss .lick .nom .pat .poke .slap .stare .highfive .bite .greet .punch .handholding .tickle .kill .hold .pats .wave .boop .snuggle .bully\n` +
         `\`\`\``
+
       )
       .setFooter({
         text: `Requested by ${message.author.username} • Total 59 commands`,

@@ -15,6 +15,9 @@ module.exports = {
   DOT: '<a:lyf_Sharingan:1530533008694579250>',
   DANCE: '<a:Flantic_qt_dance:1530521741263245333>',
   QUICK_LINKS: '<a:quick_links:1530949796884512810>',
+  EMOTES: '<a:emotes:1530950804146491505>',
+  ACTIONS: '<a:actions:1530950799490945085>',
+
 
 
 
