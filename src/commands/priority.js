@@ -1,4 +1,5 @@
-const { createStyledEmbed, formatCodePills } = require('../utils/embedBuilder');
+const { createStyledEmbed } = require('../utils/embedBuilder');
+const { createDynamicBox } = require('../utils/boxBuilder');
 const { generateAIAnswer } = require('../utils/aiService');
 const emojis = require('../utils/emojis');
 
@@ -52,25 +53,28 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // HELP MENU
+    // HELP MENU (BOX UI)
     if (!sub || sub === 'help' || (!query && invoked === 'priority')) {
-      const commandsList = [
-        '.ask <question>   — Ask any question or query',
-        '.ai <prompt>      — Creative AI assistant & essay writer',
-        '.code <task>      — Generate syntax-highlighted code',
-        '.priority <query> — Full Sage Priority AI Suite'
-      ];
+      const usageBox = createDynamicBox('EXACT COMMAND USAGES', [
+        '.ask <question>',
+        '.ai <prompt>',
+        '.code <task>',
+        '.priority <query>'
+      ]);
+
+      const featureBox = createDynamicBox('SAGE AI CAPABILITIES', [
+        'Facts  : Science & Math',
+        'Code   : Py, C++, Java, JS',
+        'Summary: Fast & Detailed',
+        'Engine : Google Gemini'
+      ]);
 
       const embed = createStyledEmbed({
         title: 'Sage AI Assistant — Priority Module',
-        subtitle: `${emojis.OBJ_AN_SHIELD || '⚡'} Priority AI Hub`,
+        subtitle: `${emojis.SPARKLES} Priority AI Hub`,
         description:
-          `**What Priority AI Can Do**\n` +
-          `• Answer general knowledge, science, math, and Naruto trivia\n` +
-          `• Write and debug code in JavaScript, Python, C++, HTML/CSS\n` +
-          `• Summarize text and explain complex topics in simple terms\n` +
-          `• Integrates with **Google Gemini 1.5 Flash API** for real-time intelligence\n\n` +
-          `**Exact Command Usages**\n` + formatCodePills(commandsList),
+          '```\n' + usageBox + '\n```\n' +
+          '```\n' + featureBox + '\n```',
         requestedBy: message.author,
         clientUser,
         footerText: 'Naruto One Priority AI • Google Gemini Integrated'
@@ -88,10 +92,18 @@ module.exports = {
     try {
       const aiResponse = await generateAIAnswer(query, mode);
 
+      const statusBox = createDynamicBox('PRIORITY AI SUMMARY', [
+        { key: 'Query', value: query.length > 20 ? query.slice(0, 18) + '…' : query },
+        { key: 'Engine', value: mode === 'code' ? 'Code Compiler' : 'Sage AI Engine' },
+        { key: 'Status', value: '🟢 Completed' }
+      ]);
+
       const embed = createStyledEmbed({
         title: mode === 'code' ? `${emojis.LAPTOP || '💻'} Priority Code Assistant` : `${emojis.SPARKLES || '✨'} Priority AI Assistant`,
         subtitle: mode === 'code' ? 'Generated Code Solution' : 'Sage Intelligence Response',
-        description: aiResponse.slice(0, 4000),
+        description:
+          '```\n' + statusBox + '\n```\n\n' +
+          aiResponse.slice(0, 3500),
         requestedBy: message.author,
         clientUser,
         footerText: 'Powered by Naruto One Priority AI'
