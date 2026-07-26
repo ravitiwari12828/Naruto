@@ -139,22 +139,100 @@ function buildUserMetricRow(activeCat) {
 }
 
 function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', activeCategory = 'overview', author, clientUser) {
-  if (activeCategory === 'chat') {
-    return renderMessagesLeaderboard(guild, timeframeKey, 1, author, clientUser).embed;
-  }
-  if (activeCategory === 'voice') {
-    return renderVoiceLeaderboard(guild, timeframeKey, 1, author, clientUser).embed;
-  }
-  if (activeCategory === 'invites') {
-    return renderInvitesLeaderboard(guild, timeframeKey, 1, author, clientUser).embed;
-  }
-
   const windowMs = WINDOWS[timeframeKey];
-  const label = TIMEFRAME_NAMES[timeframeKey];
+  const label = TIMEFRAME_NAMES[timeframeKey] || 'All Time';
   const stats = db.getAnalyticsStats(guild.id, windowMs);
   const bots = guild.members.cache.filter(m => m.user.bot).size;
   const humans = guild.memberCount - bots;
 
+  if (activeCategory === 'chat') {
+    const chatLb = db.getTopLeaderboard(guild.id, 'message', windowMs, 5);
+    const topChatter = chatLb.length > 0 ? (guild.members.cache.get(chatLb[0].userId)?.user.username || `User${chatLb[0].userId}`) : 'None';
+    const topMsgs = chatLb.length > 0 ? chatLb[0].total.toLocaleString() : '0';
+
+    const boxText =
+      '```\n' +
+      '╭──────────────────────────╮\n' +
+      '│   CHAT ACTIVITY STATS    │\n' +
+      '├──────────────────────────┤\n' +
+      '│ Timeframe : ' + String(label).padEnd(12, ' ') + ' │\n' +
+      '│ Total Msgs: ' + String(stats.messages.toLocaleString() + ' msgs').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Active Usrs: ' + String(chatLb.length + ' chatters').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Top Chatter: ' + String(topChatter).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Top Msgs  : ' + String(topMsgs + ' msgs').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '╰──────────────────────────╯\n' +
+      '```';
+
+    return createStyledEmbed({
+      title: `${emojis.AUTORESPOND} ${guild.name} Analytics — Chat Stats [${label}]`,
+      subtitle: `Chat Activity Metrics (${label})`,
+      description: `Welcome **${author.username}**! Below is the **Chat Activity** breakdown.\n\n` + boxText,
+      thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+      footerText: `Tab: Chat • Timeframe: ${label} • Live Sync`,
+      requestedBy: author,
+      clientUser
+    });
+  }
+
+  if (activeCategory === 'voice') {
+    const voiceLb = db.getTopLeaderboard(guild.id, 'voice', windowMs, 5);
+    const topSpeaker = voiceLb.length > 0 ? (guild.members.cache.get(voiceLb[0].userId)?.user.username || `User${voiceLb[0].userId}`) : 'None';
+    const topVcTime = voiceLb.length > 0 ? formatDuration(voiceLb[0].total) : '0m';
+
+    const boxText =
+      '```\n' +
+      '╭──────────────────────────╮\n' +
+      '│   VOICE ACTIVITY STATS   │\n' +
+      '├──────────────────────────┤\n' +
+      '│ Timeframe : ' + String(label).padEnd(12, ' ') + ' │\n' +
+      '│ Total Voice: ' + String(formatDuration(stats.voiceSeconds)).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Active VCs: ' + String(voiceLb.length + ' members').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Top Speaker: ' + String(topSpeaker).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Top VC Time: ' + String(topVcTime).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '╰──────────────────────────╯\n' +
+      '```';
+
+    return createStyledEmbed({
+      title: `${emojis.VOICE} ${guild.name} Analytics — Voice Stats [${label}]`,
+      subtitle: `Voice Activity Metrics (${label})`,
+      description: `Welcome **${author.username}**! Below is the **Voice Activity** breakdown.\n\n` + boxText,
+      thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+      footerText: `Tab: Voice • Timeframe: ${label} • Live Sync`,
+      requestedBy: author,
+      clientUser
+    });
+  }
+
+  if (activeCategory === 'invites') {
+    const invLb = db.getTopLeaderboard(guild.id, 'invite', windowMs, 5);
+    const topInviter = invLb.length > 0 ? (guild.members.cache.get(invLb[0].userId)?.user.username || `User${invLb[0].userId}`) : 'None';
+    const topJoins = invLb.length > 0 ? invLb[0].total.toLocaleString() : '0';
+
+    const boxText =
+      '```\n' +
+      '╭──────────────────────────╮\n' +
+      '│   INVITE RECRUIT STATS   │\n' +
+      '├──────────────────────────┤\n' +
+      '│ Timeframe : ' + String(label).padEnd(12, ' ') + ' │\n' +
+      '│ Total Joins: ' + String(stats.invites.toLocaleString() + ' joins').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Recruiters : ' + String(invLb.length + ' inviters').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Top Recruiter:' + String(topInviter).slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '│ Top Joins  : ' + String(topJoins + ' joins').slice(0, 12).padEnd(12, ' ') + ' │\n' +
+      '╰──────────────────────────╯\n' +
+      '```';
+
+    return createStyledEmbed({
+      title: `${emojis.MODMAIL_ENVELOPE} ${guild.name} Analytics — Invite Stats [${label}]`,
+      subtitle: `Invites & Recruitment Metrics (${label})`,
+      description: `Welcome **${author.username}**! Below is the **Invite & Recruitment** breakdown.\n\n` + boxText,
+      thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
+      footerText: `Tab: Invites • Timeframe: ${label} • Live Sync`,
+      requestedBy: author,
+      clientUser
+    });
+  }
+
+  // DEFAULT / OVERVIEW
   const textChannels = guild.channels.cache.filter(c => c.isTextBased()).size;
   const voiceChannels = guild.channels.cache.filter(c => c.isVoiceBased()).size;
 
@@ -175,21 +253,17 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
     '╰──────────────────────────╯\n' +
     '```';
 
-  const description =
-    `Welcome **${author.username}**! Below is the executive **Server Analytics** dashboard.\n\n` +
-    boxText;
-
   return createStyledEmbed({
     title: `${emojis.ANALYTICS_ZAP} ${guild.name} Analytics — Overview [${label}]`,
     subtitle: `Server Performance Overview (${label})`,
-    description,
+    description: `Welcome **${author.username}**! Below is the executive **Server Analytics** dashboard.\n\n` + boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
     footerText: `Tab: Overview • Timeframe: ${label} • Live Sync`,
     requestedBy: author,
     clientUser
   });
-
 }
+
 
 function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey = 'lifetime', author, clientUser) {
   const windowMs = WINDOWS[timeframeKey] || null;
