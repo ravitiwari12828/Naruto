@@ -632,27 +632,50 @@ module.exports = {
     } catch (e) {}
 
     if (sub === 'server') {
+      // State: these two vars are the ONLY source of truth for what's displayed
       let activeTf = 'lifetime';
       let activeCat = 'overview';
-      let embed = renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
-      let tfRow = buildTimeframeRow(activeTf, 'stf_');
-      let catRow = buildServerStatsCategoryRow(activeCat);
-      const msg = await message.channel.send({ embeds: [embed], components: [tfRow, catRow] });
-      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id, time: 300000 });
+
+      // Helper: build and send/update the panel
+      const buildComponents = () => [
+        buildTimeframeRow(activeTf, 'stf_'),
+        buildServerStatsCategoryRow(activeCat)
+      ];
+      const buildEmbed = () => renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
+
+      // Send initial message
+      const msg = await message.channel.send({ embeds: [buildEmbed()], components: buildComponents() });
+
+      // Create collector — only respond to this message's author
+      const collector = msg.createMessageComponentCollector({
+        filter: (i) => i.user.id === author.id && i.message.id === msg.id,
+        time: 300000
+      });
+
       collector.on('collect', async (i) => {
         try {
+          // Acknowledge the interaction immediately
           await i.deferUpdate().catch(() => {});
-          if (i.customId.startsWith('stf_') || i.customId.startsWith('tf_')) {
-            activeTf = i.customId.replace(/^(stf_|tf_)/, '');
+
+          // STRICT prefix matching — only 'stf_' changes timeframe, only 'scat_' changes category
+          // NO generic 'tf_' fallback here to prevent cross-contamination
+          if (i.customId.startsWith('stf_')) {
+            const newTf = i.customId.slice(4); // everything after 'stf_'
+            if (WINDOWS.hasOwnProperty(newTf)) activeTf = newTf;
           } else if (i.customId.startsWith('scat_')) {
-            activeCat = i.customId.replace('scat_', '');
+            const newCat = i.customId.slice(5); // everything after 'scat_'
+            if (['overview', 'chat', 'voice', 'invites'].includes(newCat)) activeCat = newCat;
           }
-          await i.message.edit({
-            embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)],
-            components: [buildTimeframeRow(activeTf, 'stf_'), buildServerStatsCategoryRow(activeCat)]
+          // else: unknown button — ignore it, don't change state
+
+          // Always edit the ORIGINAL message reference (msg), never i.message
+          await msg.edit({
+            embeds: [buildEmbed()],
+            components: buildComponents()
           }).catch(() => {});
         } catch (e) {}
       });
+
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
     }
