@@ -25,12 +25,12 @@ function getOrCreateTicketConfig(guildId) {
       transcriptChanId: null,
       staffRoles: new Set(),
       categories: [
-        { id: 'cat_support', name: 'General Support', emoji: '🎫', description: 'Need help or general assistance?' },
-        { id: 'cat_promo', name: 'Promotion', emoji: '📢', description: 'Inquire about promotional deals' },
-        { id: 'cat_report', name: 'Report', emoji: '🚨', description: 'Report a user or server violation' },
-        { id: 'cat_reward', name: 'Reward', emoji: '🎁', description: 'Claim your event or activity rewards' },
-        { id: 'cat_staff', name: 'Staff Apply', emoji: '💼', description: 'Apply for staff position' },
-        { id: 'cat_server_promo', name: 'Server Promo', emoji: '🌐', description: 'Request server cross-promotions' }
+        { id: 'cat_support', name: 'General Support', emoji: emojis.OBJ_TICKETS || '🎫', description: 'Need help or general assistance?' },
+        { id: 'cat_promo', name: 'Promotion', emoji: emojis.OBJ_INVITES || '📢', description: 'Inquire about promotional deals' },
+        { id: 'cat_report', name: 'Report', emoji: emojis.OBJ_WARNING || '🚨', description: 'Report a user or server violation' },
+        { id: 'cat_reward', name: 'Reward', emoji: emojis.OBJ_LEVEL || '🎁', description: 'Claim your event or activity rewards' },
+        { id: 'cat_staff', name: 'Staff Apply', emoji: emojis.OBJ_TOOLS || '💼', description: 'Apply for staff position' },
+        { id: 'cat_server_promo', name: 'Server Promo', emoji: emojis.OBJ_HOME || '🌐', description: 'Request server cross-promotions' }
       ]
     });
   }
@@ -221,16 +221,16 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText = 'Low',
 
 function buildTicketActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket_claim_btn').setEmoji('👑').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_lock_btn').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_callstaff_btn').setEmoji('📞').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_priority_btn').setEmoji('⚡').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_anon_btn').setEmoji('🎭').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('ticket_claim_btn').setEmoji(emojis.OBJ_OWNER || '👑').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_lock_btn').setEmoji(emojis.OBJ_LOCK || '🔒').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_callstaff_btn').setEmoji(emojis.OBJ_INVITES || '📞').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_priority_btn').setEmoji(emojis.OBJ_ZAP || '⚡').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_anon_btn').setEmoji(emojis.OBJ_PROFILE || '🎭').setStyle(ButtonStyle.Secondary)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket_addmember_btn').setEmoji('➕').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_close_btn').setEmoji('❌').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('ticket_addmember_btn').setEmoji(emojis.OBJ_TOOLS || '➕').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_close_btn').setEmoji(emojis.OBJ_REMOVE || '❌').setStyle(ButtonStyle.Danger)
   );
 
   return [row1, row2];
