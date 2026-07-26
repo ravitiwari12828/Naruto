@@ -45,6 +45,7 @@ class ResilientDatabase {
     this.sqliteDb = null;
     this.useSqlite = false;
     this.useMongo = false;
+    this.mongoReady = false;
     this.mongoSaveTimeout = null;
 
     this.data = {
@@ -116,6 +117,9 @@ class ResilientDatabase {
         this.saveJSONFileOnly();
       }
 
+      // Mark MongoDB Cloud sync as READY after restoring cloud state
+      this.mongoReady = true;
+
       // Backup merged active memory data back to cloud
       await BotDataModel.findOneAndUpdate(
         { key: 'master_database' },
@@ -149,8 +153,8 @@ class ResilientDatabase {
   saveJSON() {
     this.saveJSONFileOnly();
 
-    // Debounced MongoDB Cloud Sync
-    if (this.useMongo && BotDataModel) {
+    // Debounced MongoDB Cloud Sync (Only when mongoReady is true!)
+    if (this.useMongo && this.mongoReady && BotDataModel) {
       if (this.mongoSaveTimeout) clearTimeout(this.mongoSaveTimeout);
       this.mongoSaveTimeout = setTimeout(() => {
         BotDataModel.findOneAndUpdate(
