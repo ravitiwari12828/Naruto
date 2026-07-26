@@ -551,30 +551,109 @@ module.exports = {
           clientUser
         });
 
-        const row = new ActionRowBuilder().addComponents(
-          new ButtonBuilder().setCustomId(`an_wl_all_${user.id}`).setLabel('Whitelist All Events').setEmoji('🛡️').setStyle(ButtonStyle.Success),
-          new ButtonBuilder().setCustomId(`an_unwl_all_${user.id}`).setLabel('Revoke Whitelist').setEmoji('❌').setStyle(ButtonStyle.Danger)
+        const selectRow = new ActionRowBuilder().addComponents(
+          new StringSelectMenuBuilder()
+            .setCustomId(`wl_select_perm_${user.id}`)
+            .setPlaceholder('❯ Choose Permissions to Grant / Toggle...')
+            .addOptions([
+              { label: 'All Permissions', value: 'all', description: 'Grant full AntiNuke bypass for all events', emoji: '🛡️' },
+              { label: 'Anti Ban', value: 'ban', description: 'Whitelist for ban actions', emoji: '🔨' },
+              { label: 'Anti Kick', value: 'kick', description: 'Whitelist for kick actions', emoji: '👢' },
+              { label: 'Anti Bot Add', value: 'bot', description: 'Whitelist for adding bots', emoji: '🤖' },
+              { label: 'Anti Channel Create / Delete', value: 'channel', description: 'Whitelist for channel creation & deletion', emoji: '📁' },
+              { label: 'Anti Role Create / Delete', value: 'role', description: 'Whitelist for role creation & deletion', emoji: '🎭' },
+              { label: 'Anti Webhook', value: 'webhook', description: 'Whitelist for webhook actions', emoji: '🔗' },
+              { label: 'Anti Guild Update', value: 'guild', description: 'Whitelist for guild settings & mentions', emoji: '🌐' }
+            ])
         );
 
-        const msg = await message.channel.send({ embeds: [embed], components: [row] });
-        const collector = msg.createMessageComponentCollector({ time: 120000 });
+        const btnRow = new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setCustomId(`an_wl_all_${user.id}`).setLabel('Grant All Permissions').setEmoji('🛡️').setStyle(ButtonStyle.Success),
+          new ButtonBuilder().setCustomId(`an_unwl_all_${user.id}`).setLabel('Revoke All Permissions').setEmoji('❌').setStyle(ButtonStyle.Danger)
+        );
+
+        const msg = await message.channel.send({ embeds: [embed], components: [selectRow, btnRow] });
+        const collector = msg.createMessageComponentCollector({ time: 180000 });
 
         collector.on('collect', async (interaction) => {
           if (interaction.user.id !== author.id && author.id !== guild.ownerId) {
-            return interaction.reply({ content: `${emojis.WARNING} Only the server owner or command author can use these buttons.`, flags: 64 });
+            return interaction.reply({ content: `${emojis.WARNING} Only **${author.username}** (who requested this panel) can use these controls.`, flags: 64 });
           }
 
-          if (interaction.customId === `an_wl_all_${user.id}`) {
-            config.whitelistedUsers.set(user.id, new Set(['all']));
-            antinukeConfigs.set(guild.id, config);
-            return interaction.reply({ content: `${emojis.SUCCESS} Whitelisted **${user.tag}** for **ALL EVENTS**!`, flags: 64 });
+          let userPerms = config.whitelistedUsers.get(user.id) || new Set();
+
+          if (interaction.customId === `wl_select_perm_${user.id}`) {
+            const selected = interaction.values[0];
+
+            if (selected === 'all') {
+              if (userPerms.has('all')) {
+                userPerms.clear();
+              } else {
+                userPerms.clear();
+                userPerms.add('all');
+              }
+            } else {
+              userPerms.delete('all');
+              if (userPerms.has(selected)) {
+                userPerms.delete(selected);
+              } else {
+                userPerms.add(selected);
+              }
+            }
+          } else if (interaction.customId === `an_wl_all_${user.id}`) {
+            userPerms = new Set(['all']);
+          } else if (interaction.customId === `an_unwl_all_${user.id}`) {
+            userPerms = new Set();
           }
 
-          if (interaction.customId === `an_unwl_all_${user.id}`) {
+          if (userPerms.size > 0) {
+            config.whitelistedUsers.set(user.id, userPerms);
+          } else {
             config.whitelistedUsers.delete(user.id);
-            antinukeConfigs.set(guild.id, config);
-            return interaction.reply({ content: `${emojis.SUCCESS} Revoked all whitelist permissions for **${user.tag}**.`, flags: 64 });
           }
+          antinukeConfigs.set(guild.id, config);
+
+          // Live Re-render
+          const isAllNew = userPerms.has('all');
+          const hasNew = (p) => isAllNew || userPerms.has(p);
+
+          const updatedAuditBox = createDynamicBox(`PERMISSIONS AUDIT — ${user.username.toUpperCase()}`, [
+            { key: 'Ban', value: hasNew('ban') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Kick', value: hasNew('kick') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Prune Members', value: hasNew('kick') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Bot Add', value: hasNew('bot') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Guild Update', value: hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Channel Create', value: hasNew('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Channel Delete', value: hasNew('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Channel Update', value: hasNew('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Role Create', value: hasNew('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Role Delete', value: hasNew('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Role Update', value: hasNew('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Role Dangerous', value: hasNew('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Mention @everyone', value: hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Webhook Create', value: hasNew('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Webhook Update', value: hasNew('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Webhook Delete', value: hasNew('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Member Update', value: hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Member Dangerous', value: hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Anti Integration', value: hasNew('bot') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Anti Sticker', value: hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Anti Emoji', value: hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' }
+          ]);
+
+          const updatedEmbed = createStyledEmbed({
+            title: `🛡️ Whitelist Granular Event Audit — ${user.username}`,
+            subtitle: `Realtime Permission Bypass Audit for ${guild.name}`,
+            description:
+              `**Target User:** <@${user.id}> (\`${user.tag}\`)\n` +
+              `**Global Bypass Status:** ${isAllNew ? '`FULL BYPASS (ALL EVENTS)`' : (userPerms.size > 0 ? `\`PARTIAL BYPASS (${userPerms.size} EVENTS)\`` : '`NOT WHITELISTED`')}\n\n` +
+              '```\n' + updatedAuditBox + '\n```\n' +
+              '```\n' + cmdBox + '\n```',
+            requestedBy: author,
+            clientUser
+          });
+
+          return interaction.update({ embeds: [updatedEmbed], components: [selectRow, btnRow] });
         });
 
         return;
