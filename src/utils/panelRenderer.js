@@ -253,7 +253,10 @@ const CATEGORIES = [
     unicodeFallback: '🤖',
     heading: `${emojis.PRIORITY || '🤖'} Priority AI Commands`,
     commands: [
-      'priority', 'ai', 'ask', 'code'
+      'ask <question>',
+      'ai <prompt>',
+      'code <task>',
+      'priority <query>'
     ]
   },
   {
