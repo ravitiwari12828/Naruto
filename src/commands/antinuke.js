@@ -561,35 +561,35 @@ module.exports = {
             .setMinValues(1)
             .setMaxValues(23)
             .addOptions([
-              { label: 'All Permissions', value: 'all', description: 'Grant or revoke full bypass for ALL events', emoji: '🛡️' },
-              { label: 'Anti Ban', value: 'ban', description: 'Whitelist for ban actions', emoji: '🔨' },
-              { label: 'Anti Unban', value: 'unban', description: 'Whitelist for unban actions', emoji: '🔓' },
-              { label: 'Anti Kick', value: 'kick', description: 'Whitelist for kick actions', emoji: '👢' },
-              { label: 'Anti Member Prune', value: 'prune', description: 'Whitelist for member pruning', emoji: '🧹' },
-              { label: 'Anti Bot Add', value: 'bot', description: 'Whitelist for adding bots', emoji: '🤖' },
-              { label: 'Anti Guild Update', value: 'guild', description: 'Whitelist for server settings updates', emoji: '🌐' },
-              { label: 'Anti Channel Create', value: 'channel_create', description: 'Whitelist for channel creation', emoji: '📁' },
-              { label: 'Anti Channel Delete', value: 'channel_delete', description: 'Whitelist for channel deletion', emoji: '🗑️' },
-              { label: 'Anti Channel Update', value: 'channel_update', description: 'Whitelist for channel updates', emoji: '✏️' },
-              { label: 'Anti Role Create', value: 'role_create', description: 'Whitelist for role creation', emoji: '🎭' },
-              { label: 'Anti Role Delete', value: 'role_delete', description: 'Whitelist for role deletion', emoji: '❌' },
-              { label: 'Anti Role Update', value: 'role_update', description: 'Whitelist for role updates', emoji: '⚙️' },
-              { label: 'Anti Role Dangerous', value: 'role_dangerous', description: 'Whitelist for admin perms in roles', emoji: '⚠️' },
-              { label: 'Anti Mention @everyone', value: 'everyone', description: 'Whitelist for @everyone & @here pings', emoji: '📢' },
-              { label: 'Anti Webhook Create', value: 'webhook_create', description: 'Whitelist for webhook creation', emoji: '🔗' },
-              { label: 'Anti Webhook Update', value: 'webhook_update', description: 'Whitelist for webhook updates', emoji: '🛠️' },
-              { label: 'Anti Webhook Delete', value: 'webhook_delete', description: 'Whitelist for webhook deletion', emoji: '❌' },
-              { label: 'Anti Member Update', value: 'member_update', description: 'Whitelist for member updates & nicknames', emoji: '👤' },
-              { label: 'Anti Member Dangerous', value: 'member_dangerous', description: 'Whitelist for giving dangerous perms to members', emoji: '☣️' },
-              { label: 'Anti Integration', value: 'integration', description: 'Whitelist for re-adding bot integrations', emoji: '🔌' },
-              { label: 'Anti Sticker Update', value: 'sticker', description: 'Whitelist for sticker creation & deletion', emoji: '🏷️' },
-              { label: 'Anti Emoji Update', value: 'emoji', description: 'Whitelist for emoji creation & deletion', emoji: '😀' }
+              { label: 'All Permissions', value: 'all', description: 'Grant or revoke full bypass for ALL events', emoji: emojis.OBJ_AN_SHIELD },
+              { label: 'Anti Ban', value: 'ban', description: 'Whitelist for ban actions', emoji: emojis.OBJ_AN_BAN },
+              { label: 'Anti Unban', value: 'unban', description: 'Whitelist for unban actions', emoji: emojis.OBJ_AN_BAN },
+              { label: 'Anti Kick', value: 'kick', description: 'Whitelist for kick actions', emoji: emojis.OBJ_AN_KICK },
+              { label: 'Anti Member Prune', value: 'prune', description: 'Whitelist for member pruning', emoji: emojis.OBJ_AN_KICK },
+              { label: 'Anti Bot Add', value: 'bot', description: 'Whitelist for adding bots', emoji: emojis.OBJ_AN_BOT },
+              { label: 'Anti Guild Update', value: 'guild', description: 'Whitelist for server settings updates', emoji: emojis.OBJ_AN_GUILD },
+              { label: 'Anti Channel Create', value: 'channel_create', description: 'Whitelist for channel creation', emoji: emojis.OBJ_AN_CHANNEL },
+              { label: 'Anti Channel Delete', value: 'channel_delete', description: 'Whitelist for channel deletion', emoji: emojis.OBJ_AN_CHANNEL },
+              { label: 'Anti Channel Update', value: 'channel_update', description: 'Whitelist for channel updates', emoji: emojis.OBJ_AN_CHANNEL },
+              { label: 'Anti Role Create', value: 'role_create', description: 'Whitelist for role creation', emoji: emojis.OBJ_AN_ROLE },
+              { label: 'Anti Role Delete', value: 'role_delete', description: 'Whitelist for role deletion', emoji: emojis.OBJ_AN_ROLE },
+              { label: 'Anti Role Update', value: 'role_update', description: 'Whitelist for role updates', emoji: emojis.OBJ_AN_ROLE },
+              { label: 'Anti Role Dangerous', value: 'role_dangerous', description: 'Whitelist for admin perms in roles', emoji: emojis.OBJ_AN_QUARANTINE },
+              { label: 'Anti Mention @everyone', value: 'everyone', description: 'Whitelist for @everyone & @here pings', emoji: emojis.OBJ_AN_SHIELD },
+              { label: 'Anti Webhook Create', value: 'webhook_create', description: 'Whitelist for webhook creation', emoji: emojis.OBJ_AN_WEBHOOK },
+              { label: 'Anti Webhook Update', value: 'webhook_update', description: 'Whitelist for webhook updates', emoji: emojis.OBJ_AN_WEBHOOK },
+              { label: 'Anti Webhook Delete', value: 'webhook_delete', description: 'Whitelist for webhook deletion', emoji: emojis.OBJ_AN_WEBHOOK },
+              { label: 'Anti Member Update', value: 'member_update', description: 'Whitelist for member updates & nicknames', emoji: emojis.OBJ_AN_ROLE },
+              { label: 'Anti Member Dangerous', value: 'member_dangerous', description: 'Whitelist for giving dangerous perms to members', emoji: emojis.OBJ_AN_QUARANTINE },
+              { label: 'Anti Integration', value: 'integration', description: 'Whitelist for re-adding bot integrations', emoji: emojis.OBJ_AN_BOT },
+              { label: 'Anti Sticker Update', value: 'sticker', description: 'Whitelist for sticker creation & deletion', emoji: emojis.OBJ_AN_GUILD },
+              { label: 'Anti Emoji Update', value: 'emoji', description: 'Whitelist for emoji creation & deletion', emoji: emojis.OBJ_AN_GUILD }
             ])
         );
 
         const btnRow = new ActionRowBuilder().addComponents(
-          new ButtonBuilder().setCustomId(`an_wl_all_${user.id}`).setLabel('Grant All Permissions').setEmoji('🛡️').setStyle(ButtonStyle.Success),
-          new ButtonBuilder().setCustomId(`an_unwl_all_${user.id}`).setLabel('Revoke All Permissions').setEmoji('❌').setStyle(ButtonStyle.Danger)
+          new ButtonBuilder().setCustomId(`an_wl_all_${user.id}`).setLabel('Grant All Permissions').setEmoji(emojis.OBJ_AN_SHIELD).setStyle(ButtonStyle.Success),
+          new ButtonBuilder().setCustomId(`an_unwl_all_${user.id}`).setLabel('Revoke All Permissions').setEmoji(emojis.OBJ_REMOVE).setStyle(ButtonStyle.Danger)
         );
 
         const msg = await message.channel.send({ embeds: [embed], components: [selectRow, btnRow] });

@@ -15,7 +15,7 @@ const EMOJI_MAP = {
   ticket: emojis.TICKETS,
   voice: emojis.VOICE,
   music: emojis.MUSIC,
-  antinuke: emojis.ANTINUKE,
+  antinuke: emojis.AN_SHIELD,
   level: emojis.LEVEL,
   fun: emojis.FUN,
   giveaway: emojis.GIVEAWAY,

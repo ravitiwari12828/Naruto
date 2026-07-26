@@ -84,9 +84,9 @@ const CATEGORIES = [
     label: 'AntiNuke & Security',
     value: 'antinuke',
     description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, BypassRole & 21 Security Filters',
-    customEmoji: emojis.OBJ_ANTINUKE,
-    unicodeFallback: emojis.SHIELD,
-    heading: `${emojis.ANTINUKE || emojis.SHIELD} AntiNuke & Security Commands`,
+    customEmoji: emojis.OBJ_AN_SHIELD,
+    unicodeFallback: '🛡️',
+    heading: `${emojis.AN_SHIELD} AntiNuke & Security Commands`,
     commands: [
       'antinuke', 'antinuke enable', 'antinuke disable',
       'whitelist add', 'whitelist remove',
