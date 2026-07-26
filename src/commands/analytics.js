@@ -180,14 +180,15 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
     boxText;
 
   return createStyledEmbed({
-    title: `${emojis.ANALYTICS_ZAP} ${guild.name} Analytics`,
-    subtitle: `Server Performance Dashboard (${label})`,
+    title: `${emojis.ANALYTICS_ZAP} ${guild.name} Analytics — Overview [${label}]`,
+    subtitle: `Server Performance Overview (${label})`,
     description,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Timeframe: ${label} • Live Sync • Naruto Executive`,
+    footerText: `Tab: Overview • Timeframe: ${label} • Live Sync`,
     requestedBy: author,
     clientUser
   });
+
 }
 
 function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey = 'lifetime', author, clientUser) {
