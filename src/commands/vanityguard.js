@@ -72,7 +72,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.SHIELD || '🛡️'} Server Vanity Protection Enabled!`,
+        title: `${emojis.AN_SHIELD} Server Vanity Protection Enabled!`,
         description: `**Vanity URL Anti-Theft Guard is now ACTIVE!**\n\n` +
                      `Locks the current vanity URL. Anyone who tries to change it will be banned and the URL will be instantly reverted.\n\n` +
                      '```\n' + box + '\n```',
@@ -93,7 +93,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.WARNING || '⚠️'} Server Vanity Protection Disabled`,
+        title: `${emojis.AN_PANIC} Server Vanity Protection Disabled`,
         description: `Disables the vanity protection system.\n\n` +
                      '```\n' + box + '\n```',
         requestedBy: author,
@@ -120,7 +120,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `⚡ Protected Vanity URL Code Locked!`,
+        title: `${emojis.AN_SHIELD} Protected Vanity URL Code Locked!`,
         description: `Successfully set and locked protected vanity code to \`discord.gg/${code}\`.\n\n` +
                      '```\n' + box + '\n```',
         requestedBy: author,
@@ -148,7 +148,7 @@ module.exports = {
     ]);
 
     const decoyExplain =
-      `**🛡️ How Decoy System Works:**\n` +
+      `**${emojis.AN_SHIELD} How Decoy System Works:**\n` +
       `> Your real vanity \`discord.gg/${codeStr}\` is **LOCKED** in bot memory.\n` +
       `> If any admin tries to change it — what they set becomes a **DECOY** and is instantly rejected.\n` +
       `> Bot reclaims \`discord.gg/${codeStr}\` in **< 50ms**.\n` +
@@ -161,7 +161,7 @@ module.exports = {
       '```\n' + cmdBox + '\n```';
 
     const embed = createStyledEmbed({
-      title: `🔗 Server Vanity Protection — ${guild.name}`,
+      title: `${emojis.AN_GUILD} Server Vanity Protection — ${guild.name}`,
       subtitle: `Realtime Server Vanity URL Anti-Theft Guard`,
       description,
       requestedBy: author,
