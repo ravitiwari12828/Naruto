@@ -14,24 +14,6 @@ function initLavalink(client) {
         secure: process.env.LAVALINK_SECURE === 'true',
         retryAmount: 15,
         retryDelay: 3000
-      },
-      {
-        id: 'node-vost',
-        host: 'lavalink.vost.pt',
-        port: 443,
-        authorization: 'youshallnotpass',
-        secure: true,
-        retryAmount: 5,
-        retryDelay: 5000
-      },
-      {
-        id: 'node-ajie',
-        host: 'lava-v4.ajiehospitality.me',
-        port: 443,
-        authorization: 'ajiehospitality',
-        secure: true,
-        retryAmount: 5,
-        retryDelay: 5000
       }
     ],
     sendToShard: (guildId, payload) => {
