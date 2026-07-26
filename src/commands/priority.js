@@ -89,7 +89,7 @@ module.exports = {
       const aiResponse = await generateAIAnswer(query, mode);
 
       const embed = createStyledEmbed({
-        title: mode === 'code' ? '💻 Priority Code Assistant' : '✨ Priority AI Assistant',
+        title: mode === 'code' ? `${emojis.LAPTOP || '💻'} Priority Code Assistant` : `${emojis.SPARKLES || '✨'} Priority AI Assistant`,
         subtitle: mode === 'code' ? 'Generated Code Solution' : 'Sage Intelligence Response',
         description: aiResponse.slice(0, 4000),
         requestedBy: message.author,
