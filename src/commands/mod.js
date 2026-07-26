@@ -345,15 +345,30 @@ module.exports = {
 
       await message.delete().catch(() => {});
       const deleted = await message.channel.bulkDelete(amount, true).catch(() => null);
+      const count = deleted?.size || 0;
 
       const embed = createStyledEmbed({
-        title: `🗑️ Messages Purged`,
-        description: `**${deleted?.size || 0}** message(s) have been incinerated with Fire Style!`,
+        title: `${emojis.AN_CHANNEL || '🗑️'} Messages Purged`,
+        description: `**${count}** message(s) have been incinerated with Fire Style in ${message.channel}!`,
         requestedBy: message.author,
         clientUser
       });
       const reply = await message.channel.send({ embeds: [embed] });
       setTimeout(() => reply.delete().catch(() => {}), 4000);
+
+      // Dispatch dedicated moderation log entry
+      dispatchLog(guild, 'modlogs', {
+        color: 0xE67E22,
+        title: `🧹 Bulk Messages Purged`,
+        description:
+          `• **Channel:** ${message.channel} (\`#${message.channel.name}\`)\n` +
+          `• **Requested:** \`${amount}\` messages\n` +
+          `• **Deleted:** \`${count}\` messages\n` +
+          `• **Moderator:** <@${message.author.id}> (\`${message.author.tag}\`)`,
+        footer: `Purge Action • Server Audit Logs`
+      });
+
+      db.recordAnalyticsEvent(guild.id, message.author.id, 'messages_purged', count);
       return;
     }
 
@@ -366,14 +381,26 @@ module.exports = {
       const botMessages = messages.filter(m => m.author.bot);
       await message.channel.bulkDelete(botMessages, true).catch(() => null);
 
+      const count = botMessages.size;
+
       const embed = createStyledEmbed({
-        title: `🤖 Bot Messages Purged`,
-        description: `**${botMessages.size}** bot message(s) cleared from the channel.`,
+        title: `${emojis.AN_BOT || '🤖'} Bot Messages Purged`,
+        description: `**${count}** bot message(s) cleared from ${message.channel}.`,
         requestedBy: message.author,
         clientUser
       });
       const reply = await message.channel.send({ embeds: [embed] });
       setTimeout(() => reply.delete().catch(() => {}), 4000);
+
+      dispatchLog(guild, 'modlogs', {
+        color: 0xE67E22,
+        title: `🤖 Bot Messages Purged`,
+        description:
+          `• **Channel:** ${message.channel} (\`#${message.channel.name}\`)\n` +
+          `• **Bot Messages Deleted:** \`${count}\`\n` +
+          `• **Moderator:** <@${message.author.id}> (\`${message.author.tag}\`)`,
+        footer: `Purge Action • Server Audit Logs`
+      });
       return;
     }
 
@@ -384,18 +411,38 @@ module.exports = {
 
       const channel = message.channel;
       const position = channel.position;
-      const newChannel = await channel.clone({ reason: `Channel nuked by ${message.author.tag}` });
-      await newChannel.setPosition(position);
-      await channel.delete().catch(() => {});
+      const topic = channel.topic;
+      const parent = channel.parent;
+      const permissionOverwrites = channel.permissionOverwrites.cache;
+
+      const newChannel = await channel.clone({
+        name: channel.name,
+        permissions: permissionOverwrites,
+        topic: topic,
+        parent: parent,
+        position: position,
+        reason: `Nuke command executed by ${message.author.tag}`
+      });
+
+      await channel.delete('Nuke command executed');
 
       const embed = createStyledEmbed({
-        title: `💣 CHANNEL NUKED`,
-        subtitle: `Rasenshuriken — All messages obliterated!`,
-        description: `This channel was nuked and recreated. All previous messages are gone.\n\n**Executed by:** ${message.author.tag}`,
+        title: `${emojis.AN_PANIC || '💣'} Channel Nuked & Re-created!`,
+        description: `This channel was nuked by **${message.author.tag}**. All messages cleared!`,
         requestedBy: message.author,
         clientUser
       });
-      return newChannel.send({ embeds: [embed] });
+      await newChannel.send({ embeds: [embed] });
+
+      dispatchLog(guild, 'modlogs', {
+        color: 0xED4245,
+        title: `💣 Channel Nuked & Re-created`,
+        description:
+          `• **Channel:** ${newChannel} (\`#${newChannel.name}\`)\n` +
+          `• **Moderator:** <@${message.author.id}> (\`${message.author.tag}\`)`,
+        footer: `Nuke Action • Server Audit Logs`
+      });
+      return;
     }
 
     // 11. 🎭 ROLE (add/remove)
