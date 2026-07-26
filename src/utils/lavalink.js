@@ -7,11 +7,11 @@ function initLavalink(client) {
   lavalink = new LavalinkManager({
     nodes: [
       {
-        id: 'node-jirayu',
-        host: 'lavalink.jirayu.net',
-        port: 443,
-        authorization: 'youshallnotpass',
-        secure: true,
+        id: 'synn-node-main',
+        host: process.env.LAVALINK_HOST || 'usa5.kerit.cloud',
+        port: parseInt(process.env.LAVALINK_PORT) || 9013,
+        authorization: process.env.LAVALINK_PASSWORD || '781312113c683e27',
+        secure: process.env.LAVALINK_SECURE === 'true',
         retryAmount: 15,
         retryDelay: 3000
       },
@@ -21,8 +21,8 @@ function initLavalink(client) {
         port: 443,
         authorization: 'youshallnotpass',
         secure: true,
-        retryAmount: 10,
-        retryDelay: 3000
+        retryAmount: 5,
+        retryDelay: 5000
       },
       {
         id: 'node-ajie',
@@ -30,26 +30,8 @@ function initLavalink(client) {
         port: 443,
         authorization: 'ajiehospitality',
         secure: true,
-        retryAmount: 10,
-        retryDelay: 3000
-      },
-      {
-        id: 'node-devamop',
-        host: 'lavalink.devamop.ru',
-        port: 443,
-        authorization: 'youshallnotpass',
-        secure: true,
-        retryAmount: 10,
-        retryDelay: 3000
-      },
-      {
-        id: 'synn-node-main',
-        host: process.env.LAVALINK_HOST || 'usa5.kerit.cloud',
-        port: parseInt(process.env.LAVALINK_PORT) || 9013,
-        authorization: process.env.LAVALINK_PASSWORD || '781312113c683e27',
-        secure: process.env.LAVALINK_SECURE === 'true',
-        retryAmount: 10,
-        retryDelay: 3000
+        retryAmount: 5,
+        retryDelay: 5000
       }
     ],
     sendToShard: (guildId, payload) => {
