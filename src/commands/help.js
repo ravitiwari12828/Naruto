@@ -45,9 +45,9 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
     .sort((a, b) => a.label.localeCompare(b.label))
     .map(cat => {
       const customEmoji = EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
-      return `${customEmoji}  »  **${cat.label}**`;
+      return `### ${customEmoji}  »  ${cat.label}`;
     })
-    .join('\n\n'); // Spaced out double line breaks like AntiNuke
+    .join('\n'); // Discord H3 headers naturally add clean vertical spacing & larger font size
 
   const embed = new EmbedBuilder()
     .setColor(0x7E0808)
@@ -60,11 +60,12 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
       `Total Commands :  ${totalCommands}+\n` +
       `Active Modules :  ${CATEGORIES.length}\n` +
       `\`\`\`\n\n` +
-      `**${emojis.SCROLL} All Modules**\n\n` +
+      `## ${emojis.SCROLL} All Modules\n` +
       `${moduleLines}\n\n` +
-      `**Links**\n` +
-      `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands) | [Support Server](https://discord.gg/ZPKcPreUMT) | [Vote](https://top.gg/bot/${message.client.user.id})`
+      `### 🔗 **Quick Links**\n` +
+      `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands) • [Support Server](https://discord.gg/ZPKcPreUMT) • [Vote Top.gg](https://top.gg/bot/${message.client.user.id})`
     )
+
     .setFooter({
       text: `Developed with ❤️ by Synn • Select a module below`,
       iconURL: botAvatar
