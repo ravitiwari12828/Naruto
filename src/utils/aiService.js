@@ -3,7 +3,7 @@ const https = require('https');
 /**
  * High-Intelligence AI Provider Engine for Naruto Bot
  * Supports:
- * 1. Google Gemini 1.5 Flash API (when GEMINI_API_KEY or GOOGLE_API_KEY is set)
+ * 1. Google Gemini API (gemini-1.5-flash, gemini-2.0-flash, gemini-pro)
  * 2. DuckDuckGo & Wikipedia Deep Knowledge REST Engine (for instant detailed facts)
  * 3. Smart Extraction for queries like "give me a knowledge about X", "who is Y", "what is Z"
  */
@@ -23,7 +23,7 @@ async function generateAIAnswer(prompt, mode = 'general') {
         return geminiRes.trim();
       }
     } catch (err) {
-      console.error('[Gemini API Error]:', err.message);
+      console.error('[Gemini API Warning]:', err.message);
     }
   }
 
@@ -58,7 +58,9 @@ async function generateAIAnswer(prompt, mode = 'general') {
 }
 
 function fetchGeminiAPI(prompt, apiKey, mode) {
-  return new Promise((resolve, reject) => {
+  const models = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-pro'];
+  
+  return new Promise(async (resolve, reject) => {
     let systemInstruction = 'You are Naruto One AI, an intelligent, helpful, and concise AI assistant built for Discord. Give clear, accurate answers.';
     if (mode === 'code') {
       systemInstruction = 'You are an expert software engineer. Provide clear, syntax-highlighted code with brief explanations.';
@@ -72,9 +74,23 @@ function fetchGeminiAPI(prompt, apiKey, mode) {
       ]
     });
 
+    for (const model of models) {
+      try {
+        const text = await executeGeminiReq(model, apiKey, payload);
+        if (text) return resolve(text);
+      } catch (e) {
+        // Continue to next model fallback
+      }
+    }
+    reject(new Error('All Gemini models failed or key invalid'));
+  });
+}
+
+function executeGeminiReq(model, apiKey, payload) {
+  return new Promise((resolve, reject) => {
     const options = {
       hostname: 'generativelanguage.googleapis.com',
-      path: `/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -90,7 +106,7 @@ function fetchGeminiAPI(prompt, apiKey, mode) {
           const parsed = JSON.parse(body);
           const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (text) resolve(text);
-          else reject(new Error('Invalid Gemini API response payload'));
+          else reject(new Error(`Model ${model} returned empty candidates`));
         } catch (e) {
           reject(e);
         }
@@ -100,7 +116,7 @@ function fetchGeminiAPI(prompt, apiKey, mode) {
     req.on('error', err => reject(err));
     req.setTimeout(8000, () => {
       req.destroy();
-      reject(new Error('Gemini API Timeout'));
+      reject(new Error(`Model ${model} timeout`));
     });
 
     req.write(payload);
