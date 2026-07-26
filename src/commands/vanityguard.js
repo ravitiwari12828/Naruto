@@ -24,7 +24,13 @@ module.exports = {
   getOrCreateVanityConfig,
 
   async execute(message, args) {
-    const sub = args[0]?.toLowerCase();
+    let sub = args[0]?.toLowerCase();
+    if (['protection', 'protect'].includes(sub)) {
+      sub = args[1]?.toLowerCase();
+      // Shift args if 'protection' or 'protect' was used
+      args = args.slice(1);
+    }
+
     const guild = message.guild;
     const author = message.author;
 
@@ -51,72 +57,115 @@ module.exports = {
       config.protectedVanity = guild.vanityURLCode;
     }
 
-    // .vanityguard enable / disable
-    if (sub === 'enable') {
+    // .vanity protection enable / .vanity enable / .vanity protection on
+    if (['enable', 'on', 'active'].includes(sub)) {
       config.enabled = true;
       if (guild.vanityURLCode) config.protectedVanity = guild.vanityURLCode;
       vanityConfigs.set(guild.id, config);
 
+      const codeStr = config.protectedVanity ? 'discord.gg/' + config.protectedVanity : 'Not Set (Run .vanity set <code\>)';
+      const boxLines = [
+        '╭──────────────────────────╮',
+        '│  VANITYGUARD PROTECTION  │',
+        '├──────────────────────────┤',
+        '│ Action     : ENABLED     │',
+        '│ Vanity     : ' + ('.gg/' + (config.protectedVanity || 'None')).slice(0, 12).padEnd(12, ' ') + '│',
+        '│ Reversion  : < 50ms      │',
+        '│ Penalty    : BAN & LOCK  │',
+        '╰──────────────────────────╯'
+      ];
+
       const embed = createStyledEmbed({
-        title: `${emojis.SHIELD || emojis.SHIELD} VanityGuard Enabled!`,
+        title: `${emojis.SHIELD || '🛡️'} Server Vanity Protection Enabled!`,
         description: `**Vanity URL Anti-Theft Guard is now ACTIVE!**\n\n` +
-                     `• **Protected Vanity:** \`${config.protectedVanity ? 'discord.gg/' + config.protectedVanity : 'Not Set (Run .vanityguard set <code\>)'}\`\n` +
-                     `• **Recovery Latency:** \`< 50ms\` (Sub-millisecond Reversion)\n` +
-                     `• **Anti-Theft Penalty:** 10-Day Quarantine Jail, role strip & channel lockout for vanity thieves!`,
+                     `Locks the current vanity URL. Anyone who tries to change it will be banned and the URL will be instantly reverted.\n\n` +
+                     '```\n' + boxLines.join('\n') + '\n```',
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    if (sub === 'disable') {
+    // .vanity protection disable / .vanity disable / .vanity protection off
+    if (['disable', 'off', 'deactivate'].includes(sub)) {
       config.enabled = false;
       vanityConfigs.set(guild.id, config);
-      return message.reply(`${emojis.WARNING} VanityGuard Protection is now **DISABLED**.`);
+
+      const boxLines = [
+        '╭──────────────────────────╮',
+        '│  VANITYGUARD PROTECTION  │',
+        '├──────────────────────────┤',
+        '│ Action     : DISABLED    │',
+        '│ Status     : INACTIVE    │',
+        '╰──────────────────────────╯'
+      ];
+
+      const embed = createStyledEmbed({
+        title: `${emojis.WARNING || '⚠️'} Server Vanity Protection Disabled`,
+        description: `Disables the vanity protection system.\n\n` +
+                     '```\n' + boxLines.join('\n') + '\n```',
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
     }
 
-    // .vanityguard set <vanityCode>
+    // .vanity set <vanityCode> / .vanity protection set <vanityCode>
     if (sub === 'set') {
       const code = args[1]?.replace('https://discord.gg/', '').replace('discord.gg/', '').trim();
       if (!code) {
-        return message.reply(`${emojis.WARNING} Usage: \`.vanityguard set <vanityCode>\` (e.g. \`.vanityguard set radha\`)`);
+        return message.reply(`${emojis.WARNING} Usage: \`.vanity set <vanityCode>\` (e.g. \`.vanity set radha\`)`);
       }
 
       config.protectedVanity = code;
       config.enabled = true;
       vanityConfigs.set(guild.id, config);
 
+      const boxLines = [
+        '╭──────────────────────────╮',
+        '│   VANITY CODE LOCKED     │',
+        '├──────────────────────────┤',
+        '│ Code       : ' + ('.gg/' + code).slice(0, 12).padEnd(12, ' ') + '│',
+        '│ Guard      : ACTIVE      │',
+        '│ AutoReclaim: Immediate   │',
+        '╰──────────────────────────╯'
+      ];
+
       const embed = createStyledEmbed({
         title: `⚡ Protected Vanity URL Code Locked!`,
-        fields: [
-          { name: '🌐 Protected URL', value: `\`discord.gg/${code}\``, inline: true },
-          { name: '${emojis.SHIELD} Guard Status', value: `\`ACTIVE (24/7 Monitoring)\``, inline: true },
-          { name: '⚡ Auto-Restoration', value: `If anyone alters \`discord.gg/${code}\`, Naruto will instantly reclaim it & lock out the thief for 10 Days!`, inline: false }
-        ],
+        description: `Successfully set and locked protected vanity code to \`discord.gg/${code}\`.\n\n` +
+                     '```\n' + boxLines.join('\n') + '\n```',
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    // DEFAULT: STATUS DASHBOARD
+    // DEFAULT / .vanity protection status / .vanity status / .vanity
     const codeStr = config.protectedVanity || guild.vanityURLCode || 'None';
     const boxMain = [
       '╭──────────────────────────╮',
       '│  VANITYGUARD CONTROL HUB │',
       '├──────────────────────────┤',
-      '│ Status     : ' + (config.enabled ? 'ACTIVE  [OK]' : 'DISABLED[X]'),
-      '│ Locked Code: ' + ('.gg/' + codeStr).slice(0, 12).padEnd(12, ' '),
+      '│ Status     : ' + (config.enabled ? 'ACTIVE  [OK]' : 'DISABLED[X]') + '│',
+      '│ Locked Code: ' + ('.gg/' + codeStr).slice(0, 12).padEnd(12, ' ') + '│',
       '│ Recovery   : < 50ms      │',
       '╰──────────────────────────╯'
     ];
 
     const description =
-      `Welcome **${author.username}**! Below is your server **VanityGuard Anti-Theft Status**.\n\n` +
-      '```\n' + boxMain.join('\n') + '\n```';
+      `Secure your level 3 server custom invite URL (Vanity URL) from being stolen or changed.\n\n` +
+      '```\n' + boxMain.join('\n') + '\n```\n\n' +
+      `**🔗 Vanity Commands:**\n` +
+      `\`\`\`\n` +
+      `.vanity protection enable   - Locks current vanity URL & bans thieves\n` +
+      `.vanity protection disable  - Disables vanity protection system\n` +
+      `.vanity protection status   - Displays system status & locked URL\n` +
+      `.vanity set <code\>          - Lock specific vanity URL code\n` +
+      `\`\`\``;
 
     const embed = createStyledEmbed({
-      title: `🌐 VanityGuard Protection Dashboard`,
+      title: `🔗 Server Vanity Protection — ${guild.name}`,
       subtitle: `Realtime Server Vanity URL Anti-Theft Guard`,
       description,
       requestedBy: author,
