@@ -643,8 +643,11 @@ module.exports = {
       collector.on('collect', async (i) => {
         try {
           await i.deferUpdate().catch(() => {});
-          if (i.customId.startsWith('stf_')) activeTf = i.customId.replace('stf_', '');
-          else if (i.customId.startsWith('scat_')) activeCat = i.customId.replace('scat_', '');
+          if (i.customId.startsWith('stf_') || i.customId.startsWith('tf_')) {
+            activeTf = i.customId.replace(/^(stf_|tf_)/, '');
+          } else if (i.customId.startsWith('scat_')) {
+            activeCat = i.customId.replace('scat_', '');
+          }
           await i.message.edit({
             embeds: [renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser)],
             components: [buildTimeframeRow(activeTf, 'stf_'), buildServerStatsCategoryRow(activeCat)]
@@ -654,6 +657,7 @@ module.exports = {
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
     }
+
 
     if (sub === 'messages') {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || 'lifetime') : (arg0 || 'lifetime');
