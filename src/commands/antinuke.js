@@ -304,50 +304,51 @@ function renderPanicComponents(config) {
   const jg = config.joinGate;
   const aq = config.autoQuarantine;
 
-  // Row 1: Executive Master Controls (Compact Emoji-Only Square Buttons)
+  // Row 1: Executive Master Controls (Custom Animated Discord Emojis)
   const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('toggle_shield')
-      .setEmoji(config.enabled ? (emojis.OBJ_SHIELD || emojis.SHIELD || '🛡️') : (emojis.OBJ_ERROR || emojis.ERROR || '❌'))
+      .setEmoji(config.enabled ? emojis.OBJ_ANTINUKE : emojis.OBJ_REMOVE)
       .setStyle(config.enabled ? ButtonStyle.Success : ButtonStyle.Danger),
     new ButtonBuilder()
       .setCustomId('toggle_panic')
-      .setEmoji(config.panicmode ? '🚨' : '🟢')
+      .setEmoji(config.panicmode ? emojis.OBJ_SHIELD : emojis.OBJ_ANTINUKE)
       .setStyle(config.panicmode ? ButtonStyle.Danger : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_joingate')
-      .setEmoji('🚪')
+      .setEmoji(emojis.OBJ_WELCOME)
       .setStyle(jg.enabled ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_quarantine')
-      .setEmoji('☣️')
+      .setEmoji(emojis.OBJ_AUTOMOD)
       .setStyle(aq.enabled ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('an_whitelist_mgr')
-      .setEmoji('👥')
+      .setEmoji(emojis.OBJ_PROFILE)
       .setStyle(ButtonStyle.Primary)
   );
 
-  // Row 2: Filter Perms Group 1
+  // Row 2: Filter Perms Group 1 (Custom Animated Discord Emojis)
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('toggle_ban').setEmoji(emojis.OBJ_MOD || emojis.MOD || '🛡️').setStyle(f.antiBan ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('toggle_kick').setEmoji('👢').setStyle(f.antiKick ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('toggle_bot').setEmoji('🤖').setStyle(f.antiBotAdd ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('toggle_channel').setEmoji('📁').setStyle(f.antiChannelCreate ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('toggle_role').setEmoji('🎭').setStyle(f.antiRoleCreate ? ButtonStyle.Success : ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('toggle_ban').setEmoji(emojis.OBJ_MOD).setStyle(f.antiBan ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('toggle_kick').setEmoji(emojis.OBJ_MOD).setStyle(f.antiKick ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('toggle_bot').setEmoji(emojis.OBJ_AUTOMOD).setStyle(f.antiBotAdd ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('toggle_channel').setEmoji(emojis.OBJ_CHANNEL_MOD).setStyle(f.antiChannelCreate ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('toggle_role').setEmoji(emojis.OBJ_SPECIAL_ROLES).setStyle(f.antiRoleCreate ? ButtonStyle.Success : ButtonStyle.Secondary)
   );
 
-  // Row 3: Filter Perms Group 2
+  // Row 3: Filter Perms Group 2 (Custom Animated Discord Emojis)
   const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('toggle_webhook').setEmoji('🔗').setStyle(f.antiWebhookCreate ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('toggle_spam').setEmoji('💬').setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('toggle_everyone').setEmoji('📢').setStyle(f.antiEveryone ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('toggle_raid').setEmoji('⚔️').setStyle(f.antiRaid ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('toggle_guild').setEmoji('🌐').setStyle(f.antiGuildUpdate ? ButtonStyle.Success : ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('toggle_webhook').setEmoji(emojis.OBJ_AUTORESPOND).setStyle(f.antiWebhookCreate ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('toggle_spam').setEmoji(emojis.OBJ_AUTORESPOND).setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('toggle_everyone').setEmoji(emojis.OBJ_TICKETS).setStyle(f.antiEveryone ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('toggle_raid').setEmoji(emojis.OBJ_ANTINUKE).setStyle(f.antiRaid ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('toggle_guild').setEmoji(emojis.OBJ_ALL_MODULES).setStyle(f.antiGuildUpdate ? ButtonStyle.Success : ButtonStyle.Secondary)
   );
 
   return [row1, row2, row3];
 }
+
 
 module.exports = {
   name: 'antinuke',
