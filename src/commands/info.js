@@ -150,7 +150,12 @@ function buildServerInfoRow1(activeTab = 'overview') {
       .setCustomId('sinfo_emojis')
       .setLabel('Emojis')
       .setEmoji(emojis.OBJ_EMOJIS || '🎨')
-      .setStyle(activeTab === 'emojis' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+      .setStyle(activeTab === 'emojis' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+  );
+}
+
+function buildServerInfoRow2(guild, activeTab = 'overview') {
+  return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('sinfo_features')
       .setLabel('Features')
@@ -160,17 +165,17 @@ function buildServerInfoRow1(activeTab = 'overview') {
       .setCustomId('sinfo_roles')
       .setLabel('Roles')
       .setEmoji(emojis.OBJ_ROLES || '🎭')
-      .setStyle(activeTab === 'roles' ? ButtonStyle.Primary : ButtonStyle.Secondary)
-  );
-}
-
-function buildServerInfoRow2(guild, activeTab = 'overview') {
-  return new ActionRowBuilder().addComponents(
+      .setStyle(activeTab === 'roles' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_icon')
       .setLabel('Icon')
       .setEmoji(emojis.OBJ_ICON || '🖼️')
-      .setStyle(activeTab === 'icon' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+      .setStyle(activeTab === 'icon' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+  );
+}
+
+function buildServerInfoRow3(guild, activeTab = 'overview') {
+  return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('sinfo_banner')
       .setLabel('Banner')
@@ -192,12 +197,15 @@ function buildServerInfoRow2(guild, activeTab = 'overview') {
 }
 
 
+
 module.exports = {
   name: 'info',
   description: 'Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo',
   buildServerInfoMainEmbed,
   buildServerInfoRow1,
   buildServerInfoRow2,
+  buildServerInfoRow3,
+
   aliases: [
     'ping', 'about', 'invite', 'node',
     'profile', 'serverinfo', 'server', 'si',
@@ -327,9 +335,10 @@ module.exports = {
 
       let embed = buildServerInfoMainEmbed(guild, owner, activeTab, author, clientUser);
       let row1 = buildServerInfoRow1(activeTab);
-      let row2 = buildServerInfoRow2(guild);
+      let row2 = buildServerInfoRow2(guild, activeTab);
+      let row3 = buildServerInfoRow3(guild, activeTab);
 
-      const msg = await message.channel.send({ embeds: [embed], components: [row1, row2] });
+      const msg = await message.channel.send({ embeds: [embed], components: [row1, row2, row3] });
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
@@ -364,10 +373,12 @@ module.exports = {
           activeTab = i.customId.replace('sinfo_', '');
           const newEmbed = buildServerInfoMainEmbed(guild, owner, activeTab, author, clientUser);
           const newRow1 = buildServerInfoRow1(activeTab);
-          const newRow2 = buildServerInfoRow2(guild);
-          return i.update({ embeds: [newEmbed], components: [newRow1, newRow2] });
+          const newRow2 = buildServerInfoRow2(guild, activeTab);
+          const newRow3 = buildServerInfoRow3(guild, activeTab);
+          return i.update({ embeds: [newEmbed], components: [newRow1, newRow2, newRow3] });
         }
       });
+
 
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
