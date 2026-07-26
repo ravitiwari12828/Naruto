@@ -156,5 +156,39 @@ module.exports = {
   OBJ_SCROLL: { name: 'orange_white_shinobi_scroll', id: '1529377768528285827' }
 };
 
+function resolveEmojiForReaction(client, guild, rawEmoji) {
+  if (!rawEmoji) return null;
+  const str = rawEmoji.trim();
+
+  // 1. Custom Emoji syntax: <a:name:id> or <:name:id>
+  const customMatch = str.match(/<a?:([a-zA-Z0-9_]+):(\d+)>/);
+  if (customMatch) {
+    const [, eName, eId] = customMatch;
+    const cached = client?.emojis?.cache?.get(eId) || guild?.emojis?.cache?.get(eId);
+    if (cached) return cached;
+    return `${eName}:${eId}`;
+  }
+
+  // 2. Shortcode format :name:
+  if (/^:[a-zA-Z0-9_]+:$/.test(str)) {
+    const eName = str.replace(/:/g, '').toLowerCase();
+    const cached = guild?.emojis?.cache?.find(e => e.name.toLowerCase() === eName) ||
+                   client?.emojis?.cache?.find(e => e.name.toLowerCase() === eName);
+    if (cached) return cached;
+    return null;
+  }
+
+  // 3. Raw emoji ID
+  if (/^\d{17,20}$/.test(str)) {
+    const cached = client?.emojis?.cache?.get(str) || guild?.emojis?.cache?.get(str);
+    if (cached) return cached;
+  }
+
+  // 4. Standard Unicode Emoji (e.g. 🔥, 🚶‍♂️, ❤️, 🤺, 🕴️)
+  return str;
+}
+
+module.exports.resolveEmojiForReaction = resolveEmojiForReaction;
+
 
 
