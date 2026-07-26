@@ -65,14 +65,14 @@ module.exports = {
 
       const codeStr = config.protectedVanity ? 'discord.gg/' + config.protectedVanity : 'Not Set (Run .vanity set <code\>)';
       const boxLines = [
-        '╭────────────────────────────────────╮',
-        '│       VANITYGUARD PROTECTION       │',
-        '├────────────────────────────────────┤',
+        '╭──────────────────────────╮',
+        '│  VANITYGUARD PROTECTION  │',
+        '├──────────────────────────┤',
         '│ Action     : ENABLED     │',
         '│ Vanity     : ' + ('.gg/' + (config.protectedVanity || 'None')).slice(0, 12).padEnd(12, ' ') + '│',
         '│ Reversion  : < 50ms      │',
         '│ Penalty    : BAN & LOCK  │',
-        '╰────────────────────────────────────╯'
+        '╰──────────────────────────╯'
       ];
 
       const embed = createStyledEmbed({
@@ -92,12 +92,12 @@ module.exports = {
       vanityConfigs.set(guild.id, config);
 
       const boxLines = [
-        '╭────────────────────────────────────╮',
-        '│       VANITYGUARD PROTECTION       │',
-        '├────────────────────────────────────┤',
+        '╭──────────────────────────╮',
+        '│  VANITYGUARD PROTECTION  │',
+        '├──────────────────────────┤',
         '│ Action     : DISABLED    │',
         '│ Status     : INACTIVE    │',
-        '╰────────────────────────────────────╯'
+        '╰──────────────────────────╯'
       ];
 
       const embed = createStyledEmbed({
@@ -122,13 +122,13 @@ module.exports = {
       vanityConfigs.set(guild.id, config);
 
       const boxLines = [
-        '╭────────────────────────────────────╮',
-        '│        VANITY CODE LOCKED          │',
-        '├────────────────────────────────────┤',
+        '╭──────────────────────────╮',
+        '│    VANITY CODE LOCKED    │',
+        '├──────────────────────────┤',
         '│ Code       : ' + ('.gg/' + code).slice(0, 12).padEnd(12, ' ') + '│',
         '│ Guard      : ACTIVE      │',
         '│ AutoReclaim: Immediate   │',
-        '╰────────────────────────────────────╯'
+        '╰──────────────────────────╯'
       ];
 
       const embed = createStyledEmbed({
@@ -144,13 +144,13 @@ module.exports = {
     // DEFAULT / .vanity protection status / .vanity status / .vanity
     const codeStr = config.protectedVanity || guild.vanityURLCode || 'None';
     const boxMain = [
-      '╭────────────────────────────────────╮',
-      '│      VANITYGUARD CONTROL HUB       │',
-      '├────────────────────────────────────┤',
+      '╭──────────────────────────╮',
+      '│ VANITYGUARD CONTROL HUB  │',
+      '├──────────────────────────┤',
       '│ Status     : ' + (config.enabled ? 'ACTIVE  [OK]' : 'DISABLED[X]') + '│',
       '│ Locked Code: ' + ('.gg/' + codeStr).slice(0, 12).padEnd(12, ' ') + '│',
       '│ Recovery   : < 50ms      │',
-      '╰────────────────────────────────────╯'
+      '╰──────────────────────────╯'
     ];
 
     const description =

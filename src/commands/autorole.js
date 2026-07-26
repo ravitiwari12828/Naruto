@@ -4,8 +4,8 @@ const emojis = require('../utils/emojis');
 const { PermissionsBitField } = require('discord.js');
 
 function formatBoxLine(key, value) {
-  const k = (key).padEnd(12, ' ') + ' : ';
-  const v = String(value).slice(0, 19).padEnd(19, ' ');
+  const k = (key + ' : ').padEnd(11, ' ');
+  const v = String(value).slice(0, 13).padEnd(13, ' ');
   return '│ ' + k + v + ' │';
 }
 
@@ -35,14 +35,14 @@ module.exports = {
       const arTriggers = autoresponderCmd?.autorespondersStore?.get(message.guild.id)?.size || 0;
 
       const boxLines = [
-        '╭────────────────────────────────────╮',
-        '│        AUTOMATION OVERVIEW         │',
-        '├────────────────────────────────────┤',
+        '╭──────────────────────────╮',
+        '│   AUTOMATION OVERVIEW    │',
+        '├──────────────────────────┤',
         formatBoxLine('AutoRole H', humanCount + ' role(s)'),
         formatBoxLine('AutoRole B', botCount + ' role(s)'),
         formatBoxLine('AutoReply', arTriggers + ' trgs'),
         formatBoxLine('AutoMod', 'Active'),
-        '╰────────────────────────────────────╯'
+        '╰──────────────────────────╯'
       ];
 
       const embed = createStyledEmbed({
@@ -117,15 +117,15 @@ module.exports = {
       }
 
       const boxLines = [
-        '╭────────────────────────────────────╮',
-        '│        MASSROLE EXECUTION          │',
-        '├────────────────────────────────────┤',
+        '╭──────────────────────────╮',
+        '│    MASSROLE EXECUTION    │',
+        '├──────────────────────────┤',
         formatBoxLine('Action', action.toUpperCase()),
         formatBoxLine('Target', targetLabel),
         formatBoxLine('Role', '@' + role.name),
         formatBoxLine('Members', count),
         formatBoxLine('Status', 'Completed'),
-        '╰────────────────────────────────────╯'
+        '╰──────────────────────────╯'
       ];
 
       const embed = createStyledEmbed({
@@ -144,14 +144,14 @@ module.exports = {
     // ━━━━━ 3. .autorole HELP ━━━━━
     if (!sub || sub === 'help') {
       const boxLines = [
-        '╭────────────────────────────────────╮',
-        '│        AUTOMATION COMMANDS         │',
-        '├────────────────────────────────────┤',
-        '│ .automation                        │',
-        '│ .autorole config                   │',
-        '│ .massrole add                      │',
-        '│ .massrole remove                   │',
-        '╰────────────────────────────────────╯'
+        '╭──────────────────────────╮',
+        '│   AUTOMATION COMMANDS    │',
+        '├──────────────────────────┤',
+        '│ .automation              │',
+        '│ .autorole config         │',
+        '│ .massrole add            │',
+        '│ .massrole remove         │',
+        '╰──────────────────────────╯'
       ];
 
       const embed = createStyledEmbed({
@@ -177,9 +177,9 @@ module.exports = {
       const botRolesList = currentConfig.bots?.map(r => message.guild.roles.cache.get(r)?.name || r) || [];
 
       const boxLines = [
-        '╭────────────────────────────────────╮',
+        '╭──────────────────────────╮',
         '│  AUTOROLE CONFIGURATION  │',
-        '├────────────────────────────────────┤',
+        '├──────────────────────────┤',
         '│ Human AutoRoles:         │'
       ];
 
@@ -202,7 +202,7 @@ module.exports = {
         });
       }
 
-      boxLines.push('╰────────────────────────────────────╯');
+      boxLines.push('╰──────────────────────────╯');
 
       const embed = createStyledEmbed({
         title: `${emojis.GEAR || emojis.GEAR} AutoRole Configuration`,
@@ -226,14 +226,14 @@ module.exports = {
         db.setAutorole(message.guild.id, sub, role.id, 'add');
 
         const boxLines = [
-          '╭────────────────────────────────────╮',
+          '╭──────────────────────────╮',
           '│    AUTOROLE UPDATED      │',
-          '├────────────────────────────────────┤',
+          '├──────────────────────────┤',
           formatBoxLine('Target', sub.toUpperCase()),
           formatBoxLine('Action', 'ADD'),
           formatBoxLine('Role', '@' + role.name),
           formatBoxLine('Status', 'Saved'),
-          '╰────────────────────────────────────╯'
+          '╰──────────────────────────╯'
         ];
 
         const embed = createStyledEmbed({
@@ -249,14 +249,14 @@ module.exports = {
         db.setAutorole(message.guild.id, sub, role.id, 'remove');
 
         const boxLines = [
-          '╭────────────────────────────────────╮',
+          '╭──────────────────────────╮',
           '│    AUTOROLE UPDATED      │',
-          '├────────────────────────────────────┤',
+          '├──────────────────────────┤',
           formatBoxLine('Target', sub.toUpperCase()),
           formatBoxLine('Action', 'REMOVE'),
           formatBoxLine('Role', '@' + role.name),
           formatBoxLine('Status', 'Saved'),
-          '╰────────────────────────────────────╯'
+          '╰──────────────────────────╯'
         ];
 
         const embed = createStyledEmbed({
@@ -271,9 +271,9 @@ module.exports = {
         const rolesList = currentConfig[sub]?.map(r => message.guild.roles.cache.get(r)?.name || r) || [];
 
         const boxLines = [
-          '╭────────────────────────────────────╮',
+          '╭──────────────────────────╮',
           '│  AUTOROLE LIST: ' + sub.toUpperCase().padEnd(8, ' ') + ' │',
-          '├────────────────────────────────────┤'
+          '├──────────────────────────┤'
         ];
 
         if (rolesList.length === 0) {
@@ -283,7 +283,7 @@ module.exports = {
             boxLines.push('│   • ' + ('@' + name).slice(0, 20).padEnd(20, ' ') + ' │');
           });
         }
-        boxLines.push('╰────────────────────────────────────╯');
+        boxLines.push('╰──────────────────────────╯');
 
         const embed = createStyledEmbed({
           title: `${emojis.GEAR} AutoRole: ${sub.toUpperCase()}`,
@@ -302,13 +302,13 @@ module.exports = {
       if (target === 'all' || target === 'bots') db.setAutorole(message.guild.id, 'bots', null, 'reset');
 
       const boxLines = [
-        '╭────────────────────────────────────╮',
+        '╭──────────────────────────╮',
         '│     AUTOROLE RESET       │',
-        '├────────────────────────────────────┤',
+        '├──────────────────────────┤',
         formatBoxLine('Target', target.toUpperCase()),
         formatBoxLine('Action', 'RESET'),
         formatBoxLine('Status', 'Complete'),
-        '╰────────────────────────────────────╯'
+        '╰──────────────────────────╯'
       ];
 
       const embed = createStyledEmbed({

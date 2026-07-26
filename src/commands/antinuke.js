@@ -240,6 +240,12 @@ function isUserWhitelistedForFeature(config, userId, featureName) {
   return false;
 }
 
+function formatBoxLine(key, value) {
+  const k = (key + ' : ').padEnd(11, ' ');
+  const v = String(value).slice(0, 13).padEnd(13, ' ');
+  return '│ ' + k + v + ' │';
+}
+
 function renderAntinukeDashboard(config, author, clientUser) {
   const f = config.filters;
   const jg = config.joinGate;
@@ -250,36 +256,36 @@ function renderAntinukeDashboard(config, author, clientUser) {
   const whitelistCount = config.whitelistedUsers.size;
 
   const boxMain = [
-    '╭────────────────────────────────────╮',
+    '╭──────────────────────────╮',
     '│   ANTINUKE SYSTEM HUB    │',
-    '├────────────────────────────────────┤',
-    '│ AntiNuke   : ' + (config.enabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '│ Panic Mode : ' + (config.panicmode ? `ACTIVE  L${config.panicLevel}` : 'NORMAL [OFF]'),
-    '│ ExtraOwner : ' + (config.extraOwners.size + ' Users').padEnd(12, ' '),
-    '│ Whitelist  : ' + (whitelistCount + ' Users').padEnd(12, ' '),
-    '╰────────────────────────────────────╯'
+    '├──────────────────────────┤',
+    formatBoxLine('AntiNuke', config.enabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('Panic Mode', config.panicmode ? `ACTIVE L${config.panicLevel}` : 'NORMAL [OFF]'),
+    formatBoxLine('ExtraOwner', config.extraOwners.size + ' Users'),
+    formatBoxLine('Whitelist', whitelistCount + ' Users'),
+    '╰──────────────────────────╯'
   ];
 
   const boxGate = [
-    '╭────────────────────────────────────╮',
+    '╭──────────────────────────╮',
     '│    JOINGATE SECURITY     │',
-    '├────────────────────────────────────┤',
-    '│ AntiBotAdd : ' + (jg.antiBotAdd ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '│ Unverified : ' + (jg.antiUnverifiedBot ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '│ No Avatar  : ' + (jg.antiNoAvatar ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '│ AccountAge : ' + (jg.antiAccountAge ? `${jg.minAccountAgeDays} Days [OK]` : 'DISABLED[X]'),
-    '╰────────────────────────────────────╯'
+    '├──────────────────────────┤',
+    formatBoxLine('AntiBotAdd', jg.antiBotAdd ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('Unverified', jg.antiUnverifiedBot ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('No Avatar', jg.antiNoAvatar ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('AccountAge', jg.antiAccountAge ? `${jg.minAccountAgeDays}d [OK]` : 'DISABLED[X]'),
+    '╰──────────────────────────╯'
   ];
 
   const boxQuarantine = [
-    '╭────────────────────────────────────╮',
+    '╭──────────────────────────╮',
     '│     AUTO QUARANTINE      │',
-    '├────────────────────────────────────┤',
-    '│ Quarantine : ' + (aq.enabled ? 'ACTIVE  [OK]' : 'DISABLED[X]'),
-    '│ AdminGuard : ' + (aq.strictMode ? 'ON      [OK]' : 'OFF     [X]'),
-    '│ MemberRole : ' + (aq.strictMemberRole ? 'ON      [OK]' : 'OFF     [X]'),
-    '│ PublicRole : ' + (aq.monitorPublicRoles ? 'ACTIVE  [OK]' : 'OFF     [X]'),
-    '╰────────────────────────────────────╯'
+    '├──────────────────────────┤',
+    formatBoxLine('Quarantine', aq.enabled ? 'ACTIVE  [OK]' : 'DISABLED[X]'),
+    formatBoxLine('AdminGuard', aq.strictMode ? 'ON      [OK]' : 'OFF     [X]'),
+    formatBoxLine('MemberRole', aq.strictMemberRole ? 'ON      [OK]' : 'OFF     [X]'),
+    formatBoxLine('PublicRole', aq.monitorPublicRoles ? 'ACTIVE  [OK]' : 'OFF     [X]'),
+    '╰──────────────────────────╯'
   ];
 
   const description =
