@@ -1,3 +1,4 @@
+const { createStyledEmbed } = require('../utils/embedBuilder');
 const { PermissionsBitField } = require('discord.js');
 const { isBotOwner } = require('../utils/owners');
 const emojis = require('../utils/emojis');

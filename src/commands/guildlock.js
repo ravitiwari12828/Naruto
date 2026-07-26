@@ -1,3 +1,4 @@
+const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { isBotOwner } = require('../utils/owners');
 
