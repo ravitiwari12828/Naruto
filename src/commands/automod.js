@@ -11,8 +11,8 @@ const db = require('../database/db');
 const emojis = require('../utils/emojis');
 
 function formatBoxLine(key, value) {
-  const k = (key + ' : ').padEnd(11, ' ');
-  const v = String(value).slice(0, 13).padEnd(13, ' ');
+  const k = (key).padEnd(12, ' ') + ' : ';
+  const v = String(value).slice(0, 19).padEnd(19, ' ');
   return '│ ' + k + v + ' │';
 }
 
@@ -20,28 +20,28 @@ function renderAutomodFiltersEmbed(config, guild, author, clientUser) {
   const f = config;
 
   const boxLines = [
-    '╭──────────────────────────╮',
-    '│   AUTOMOD CONTROL HUB    │',
-    '├──────────────────────────┤',
-    '│ AntiSpam   : ' + (f.antiSpam ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '│ InviteLink : ' + (f.inviteLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '│ Malicious  : ' + (f.maliciousLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '│ NSFW Links : ' + (f.nsfwLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '│ Word List  : ' + String((f.wordBlacklist || []).length).padStart(2, '0') + ' words  ',
-    '│ Link List  : ' + String((f.linkBlacklist || []).length).padStart(2, '0') + ' links  ',
-    '├──────────────────────────┤',
-    '│   AUTOMOD COMMANDS       │',
-    '├──────────────────────────┤',
-    '│ .automod                 │',
-    '│ .automod config          │',
-    '│ .addword <word>          │',
-    '│ .delword <word>          │',
-    '│ .addlink <domain>        │',
-    '│ .dellink <domain>        │',
-    '│ .antibot wl @bot         │',
-    '│ .antibot unwl @bot       │',
-    '│ .blacklist               │',
-    '╰──────────────────────────╯'
+    '╭────────────────────────────────────╮',
+    '│        AUTOMOD CONTROL HUB         │',
+    '├────────────────────────────────────┤',
+    formatBoxLine('AntiSpam', f.antiSpam ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('InviteLink', f.inviteLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('Malicious', f.maliciousLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('NSFW Links', f.nsfwLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('Word List', String((f.wordBlacklist || []).length).padStart(2, '0') + ' words'),
+    formatBoxLine('Link List', String((f.linkBlacklist || []).length).padStart(2, '0') + ' links'),
+    '├────────────────────────────────────┤',
+    '│          AUTOMOD COMMANDS          │',
+    '├────────────────────────────────────┤',
+    '│ .automod                           │',
+    '│ .automod config                    │',
+    '│ .addword <word>                    │',
+    '│ .delword <word>                    │',
+    '│ .addlink <domain>                  │',
+    '│ .dellink <domain>                  │',
+    '│ .antibot wl @bot                   │',
+    '│ .antibot unwl @bot                 │',
+    '│ .blacklist                         │',
+    '╰────────────────────────────────────╯'
   ];
 
   return createStyledEmbed({
@@ -64,24 +64,24 @@ function renderMiscSettingsEmbed(config, guild, author, clientUser) {
   const quarRole = m.quarantineRoleId ? `<@&${m.quarantineRoleId}>` : '`Quarantine`';
 
   const boxLines = [
-    '╭──────────────────────────╮',
-    '│   MISC & MODERATION      │',
-    '├──────────────────────────┤',
-    '│ Prefix     : ' + String(m.prefix || '.').padEnd(12, ' '),
-    '│ ConfirmMsg : ' + (m.moderatorConfirmation !== false ? 'YES   [OK]' : 'NO    [OFF]'),
-    '│ Always DM  : ' + (m.alwaysDmPunished !== false ? 'YES   [OK]' : 'NO    [OFF]'),
-    '│ Anon Staff : ' + (m.hideStaffIdentity ? 'ON    [OK]' : 'OFF   [OFF]'),
-    '│ Timeout    : ' + (String(m.defaultTimeoutMinutes || 2880) + 'm').padEnd(12, ' '),
-    '│ Ban Purge  : ' + (String(m.daysPurgedOnBan || 7) + 'd').padEnd(12, ' '),
-    '├──────────────────────────┤',
-    '│   MISC COMMANDS          │',
-    '├──────────────────────────┤',
-    '│ .misc                    │',
-    '│ .automod misc            │',
-    '│ .modlogs #channel        │',
-    '│ .quarantine @user        │',
-    '│ .unquarantine @user      │',
-    '╰──────────────────────────╯'
+    '╭────────────────────────────────────╮',
+    '│       MISCELLANEOUS & MOD          │',
+    '├────────────────────────────────────┤',
+    formatBoxLine('Prefix', m.prefix || '.'),
+    formatBoxLine('ConfirmMsg', m.moderatorConfirmation !== false ? 'YES   [OK]' : 'NO    [OFF]'),
+    formatBoxLine('Always DM', m.alwaysDmPunished !== false ? 'YES   [OK]' : 'NO    [OFF]'),
+    formatBoxLine('Anon Staff', m.hideStaffIdentity ? 'ON    [OK]' : 'OFF   [OFF]'),
+    formatBoxLine('Timeout', String(m.defaultTimeoutMinutes || 2880) + 'm'),
+    formatBoxLine('Ban Purge', String(m.daysPurgedOnBan || 7) + 'd'),
+    '├────────────────────────────────────┤',
+    '│           MISC COMMANDS            │',
+    '├────────────────────────────────────┤',
+    '│ .misc                              │',
+    '│ .automod misc                      │',
+    '│ .modlogs #channel                  │',
+    '│ .quarantine @user                  │',
+    '│ .unquarantine @user                │',
+    '╰────────────────────────────────────╯'
   ];
 
   return createStyledEmbed({
@@ -214,13 +214,13 @@ module.exports = {
         }
 
         const boxLines = [
-          '╭──────────────────────────╮',
-          '│   ANTIBOT WHITELIST      │',
-          '├──────────────────────────┤',
+          '╭────────────────────────────────────╮',
+          '│         ANTIBOT WHITELIST          │',
+          '├────────────────────────────────────┤',
           formatBoxLine('Action', 'WHITELIST'),
           formatBoxLine('Bot', ('@' + targetUser.username).slice(0, 13)),
           formatBoxLine('Status', 'Authorized'),
-          '╰──────────────────────────╯'
+          '╰────────────────────────────────────╯'
         ];
 
         const embed = createStyledEmbed({
@@ -247,13 +247,13 @@ module.exports = {
         }
 
         const boxLines = [
-          '╭──────────────────────────╮',
-          '│   ANTIBOT WHITELIST      │',
-          '├──────────────────────────┤',
+          '╭────────────────────────────────────╮',
+          '│         ANTIBOT WHITELIST          │',
+          '├────────────────────────────────────┤',
           formatBoxLine('Action', 'UNWHITELIST'),
           formatBoxLine('Bot', ('@' + targetUser.username).slice(0, 13)),
           formatBoxLine('Status', 'Revoked'),
-          '╰──────────────────────────╯'
+          '╰────────────────────────────────────╯'
         ];
 
         const embed = createStyledEmbed({
@@ -271,13 +271,13 @@ module.exports = {
       // .antibot list / .antibot status / .antibot
       const botList = (config.whitelistedBots || []).map(id => `<@${id}>`).join(', ') || '*No bots whitelisted.*';
       const boxLines = [
-        '╭──────────────────────────╮',
-        '│   ANTIBOT SECURITY HUB   │',
-        '├──────────────────────────┤',
+        '╭────────────────────────────────────╮',
+        '│        ANTIBOT SECURITY HUB        │',
+        '├────────────────────────────────────┤',
         formatBoxLine('AntiBotAdd', 'ENABLED [OK]'),
         formatBoxLine('Whitelisted', (config.whitelistedBots || []).length + ' Bot(s)'),
         formatBoxLine('Bot Gate', 'Active [OK]'),
-        '╰──────────────────────────╯'
+        '╰────────────────────────────────────╯'
       ];
 
       const embed = createStyledEmbed({
@@ -376,17 +376,17 @@ module.exports = {
       const cats = Object.entries(config.customCategories || {}).map(([name, wList]) => `• **${name.toUpperCase()}**: ${wList.join(', ') || 'Empty'}`).join('\n') || '*No custom categories.*';
 
       const boxLines = [
-        '╭──────────────────────────╮',
-        '│  BLACKLIST COMMANDS      │',
-        '├──────────────────────────┤',
-        '│ .addword <word>          │',
-        '│ .delword <word>          │',
-        '│ .addlink <domain>        │',
-        '│ .dellink <domain>        │',
-        '│ .addcategory <name>      │',
-        '│ .delcategory <name>      │',
-        '│ .blacklist               │',
-        '╰──────────────────────────╯'
+        '╭────────────────────────────────────╮',
+        '│         BLACKLIST COMMANDS         │',
+        '├────────────────────────────────────┤',
+        '│ .addword <word>                    │',
+        '│ .delword <word>                    │',
+        '│ .addlink <domain>                  │',
+        '│ .dellink <domain>                  │',
+        '│ .addcategory <name>                │',
+        '│ .delcategory <name>                │',
+        '│ .blacklist                         │',
+        '╰────────────────────────────────────╯'
       ];
 
       const embed = createStyledEmbed({
@@ -431,17 +431,17 @@ module.exports = {
           const links = (config.linkBlacklist || []).join(', ') || 'None';
 
           const boxLines = [
-            '╭──────────────────────────╮',
-            '│  BLACKLIST COMMANDS      │',
-            '├──────────────────────────┤',
-            '│ .addword <word>          │',
-            '│ .delword <word>          │',
-            '│ .addlink <domain>        │',
-            '│ .dellink <domain>        │',
-            '│ .addcategory <name>      │',
-            '│ .delcategory <name>      │',
-            '│ .blacklist               │',
-            '╰──────────────────────────╯'
+            '╭────────────────────────────────────╮',
+            '│         BLACKLIST COMMANDS         │',
+            '├────────────────────────────────────┤',
+            '│ .addword <word>                    │',
+            '│ .delword <word>                    │',
+            '│ .addlink <domain>                  │',
+            '│ .dellink <domain>                  │',
+            '│ .addcategory <name>                │',
+            '│ .delcategory <name>                │',
+            '│ .blacklist                         │',
+            '╰────────────────────────────────────╯'
           ];
 
           const bEmbed = createStyledEmbed({
@@ -461,13 +461,13 @@ module.exports = {
           const wl = (config.whitelistedBots || []).map(id => `<@${id}>`).join(', ') || '*None*';
 
           const boxLines = [
-            '╭──────────────────────────╮',
-            '│   ANTIBOT COMMANDS       │',
-            '├──────────────────────────┤',
-            '│ .antibot wl @bot         │',
-            '│ .antibot unwl @bot       │',
-            '│ .antibot list            │',
-            '╰──────────────────────────╯'
+            '╭────────────────────────────────────╮',
+            '│          ANTIBOT COMMANDS          │',
+            '├────────────────────────────────────┤',
+            '│ .antibot wl @bot                   │',
+            '│ .antibot unwl @bot                 │',
+            '│ .antibot list                      │',
+            '╰────────────────────────────────────╯'
           ];
 
           const abEmbed = createStyledEmbed({

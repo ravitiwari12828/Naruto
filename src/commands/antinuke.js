@@ -250,36 +250,36 @@ function renderAntinukeDashboard(config, author, clientUser) {
   const whitelistCount = config.whitelistedUsers.size;
 
   const boxMain = [
-    '╭──────────────────────────╮',
+    '╭────────────────────────────────────╮',
     '│   ANTINUKE SYSTEM HUB    │',
-    '├──────────────────────────┤',
+    '├────────────────────────────────────┤',
     '│ AntiNuke   : ' + (config.enabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
     '│ Panic Mode : ' + (config.panicmode ? `ACTIVE  L${config.panicLevel}` : 'NORMAL [OFF]'),
     '│ ExtraOwner : ' + (config.extraOwners.size + ' Users').padEnd(12, ' '),
     '│ Whitelist  : ' + (whitelistCount + ' Users').padEnd(12, ' '),
-    '╰──────────────────────────╯'
+    '╰────────────────────────────────────╯'
   ];
 
   const boxGate = [
-    '╭──────────────────────────╮',
+    '╭────────────────────────────────────╮',
     '│    JOINGATE SECURITY     │',
-    '├──────────────────────────┤',
+    '├────────────────────────────────────┤',
     '│ AntiBotAdd : ' + (jg.antiBotAdd ? 'ENABLED [OK]' : 'DISABLED[X]'),
     '│ Unverified : ' + (jg.antiUnverifiedBot ? 'ENABLED [OK]' : 'DISABLED[X]'),
     '│ No Avatar  : ' + (jg.antiNoAvatar ? 'ENABLED [OK]' : 'DISABLED[X]'),
     '│ AccountAge : ' + (jg.antiAccountAge ? `${jg.minAccountAgeDays} Days [OK]` : 'DISABLED[X]'),
-    '╰──────────────────────────╯'
+    '╰────────────────────────────────────╯'
   ];
 
   const boxQuarantine = [
-    '╭──────────────────────────╮',
+    '╭────────────────────────────────────╮',
     '│     AUTO QUARANTINE      │',
-    '├──────────────────────────┤',
+    '├────────────────────────────────────┤',
     '│ Quarantine : ' + (aq.enabled ? 'ACTIVE  [OK]' : 'DISABLED[X]'),
     '│ AdminGuard : ' + (aq.strictMode ? 'ON      [OK]' : 'OFF     [X]'),
     '│ MemberRole : ' + (aq.strictMemberRole ? 'ON      [OK]' : 'OFF     [X]'),
     '│ PublicRole : ' + (aq.monitorPublicRoles ? 'ACTIVE  [OK]' : 'OFF     [X]'),
-    '╰──────────────────────────╯'
+    '╰────────────────────────────────────╯'
   ];
 
   const description =
