@@ -201,6 +201,7 @@ class ResilientDatabase {
 
     this.sqliteDb.all(`SELECT * FROM autoreacts`, [], (err, rows) => {
       if (!err && rows) {
+        this.data.autoreacts = {};
         rows.forEach(r => {
           if (!this.data.autoreacts[r.guildId]) this.data.autoreacts[r.guildId] = [];
           this.data.autoreacts[r.guildId].push({ id: r.id, trigger: r.trigger, emoji: r.emoji });
@@ -210,6 +211,7 @@ class ResilientDatabase {
 
     this.sqliteDb.all(`SELECT * FROM autoresponses`, [], (err, rows) => {
       if (!err && rows) {
+        this.data.autoresponses = {};
         rows.forEach(r => {
           if (!this.data.autoresponses[r.guildId]) this.data.autoresponses[r.guildId] = [];
           this.data.autoresponses[r.guildId].push({ id: r.id, trigger: r.trigger, response: r.response });
