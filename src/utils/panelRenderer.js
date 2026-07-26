@@ -249,9 +249,9 @@ const CATEGORIES = [
     label: 'Priority AI',
     value: 'priority',
     description: 'AI text answers & coding assistant',
-    customEmoji: emojis.OBJ_PRIORITY,
-    unicodeFallback: '🤖',
-    heading: `${emojis.PRIORITY || '🤖'} Priority AI Commands`,
+    customEmoji: emojis.OBJ_AN_SPARKLES,
+    unicodeFallback: '✨',
+    heading: `${emojis.SPARKLES} Priority AI Commands`,
     commands: [
       'ask <question>',
       'ai <prompt>',
