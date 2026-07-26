@@ -138,6 +138,24 @@ function buildUserMetricRow(activeCat) {
   );
 }
 
+function formatAsciiBox(title, rows) {
+  const INNER_WIDTH = 26;
+  const top = '╭' + '─'.repeat(INNER_WIDTH + 2) + '╮';
+  const mid = '├' + '─'.repeat(INNER_WIDTH + 2) + '┤';
+  const bot = '╰' + '─'.repeat(INNER_WIDTH + 2) + '╯';
+
+  const titlePadded = title.slice(0, INNER_WIDTH).padStart(Math.floor((INNER_WIDTH + title.length) / 2), ' ').padEnd(INNER_WIDTH, ' ');
+  const titleLine = '│ ' + titlePadded + ' │';
+
+  const contentLines = rows.map(r => {
+    const key = r.key.slice(0, 11).padEnd(11, ' ');
+    const val = String(r.val).slice(0, 13).padEnd(13, ' ');
+    return '│ ' + key + ': ' + val + ' │';
+  });
+
+  return '```\n' + [top, titleLine, mid, ...contentLines, bot].join('\n') + '\n```';
+}
+
 function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', activeCategory = 'overview', author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey] || 'All Time';
@@ -150,18 +168,13 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
     const topChatter = chatLb.length > 0 ? (guild.members.cache.get(chatLb[0].userId)?.user.username || `User${chatLb[0].userId}`) : 'None';
     const topMsgs = chatLb.length > 0 ? chatLb[0].total.toLocaleString() : '0';
 
-    const boxText =
-      '```\n' +
-      '╭──────────────────────────╮\n' +
-      '│   CHAT ACTIVITY STATS    │\n' +
-      '├──────────────────────────┤\n' +
-      '│ Timeframe : ' + String(label).padEnd(12, ' ') + ' │\n' +
-      '│ Total Msgs: ' + String(stats.messages.toLocaleString() + ' msgs').slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '│ Active Usrs: ' + String(chatLb.length + ' chatters').slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '│ Top Chatter: ' + String(topChatter).slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '│ Top Msgs  : ' + String(topMsgs + ' msgs').slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '╰──────────────────────────╯\n' +
-      '```';
+    const boxText = formatAsciiBox('CHAT ACTIVITY STATS', [
+      { key: 'Timeframe', val: label },
+      { key: 'Total Msgs', val: `${stats.messages.toLocaleString()} msgs` },
+      { key: 'Active Usrs', val: `${chatLb.length} chatters` },
+      { key: 'Top Chatter', val: topChatter },
+      { key: 'Top Msgs', val: `${topMsgs} msgs` }
+    ]);
 
     return createStyledEmbed({
       title: `${emojis.AUTORESPOND} ${guild.name} Analytics — Chat Stats [${label}]`,
@@ -179,18 +192,13 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
     const topSpeaker = voiceLb.length > 0 ? (guild.members.cache.get(voiceLb[0].userId)?.user.username || `User${voiceLb[0].userId}`) : 'None';
     const topVcTime = voiceLb.length > 0 ? formatDuration(voiceLb[0].total) : '0m';
 
-    const boxText =
-      '```\n' +
-      '╭──────────────────────────╮\n' +
-      '│   VOICE ACTIVITY STATS   │\n' +
-      '├──────────────────────────┤\n' +
-      '│ Timeframe : ' + String(label).padEnd(12, ' ') + ' │\n' +
-      '│ Total Voice: ' + String(formatDuration(stats.voiceSeconds)).slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '│ Active VCs: ' + String(voiceLb.length + ' members').slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '│ Top Speaker: ' + String(topSpeaker).slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '│ Top VC Time: ' + String(topVcTime).slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '╰──────────────────────────╯\n' +
-      '```';
+    const boxText = formatAsciiBox('VOICE ACTIVITY STATS', [
+      { key: 'Timeframe', val: label },
+      { key: 'Total Voice', val: formatDuration(stats.voiceSeconds) },
+      { key: 'Active VCs', val: `${voiceLb.length} members` },
+      { key: 'Top Speaker', val: topSpeaker },
+      { key: 'Top VC Time', val: topVcTime }
+    ]);
 
     return createStyledEmbed({
       title: `${emojis.VOICE} ${guild.name} Analytics — Voice Stats [${label}]`,
@@ -208,18 +216,13 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
     const topInviter = invLb.length > 0 ? (guild.members.cache.get(invLb[0].userId)?.user.username || `User${invLb[0].userId}`) : 'None';
     const topJoins = invLb.length > 0 ? invLb[0].total.toLocaleString() : '0';
 
-    const boxText =
-      '```\n' +
-      '╭──────────────────────────╮\n' +
-      '│   INVITE RECRUIT STATS   │\n' +
-      '├──────────────────────────┤\n' +
-      '│ Timeframe : ' + String(label).padEnd(12, ' ') + ' │\n' +
-      '│ Total Joins: ' + String(stats.invites.toLocaleString() + ' joins').slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '│ Recruiters : ' + String(invLb.length + ' inviters').slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '│ Top Recruiter:' + String(topInviter).slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '│ Top Joins  : ' + String(topJoins + ' joins').slice(0, 12).padEnd(12, ' ') + ' │\n' +
-      '╰──────────────────────────╯\n' +
-      '```';
+    const boxText = formatAsciiBox('INVITE RECRUIT STATS', [
+      { key: 'Timeframe', val: label },
+      { key: 'Total Joins', val: `${stats.invites.toLocaleString()} joins` },
+      { key: 'Recruiters', val: `${invLb.length} inviters` },
+      { key: 'Top Inviter', val: topInviter },
+      { key: 'Top Joins', val: `${topJoins} joins` }
+    ]);
 
     return createStyledEmbed({
       title: `${emojis.MODMAIL_ENVELOPE} ${guild.name} Analytics — Invite Stats [${label}]`,
@@ -236,22 +239,17 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
   const textChannels = guild.channels.cache.filter(c => c.isTextBased()).size;
   const voiceChannels = guild.channels.cache.filter(c => c.isVoiceBased()).size;
 
-  const boxText =
-    '```\n' +
-    '╭──────────────────────────╮\n' +
-    '│  EXECUTIVE SERVER STATS  │\n' +
-    '├──────────────────────────┤\n' +
-    '│ Members   : ' + String(guild.memberCount).padEnd(12, ' ') + ' │\n' +
-    '│ Humans    : ' + String(humans).padEnd(12, ' ') + ' │\n' +
-    '│ Bots      : ' + String(bots).padEnd(12, ' ') + ' │\n' +
-    '│ Messages  : ' + String(stats.messages + ' msgs').slice(0, 12).padEnd(12, ' ') + ' │\n' +
-    '│ Voice     : ' + String(formatDuration(stats.voiceSeconds)).slice(0, 12).padEnd(12, ' ') + ' │\n' +
-    '│ Joins     : ' + String(stats.invites + ' joins').slice(0, 12).padEnd(12, ' ') + ' │\n' +
-    '│ Text Chans: ' + String(textChannels).padEnd(12, ' ') + ' │\n' +
-    '│ VoiceChans: ' + String(voiceChannels).padEnd(12, ' ') + ' │\n' +
-    '│ Roles     : ' + String(guild.roles.cache.size).padEnd(12, ' ') + ' │\n' +
-    '╰──────────────────────────╯\n' +
-    '```';
+  const boxText = formatAsciiBox('EXECUTIVE SERVER STATS', [
+    { key: 'Members', val: guild.memberCount },
+    { key: 'Humans', val: humans },
+    { key: 'Bots', val: bots },
+    { key: 'Messages', val: `${stats.messages.toLocaleString()} msgs` },
+    { key: 'Voice Time', val: formatDuration(stats.voiceSeconds) },
+    { key: 'Joins', val: `${stats.invites.toLocaleString()} joins` },
+    { key: 'Text Chans', val: textChannels },
+    { key: 'Voice Chans', val: voiceChannels },
+    { key: 'Roles', val: guild.roles.cache.size }
+  ]);
 
   return createStyledEmbed({
     title: `${emojis.ANALYTICS_ZAP} ${guild.name} Analytics — Overview [${label}]`,
@@ -263,6 +261,7 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
     clientUser
   });
 }
+
 
 
 function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey = 'lifetime', author, clientUser) {
