@@ -29,6 +29,18 @@ function renderAutomodFiltersEmbed(config, guild, author, clientUser) {
     '│ NSFW Links : ' + (f.nsfwLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
     '│ Word List  : ' + String((f.wordBlacklist || []).length).padStart(2, '0') + ' words  ',
     '│ Link List  : ' + String((f.linkBlacklist || []).length).padStart(2, '0') + ' links  ',
+    '├──────────────────────────┤',
+    '│   AUTOMOD COMMANDS       │',
+    '├──────────────────────────┤',
+    '│ .automod                 │',
+    '│ .automod config          │',
+    '│ .addword <word>          │',
+    '│ .delword <word>          │',
+    '│ .addlink <domain>        │',
+    '│ .dellink <domain>        │',
+    '│ .antibot wl @bot         │',
+    '│ .antibot unwl @bot       │',
+    '│ .blacklist               │',
     '╰──────────────────────────╯'
   ];
 
@@ -61,6 +73,14 @@ function renderMiscSettingsEmbed(config, guild, author, clientUser) {
     '│ Anon Staff : ' + (m.hideStaffIdentity ? 'ON    [OK]' : 'OFF   [OFF]'),
     '│ Timeout    : ' + (String(m.defaultTimeoutMinutes || 2880) + 'm').padEnd(12, ' '),
     '│ Ban Purge  : ' + (String(m.daysPurgedOnBan || 7) + 'd').padEnd(12, ' '),
+    '├──────────────────────────┤',
+    '│   MISC COMMANDS          │',
+    '├──────────────────────────┤',
+    '│ .misc                    │',
+    '│ .automod misc            │',
+    '│ .modlogs #channel        │',
+    '│ .quarantine @user        │',
+    '│ .unquarantine @user      │',
     '╰──────────────────────────╯'
   ];
 
@@ -355,18 +375,27 @@ module.exports = {
       const links = (config.linkBlacklist || []).join(', ') || 'None';
       const cats = Object.entries(config.customCategories || {}).map(([name, wList]) => `• **${name.toUpperCase()}**: ${wList.join(', ') || 'Empty'}`).join('\n') || '*No custom categories.*';
 
+      const boxLines = [
+        '╭──────────────────────────╮',
+        '│  BLACKLIST COMMANDS      │',
+        '├──────────────────────────┤',
+        '│ .addword <word>          │',
+        '│ .delword <word>          │',
+        '│ .addlink <domain>        │',
+        '│ .dellink <domain>        │',
+        '│ .addcategory <name>      │',
+        '│ .delcategory <name>      │',
+        '│ .blacklist               │',
+        '╰──────────────────────────╯'
+      ];
+
       const embed = createStyledEmbed({
         title: `🔤 Server AutoMod Blacklists — ${guild.name}`,
         description:
           `**Active Blacklisted Words (${(config.wordBlacklist || []).length}):**\n\`\`\`${words}\`\`\`\n` +
           `**Active Link Domains (${(config.linkBlacklist || []).length}):**\n\`\`\`${links}\`\`\`\n\n` +
           `**Custom Word Categories:**\n${cats}\n\n` +
-          `**Management Commands:**\n` +
-          `\`\`\`\n` +
-          `.addword <word>   | .delword <word>\n` +
-          `.addlink <domain> | .dellink <domain>\n` +
-          `.addcategory <name> [words] | .delcategory <name>\n` +
-          `\`\`\``,
+          '```\n' + boxLines.join('\n') + '\n```',
         requestedBy: author,
         clientUser
       });
@@ -400,12 +429,27 @@ module.exports = {
         if (val === 'tab_blacklists') {
           const words = (config.wordBlacklist || []).join(', ') || 'None';
           const links = (config.linkBlacklist || []).join(', ') || 'None';
+
+          const boxLines = [
+            '╭──────────────────────────╮',
+            '│  BLACKLIST COMMANDS      │',
+            '├──────────────────────────┤',
+            '│ .addword <word>          │',
+            '│ .delword <word>          │',
+            '│ .addlink <domain>        │',
+            '│ .dellink <domain>        │',
+            '│ .addcategory <name>      │',
+            '│ .delcategory <name>      │',
+            '│ .blacklist               │',
+            '╰──────────────────────────╯'
+          ];
+
           const bEmbed = createStyledEmbed({
             title: `🔤 Word & Link Blacklists — ${guild.name}`,
             description:
               `**Active Blacklisted Words:**\n\`\`\`${words}\`\`\`\n` +
               `**Active Blacklisted Link Domains:**\n\`\`\`${links}\`\`\`\n\n` +
-              `**To Add/Remove Words & Links:**\n\`\`\`.addword <word>\`\`\`\n\`\`\`.addlink <domain>\`\`\``,
+              '```\n' + boxLines.join('\n') + '\n```',
             requestedBy: author,
             clientUser
           });
@@ -415,9 +459,22 @@ module.exports = {
 
         if (val === 'tab_antibot') {
           const wl = (config.whitelistedBots || []).map(id => `<@${id}>`).join(', ') || '*None*';
+
+          const boxLines = [
+            '╭──────────────────────────╮',
+            '│   ANTIBOT COMMANDS       │',
+            '├──────────────────────────┤',
+            '│ .antibot wl @bot         │',
+            '│ .antibot unwl @bot       │',
+            '│ .antibot list            │',
+            '╰──────────────────────────╯'
+          ];
+
           const abEmbed = createStyledEmbed({
             title: `🤖 AntiBot Security Status — ${guild.name}`,
-            description: `**Whitelisted Authorized Bots:**\n${wl}\n\n**To Whitelist Bot:**\n\`\`\`.antibot wl <@bot>\`\`\``,
+            description:
+              `**Whitelisted Authorized Bots:**\n${wl}\n\n` +
+              '```\n' + boxLines.join('\n') + '\n```',
             requestedBy: author,
             clientUser
           });
