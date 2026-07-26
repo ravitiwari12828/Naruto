@@ -278,6 +278,21 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
+    // Strict Ticket Channel Scope Restriction
+    const isTicketChannel = message.channel.name.startsWith('ticket-') || 
+                            message.channel.name.startsWith('ticket') || 
+                            (message.channel.topic && message.channel.topic.includes('ticket|'));
+
+    const ticketOnlySubcommands = [
+      'claim', 'close', 'reopen', 'add', 'remove',
+      'add_member', 'remove_member', 'callstaff', 'anonymous',
+      'anon', 'lock', 'transcript'
+    ];
+
+    if (ticketOnlySubcommands.includes(sub) && !isTicketChannel) {
+      return message.reply(`${emojis.WARNING} The \`.${sub}\` command can only be used inside active ticket channels!`);
+    }
+
     // 1. TICKET SETUP (Deploys multi-category dropdown panel & log channels)
     if (['panel', 'setup', 'panel_deploy', 'wizard'].includes(sub)) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
@@ -414,6 +429,32 @@ module.exports = {
           ]
         });
       }
+    }
+
+    // 4.5 ADD MEMBER / REMOVE MEMBER (.add_member @user / .remove_member @user)
+    if (sub === 'add' || sub === 'add_member') {
+      const target = message.mentions.members.first() || guild.members.cache.get(args[1]);
+      if (!target) return message.reply(`${emojis.WARNING} Usage: \`.add_member @user\``);
+
+      await message.channel.permissionOverwrites.edit(target.id, {
+        ViewChannel: true,
+        SendMessages: true,
+        ReadMessageHistory: true
+      }).catch(() => {});
+
+      return message.reply(`${emojis.SUCCESS} Added <@${target.id}> to this ticket channel.`);
+    }
+
+    if (sub === 'remove' || sub === 'remove_member') {
+      const target = message.mentions.members.first() || guild.members.cache.get(args[1]);
+      if (!target) return message.reply(`${emojis.WARNING} Usage: \`.remove_member @user\``);
+
+      await message.channel.permissionOverwrites.edit(target.id, {
+        ViewChannel: false,
+        SendMessages: false
+      }).catch(() => {});
+
+      return message.reply(`${emojis.SUCCESS} Removed <@${target.id}> from this ticket channel.`);
     }
 
     // 5. CLAIM TICKET (.ticket claim / .claim)
