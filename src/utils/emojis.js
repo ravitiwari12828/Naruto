@@ -102,11 +102,43 @@ module.exports = {
   OBJ_MESSAGES: { name: 'emoji_chat_bubble', id: '1529377690161905775' },
   OBJ_INVITES: { name: 'emoji_envelope_invites', id: '1529377701507498044' },
 
+  // --- ANTINUKE CONTROL PANEL ANIMATED DISCORD EMOJIS ---
+  AN_WHITELIST: '<a:an_whitelist:1530948424273362974>',
+  AN_WEBHOOK: '<a:an_webhook:1530948419164569721>',
+  AN_SPAM: '<a:an_spam:1530948414269816943>',
+  AN_SHIELD: '<a:an_shield:1530948410390089913>',
+  AN_ROLE: '<a:an_role:1530948404837093538>',
+  AN_RAID: '<a:an_raid:1530948399824896172>',
+  AN_QUARANTINE: '<a:an_quarantine:1530948395328339998>',
+  AN_PANIC: '<a:an_panic:1530948389548724457>',
+  AN_KICK: '<a:an_kick:1530948384293388288>',
+  AN_JOINGATE: '<a:an_joingate:1530948378823888937>',
+  AN_GUILD: '<a:an_guild:1530948375892066446>',
+  AN_CHANNEL: '<a:an_channel:1530948367583023214>',
+  AN_BOT: '<a:an_bot:1530948362784870510>',
+  AN_BAN: '<a:an_ban:1530948358540230807>',
+
+  OBJ_AN_WHITELIST: { name: 'an_whitelist', id: '1530948424273362974', animated: true },
+  OBJ_AN_WEBHOOK: { name: 'an_webhook', id: '1530948419164569721', animated: true },
+  OBJ_AN_SPAM: { name: 'an_spam', id: '1530948414269816943', animated: true },
+  OBJ_AN_SHIELD: { name: 'an_shield', id: '1530948410390089913', animated: true },
+  OBJ_AN_ROLE: { name: 'an_role', id: '1530948404837093538', animated: true },
+  OBJ_AN_RAID: { name: 'an_raid', id: '1530948399824896172', animated: true },
+  OBJ_AN_QUARANTINE: { name: 'an_quarantine', id: '1530948395328339998', animated: true },
+  OBJ_AN_PANIC: { name: 'an_panic', id: '1530948389548724457', animated: true },
+  OBJ_AN_KICK: { name: 'an_kick', id: '1530948384293388288', animated: true },
+  OBJ_AN_JOINGATE: { name: 'an_joingate', id: '1530948378823888937', animated: true },
+  OBJ_AN_GUILD: { name: 'an_guild', id: '1530948375892066446', animated: true },
+  OBJ_AN_CHANNEL: { name: 'an_channel', id: '1530948367583023214', animated: true },
+  OBJ_AN_BOT: { name: 'an_bot', id: '1530948362784870510', animated: true },
+  OBJ_AN_BAN: { name: 'an_ban', id: '1530948358540230807', animated: true },
+
   OBJ_LOCK: { name: 'emoji_LOCK', id: '1529377727042420897' },
   OBJ_UNLOCK: { name: 'emoji_UNLOCK', id: '1529377753781239828' },
   OBJ_HIDE: { name: 'emoji_HIDE', id: '1529377710265340034' },
   OBJ_HUMAN: { name: 'emoji_HUMAN', id: '1529377712211492975' },
   OBJ_SCROLL: { name: 'orange_white_shinobi_scroll', id: '1529377768528285827' }
 };
+
 
 
