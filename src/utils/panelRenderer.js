@@ -471,16 +471,17 @@ function buildNavigationButtons() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('help_home')
-      .setEmoji(emojis.OBJ_HOME || '🏠')
-      .setLabel('Home')
-      .setStyle(ButtonStyle.Primary),
+      .setEmoji(emojis.OBJ_ALL_MODULES)
+      .setLabel('Home Menu')
+      .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId('help_delete')
-      .setEmoji(emojis.OBJ_REMOVE || '🗑️')
-      .setLabel('Delete')
+      .setEmoji(emojis.OBJ_REMOVE)
+      .setLabel('Close Panel')
       .setStyle(ButtonStyle.Danger)
   );
 }
+
 
 async function renderModuleHelpPanel(message, categoryValue) {
   const author = message.author;
