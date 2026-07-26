@@ -57,7 +57,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━ 2. .massrole add / remove ━━━━━
+    // ━━━━━ 2. .massrole [target: humans|bots|all] <action: add|remove> <role> ━━━━━
     if (invokedName === 'massrole' || sub === 'massrole') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
         return message.reply(`${emojis.DISABLED} You need **Manage Roles** permission to run massrole.`);
@@ -66,34 +66,44 @@ module.exports = {
         return message.reply(`${emojis.WARNING} I need **Manage Roles** permission to execute massrole!`);
       }
 
-      let action = 'add';
-      let roleArgIndex = 0;
+      // Check all args for target & action
+      let targetMode = 'humans'; // 'humans', 'bots', 'all'
+      let action = 'add'; // 'add', 'remove'
 
-      if (['add', 'give', 'grant'].includes(args[0]?.toLowerCase())) {
-        action = 'add';
-        roleArgIndex = 1;
-      } else if (['remove', 'take', 'revoke'].includes(args[0]?.toLowerCase())) {
+      const lowerArgs = args.map(a => a.toLowerCase());
+      if (lowerArgs.includes('bots') || lowerArgs.includes('bot')) targetMode = 'bots';
+      else if (lowerArgs.includes('all') || lowerArgs.includes('everyone')) targetMode = 'all';
+
+      if (lowerArgs.some(a => ['remove', 'take', 'revoke', 'delete', 'rem'].includes(a))) {
         action = 'remove';
-        roleArgIndex = 1;
+      } else if (lowerArgs.some(a => ['add', 'give', 'grant'].includes(a))) {
+        action = 'add';
       }
 
-      const role = message.mentions.roles.first() || message.guild.roles.cache.get(args[roleArgIndex]) || message.guild.roles.cache.get(args[0]);
+      const role = message.mentions.roles.first() || 
+                   message.guild.roles.cache.find(r => lowerArgs.includes(r.id) || lowerArgs.includes(r.name.toLowerCase()));
+
       if (!role) {
-        return message.reply(`${emojis.WARNING} Usage: \`.massrole <add/remove> @role\`\nExample: \`.massrole add @Member\``);
+        return message.reply(`${emojis.WARNING} Usage: \`.massrole [humans/bots/all] <add/remove> @role\`\nExample: \`.massrole humans remove @Student\``);
       }
 
       if (role.position >= message.guild.members.me.roles.highest.position) {
         return message.reply(`${emojis.WARNING} I cannot manage **${role.name}** because it is positioned higher than or equal to my highest role!`);
       }
 
+      const targetLabel = targetMode === 'bots' ? 'All Bots' : (targetMode === 'all' ? 'All Members' : 'All Humans');
       const modeStr = action === 'add' ? 'Assigning' : 'Removing';
-      const statusMsg = await message.reply(`${emojis.LOADING} ${modeStr} role **${role.name}** for all human members...`);
+      const statusMsg = await message.reply(`${emojis.LOADING} ${modeStr} role **${role.name}** for ${targetLabel.toLowerCase()}...`);
 
       let count = 0;
       const members = await message.guild.members.fetch();
 
       for (const [_, member] of members) {
-        if (!member.user.bot) {
+        const matchesTarget = (targetMode === 'humans' && !member.user.bot) ||
+                              (targetMode === 'bots' && member.user.bot) ||
+                              (targetMode === 'all');
+
+        if (matchesTarget) {
           try {
             if (action === 'add' && !member.roles.cache.has(role.id)) {
               await member.roles.add(role);
@@ -111,7 +121,7 @@ module.exports = {
         '│   MASSROLE EXECUTION     │',
         '├──────────────────────────┤',
         formatBoxLine('Action', action.toUpperCase()),
-        formatBoxLine('Target', 'All Humans'),
+        formatBoxLine('Target', targetLabel),
         formatBoxLine('Role', '@' + role.name),
         formatBoxLine('Members', count),
         formatBoxLine('Status', 'Completed'),
@@ -122,7 +132,7 @@ module.exports = {
         title: `${emojis.ROLES || '🎭'} Massrole Execution Complete`,
         subtitle: `Action: ${action.toUpperCase()}`,
         description:
-          `Successfully ${action === 'add' ? 'granted' : 'removed'} **${role.name}** for **${count}** human members.\n\n` +
+          `Successfully ${action === 'add' ? 'granted' : 'removed'} **${role.name}** for **${count}** ${targetLabel.toLowerCase()}.\n\n` +
           '```\n' + boxLines.join('\n') + '\n```',
         requestedBy: message.author,
         clientUser
