@@ -62,7 +62,8 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
       `\`\`\`\n\n` +
       `## ${emojis.DANCE || '<a:Flantic_qt_dance:1530521741263245333>'} All Modules\n` +
       `${moduleLines}\n\n` +
-      `### 🔗 **Quick Links**\n` +
+      `### ${emojis.QUICK_LINKS || '<a:quick_links:1530949796884512810>'} **Quick Links**\n` +
+
       `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands) • [Support Server](https://discord.gg/ZPKcPreUMT) • [Vote Top.gg](https://top.gg/bot/${message.client.user.id})`
     )
 

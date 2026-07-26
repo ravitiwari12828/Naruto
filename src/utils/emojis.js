@@ -14,6 +14,8 @@ module.exports = {
   ANALYTICS_ZAP: '<:emoji_analytics_zap:1529910228345163978>',
   DOT: '<a:lyf_Sharingan:1530533008694579250>',
   DANCE: '<a:Flantic_qt_dance:1530521741263245333>',
+  QUICK_LINKS: '<a:quick_links:1530949796884512810>',
+
 
 
   // --- MODULE CATEGORY EMOJIS (CUSTOM ANIMATED DISCORD EMOJIS) ---
