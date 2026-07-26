@@ -632,54 +632,75 @@ module.exports = {
     } catch (e) {}
 
     if (sub === 'server') {
-      // State: these two vars are the ONLY source of truth for what's displayed
-      let activeTf = 'lifetime';
+      // ── State ────────────────────────────────────────────────────────────
+      let activeTf  = 'lifetime';
       let activeCat = 'overview';
 
-      // Helper: build and send/update the panel
+      // ── Render helpers ───────────────────────────────────────────────────
       const buildComponents = () => [
         buildTimeframeRow(activeTf, 'stf_'),
         buildServerStatsCategoryRow(activeCat)
       ];
-      const buildEmbed = () => renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
+      const buildEmbed = () =>
+        renderServerStatsOverviewPanel(guild, activeTf, activeCat, author, clientUser);
 
-      // Send initial message
-      const msg = await message.channel.send({ embeds: [buildEmbed()], components: buildComponents() });
+      // ── Send initial panel ───────────────────────────────────────────────
+      const msg = await message.channel.send({
+        embeds: [buildEmbed()],
+        components: buildComponents()
+      });
 
-      // Create collector — only respond to this message's author
+      // ── Serialized update queue ──────────────────────────────────────────
+      // All edits are chained onto this promise so they NEVER run concurrently.
+      let editQueue = Promise.resolve();
+
+      const queueEdit = () => {
+        // Capture state RIGHT NOW (synchronous, before any await)
+        const snapTf  = activeTf;
+        const snapCat = activeCat;
+        editQueue = editQueue.then(() =>
+          msg.edit({
+            embeds: [renderServerStatsOverviewPanel(guild, snapTf, snapCat, author, clientUser)],
+            components: [
+              buildTimeframeRow(snapTf, 'stf_'),
+              buildServerStatsCategoryRow(snapCat)
+            ]
+          }).catch(() => {})
+        );
+      };
+
+      // ── Collector ────────────────────────────────────────────────────────
       const collector = msg.createMessageComponentCollector({
+        // Only accept interactions for THIS message from THIS user
         filter: (i) => i.user.id === author.id && i.message.id === msg.id,
         time: 300000
       });
 
       collector.on('collect', async (i) => {
-        try {
-          // Acknowledge the interaction immediately
-          await i.deferUpdate().catch(() => {});
+        // Acknowledge immediately so Discord doesn't show "interaction failed"
+        await i.deferUpdate().catch(() => {});
 
-          // STRICT prefix matching — only 'stf_' changes timeframe, only 'scat_' changes category
-          // NO generic 'tf_' fallback here to prevent cross-contamination
-          if (i.customId.startsWith('stf_')) {
-            const newTf = i.customId.slice(4); // everything after 'stf_'
-            if (WINDOWS.hasOwnProperty(newTf)) activeTf = newTf;
-          } else if (i.customId.startsWith('scat_')) {
-            const newCat = i.customId.slice(5); // everything after 'scat_'
-            if (['overview', 'chat', 'voice', 'invites'].includes(newCat)) activeCat = newCat;
+        // Update state (JS is single-threaded — these are safe)
+        if (i.customId.startsWith('stf_')) {
+          const newTf = i.customId.slice(4); // strip 'stf_'
+          if (Object.prototype.hasOwnProperty.call(WINDOWS, newTf)) {
+            activeTf = newTf;
           }
-          // else: unknown button — ignore it, don't change state
+        } else if (i.customId.startsWith('scat_')) {
+          const newCat = i.customId.slice(5); // strip 'scat_'
+          if (['overview', 'chat', 'voice', 'invites'].includes(newCat)) {
+            activeCat = newCat;
+          }
+        }
+        // Unknown customId → silently ignore, state unchanged
 
-          // Always edit the ORIGINAL message reference (msg), never i.message
-          await msg.edit({
-            embeds: [buildEmbed()],
-            components: buildComponents()
-          }).catch(() => {});
-        } catch (e) {}
+        // Queue a single serialized edit (prevents concurrent API calls)
+        queueEdit();
       });
 
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
     }
-
 
     if (sub === 'messages') {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || 'lifetime') : (arg0 || 'lifetime');
@@ -687,23 +708,27 @@ module.exports = {
       let page = 1;
       let { embed, currentPage, totalPages } = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
       const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'msgtf_'), buildPaginationRow(currentPage, totalPages)] });
-      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id, time: 300000 });
+      let editQueue = Promise.resolve();
+      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id && i.message.id === msg.id, time: 300000 });
       collector.on('collect', async (i) => {
-        try {
-          await i.deferUpdate().catch(() => {});
-          if (i.customId === 'page_stop') { collector.stop(); return i.message.edit({ components: [] }).catch(() => {}); }
-          else if (i.customId.startsWith('msgtf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(msgtf_|tf_)/, ''); page = 1; }
-          else if (i.customId === 'page_first') page = 1;
-          else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
-          else if (i.customId === 'page_next') page++;
-          else if (i.customId === 'page_last') page = 999;
-          const res = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
-          await i.message.edit({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'msgtf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
-        } catch (e) {}
+        await i.deferUpdate().catch(() => {});
+        if (i.customId === 'page_stop') { collector.stop(); return msg.edit({ components: [] }).catch(() => {}); }
+        else if (i.customId.startsWith('msgtf_')) { activeKey = i.customId.slice(6); page = 1; }
+        else if (i.customId === 'page_first') page = 1;
+        else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
+        else if (i.customId === 'page_next') page++;
+        else if (i.customId === 'page_last') page = 999;
+        const snapKey = activeKey; const snapPage = page;
+        editQueue = editQueue.then(() => {
+          const res = renderMessagesLeaderboard(guild, snapKey, snapPage, author, clientUser);
+          page = res.currentPage;
+          return msg.edit({ embeds: [res.embed], components: [buildTimeframeRow(snapKey, 'msgtf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
+        });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
     }
+
 
     if (sub === 'voice') {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || 'lifetime') : (arg0 || 'lifetime');
@@ -711,19 +736,22 @@ module.exports = {
       let page = 1;
       let { embed, currentPage, totalPages } = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
       const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'vctf_'), buildPaginationRow(currentPage, totalPages)] });
-      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id, time: 300000 });
+      let editQueue = Promise.resolve();
+      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id && i.message.id === msg.id, time: 300000 });
       collector.on('collect', async (i) => {
-        try {
-          await i.deferUpdate().catch(() => {});
-          if (i.customId === 'page_stop') { collector.stop(); return i.message.edit({ components: [] }).catch(() => {}); }
-          else if (i.customId.startsWith('vctf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(vctf_|tf_)/, ''); page = 1; }
-          else if (i.customId === 'page_first') page = 1;
-          else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
-          else if (i.customId === 'page_next') page++;
-          else if (i.customId === 'page_last') page = 999;
-          const res = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
-          await i.message.edit({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'vctf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
-        } catch (e) {}
+        await i.deferUpdate().catch(() => {});
+        if (i.customId === 'page_stop') { collector.stop(); return msg.edit({ components: [] }).catch(() => {}); }
+        else if (i.customId.startsWith('vctf_')) { activeKey = i.customId.slice(5); page = 1; }
+        else if (i.customId === 'page_first') page = 1;
+        else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
+        else if (i.customId === 'page_next') page++;
+        else if (i.customId === 'page_last') page = 999;
+        const snapKey = activeKey; const snapPage = page;
+        editQueue = editQueue.then(() => {
+          const res = renderVoiceLeaderboard(guild, snapKey, snapPage, author, clientUser);
+          page = res.currentPage;
+          return msg.edit({ embeds: [res.embed], components: [buildTimeframeRow(snapKey, 'vctf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
+        });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -735,19 +763,22 @@ module.exports = {
       let page = 1;
       let { embed, currentPage, totalPages } = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
       const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'invtf_'), buildPaginationRow(currentPage, totalPages)] });
-      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id, time: 300000 });
+      let editQueue = Promise.resolve();
+      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id && i.message.id === msg.id, time: 300000 });
       collector.on('collect', async (i) => {
-        try {
-          await i.deferUpdate().catch(() => {});
-          if (i.customId === 'page_stop') { collector.stop(); return i.message.edit({ components: [] }).catch(() => {}); }
-          else if (i.customId.startsWith('invtf_') || i.customId.startsWith('tf_')) { activeKey = i.customId.replace(/^(invtf_|tf_)/, ''); page = 1; }
-          else if (i.customId === 'page_first') page = 1;
-          else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
-          else if (i.customId === 'page_next') page++;
-          else if (i.customId === 'page_last') page = 999;
-          const res = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
-          await i.message.edit({ embeds: [res.embed], components: [buildTimeframeRow(activeKey, 'invtf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
-        } catch (e) {}
+        await i.deferUpdate().catch(() => {});
+        if (i.customId === 'page_stop') { collector.stop(); return msg.edit({ components: [] }).catch(() => {}); }
+        else if (i.customId.startsWith('invtf_')) { activeKey = i.customId.slice(6); page = 1; }
+        else if (i.customId === 'page_first') page = 1;
+        else if (i.customId === 'page_prev') page = Math.max(1, page - 1);
+        else if (i.customId === 'page_next') page++;
+        else if (i.customId === 'page_last') page = 999;
+        const snapKey = activeKey; const snapPage = page;
+        editQueue = editQueue.then(() => {
+          const res = renderInvitesLeaderboard(guild, snapKey, snapPage, author, clientUser);
+          page = res.currentPage;
+          return msg.edit({ embeds: [res.embed], components: [buildTimeframeRow(snapKey, 'invtf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
+        });
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -758,19 +789,20 @@ module.exports = {
       const targetUser = message.mentions.users.first() || (mentionOrId ? await message.client.users.fetch(mentionOrId).catch(() => null) : null) || author;
       let activeCat = 'all';
       let activeTf = 'lifetime';
-      let embed = renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser);
-      const msg = await message.channel.send({ embeds: [embed], components: [buildUserMetricRow(activeCat), buildTimeframeRow(activeTf, 'utf_')] });
-      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id, time: 300000 });
+      const msg = await message.channel.send({ embeds: [renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser)], components: [buildUserMetricRow(activeCat), buildTimeframeRow(activeTf, 'utf_')] });
+      let editQueue = Promise.resolve();
+      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id && i.message.id === msg.id, time: 300000 });
       collector.on('collect', async (i) => {
-        try {
-          await i.deferUpdate().catch(() => {});
-          if (i.customId.startsWith('ucat_')) activeCat = i.customId.replace('ucat_', '');
-          else if (i.customId.startsWith('utf_') || i.customId.startsWith('tf_')) activeTf = i.customId.replace(/^(utf_|tf_)/, '');
-          await i.message.edit({
-            embeds: [renderUserStatsPanel(guild, targetUser, activeCat, activeTf, author, clientUser)],
-            components: [buildUserMetricRow(activeCat), buildTimeframeRow(activeTf, 'utf_')]
-          }).catch(() => {});
-        } catch (e) {}
+        await i.deferUpdate().catch(() => {});
+        if (i.customId.startsWith('ucat_')) { const v = i.customId.slice(5); activeCat = v; }
+        else if (i.customId.startsWith('utf_')) { const v = i.customId.slice(4); activeTf = v; }
+        const snapCat = activeCat; const snapTf = activeTf;
+        editQueue = editQueue.then(() =>
+          msg.edit({
+            embeds: [renderUserStatsPanel(guild, targetUser, snapCat, snapTf, author, clientUser)],
+            components: [buildUserMetricRow(snapCat), buildTimeframeRow(snapTf, 'utf_')]
+          }).catch(() => {})
+        );
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -780,15 +812,13 @@ module.exports = {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || '1d') : (arg0 || '1d');
       if (!WINDOWS[activeKey]) activeKey = '1d';
       const msg = await message.channel.send({ embeds: [renderJoinsLeavesPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'jltf_')] });
-      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id, time: 300000 });
+      let editQueue = Promise.resolve();
+      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id && i.message.id === msg.id, time: 300000 });
       collector.on('collect', async (i) => {
-        try {
-          await i.deferUpdate().catch(() => {});
-          if (i.customId.startsWith('jltf_') || i.customId.startsWith('tf_')) {
-            activeKey = i.customId.replace(/^(jltf_|tf_)/, '');
-            await i.message.edit({ embeds: [renderJoinsLeavesPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'jltf_')] }).catch(() => {});
-          }
-        } catch (e) {}
+        await i.deferUpdate().catch(() => {});
+        if (i.customId.startsWith('jltf_')) { activeKey = i.customId.slice(5); }
+        const snapKey = activeKey;
+        editQueue = editQueue.then(() => msg.edit({ embeds: [renderJoinsLeavesPanel(guild, snapKey, author, clientUser)], components: [buildTimeframeRow(snapKey, 'jltf_')] }).catch(() => {}));
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
@@ -798,15 +828,13 @@ module.exports = {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || '1d') : (arg0 || '1d');
       if (!WINDOWS[activeKey]) activeKey = '1d';
       const msg = await message.channel.send({ embeds: [renderTopCommandsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'cmdtf_')] });
-      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id, time: 300000 });
+      let editQueue = Promise.resolve();
+      const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id && i.message.id === msg.id, time: 300000 });
       collector.on('collect', async (i) => {
-        try {
-          await i.deferUpdate().catch(() => {});
-          if (i.customId.startsWith('cmdtf_') || i.customId.startsWith('tf_')) {
-            activeKey = i.customId.replace(/^(cmdtf_|tf_)/, '');
-            await i.message.edit({ embeds: [renderTopCommandsPanel(guild, activeKey, author, clientUser)], components: [buildTimeframeRow(activeKey, 'cmdtf_')] }).catch(() => {});
-          }
-        } catch (e) {}
+        await i.deferUpdate().catch(() => {});
+        if (i.customId.startsWith('cmdtf_')) { activeKey = i.customId.slice(6); }
+        const snapKey = activeKey;
+        editQueue = editQueue.then(() => msg.edit({ embeds: [renderTopCommandsPanel(guild, snapKey, author, clientUser)], components: [buildTimeframeRow(snapKey, 'cmdtf_')] }).catch(() => {}));
       });
       collector.on('end', () => msg.edit({ components: [] }).catch(() => {}));
       return;
