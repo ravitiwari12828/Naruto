@@ -86,25 +86,26 @@ function buildServerStatsCategoryRow(activeCategory = 'overview') {
     new ButtonBuilder()
       .setCustomId('scat_overview')
       .setLabel('Overview')
-      .setEmoji(emojis.OBJ_STATS || '📊')
-      .setStyle(activeCategory === 'overview' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+      .setEmoji(emojis.OBJ_ANALYTICS)
+      .setStyle(activeCategory === 'overview' ? ButtonStyle.Success : ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('scat_chat')
       .setLabel('Chat')
-      .setEmoji(emojis.OBJ_MESSAGES || '💬')
-      .setStyle(activeCategory === 'chat' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+      .setEmoji(emojis.OBJ_AUTORESPOND)
+      .setStyle(activeCategory === 'chat' ? ButtonStyle.Success : ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('scat_voice')
       .setLabel('Voice')
-      .setEmoji(emojis.OBJ_VOICE || '🔊')
-      .setStyle(activeCategory === 'voice' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+      .setEmoji(emojis.OBJ_VOICE)
+      .setStyle(activeCategory === 'voice' ? ButtonStyle.Success : ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('scat_invites')
       .setLabel('Invites')
-      .setEmoji(emojis.OBJ_INVITES || '📨')
-      .setStyle(activeCategory === 'invites' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setEmoji(emojis.OBJ_MODMAIL)
+      .setStyle(activeCategory === 'invites' ? ButtonStyle.Success : ButtonStyle.Primary)
   );
 }
+
 
 function buildUserMetricRow(activeCat) {
   return new ActionRowBuilder().addComponents(
@@ -178,7 +179,7 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
     boxText;
 
   return createStyledEmbed({
-    title: `${emojis.STATS || '📊'} ${guild.name} Analytics`,
+    title: `${emojis.ANALYTICS_ZAP} ${guild.name} Analytics`,
     subtitle: `Server Performance Dashboard (${label})`,
     description,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
@@ -261,7 +262,7 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
   const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   return createStyledEmbed({
-    title: `${emojis.PROFILE || '👤'} ${targetUser.username} — Activity [${label}]`,
+    title: `${emojis.PROFILE} ${targetUser.username} — Activity [${label}]`,
     subtitle: `Member Activity Audit — ${guild.name}`,
     description: boxText,
     thumbnailUrl: targetUser.displayAvatarURL({ dynamic: true, size: 512 }),
@@ -307,7 +308,7 @@ function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, a
   const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   const embed = createStyledEmbed({
-    title: `${emojis.MESSAGES || '💬'} Chat Leaderboard [${label}]`,
+    title: `${emojis.AUTORESPOND} Chat Leaderboard [${label}]`,
     subtitle: `Top Chatters in ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
@@ -355,7 +356,7 @@ function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, auth
   const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   const embed = createStyledEmbed({
-    title: `${emojis.VOICE || '🔊'} Voice Leaderboard [${label}]`,
+    title: `${emojis.VOICE} Voice Leaderboard [${label}]`,
     subtitle: `Top Voice Members in ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
@@ -403,7 +404,7 @@ function renderInvitesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, au
   const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   const embed = createStyledEmbed({
-    title: `${emojis.INVITES || '📨'} Invites Leaderboard [${label}]`,
+    title: `${emojis.MODMAIL_ENVELOPE} Invites Leaderboard [${label}]`,
     subtitle: `Top Recruiters in ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
@@ -434,7 +435,7 @@ function renderJoinsLeavesPanel(guild, timeframeKey = '1d', author, clientUser) 
     '```';
 
   return createStyledEmbed({
-    title: `📥 Member Flow & Traffic [${label}]`,
+    title: `${emojis.WELCOME} Member Flow & Traffic [${label}]`,
     subtitle: `Joins vs Leaves — ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
@@ -461,7 +462,7 @@ function renderTopCommandsPanel(guild, timeframeKey = '1d', author, clientUser) 
     '```';
 
   return createStyledEmbed({
-    title: `⚡ Command Usage Analytics [${label}]`,
+    title: `${emojis.ANALYTICS_ZAP} Command Usage Analytics [${label}]`,
     subtitle: `Automation Metrics — ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
@@ -490,7 +491,7 @@ function renderTicketStatsPanel(guild, timeframeKey = '1d', author, clientUser) 
     '```';
 
   return createStyledEmbed({
-    title: `🎟️ Ticket Resolution Metrics [${label}]`,
+    title: `${emojis.TICKETS} Ticket Resolution Metrics [${label}]`,
     subtitle: `Support Stats — ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
@@ -499,6 +500,7 @@ function renderTicketStatsPanel(guild, timeframeKey = '1d', author, clientUser) 
     clientUser
   });
 }
+
 
 module.exports = {
   name: 'analytics',
