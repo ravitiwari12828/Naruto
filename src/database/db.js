@@ -1,5 +1,9 @@
 const fs = require('fs');
 const path = require('path');
+let mongoose = null;
+try {
+  mongoose = require('mongoose');
+} catch (e) {}
 
 const dataDir = path.join(__dirname, '../../data');
 if (!fs.existsSync(dataDir)) {
@@ -9,12 +13,21 @@ if (!fs.existsSync(dataDir)) {
 let sqlite3 = null;
 try {
   sqlite3 = require('sqlite3').verbose();
-} catch (e) {
-  console.warn('[Database Warning] Native sqlite3 module blocked or uncompiled. Using resilient fallback persistence.');
-}
+} catch (e) {}
 
 const dbPath = path.join(dataDir, 'database.sqlite');
 const jsonDbPath = path.join(dataDir, 'database.json');
+
+// Mongoose Schema for Master Cloud Database Persistence
+let BotDataModel = null;
+if (mongoose) {
+  const BotDataSchema = new mongoose.Schema({
+    key: { type: String, required: true, unique: true },
+    data: { type: mongoose.Schema.Types.Mixed, default: {} },
+    updatedAt: { type: Date, default: Date.now }
+  });
+  BotDataModel = mongoose.models.BotData || mongoose.model('BotData', BotDataSchema);
+}
 
 function calculateRank(level) {
   if (level >= 81) return 'Hokage';
@@ -31,6 +44,8 @@ class ResilientDatabase {
   constructor() {
     this.sqliteDb = null;
     this.useSqlite = false;
+    this.useMongo = false;
+    this.mongoSaveTimeout = null;
 
     this.data = {
       users: {},
@@ -45,21 +60,51 @@ class ResilientDatabase {
       reactionVotes: {}
     };
 
-    if (sqlite3) {
+    // 1. Initial Load from Local JSON
+    this.loadJSON();
+
+    // 2. Initialize MongoDB Cloud Connection if MONGODB_URI is provided
+    const mongoUri = process.env.MONGODB_URI;
+    if (mongoUri && mongoose) {
+      this.initMongo(mongoUri);
+    } else if (sqlite3) {
       try {
         this.sqliteDb = new sqlite3.Database(dbPath, (err) => {
           if (!err) {
             this.useSqlite = true;
             this.initTables();
-          } else {
-            this.loadJSON();
           }
         });
-      } catch (e) {
-        this.loadJSON();
+      } catch (e) {}
+    }
+  }
+
+  async initMongo(uri) {
+    try {
+      console.log('🍃 [MongoDB Cloud] Connecting to MongoDB Atlas database...');
+      await mongoose.connect(uri, {
+        serverSelectionTimeoutMS: 10000
+      });
+      this.useMongo = true;
+      console.log('✅ [MongoDB Cloud] Connected successfully! Loading cloud database state...');
+
+      // Load master database state from MongoDB Atlas
+      const doc = await BotDataModel.findOne({ key: 'master_database' });
+      if (doc && doc.data) {
+        this.data = Object.assign(this.data, doc.data);
+        console.log('☁️ [MongoDB Cloud] Successfully restored all guild data, levels, autoreacts & settings from cloud!');
+        this.saveJSONFileOnly();
+      } else {
+        // First time cloud setup: upload current local data to MongoDB
+        await BotDataModel.findOneAndUpdate(
+          { key: 'master_database' },
+          { data: this.data, updatedAt: new Date() },
+          { upsert: true }
+        );
+        console.log('☁️ [MongoDB Cloud] Created master cloud database backup!');
       }
-    } else {
-      this.loadJSON();
+    } catch (err) {
+      console.error('⚠️ [MongoDB Cloud Error] Failed to connect to MongoDB Atlas:', err.message);
     }
   }
 
@@ -70,15 +115,31 @@ class ResilientDatabase {
         this.data = Object.assign(this.data, JSON.parse(raw));
         if (!this.data.analytics) this.data.analytics = [];
       } else {
-        this.saveJSON();
+        this.saveJSONFileOnly();
       }
     } catch (e) {}
   }
 
-  saveJSON() {
+  saveJSONFileOnly() {
     try {
       fs.writeFileSync(jsonDbPath, JSON.stringify(this.data, null, 2), 'utf8');
     } catch (e) {}
+  }
+
+  saveJSON() {
+    this.saveJSONFileOnly();
+
+    // Debounced MongoDB Cloud Sync
+    if (this.useMongo && BotDataModel) {
+      if (this.mongoSaveTimeout) clearTimeout(this.mongoSaveTimeout);
+      this.mongoSaveTimeout = setTimeout(() => {
+        BotDataModel.findOneAndUpdate(
+          { key: 'master_database' },
+          { data: this.data, updatedAt: new Date() },
+          { upsert: true }
+        ).catch(err => console.error('⚠️ [MongoDB Sync Error]:', err.message));
+      }, 2000);
+    }
   }
 
   initTables() {
