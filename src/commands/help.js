@@ -13,13 +13,13 @@ const EMOJI_MAP = {
   modmail: emojis.MODMAIL_ENVELOPE,
   noprefix: emojis.PREMIUM,
   ticket: emojis.TICKETS,
-  voice: emojis.VOICE,
+  voice: emojis.ANIMATED_CHANNELS || emojis.VOICE,
   music: emojis.MUSIC,
   antinuke: emojis.ANTINUKE,
   level: emojis.LEVEL,
-  fun: emojis.FUN,
+  fun: emojis.ANIMATED_EMOJIS || emojis.FUN,
   giveaway: emojis.GIVEAWAY,
-  info: emojis.STATS_NEW,
+  info: emojis.ANIMATED_OVERVIEW || emojis.STATS_NEW,
   mod: emojis.MOD,
   ninja: emojis.NINJUTSU,
   channel: emojis.TOOLS,
@@ -30,16 +30,24 @@ const EMOJI_MAP = {
   reactionrole: emojis.REACTIONROLES,
   stickynote: emojis.STICKY,
   profile: emojis.PROFILE,
-  roles: emojis.ROLES,
+  roles: emojis.ANIMATED_ROLES || emojis.ROLES,
   welcome: emojis.WELCOME,
-  backup: '💾',
+  backup: emojis.ANIMATED_BANNER || '💾',
   nukeserver: '💣',
-  modlimits: '⏱️',
+  modlimits: emojis.ANIMATED_REFRESH || '⏱️',
   vanityguard: '🔐'
 };
 
 function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
   const totalCommands = message.client.commands && message.client.commands.size > 0 ? message.client.commands.size : 285;
+
+  const moduleLines = CATEGORIES.slice()
+    .sort((a, b) => a.label.localeCompare(b.label))
+    .map(cat => {
+      const customEmoji = EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
+      return `${customEmoji}  »  **${cat.label}**`;
+    })
+    .join('\n\n'); // Spaced out double line breaks like AntiNuke
 
   const embed = new EmbedBuilder()
     .setColor(0x7E0808)
@@ -52,12 +60,9 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
       `Total Commands :  ${totalCommands}+\n` +
       `Active Modules :  ${CATEGORIES.length}\n` +
       `\`\`\`\n\n` +
-      `**${emojis.SCROLL} All Modules**\n` +
-      CATEGORIES.slice().sort((a,b) => a.label.localeCompare(b.label)).map(cat => {
-        const customEmoji = EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
-        return `${customEmoji} » **${cat.label}**`;
-      }).join('\n') +
-      `\n\n**Links**\n` +
+      `**${emojis.SCROLL} All Modules**\n\n` +
+      `${moduleLines}\n\n` +
+      `**Links**\n` +
       `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands) | [Support Server](https://discord.gg/ZPKcPreUMT) | [Vote](https://top.gg/bot/${message.client.user.id})`
     )
     .setFooter({
@@ -68,6 +73,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
   if (devPortalBanner) embed.setImage(devPortalBanner);
   return embed;
 }
+
 
 module.exports = {
   name: 'help',
