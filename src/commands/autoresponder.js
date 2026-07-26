@@ -26,12 +26,18 @@ module.exports = {
 
       if (sub === 'add' || sub === 'create') {
         const trigger = args[1]?.toLowerCase();
-        const emoji = args.slice(2).join(' ');
-        if (!trigger || !emoji) {
+        const emojiInput = args.slice(2).join(' ').trim();
+        if (!trigger || !emojiInput) {
           return message.reply(`${emojis.WARNING} Usage: \`.react add <triggerWord> <emoji>\``);
         }
-        db.addAutoreact(message.guild.id, trigger, emoji);
-        return message.reply(`${emojis.SUCCESS} Added autoreact! Messages containing \`${trigger}\` will react with ${emoji}`);
+
+        const validEmoji = emojis.resolveEmojiForReaction ? emojis.resolveEmojiForReaction(message.client, message.guild, emojiInput) : emojiInput;
+        if (!validEmoji) {
+          return message.reply(`${emojis.WARNING} Could not resolve emoji **${emojiInput}**. Please use a standard emoji (e.g. ❤️, 🔥, 🚶‍♂️) or a custom emoji from a server this bot is in.`);
+        }
+
+        db.addAutoreact(message.guild.id, trigger, emojiInput);
+        return message.reply(`${emojis.SUCCESS} Added autoreact! Messages containing \`${trigger}\` will react with ${emojiInput}`);
       }
 
       if (sub === 'remove' || sub === 'delete') {
