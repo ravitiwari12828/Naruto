@@ -94,7 +94,7 @@ function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
  * Uniform Secondary style with NO text labels for perfect mobile UI responsiveness.
  */
 function buildVoiceMasterActionRows() {
-  // Row 1: Status, Limit, Logs, Ban, Unban
+  // Row 1: Shield, Whitelist, Webhook, Ban Hammer, Joingate Door
   const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('vm_status').setEmoji(emojis.OBJ_AN_SHIELD).setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_limit').setEmoji(emojis.OBJ_AN_WHITELIST).setStyle(ButtonStyle.Secondary),
@@ -103,7 +103,7 @@ function buildVoiceMasterActionRows() {
     new ButtonBuilder().setCustomId('vm_unban').setEmoji(emojis.OBJ_AN_JOINGATE).setStyle(ButtonStyle.Secondary)
   );
 
-  // Row 2: Hide, Unhide, Region, Unlock, Lock
+  // Row 2: Lock, Channel, Globe, Door, Lock
   const row2 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('vm_hide').setEmoji(emojis.OBJ_AN_QUARANTINE).setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_unhide').setEmoji(emojis.OBJ_AN_CHANNEL).setStyle(ButtonStyle.Secondary),
@@ -112,7 +112,7 @@ function buildVoiceMasterActionRows() {
     new ButtonBuilder().setCustomId('vm_lock').setEmoji(emojis.OBJ_AN_QUARANTINE).setStyle(ButtonStyle.Secondary)
   );
 
-  // Row 3: Trust, Untrust, Bitrate, Invite, Kick
+  // Row 3: Role, Spam, Raid, Webhook, Boot Kick
   const row3 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('vm_trust').setEmoji(emojis.OBJ_AN_ROLE).setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_untrust').setEmoji(emojis.OBJ_AN_SPAM).setStyle(ButtonStyle.Secondary),
@@ -121,7 +121,7 @@ function buildVoiceMasterActionRows() {
     new ButtonBuilder().setCustomId('vm_kick').setEmoji(emojis.OBJ_AN_KICK).setStyle(ButtonStyle.Secondary)
   );
 
-  // Row 4: Suppress, Unsuppress, Chat, Claim, Transfer
+  // Row 4: Panic Warning, Bot, Spam, Role, Globe
   const row4 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('vm_suppress').setEmoji(emojis.OBJ_AN_PANIC).setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_unsuppress').setEmoji(emojis.OBJ_AN_BOT).setStyle(ButtonStyle.Secondary),
