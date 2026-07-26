@@ -40,7 +40,9 @@ class ResilientDatabase {
       cases: {},
       automod: {},
       settings: {},
-      analytics: []
+      analytics: [],
+      reactionChannels: {},
+      reactionVotes: {}
     };
 
     if (sqlite3) {
@@ -815,6 +817,60 @@ class ResilientDatabase {
   getLogChannels(guildId) {
     if (!this.data.logChannels || !this.data.logChannels[guildId]) return {};
     return this.data.logChannels[guildId];
+  }
+
+  // --- SINGLE REACTION MODE & REACTION CHANNELS ---
+  getReactionChannel(guildId, channelId) {
+    if (!this.data.reactionChannels || !this.data.reactionChannels[guildId]) return null;
+    return this.data.reactionChannels[guildId][channelId] || null;
+  }
+
+  getAllReactionChannels(guildId) {
+    if (!this.data.reactionChannels || !this.data.reactionChannels[guildId]) return [];
+    return Object.values(this.data.reactionChannels[guildId]);
+  }
+
+  addReactionChannel(guildId, channelId, emoji, logChannelId = null) {
+    if (!this.data.reactionChannels) this.data.reactionChannels = {};
+    if (!this.data.reactionChannels[guildId]) this.data.reactionChannels[guildId] = {};
+    const config = {
+      guild_id: guildId,
+      channel_id: channelId,
+      emoji: emoji,
+      enabled: true,
+      log_channel_id: logChannelId
+    };
+    this.data.reactionChannels[guildId][channelId] = config;
+    this.saveJSON();
+    return config;
+  }
+
+  removeReactionChannel(guildId, channelId) {
+    if (!this.data.reactionChannels || !this.data.reactionChannels[guildId]) return false;
+    if (this.data.reactionChannels[guildId][channelId]) {
+      delete this.data.reactionChannels[guildId][channelId];
+      if (this.data.reactionVotes && this.data.reactionVotes[guildId]) {
+        delete this.data.reactionVotes[guildId][channelId];
+      }
+      this.saveJSON();
+      return true;
+    }
+    return false;
+  }
+
+  getReactionVote(guildId, channelId, userId) {
+    if (!this.data.reactionVotes || !this.data.reactionVotes[guildId] || !this.data.reactionVotes[guildId][channelId]) return null;
+    return this.data.reactionVotes[guildId][channelId][userId] || null;
+  }
+
+  setReactionVote(guildId, channelId, userId, messageId) {
+    if (!this.data.reactionVotes) this.data.reactionVotes = {};
+    if (!this.data.reactionVotes[guildId]) this.data.reactionVotes[guildId] = {};
+    if (!this.data.reactionVotes[guildId][channelId]) this.data.reactionVotes[guildId][channelId] = {};
+    const vote = { userId, messageId, timestamp: Date.now() };
+    this.data.reactionVotes[guildId][channelId][userId] = vote;
+    this.saveJSON();
+    return vote;
   }
 }
 

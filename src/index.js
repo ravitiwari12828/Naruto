@@ -1476,6 +1476,15 @@ client.on('messageCreate', async (message) => {
         break;
       }
     }
+
+    // 🗳️ SINGLE REACTION CHANNEL AUTO-REACT
+    const rxConfig = db.getReactionChannel(message.guild.id, message.channel.id);
+    if (rxConfig && rxConfig.enabled && rxConfig.emoji) {
+      const rxEmoji = emojis.resolveEmojiForReaction ? emojis.resolveEmojiForReaction(client, message.guild, rxConfig.emoji) : rxConfig.emoji;
+      if (rxEmoji) {
+        message.react(rxEmoji).catch(() => {});
+      }
+    }
   }
 
   // 📌 ROCK-SOLID STICKY NOTES ENGINE (Always kept at the bottom)
@@ -2619,6 +2628,61 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
         }
       }
     }
+  }
+});
+
+// 🗳️ SINGLE REACTION MODE ENFORCEMENT & DUP VOTE STRIPPING
+client.on('messageReactionAdd', async (reaction, user) => {
+  try {
+    if (user.bot) return;
+    if (reaction.partial) await reaction.fetch().catch(() => null);
+    if (reaction.message?.partial) await reaction.message.fetch().catch(() => null);
+
+    const guild = reaction.message?.guild;
+    if (!guild) return;
+
+    const channelId = reaction.message.channel.id;
+    const rxConfig = db.getReactionChannel(guild.id, channelId);
+    if (!rxConfig || !rxConfig.enabled) return;
+
+    const existingVote = db.getReactionVote(guild.id, channelId, user.id);
+
+    if (existingVote) {
+      // User has already voted in this single reaction channel -> strip duplicate reaction
+      await reaction.users.remove(user.id).catch(() => null);
+
+      if (rxConfig.log_channel_id) {
+        const { dispatchLog } = require('./utils/logger');
+        dispatchLog(guild, 'modlogs', {
+          color: 0xED4245,
+          title: `🚫 Single Reaction Violation — Duplicate Vote Stripped`,
+          description:
+            `• **User:** <@${user.id}> (\`${user.tag}\`)\n` +
+            `• **Channel:** <#${channelId}>\n` +
+            `• **Emoji:** ${reaction.emoji.toString()}\n` +
+            `• **Action:** Stripped duplicate reaction (User already voted in this single-reaction channel)`,
+          footer: `Single Reaction Enforcement • Server Audit Logs`
+        });
+      }
+    } else {
+      // First reaction -> record user's vote
+      db.setReactionVote(guild.id, channelId, user.id, reaction.message.id);
+
+      if (rxConfig.log_channel_id) {
+        const { dispatchLog } = require('./utils/logger');
+        dispatchLog(guild, 'modlogs', {
+          color: 0x57F287,
+          title: `🗳️ Single Reaction Vote Recorded`,
+          description:
+            `• **User:** <@${user.id}> (\`${user.tag}\`)\n` +
+            `• **Channel:** <#${channelId}>\n` +
+            `• **Emoji:** ${reaction.emoji.toString()}`,
+          footer: `Single Reaction Enforcement • Server Audit Logs`
+        });
+      }
+    }
+  } catch (err) {
+    console.error('[SingleReaction Event Error]', err.message);
   }
 });
 
