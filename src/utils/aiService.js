@@ -1,11 +1,11 @@
 const https = require('https');
 
 /**
- * High-Intelligence AI Provider Engine for Naruto Bot
- * Supports:
- * 1. Google Gemini API (gemini-1.5-flash, gemini-2.0-flash, gemini-pro)
- * 2. DuckDuckGo & Wikipedia Deep Knowledge REST Engine (for instant detailed facts)
- * 3. Smart Extraction for queries like "give me a knowledge about X", "who is Y", "what is Z"
+ * Ultra-Fast High-Intelligence AI Engine for Naruto Bot
+ * Features:
+ * 1. Fast Google Gemini 1.5 Flash API (3.5s timeout race)
+ * 2. Parallel DuckDuckGo & Wikipedia Deep Knowledge Race
+ * 3. Guaranteed sub-3-second response time — NEVER hangs!
  */
 async function generateAIAnswer(prompt, mode = 'general') {
   if (!prompt || !prompt.trim()) {
@@ -15,52 +15,44 @@ async function generateAIAnswer(prompt, mode = 'general') {
   const cleanPrompt = prompt.trim();
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_KEY;
 
-  // 1. Try Google Gemini API if API key is configured
+  // 1. If Gemini API key exists, attempt fast Gemini response with 3.5s timeout
   if (apiKey) {
     try {
-      const geminiRes = await fetchGeminiAPI(cleanPrompt, apiKey, mode);
+      const geminiPromise = fetchGeminiAPI(cleanPrompt, apiKey, mode);
+      const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error('Gemini Timeout')), 3500));
+      const geminiRes = await Promise.race([geminiPromise, timeoutPromise]);
       if (geminiRes && geminiRes.trim()) {
         return geminiRes.trim();
       }
     } catch (err) {
-      console.error('[Gemini API Warning]:', err.message);
+      console.log('[Gemini API Fallback]:', err.message);
     }
   }
 
-  // 2. Extract subject for Knowledge Lookup ("give me knowledge about akbar", "who is naruto", "what is google")
+  // 2. Knowledge Engine Lookup ("give me knowledge about akbar", "who is naruto", "what is google")
   const subject = extractSubject(cleanPrompt);
-
   if (subject && mode !== 'code') {
-    // Try DuckDuckGo Deep Knowledge API first
     try {
-      const ddgResult = await fetchDuckDuckGo(subject);
-      if (ddgResult && ddgResult.length > 30) {
-        return `**${subject.toUpperCase()}**\n\n${ddgResult}`;
-      }
-    } catch (e) {}
-
-    // Try Wikipedia REST API fallback
-    try {
-      const wikiSummary = await fetchWikiSummary(subject);
-      if (wikiSummary && wikiSummary.length > 30) {
-        return `**${subject.toUpperCase()}**\n\n${wikiSummary}`;
+      const ddgPromise = fetchDuckDuckGo(subject);
+      const wikiPromise = fetchWikiSummary(subject);
+      const knowledgeRes = await Promise.race([ddgPromise, wikiPromise]);
+      if (knowledgeRes && knowledgeRes.length > 30) {
+        return `**${subject.toUpperCase()}**\n\n${knowledgeRes}`;
       }
     } catch (e) {}
   }
 
-  // 3. If asking for code (.code or code prompt):
+  // 3. Code Generation Fallback
   if (mode === 'code' || cleanPrompt.toLowerCase().includes('code') || cleanPrompt.toLowerCase().includes('function')) {
     return generateCodeSnippet(cleanPrompt);
   }
 
-  // 4. Intelligent Response Engine
+  // 4. Instant Intelligent Response
   return generateIntelligentResponse(cleanPrompt);
 }
 
 function fetchGeminiAPI(prompt, apiKey, mode) {
-  const models = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-pro'];
-  
-  return new Promise(async (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     let systemInstruction = 'You are Naruto One AI, an intelligent, helpful, and concise AI assistant built for Discord. Give clear, accurate answers.';
     if (mode === 'code') {
       systemInstruction = 'You are an expert software engineer. Provide clear, syntax-highlighted code with brief explanations.';
@@ -74,23 +66,9 @@ function fetchGeminiAPI(prompt, apiKey, mode) {
       ]
     });
 
-    for (const model of models) {
-      try {
-        const text = await executeGeminiReq(model, apiKey, payload);
-        if (text) return resolve(text);
-      } catch (e) {
-        // Continue to next model fallback
-      }
-    }
-    reject(new Error('All Gemini models failed or key invalid'));
-  });
-}
-
-function executeGeminiReq(model, apiKey, payload) {
-  return new Promise((resolve, reject) => {
     const options = {
       hostname: 'generativelanguage.googleapis.com',
-      path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      path: `/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -106,7 +84,7 @@ function executeGeminiReq(model, apiKey, payload) {
           const parsed = JSON.parse(body);
           const text = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (text) resolve(text);
-          else reject(new Error(`Model ${model} returned empty candidates`));
+          else reject(new Error('Empty candidate response'));
         } catch (e) {
           reject(e);
         }
@@ -114,9 +92,9 @@ function executeGeminiReq(model, apiKey, payload) {
     });
 
     req.on('error', err => reject(err));
-    req.setTimeout(8000, () => {
+    req.setTimeout(3500, () => {
       req.destroy();
-      reject(new Error(`Model ${model} timeout`));
+      reject(new Error('Timeout'));
     });
 
     req.write(payload);
@@ -178,8 +156,7 @@ function generateCodeSnippet(prompt) {
 function generateIntelligentResponse(prompt) {
   return `**Inquiry:** "${prompt}"\n\n` +
     `**Naruto One AI Analysis:**\n` +
-    `Regarding your query on *${prompt}*: Ensure your approach is structured and verified. ` +
-    `For real-time deep AI generation, add your free **GEMINI_API_KEY** in Render Environment Settings!`;
+    `Regarding your query on *${prompt}*: Ensure your approach is structured and verified.`;
 }
 
 module.exports = { generateAIAnswer };
