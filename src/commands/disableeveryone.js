@@ -68,13 +68,13 @@ module.exports = {
       await statusMsg.delete().catch(() => {});
 
       const successEmbed = createStyledEmbed({
-        title: `${emojis.SHIELD} Everyone & Here Pings Neutralized Server-Wide!`,
+        title: `${emojis.AN_SHIELD} Everyone & Here Pings Neutralized Server-Wide!`,
         subtitle: `Zero-Tolerance Mention Protection Applied`,
         fields: [
-          { name: '🎭 Roles Cleansed', value: `\`${rolesStrippedCount}\` Roles stripped of \`MentionEveryone\``, inline: true },
-          { name: '🔒 Channels Sealed', value: `\`${channelsSealedCount}\` Channels locked with \`MentionEveryone: false\``, inline: true },
-          { name: '⚡ Realtime Interception', value: `\`ACTIVE\` (Auto-deletes @everyone & @here in < 50ms)`, inline: false },
-          { name: '🚨 Punishment Protocol', value: `Rogue pings get **Message Deleted**, **1-Hour Timeout**, & **Channel Overwrite Lockout**`, inline: false }
+          { name: `${emojis.AN_ROLE} Roles Cleansed`, value: `\`${rolesStrippedCount}\` Roles stripped of \`MentionEveryone\``, inline: true },
+          { name: `${emojis.AN_CHANNEL} Channels Sealed`, value: `\`${channelsSealedCount}\` Channels locked with \`MentionEveryone: false\``, inline: true },
+          { name: `${emojis.AN_SHIELD} Realtime Interception`, value: `\`ACTIVE\` (Auto-deletes @everyone & @here in < 50ms)`, inline: false },
+          { name: `${emojis.AN_PANIC} Punishment Protocol`, value: `Rogue pings get **Message Deleted**, **1-Hour Timeout**, & **Channel Overwrite Lockout**`, inline: false }
         ],
         requestedBy: author,
         clientUser
