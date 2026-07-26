@@ -29,7 +29,7 @@ function getOrCreateVMConfig(guildId) {
 
 /**
  * Builds the ultra-aesthetic VoiceMaster Control Center embed with custom 3D emojis.
- * Kept minimal and clean without clutter or wall-of-text paragraphs.
+ * Includes the button grid reference image and full per-button usage guide.
  */
 function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
   const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`➕ Join to Create`';
@@ -39,10 +39,40 @@ function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
     .setTitle(`${voiceIcon} VoiceMaster Control Center`)
     .setDescription(
       `Join ${triggerMention} to automatically create your private voice room.\n` +
-      `Click any emoji button below to manage your room settings!`
+      `Use the **20 control buttons** below to manage your room:\n\n` +
+
+      `**— Row 1 — Status & Moderation —**\n` +
+      `⚡ **Status** · View your VC info & current settings\n` +
+      `👥 **Limit** · Set a user limit on your voice room\n` +
+      `📜 **Logs** · View activity log of your voice room\n` +
+      `🛡️ **Ban** · Ban a member from entering your VC\n` +
+      `🔓 **Unban** · Unban a previously banned member\n\n` +
+
+      `**— Row 2 — Visibility & Access —**\n` +
+      `🙈 **Hide** · Make your VC invisible to everyone\n` +
+      `👁️ **Unhide** · Make your VC visible again to all\n` +
+      `🌐 **Region** · Change the server voice region\n` +
+      `🔓 **Unlock** · Allow anyone to join your VC freely\n` +
+      `🔒 **Lock** · Lock your VC so no new members can join\n\n` +
+
+      `**— Row 3 — Trust & Bitrate —**\n` +
+      `➕ **Trust** · Grant a member permission to speak freely\n` +
+      `➖ **Untrust** · Remove trust from a member in your VC\n` +
+      `📶 **Bitrate** · Set the audio bitrate of your voice room\n` +
+      `📞 **Invite** · Send a VC join invite to a member\n` +
+      `🚫 **Kick** · Kick a member out of your voice room\n\n` +
+
+      `**— Row 4 — Controls & Ownership —**\n` +
+      `🔇 **Suppress** · Mute all members (no one can speak)\n` +
+      `🎙️ **Unsuppress** · Restore speaking permissions for all\n` +
+      `💬 **Chat** · Toggle the VC text chat on or off\n` +
+      `👑 **Claim** · Claim ownership if the owner left the VC\n` +
+      `↗️ **Transfer** · Transfer your VC ownership to someone else`
     )
+    .setImage('attachment://vm_buttons.png')
     .setFooter({ text: 'Naruto VoiceMaster • 20-Control Private Audio Suite' });
 }
+
 
 /**
  * Builds the complete 4-row 20-button control grid matching VoiceMaster standard layout.
@@ -144,7 +174,11 @@ module.exports = {
 
       const embed = buildVoiceMasterInterfaceEmbed(triggerChan.id);
       const rows = buildVoiceMasterActionRows();
-      await interfaceChan.send({ embeds: [embed], components: rows });
+      const { AttachmentBuilder } = require('discord.js');
+      const path = require('path');
+      const vmBtnImage = new AttachmentBuilder(path.join(__dirname, '../assets/vm_buttons.png'), { name: 'vm_buttons.png' });
+      await interfaceChan.send({ embeds: [embed], files: [vmBtnImage], components: rows });
+
 
       config.triggerChanId = triggerChan.id;
       config.interfaceChanId = interfaceChan.id;
