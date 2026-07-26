@@ -13,6 +13,8 @@ module.exports = {
   MODMAIL_ENVELOPE: '<:emoji_modmail_envelope:1529910230534586449>',
   ANALYTICS_ZAP: '<:emoji_analytics_zap:1529910228345163978>',
   DOT: '<a:lyf_Sharingan:1530533008694579250>',
+  DANCE: '<a:Flantic_qt_dance:1530521741263245333>',
+
 
   // --- MODULE CATEGORY EMOJIS (CUSTOM ANIMATED DISCORD EMOJIS) ---
   ALL_MODULES: '<a:all_modules:1530942539874701533>',

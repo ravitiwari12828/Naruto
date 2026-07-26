@@ -60,7 +60,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
       `Total Commands :  ${totalCommands}+\n` +
       `Active Modules :  ${CATEGORIES.length}\n` +
       `\`\`\`\n\n` +
-      `## ${emojis.SCROLL} All Modules\n` +
+      `## ${emojis.DANCE || '<a:Flantic_qt_dance:1530521741263245333>'} All Modules\n` +
       `${moduleLines}\n\n` +
       `### 🔗 **Quick Links**\n` +
       `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands) • [Support Server](https://discord.gg/ZPKcPreUMT) • [Vote Top.gg](https://top.gg/bot/${message.client.user.id})`
