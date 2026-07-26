@@ -107,22 +107,24 @@ module.exports = {
 
     // ━━━━━ 3. .autorole HELP ━━━━━
     if (!sub || sub === 'help') {
-      const commandsList = [
-        '.autorole config',
-        '.autorole humans add @role',
-        '.autorole humans remove @role',
-        '.autorole bots add @role',
-        '.autorole bots remove @role',
-        '.autorole reset all',
-        '.massrole add @role',
-        '.massrole remove @role',
-        '.automation'
+      const boxLines = [
+        '╭──────────────────────────╮',
+        '│   AUTOMATION COMMANDS    │',
+        '├──────────────────────────┤',
+        '│ .automation              │',
+        '│ .autorole config         │',
+        '│ .massrole add            │',
+        '│ .massrole remove         │',
+        '╰──────────────────────────╯'
       ];
 
       const embed = createStyledEmbed({
-        title: 'Naruto Help Menu',
-        subtitle: `${emojis.GEAR} Automations & AutoRole Commands`,
-        description: formatCodePills(commandsList),
+        title: `${emojis.GEAR || '⚙️'} Automations Commands`,
+        subtitle: `${message.guild.name} Automation Control`,
+        description:
+          `Welcome **${message.author.username}**! Below is the executive suite for **Automations**.\n` +
+          `Type any command below in your server to execute.\n\n` +
+          '```\n' + boxLines.join('\n') + '\n```',
         requestedBy: message.author,
         clientUser,
         footerText: 'AutoRole & Automation suite'

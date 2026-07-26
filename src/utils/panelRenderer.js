@@ -213,8 +213,10 @@ const CATEGORIES = [
     unicodeFallback: '⚙️',
     heading: `${emojis.GEAR || '⚙️'} Automations Commands`,
     commands: [
-      'autorole config', 'massrole add',
-      'massrole remove', 'automation'
+      'automation',
+      'autorole config',
+      'massrole add',
+      'massrole remove'
     ]
   },
   {
@@ -422,7 +424,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   }
 
   // Executive Codeblock Box Layout for all modules
-  const sortedCmds = cat.commands.slice().sort();
+  const displayCmds = cat.commands.slice();
   let rawTitle = cat.label.includes('&') ? cat.label.split('&')[0].trim() : cat.label;
   rawTitle = rawTitle.toUpperCase() + ' COMMANDS';
   if (rawTitle.length > 24) rawTitle = rawTitle.slice(0, 24);
@@ -434,7 +436,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     '├──────────────────────────┤'
   ];
 
-  sortedCmds.forEach(cmd => {
+  displayCmds.forEach(cmd => {
     boxLines.push('│ ' + ('.' + cmd).slice(0, 24).padEnd(24, ' ') + ' │');
   });
 
