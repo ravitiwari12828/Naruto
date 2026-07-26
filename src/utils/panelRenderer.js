@@ -423,24 +423,13 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     return embed;
   }
 
-  // Executive Codeblock Box Layout for all modules
-  const displayCmds = cat.commands.slice();
+  // Executive Dynamic Codeblock Box Layout for all modules
+  const { createDynamicBox } = require('./boxBuilder');
+  const displayCmds = cat.commands.map(cmd => '.' + cmd);
   let rawTitle = cat.label.includes('&') ? cat.label.split('&')[0].trim() : cat.label;
   rawTitle = rawTitle.toUpperCase() + ' COMMANDS';
-  if (rawTitle.length > 24) rawTitle = rawTitle.slice(0, 24);
-  const titlePadded = rawTitle.padStart(Math.floor((24 + rawTitle.length) / 2), ' ').padEnd(24, ' ');
 
-  const boxLines = [
-    '╭──────────────────────────╮',
-    '│ ' + titlePadded + ' │',
-    '├──────────────────────────┤'
-  ];
-
-  displayCmds.forEach(cmd => {
-    boxLines.push('│ ' + ('.' + cmd).slice(0, 24).padEnd(24, ' ') + ' │');
-  });
-
-  boxLines.push('╰──────────────────────────╯');
+  const boxStr = createDynamicBox(rawTitle, displayCmds);
 
   const embed = new EmbedBuilder()
     .setColor(0x7E0808)
@@ -450,7 +439,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     .setDescription(
       `Welcome **${message.author.username}**! Below is the executive suite for **${cat.label}**.\n` +
       `Type any command below in your server to execute.\n\n` +
-      '```\n' + boxLines.join('\n') + '\n```'
+      '```\n' + boxStr + '\n```'
     )
     .setFooter({
       text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
