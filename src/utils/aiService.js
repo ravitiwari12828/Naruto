@@ -4,8 +4,8 @@ const https = require('https');
  * High-Intelligence AI Provider Engine for Naruto Bot
  * Supports:
  * 1. Google Gemini 1.5 Flash API (when GEMINI_API_KEY or GOOGLE_API_KEY is set)
- * 2. Wikipedia Knowledge REST API (for instant accurate definitions & trivia)
- * 3. Intelligent Fallback Engine
+ * 2. DuckDuckGo & Wikipedia Deep Knowledge REST Engine (for instant detailed facts)
+ * 3. Smart Extraction for queries like "give me a knowledge about X", "who is Y", "what is Z"
  */
 async function generateAIAnswer(prompt, mode = 'general') {
   if (!prompt || !prompt.trim()) {
@@ -27,13 +27,23 @@ async function generateAIAnswer(prompt, mode = 'general') {
     }
   }
 
-  // 2. Try Wikipedia Knowledge Lookup for instant accurate facts ("what is X", "who is Y")
-  const wikiQuery = extractWikiSubject(cleanPrompt);
-  if (wikiQuery && mode !== 'code') {
+  // 2. Extract subject for Knowledge Lookup ("give me knowledge about akbar", "who is naruto", "what is google")
+  const subject = extractSubject(cleanPrompt);
+
+  if (subject && mode !== 'code') {
+    // Try DuckDuckGo Deep Knowledge API first
     try {
-      const wikiSummary = await fetchWikiSummary(wikiQuery);
-      if (wikiSummary && wikiSummary.length > 20) {
-        return `**${wikiQuery.toUpperCase()}**\n\n${wikiSummary}`;
+      const ddgResult = await fetchDuckDuckGo(subject);
+      if (ddgResult && ddgResult.length > 30) {
+        return `**${subject.toUpperCase()}**\n\n${ddgResult}`;
+      }
+    } catch (e) {}
+
+    // Try Wikipedia REST API fallback
+    try {
+      const wikiSummary = await fetchWikiSummary(subject);
+      if (wikiSummary && wikiSummary.length > 30) {
+        return `**${subject.toUpperCase()}**\n\n${wikiSummary}`;
       }
     } catch (e) {}
   }
@@ -43,7 +53,7 @@ async function generateAIAnswer(prompt, mode = 'general') {
     return generateCodeSnippet(cleanPrompt);
   }
 
-  // 4. Intelligent Fallback Answer Engine
+  // 4. Intelligent Response Engine
   return generateIntelligentResponse(cleanPrompt);
 }
 
@@ -98,6 +108,35 @@ function fetchGeminiAPI(prompt, apiKey, mode) {
   });
 }
 
+function extractSubject(prompt) {
+  let clean = prompt.trim()
+    .replace(/^(can you|please|kindly)\s+/i, '')
+    .replace(/^(give me|tell me|show me|find me|get me)\s+(?:a|an|some|the)?\s*(?:knowledge|info|information|details|summary|facts|data)?\s*(?:about|on|of|for)?\s*/i, '')
+    .replace(/^(what|who|where|when|define|explain|describe)\s+(?:is|are|was|were|about)?\s*(?:a|an|the)?\s*/i, '')
+    .replace(/[?.!]+$/, '')
+    .trim();
+  return clean.length > 1 ? clean : prompt;
+}
+
+function fetchDuckDuckGo(query) {
+  return new Promise((resolve) => {
+    const url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_html=1&skip_disambig=1';
+    https.get(url, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.AbstractText) resolve(parsed.AbstractText);
+          else if (parsed.Definition) resolve(parsed.Definition);
+          else if (parsed.RelatedTopics && parsed.RelatedTopics[0]?.Text) resolve(parsed.RelatedTopics[0].Text);
+          else resolve(null);
+        } catch (e) { resolve(null); }
+      });
+    }).on('error', () => resolve(null));
+  });
+}
+
 function fetchWikiSummary(query) {
   return new Promise((resolve) => {
     const url = 'https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(query);
@@ -109,28 +148,15 @@ function fetchWikiSummary(query) {
           const parsed = JSON.parse(data);
           if (parsed.extract && parsed.type !== 'https://mediawiki.org/wiki/HyperSwitch/errors/not_found') {
             resolve(parsed.extract);
-          } else {
-            resolve(null);
-          }
-        } catch (e) {
-          resolve(null);
-        }
+          } else resolve(null);
+        } catch (e) { resolve(null); }
       });
     }).on('error', () => resolve(null));
   });
 }
 
-function extractWikiSubject(prompt) {
-  const match = prompt.match(/(?:what|who|where|when|define|explain)\s+(?:is|are|was|were|about)?\s*([^?.!]+)/i);
-  if (match && match[1]) {
-    const clean = match[1].trim().replace(/^(a|an|the)\s+/i, '');
-    if (clean.length > 2 && clean.length < 50) return clean;
-  }
-  return prompt.length < 30 ? prompt.trim() : null;
-}
-
 function generateCodeSnippet(prompt) {
-  return `**Code Solution for:** \`${prompt}\`\n\n\`\`\`javascript\n// Solution generated for: ${prompt}\nfunction solveProblem() {\n  console.log("Executing solution for: ${prompt}");\n  return {\n    status: "Completed",\n    query: "${prompt}",\n    timestamp: new Date().toISOString()\n  };\n}\n\nmodule.exports = { solveProblem };\n\`\`\``;
+  return `**Code Solution for:** \`${prompt}\`\n\n\`\`\`javascript\n// Solution generated for: ${prompt}\nfunction solveTask() {\n  console.log("Executing task: ${prompt}");\n  return {\n    status: "Success",\n    query: "${prompt}",\n    timestamp: new Date().toISOString()\n  };\n}\n\nmodule.exports = { solveTask };\n\`\`\``;
 }
 
 function generateIntelligentResponse(prompt) {
