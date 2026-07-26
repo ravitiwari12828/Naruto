@@ -274,6 +274,13 @@ function renderAntinukeDashboard(config, author, clientUser) {
 
   const description =
     `Welcome **${author.username}**! Below is your executive **AntiNuke & Security Control Suite**.\n\n` +
+    `**📜 Control Button Guide:**\n` +
+    `• ${emojis.SHIELD || '🛡️'} **Shield**: Master AntiNuke Guard *(Auto-creates/deletes \`AntiNuke Bypass\` role)*\n` +
+    `• 🚨/🟢 **Panic**: Emergency Lockdown Mode (Levels 1-3)\n` +
+    `• 🚪 **JoinGate**: Bot Add & Account Age Join Protection\n` +
+    `• ☣️ **Quarantine**: Dangerous Admin Perm Auto-Quarantine\n` +
+    `• 👥 **Whitelist**: Open Granular Whitelist Delegation Hub\n` +
+    `• 🛡️/👢/🤖/📁/🎭/🔗/💬/📢/⚔️/🌐 **Filters**: Action Interception Toggles (Ban, Kick, Bot, Channel, Role, Webhook, Spam, Everyone, Raid, Guild)\n\n` +
     `**${emojis.SHIELD} Main System Status**\n` +
     '```\n' + boxMain + '\n```\n\n' +
     `**🚪 Join Gate Security**\n` +
@@ -649,8 +656,22 @@ module.exports = {
       if (!target || target === 'all') {
         config.enabled = true;
         Object.keys(config.filters).forEach(k => config.filters[k] = true);
+        
+        // Auto-create AntiNuke Bypass role if missing
+        let bypassRole = guild.roles.cache.find(r => r.name === 'AntiNuke Bypass');
+        if (!bypassRole) {
+          bypassRole = await guild.roles.create({
+            name: 'AntiNuke Bypass',
+            color: 0x3498DB,
+            reason: 'AntiNuke Auto-Bypass Role Creation on Enable'
+          }).catch(() => null);
+        }
+        if (bypassRole) {
+          config.bypassRoles.add(bypassRole.id);
+        }
+
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`${emojis.SHIELD} AntiNuke Security System & ALL protection filters are now **ENABLED**!`);
+        return message.reply(`${emojis.SHIELD} AntiNuke Security System & ALL protection filters are now **ENABLED**! (Role \`AntiNuke Bypass\` created & assigned)`);
       }
 
       if (FILTER_MAP[target]) {
@@ -668,8 +689,16 @@ module.exports = {
       if (!target || target === 'all') {
         config.enabled = false;
         Object.keys(config.filters).forEach(k => config.filters[k] = false);
+
+        // Auto-delete AntiNuke Bypass role if present
+        const bypassRole = guild.roles.cache.find(r => r.name === 'AntiNuke Bypass');
+        if (bypassRole) {
+          await bypassRole.delete('AntiNuke Auto-Bypass Role Deletion on Disable').catch(() => {});
+          config.bypassRoles.delete(bypassRole.id);
+        }
+
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`${emojis.WARNING} AntiNuke Security System is now **DISABLED**.`);
+        return message.reply(`${emojis.WARNING} AntiNuke Security System is now **DISABLED**. (Role \`AntiNuke Bypass\` removed)`);
       }
 
       if (FILTER_MAP[target]) {
@@ -742,6 +771,14 @@ module.exports = {
     const collector = msg.createMessageComponentCollector({ time: 300000 });
 
     collector.on('collect', async (interaction) => {
+      // PANEL OWNERSHIP CHECK: Only the user who invoked this panel message can interact with it
+      if (interaction.user.id !== author.id) {
+        return interaction.reply({
+          content: `${emojis.WARNING || '⚠️'} **Access Denied**: Only **${author.username}** (who requested this panel) can click these buttons.`,
+          flags: 64
+        });
+      }
+
       // PERMISSION CHECK for button clicks
       const isOwnerBtn = guild.ownerId === interaction.user.id;
       const isExtraOwnerBtn = config.extraOwners.has(interaction.user.id) || ['1420687548807905324', '1529362747047805029', '1514546738055348237'].includes(interaction.user.id);
@@ -778,6 +815,27 @@ module.exports = {
         if (config.panicmode) config.enabled = true;
       } else if (id === 'toggle_shield') {
         config.enabled = !config.enabled;
+
+        // Auto Bypass Role Creation/Deletion Lifecycle
+        if (config.enabled) {
+          let bypassRole = guild.roles.cache.find(r => r.name === 'AntiNuke Bypass');
+          if (!bypassRole) {
+            bypassRole = await guild.roles.create({
+              name: 'AntiNuke Bypass',
+              color: 0x3498DB,
+              reason: 'AntiNuke Auto-Bypass Role Creation on Enable'
+            }).catch(() => null);
+          }
+          if (bypassRole) {
+            config.bypassRoles.add(bypassRole.id);
+          }
+        } else {
+          const bypassRole = guild.roles.cache.find(r => r.name === 'AntiNuke Bypass');
+          if (bypassRole) {
+            await bypassRole.delete('AntiNuke Auto-Bypass Role Deletion on Disable').catch(() => {});
+            config.bypassRoles.delete(bypassRole.id);
+          }
+        }
       } else if (id === 'toggle_ban') {
         f.antiBan = !f.antiBan;
       } else if (id === 'toggle_kick') {
