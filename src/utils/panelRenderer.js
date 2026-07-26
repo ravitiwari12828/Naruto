@@ -95,7 +95,7 @@ const CATEGORIES = [
       'quarantine set days <1-30>',
       'vanityguard enable', 'vanityguard disable',
       'vanityguard set <vanity>', 'vanityguard status',
-      'disableeveryone', 'stripmentions', 'suppresseveryone'
+      'disableeveryone'
     ]
   },
   {
@@ -171,7 +171,7 @@ const CATEGORIES = [
       'list', 'warn',
       'modlimits set', 'modlimits reset', 'modlimits status',
       'modlimits bypass add @user', 'modlimits disable', 'modlimits enable',
-      'disableeveryone', 'noeveryone', 'fixpings'
+      'disableeveryone'
     ]
   },
   {
