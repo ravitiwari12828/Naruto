@@ -275,23 +275,23 @@ function renderAntinukeDashboard(config, author, clientUser) {
   const description =
     `Welcome **${author.username}**! Below is your executive **AntiNuke & Security Control Suite**.\n\n` +
     `**📜 Control Button Guide:**\n` +
-    `• ${emojis.SHIELD || '🛡️'} **Shield**: Master AntiNuke Guard *(Auto-creates/deletes \`AntiNuke Bypass\` role)*\n` +
-    `• 🚨/🟢 **Panic**: Emergency Lockdown Mode (Levels 1-3)\n` +
-    `• 🚪 **JoinGate**: Bot Add & Account Age Join Protection\n` +
-    `• ☣️ **Quarantine**: Dangerous Admin Perm Auto-Quarantine\n` +
-    `• 👥 **Whitelist**: Open Granular Whitelist Delegation Hub\n` +
-    `• 🛡️/👢/🤖/📁/🎭/🔗/💬/📢/⚔️/🌐 **Filters**: Action Interception Toggles (Ban, Kick, Bot, Channel, Role, Webhook, Spam, Everyone, Raid, Guild)\n\n` +
-    `**${emojis.SHIELD} Main System Status**\n` +
+    `• ${emojis.AN_SHIELD} **Shield**: Master AntiNuke Guard *(Auto-creates/deletes \`AntiNuke Bypass\` role)*\n` +
+    `• ${emojis.AN_PANIC} **Panic**: Emergency Lockdown Mode (Levels 1-3)\n` +
+    `• ${emojis.AN_JOINGATE} **JoinGate**: Bot Add & Account Age Join Protection\n` +
+    `• ${emojis.AN_QUARANTINE} **Quarantine**: Dangerous Admin Perm Auto-Quarantine\n` +
+    `• ${emojis.AN_WHITELIST} **Whitelist**: Open Granular Whitelist Delegation Hub\n` +
+    `• ${emojis.AN_BAN}${emojis.AN_KICK}${emojis.AN_BOT}${emojis.AN_CHANNEL}${emojis.AN_ROLE}${emojis.AN_WEBHOOK}${emojis.AN_SPAM}${emojis.AN_SHIELD}${emojis.AN_RAID}${emojis.AN_GUILD} **Filters**: Action Interception Toggles (Ban, Kick, Bot, Channel, Role, Webhook, Spam, Everyone, Raid, Guild)\n\n` +
+    `**${emojis.AN_SHIELD} Main System Status**\n` +
     '```\n' + boxMain + '\n```\n\n' +
-    `**🚪 Join Gate Security**\n` +
+    `**${emojis.AN_JOINGATE} Join Gate Security**\n` +
     '```\n' + boxGate + '\n```\n\n' +
-    `**☣️ Auto Quarantine Guard**\n` +
+    `**${emojis.AN_QUARANTINE} Auto Quarantine Guard**\n` +
     '```\n' + boxQuarantine + '\n```\n\n' +
     `**👑 Registered Extra Owners**\n` +
     `${extraOwnersList}`;
 
   return createStyledEmbed({
-    title: `${emojis.SHIELD || emojis.SHIELD} AntiNuke & Security Control Suite`,
+    title: `${emojis.AN_SHIELD} AntiNuke & Security Control Suite`,
     subtitle: `Shinobi-Grade Server Protection & Executive Guard`,
     description,
     requestedBy: author,
