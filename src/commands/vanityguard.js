@@ -100,21 +100,20 @@ module.exports = {
     }
 
     // DEFAULT: STATUS DASHBOARD
+    const codeStr = config.protectedVanity || guild.vanityURLCode || 'None';
+    const boxMain = [
+      '╭──────────────────────────╮',
+      '│  VANITYGUARD CONTROL HUB │',
+      '├──────────────────────────┤',
+      '│ Status     : ' + (config.enabled ? 'ACTIVE  [OK]' : 'DISABLED[X]'),
+      '│ Locked Code: ' + ('.gg/' + codeStr).slice(0, 12).padEnd(12, ' '),
+      '│ Recovery   : < 50ms      │',
+      '╰──────────────────────────╯'
+    ];
+
     const description =
       `Welcome **${author.username}**! Below is your server **VanityGuard Anti-Theft Status**.\n\n` +
-      `**🌐 Vanity Protection Status**\n` +
-      `\`\`\`\n` +
-      `Guard Status           : ${config.enabled ? 'ENABLED [ACTIVE]' : 'DISABLED [OFF]'}\n` +
-      `Current Server Vanity  : ${guild.vanityURLCode ? 'discord.gg/' + guild.vanityURLCode : 'No Vanity Set'}\n` +
-      `Locked Protection Code : ${config.protectedVanity ? 'discord.gg/' + config.protectedVanity : 'Not Locked'}\n` +
-      `Recovery Latency       : < 50ms (Sub-millisecond Reversion)\n` +
-      `\`\`\`\n\n` +
-      `**⚡ Commands to Manage**\n` +
-      `\`\`\`\n` +
-      `.vanityguard enable\n` +
-      `.vanityguard disable\n` +
-      `.vanityguard set <code>\n` +
-      `\`\`\``;
+      '```\n' + boxMain.join('\n') + '\n```';
 
     const embed = createStyledEmbed({
       title: `🌐 VanityGuard Protection Dashboard`,

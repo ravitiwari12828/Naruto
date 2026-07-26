@@ -83,30 +83,26 @@ function buildWelcomeCard(config, member) {
 
 function buildWelcomeConfigPanel(config, guild, author, clientUser) {
   const chanName = config.channelId ? `#${guild.channels.cache.get(config.channelId)?.name || config.channelId}` : 'Not set';
-  const boostChanName = config.boostChannelId ? `#${guild.channels.cache.get(config.boostChannelId)?.name || config.boostChannelId}` : 'Not set';
-  const imgStr = config.imageUrl ? 'Custom Image URL' : (config.useAvatarThumbnail ? 'Avatar Thumbnail' : 'None');
+  const imgStr = config.imageUrl ? 'Custom URL' : (config.useAvatarThumbnail ? 'Avatar' : 'None');
+
+  const boxMain = [
+    '╭──────────────────────────╮',
+    '│   WELCOME SYSTEM HUB     │',
+    '├──────────────────────────┤',
+    '│ Module     : ' + (config.enabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ Channel    : ' + chanName.slice(0, 12).padEnd(12, ' '),
+    '│ Card Image : ' + imgStr.slice(0, 12).padEnd(12, ' '),
+    '│ Join DM    : ' + (config.joinDmEnabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ Leave DM   : ' + (config.leaveDmEnabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ Boost Msg  : ' + (config.boostEnabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '╰──────────────────────────╯'
+  ];
 
   const description =
     `Welcome **${author.username}**! Below is your server **Welcome & Greetings Configuration**.\n\n` +
-    `**👋 Welcome System Status**\n` +
-    `\`\`\`\n` +
-    `Welcome Module  : ${config.enabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
-    `Welcome Channel : ${chanName}\n` +
-    `Card Image Mode : ${imgStr}\n` +
-    `Join DM Module  : ${config.joinDmEnabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
-    `Leave DM Module : ${config.leaveDmEnabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
-    `Boost Module    : ${config.boostEnabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'} (${boostChanName})\n` +
-    `\`\`\`\n\n` +
+    '```\n' + boxMain.join('\n') + '\n```\n\n' +
     `**💬 Welcome Message Template**\n` +
-    `> *"${config.headerText}"*\n\n` +
-    `**⚡ Quick Commands**\n` +
-    `\`\`\`\n` +
-    `.welcome setup <#channel> [avatar/imageURL] [text]\n` +
-    `.welcometest   - Test welcome preview\n` +
-    `.welcomereset  - Reset welcome settings\n` +
-    `.joindm <text> - Configure Join DM\n` +
-    `.leavedm <text>- Configure Leave DM\n` +
-    `\`\`\``;
+    `> *"${config.headerText}"*`;
 
   const embed = createStyledEmbed({
     title: `👋 Welcome System Dashboard`,

@@ -42,15 +42,20 @@ module.exports = {
       const isPanicOn = antinukeData?.panicmode ?? false;
       const secLogChan = guild.channels.cache.find(c => c.name.includes('security-logs'));
 
+      const boxMain = [
+        '╭──────────────────────────╮',
+        '│   SECURITY SYSTEM HUB    │',
+        '├──────────────────────────┤',
+        '│ AntiNuke   : ' + (isAntiNukeOn ? 'ENABLED [OK]' : 'DISABLED[X]'),
+        '│ Panic Mode : ' + (isPanicOn ? 'ACTIVE  [ON]' : 'NORMAL [OFF]'),
+        '│ AutoMod    : ' + (isAutoModOn ? 'ENABLED [OK]' : 'DISABLED[X]'),
+        '│ LogChannel : ' + (secLogChan ? ('#' + secLogChan.name).slice(0, 12).padEnd(12, ' ') : 'NOT CREATED '),
+        '╰──────────────────────────╯'
+      ];
+
       const description =
         `Welcome **${author.username}**! Configure and lock down your server security using the interactive buttons below.\n\n` +
-        `**🛡️ Server Protection Overview**\n` +
-        `\`\`\`\n` +
-        `AntiNuke Shield    : ${isAntiNukeOn ? 'ENABLED [21 Filters]' : 'DISABLED [OFF]'}\n` +
-        `Panic Mode        : ${isPanicOn ? 'ACTIVE [LOCKDOWN]' : 'INACTIVE [NORMAL]'}\n` +
-        `AutoMod & AntiBot : ${isAutoModOn ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
-        `Security Log Chan : ${secLogChan ? '#' + secLogChan.name : 'NOT CREATED'}\n` +
-        `\`\`\`\n\n` +
+        '```\n' + boxMain.join('\n') + '\n```\n\n' +
         (statusText ? `> 💡 **Latest Action:** ${statusText}\n\n` : '') +
         `*Click any button below to trigger immediate server protection setup!*`;
 

@@ -129,21 +129,19 @@ module.exports = {
     }
 
     // Default Status Overview Card
+    const boxMain = [
+      '╭──────────────────────────╮',
+      '│   QUARANTINE GRID HUB    │',
+      '├──────────────────────────┤',
+      '│ Status     : ' + (config.enabled ? 'ACTIVE  [OK]' : 'DISABLED[X]'),
+      '│ Window     : ' + (String(config.days || 15) + ' Days').padEnd(12, ' '),
+      '│ Enforced   : Admin / Ping│',
+      '╰──────────────────────────╯'
+    ];
+
     const description =
       `Welcome **${author.username}**! Below is your **New Joiner Security Probation Grid**.\n\n` +
-      `**☣️ Quarantine Probation Status**\n` +
-      `\`\`\`\n` +
-      `System Status    : ${config.enabled ? 'ENABLED [ACTIVE]' : 'DISABLED [OFF]'}\n` +
-      `Probation Window : ${config.days} Days\n` +
-      `Enforced Limits  : Ban / Kick / Mass Ping / Channel Edit Lock\n` +
-      `\`\`\`\n\n` +
-      `**⚡ Commands to Manage**\n` +
-      `\`\`\`\n` +
-      `.quarantine enable\n` +
-      `.quarantine disable\n` +
-      `.quarantine days <1-90>\n` +
-      `.quarantine bypass @user/@role\n` +
-      `\`\`\``;
+      '```\n' + boxMain.join('\n') + '\n```';
 
     const embed = createStyledEmbed({
       title: `☣️ 15-Day New Joiner Security Probation Grid`,

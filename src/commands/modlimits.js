@@ -155,24 +155,22 @@ module.exports = {
     }
 
     // Default: View Mod Limits & Usage Status Dashboard
+    const boxMain = [
+      '╭──────────────────────────╮',
+      '│   MODERATION QUOTA HUB   │',
+      '├──────────────────────────┤',
+      '│ Protection : ' + (config.enabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
+      '│ Ban Quota  : ' + (config.limits.ban + ' / 24h').padEnd(12, ' '),
+      '│ Kick Quota : ' + (config.limits.kick + ' / 24h').padEnd(12, ' '),
+      '│ Mute Quota : ' + (config.limits.mute + ' / 24h').padEnd(12, ' '),
+      '│ Purge Quota: ' + (config.limits.purge + ' / 24h').padEnd(12, ' '),
+      '│ ChanDelete : ' + (config.limits.channelDelete + ' / 24h').padEnd(12, ' '),
+      '╰──────────────────────────╯'
+    ];
+
     const description =
       `Welcome **${author.username}**! Below is your **Daily Moderation Action Quota Grid**.\n\n` +
-      `**🛡️ Quota Protection Limits (Per Moderator / 24hrs)**\n` +
-      `\`\`\`\n` +
-      `Protection Status : ${config.enabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
-      `Ban Action Quota  : ${config.limits.ban} / 24hrs\n` +
-      `Kick Action Quota : ${config.limits.kick} / 24hrs\n` +
-      `Mute Action Quota : ${config.limits.mute} / 24hrs\n` +
-      `Purge Action Quota: ${config.limits.purge} / 24hrs\n` +
-      `Channel Delete    : ${config.limits.channelDelete} / 24hrs\n` +
-      `\`\`\`\n\n` +
-      `**⚡ Commands to Manage**\n` +
-      `\`\`\`\n` +
-      `.modlimits set <action> <limit>\n` +
-      `.modlimits reset @moderator\n` +
-      `.modlimits bypass @user\n` +
-      `.modlimits enable | disable\n` +
-      `\`\`\``;
+      '```\n' + boxMain.join('\n') + '\n```';
 
     const embed = createStyledEmbed({
       title: `🛡️ Daily Moderation Action Quotas & Rate Limits`,

@@ -13,26 +13,25 @@ const emojis = require('../utils/emojis');
 function renderAutomodFiltersEmbed(config, guild, author, clientUser) {
   const f = config;
 
-  const boxText =
-    '```\n' +
-    '╭───────────────────────────────────────────────────╮\n' +
-    '│         AUTOMOD SECURITY CONTROL HUB              │\n' +
-    '├───────────────────────────────────────────────────┤\n' +
-    '│ Anti-Spam Filter : ' + (f.antiSpam ? 'ENABLED  [OK]' : 'DISABLED [OFF]').padEnd(30, ' ') + ' │\n' +
-    '│ Invite Links     : ' + (f.inviteLinks ? 'ENABLED  [OK]' : 'DISABLED [OFF]').padEnd(30, ' ') + ' │\n' +
-    '│ Malicious Links  : ' + (f.maliciousLinks ? 'ENABLED  [OK]' : 'DISABLED [OFF]').padEnd(30, ' ') + ' │\n' +
-    '│ NSFW Links       : ' + (f.nsfwLinks ? 'ENABLED  [OK]' : 'DISABLED [OFF]').padEnd(30, ' ') + ' │\n' +
-    '│ Word Blacklist   : ' + (f.profanity ? 'ENABLED  [OK]' : 'DISABLED [OFF]').padEnd(16, ' ') + ' (' + String((f.wordBlacklist || []).length).padStart(2, '0') + ' words)    │\n' +
-    '│ Link Blacklist   : ' + (f.linkBlacklist && f.linkBlacklist.length > 0 ? 'ACTIVE   [OK]' : 'EMPTY    [OFF]').padEnd(16, ' ') + ' (' + String((f.linkBlacklist || []).length).padStart(2, '0') + ' links)    │\n' +
-    '╰───────────────────────────────────────────────────╯\n' +
-    '```';
+  const boxLines = [
+    '╭──────────────────────────╮',
+    '│   AUTOMOD CONTROL HUB    │',
+    '├──────────────────────────┤',
+    '│ AntiSpam   : ' + (f.antiSpam ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ InviteLink : ' + (f.inviteLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ Malicious  : ' + (f.maliciousLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ NSFW Links : ' + (f.nsfwLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ Word List  : ' + String((f.wordBlacklist || []).length).padStart(2, '0') + ' words  ',
+    '│ Link List  : ' + String((f.linkBlacklist || []).length).padStart(2, '0') + ' links  ',
+    '╰──────────────────────────╯'
+  ];
 
   return createStyledEmbed({
     title: `${emojis.SHIELD} AutoMod Security Control Hub — ${guild.name}`,
     subtitle: `Interactive Content Guard & Link Protection Suite`,
     description:
       `Welcome **${author.username}**! Configure live content guards & security filters.\n\n` +
-      boxText + `\n\n` +
+      '```\n' + boxLines.join('\n') + '\n```\n\n' +
       `*Select a category from the dropdown menu below or click the compact emoji buttons to toggle filters!*`,
     requestedBy: author,
     clientUser
@@ -46,26 +45,25 @@ function renderMiscSettingsEmbed(config, guild, author, clientUser) {
   const modlogsChan = m.modlogsChannelId ? `<#${m.modlogsChannelId}>` : '`Not Set`';
   const quarRole = m.quarantineRoleId ? `<@&${m.quarantineRoleId}>` : '`Quarantine`';
 
-  const boxText =
-    '```\n' +
-    '╭───────────────────────────────────────────────────╮\n' +
-    '│         MISCELLANEOUS & MODERATION CONFIG         │\n' +
-    '├───────────────────────────────────────────────────┤\n' +
-    '│ Prefix           : ' + String(m.prefix || '.').padEnd(30, ' ') + ' │\n' +
-    '│ Confirm Msgs     : ' + (m.moderatorConfirmation !== false ? 'ENABLED  [YES]' : 'DISABLED [NO]').padEnd(30, ' ') + ' │\n' +
-    '│ Always DM        : ' + (m.alwaysDmPunished !== false ? 'ENABLED  [YES]' : 'DISABLED [NO]').padEnd(30, ' ') + ' │\n' +
-    '│ Anon Staff       : ' + (m.hideStaffIdentity ? 'ENABLED  [ON]' : 'DISABLED [OFF]').padEnd(30, ' ') + ' │\n' +
-    '│ Default Timeout  : ' + (String(m.defaultTimeoutMinutes || 2880) + 'm').padEnd(30, ' ') + ' │\n' +
-    '│ Ban Purge Days   : ' + (String(m.daysPurgedOnBan || 7) + ' days').padEnd(30, ' ') + ' │\n' +
-    '╰───────────────────────────────────────────────────╯\n' +
-    '```';
+  const boxLines = [
+    '╭──────────────────────────╮',
+    '│   MISC & MODERATION      │',
+    '├──────────────────────────┤',
+    '│ Prefix     : ' + String(m.prefix || '.').padEnd(12, ' '),
+    '│ ConfirmMsg : ' + (m.moderatorConfirmation !== false ? 'YES   [OK]' : 'NO    [OFF]'),
+    '│ Always DM  : ' + (m.alwaysDmPunished !== false ? 'YES   [OK]' : 'NO    [OFF]'),
+    '│ Anon Staff : ' + (m.hideStaffIdentity ? 'ON    [OK]' : 'OFF   [OFF]'),
+    '│ Timeout    : ' + (String(m.defaultTimeoutMinutes || 2880) + 'm').padEnd(12, ' '),
+    '│ Ban Purge  : ' + (String(m.daysPurgedOnBan || 7) + 'd').padEnd(12, ' '),
+    '╰──────────────────────────╯'
+  ];
 
   return createStyledEmbed({
     title: `${emojis.GEAR} Miscellaneous & Moderation Config — ${guild.name}`,
     subtitle: `Global Bot Settings, Log Channels & Punishment Policies`,
     description:
       `Welcome **${author.username}**! Configure global server moderation settings.\n\n` +
-      boxText + `\n\n` +
+      '```\n' + boxLines.join('\n') + '\n```\n\n' +
       `**📜 Channel Mappings:**\n` +
       `• Logs Channel: ${logsChan}\n` +
       `• ModLogs Channel: ${modlogsChan}\n` +

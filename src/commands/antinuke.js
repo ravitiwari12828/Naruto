@@ -249,46 +249,47 @@ function renderAntinukeDashboard(config, author, clientUser) {
   const extraOwnersList = Array.from(config.extraOwners).map(id => `<@${id}>`).join(', ') || 'None';
   const whitelistCount = config.whitelistedUsers.size;
 
+  const boxMain = [
+    '╭──────────────────────────╮',
+    '│   ANTINUKE SYSTEM HUB    │',
+    '├──────────────────────────┤',
+    '│ AntiNuke   : ' + (config.enabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ Panic Mode : ' + (config.panicmode ? `ACTIVE  L${config.panicLevel}` : 'NORMAL [OFF]'),
+    '│ ExtraOwner : ' + (config.extraOwners.size + ' Users').padEnd(12, ' '),
+    '│ Whitelist  : ' + (whitelistCount + ' Users').padEnd(12, ' '),
+    '╰──────────────────────────╯'
+  ];
+
+  const boxGate = [
+    '╭──────────────────────────╮',
+    '│    JOINGATE SECURITY     │',
+    '├──────────────────────────┤',
+    '│ AntiBotAdd : ' + (jg.antiBotAdd ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ Unverified : ' + (jg.antiUnverifiedBot ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ No Avatar  : ' + (jg.antiNoAvatar ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    '│ AccountAge : ' + (jg.antiAccountAge ? `${jg.minAccountAgeDays} Days [OK]` : 'DISABLED[X]'),
+    '╰──────────────────────────╯'
+  ];
+
+  const boxQuarantine = [
+    '╭──────────────────────────╮',
+    '│     AUTO QUARANTINE      │',
+    '├──────────────────────────┤',
+    '│ Quarantine : ' + (aq.enabled ? 'ACTIVE  [OK]' : 'DISABLED[X]'),
+    '│ AdminGuard : ' + (aq.strictMode ? 'ON      [OK]' : 'OFF     [X]'),
+    '│ MemberRole : ' + (aq.strictMemberRole ? 'ON      [OK]' : 'OFF     [X]'),
+    '│ PublicRole : ' + (aq.monitorPublicRoles ? 'ACTIVE  [OK]' : 'OFF     [X]'),
+    '╰──────────────────────────╯'
+  ];
+
   const description =
     `Welcome **${author.username}**! Below is your executive **AntiNuke & Security Control Suite**.\n\n` +
     `**🛡️ Main System Status**\n` +
-    `\`\`\`\n` +
-    `AntiNuke System : ${config.enabled ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
-    `Panic Mode      : ${config.panicmode ? `ACTIVE (Level ${config.panicLevel})` : 'NORMAL [OFF]'}\n` +
-    `Extra Owners    : ${config.extraOwners.size} Users\n` +
-    `Whitelisted     : ${whitelistCount} Users\n` +
-    `\`\`\`\n\n` +
-    `**🚪 Join Gate Security (Account Guard)**\n` +
-    `\`\`\`\n` +
-    `Bot Additions   : ${jg.antiBotAdd ? 'ENABLED' : 'DISABLED'} (Action: ${jg.botAddAction.toUpperCase()})\n` +
-    `Unverified Bots : ${jg.antiUnverifiedBot ? 'ENABLED' : 'DISABLED'} (Action: ${jg.unverifiedBotAction.toUpperCase()})\n` +
-    `No Avatar Gate  : ${jg.antiNoAvatar ? 'ENABLED' : 'DISABLED'}\n` +
-    `Advertising Name: ${jg.antiAdvertisingName ? 'ENABLED' : 'DISABLED'}\n` +
-    `Account Age Gate: ${jg.antiAccountAge ? `ENABLED (Min ${jg.minAccountAgeDays} days)` : 'DISABLED'}\n` +
-    `\`\`\`\n\n` +
-    `**☣️ Auto Quarantine & Dangerous Perm Guard**\n` +
-    `\`\`\`\n` +
-    `Quarantine Module : ${aq.enabled ? 'ACTIVE' : 'DISABLED'}\n` +
-    `Strict Admin Guard: ${aq.strictMode ? 'ON' : 'OFF'}\n` +
-    `Strict Member Guard: ${aq.strictMemberRole ? 'ON' : 'OFF'}\n` +
-    `Public Roles Guard: ${aq.monitorPublicRoles ? 'ACTIVE' : 'OFF'}\n` +
-    `Channel Perm Guard: ${aq.monitorChannelPerms ? 'ACTIVE' : 'OFF'}\n` +
-    `\`\`\`\n\n` +
-    `**📊 Rate Heat Limits per Action**\n` +
-    `\`\`\`\n` +
-    `Kicks & Bans    : ${rl.kickBanLimitMin}/min | ${rl.kickBanLimitHour}/hr\n` +
-    `Role Creations  : ${rl.roleCreateLimitMin}/min | Deletions: ${rl.roleDeleteLimitMin}/min\n` +
-    `Channel Creates : ${rl.channelCreateLimitMin}/min | Deletions: ${rl.channelDeleteLimitMin}/min\n` +
-    `Webhook Creates : ${rl.webhookCreateLimitMin}/min\n` +
-    `\`\`\`\n\n` +
-    `**⚡ Standard Protection Filters**\n` +
-    `\`\`\`\n` +
-    `Anti Ban      : ${f.antiBan ? 'ON' : 'OFF'} | Anti Kick     : ${f.antiKick ? 'ON' : 'OFF'}\n` +
-    `Anti Bot Add  : ${f.antiBotAdd ? 'ON' : 'OFF'} | Anti Channel  : ${f.antiChannelCreate ? 'ON' : 'OFF'}\n` +
-    `Anti Role     : ${f.antiRoleCreate ? 'ON' : 'OFF'} | Anti Webhook  : ${f.antiWebhookCreate ? 'ON' : 'OFF'}\n` +
-    `Anti Server   : ${f.antiGuildUpdate ? 'ON' : 'OFF'} | Anti MassPing : ${f.antiEveryone ? 'ON' : 'OFF'}\n` +
-    `Anti Spam     : ${f.antiSpam ? 'ON' : 'OFF'} | Anti Raid     : ${f.antiRaid ? 'ON' : 'OFF'}\n` +
-    `\`\`\`\n\n` +
+    '```\n' + boxMain.join('\n') + '\n```\n\n' +
+    `**🚪 Join Gate Security**\n` +
+    '```\n' + boxGate.join('\n') + '\n```\n\n' +
+    `**☣️ Auto Quarantine Guard**\n` +
+    '```\n' + boxQuarantine.join('\n') + '\n```\n\n' +
     `**👑 Registered Extra Owners**\n` +
     `${extraOwnersList}`;
 
