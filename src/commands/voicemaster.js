@@ -80,7 +80,6 @@ function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
       '```\n' + row3Box + '\n```\n' +
       '```\n' + row4Box + '\n```'
     )
-    .setImage('attachment://vm_buttons.png')
     .setFooter({ text: 'Naruto VoiceMaster • 20-Control Private Audio Suite' });
 }
 
@@ -189,10 +188,7 @@ module.exports = {
 
       const embed = buildVoiceMasterInterfaceEmbed(triggerChan.id);
       const rows = buildVoiceMasterActionRows();
-      const { AttachmentBuilder } = require('discord.js');
-      const path = require('path');
-      const vmBtnImage = new AttachmentBuilder(path.join(__dirname, '../assets/vm_buttons.png'), { name: 'vm_buttons.png' });
-      await interfaceChan.send({ embeds: [embed], files: [vmBtnImage], components: rows });
+      await interfaceChan.send({ embeds: [embed], components: rows });
 
 
       config.triggerChanId = triggerChan.id;
