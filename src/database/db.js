@@ -63,8 +63,8 @@ class ResilientDatabase {
     // 1. Initial Load from Local JSON
     this.loadJSON();
 
-    // 2. Initialize MongoDB Cloud Connection if MONGODB_URI is provided
-    const mongoUri = process.env.MONGODB_URI;
+    // 2. Initialize MongoDB Cloud Connection if MONGODB_URI or MONGO_URI is provided
+    const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
     if (mongoUri && mongoose) {
       this.initMongo(mongoUri);
     } else if (sqlite3) {
