@@ -16,6 +16,30 @@ const ticketConfigs = new Map();
 const priorityTimers = new Map(); // ticketChannelId -> Interval ID
 const staffCallCooldowns = new Map(); // ticketChannelId -> Timestamp
 
+function resolveEmojiDisplay(emoji) {
+  if (!emoji) return '🎫';
+  if (typeof emoji === 'string') return emoji;
+  if (typeof emoji === 'object' && emoji.id) {
+    return (emoji.animated ? '<a:' : '<:') + emoji.name + ':' + emoji.id + '>';
+  }
+  return '🎫';
+}
+
+function resolveSelectMenuEmoji(emoji) {
+  if (!emoji) return '🎫';
+  if (typeof emoji === 'object' && emoji.id) {
+    return { name: emoji.name, id: emoji.id, animated: !!emoji.animated };
+  }
+  if (typeof emoji === 'string') {
+    const match = emoji.match(/<a?:([a-zA-Z0-9_]+):(\d+)>/);
+    if (match) {
+      return { name: match[1], id: match[2], animated: emoji.startsWith('<a:') };
+    }
+    return emoji;
+  }
+  return '🎫';
+}
+
 function getOrCreateTicketConfig(guildId) {
   if (!ticketConfigs.has(guildId)) {
     ticketConfigs.set(guildId, {
@@ -26,11 +50,11 @@ function getOrCreateTicketConfig(guildId) {
       staffRoles: new Set(),
       categories: [
         { id: 'cat_support', name: 'General Support', emoji: emojis.OBJ_TICKETS || '🎫', description: 'Need help or general assistance?' },
-        { id: 'cat_promo', name: 'Promotion', emoji: emojis.OBJ_INVITES || '📢', description: 'Inquire about promotional deals' },
-        { id: 'cat_report', name: 'Report', emoji: emojis.OBJ_WARNING || '🚨', description: 'Report a user or server violation' },
+        { id: 'cat_promo', name: 'Promotion', emoji: emojis.OBJ_GIVEAWAY || '📢', description: 'Inquire about promotional deals' },
+        { id: 'cat_report', name: 'Report', emoji: emojis.OBJ_ANTINUKE || '🚨', description: 'Report a user or server violation' },
         { id: 'cat_reward', name: 'Reward', emoji: emojis.OBJ_LEVEL || '🎁', description: 'Claim your event or activity rewards' },
-        { id: 'cat_staff', name: 'Staff Apply', emoji: emojis.OBJ_TOOLS || '💼', description: 'Apply for staff position' },
-        { id: 'cat_server_promo', name: 'Server Promo', emoji: emojis.OBJ_HOME || '🌐', description: 'Request server cross-promotions' }
+        { id: 'cat_staff', name: 'Staff Apply', emoji: emojis.OBJ_MOD || '💼', description: 'Apply for staff position' },
+        { id: 'cat_server_promo', name: 'Server Promo', emoji: emojis.OBJ_ALL_MODULES || '🌐', description: 'Request server cross-promotions' }
       ]
     });
   }
@@ -303,14 +327,16 @@ module.exports = {
 
       const staffRoleMentions = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(', ') || (staffRole ? `<@&${staffRole.id}>` : '`Administrator`');
 
+      const { createDynamicBox } = require('../utils/boxBuilder');
+
       const panelEmbed = new EmbedBuilder()
         .setColor(0x00FFBB)
-        .setTitle(`🎫 ${guild.name} Private Support Desk`)
+        .setTitle(`${emojis.TICKETS || '🎫'} ${guild.name} Private Support Desk`)
         .setDescription(
           `Welcome to **${guild.name}** Support Center!\n\n` +
           `Select a category from the dropdown menu below to open a private support ticket.\n\n` +
           `**Available Support Categories:**\n` +
-          config.categories.map(c => `• ${c.emoji || '🎫'} **${c.name}** — ${c.description}`).join('\n') + `\n\n` +
+          config.categories.map(c => `• ${resolveEmojiDisplay(c.emoji)} **${c.name}** — ${c.description}`).join('\n') + `\n\n` +
           `**Support Staff Role**: ${staffRoleMentions}`
         )
         .setFooter({ text: 'Naruto Ticket System • Fast Private Support' });
@@ -323,7 +349,7 @@ module.exports = {
             label: c.name,
             value: c.id,
             description: c.description,
-            emoji: c.emoji
+            emoji: resolveSelectMenuEmoji(c.emoji)
           }))
         );
 
@@ -333,11 +359,19 @@ module.exports = {
       config.panelChanId = message.channel.id;
       ticketConfigs.set(guild.id, config);
 
+      const statusBox = createDynamicBox('TICKET DESK DEPLOYED', [
+        { key: 'Panel', value: 'Active' },
+        { key: 'Staff', value: staffRole ? staffRole.name : 'Created' },
+        { key: 'Logs ', value: logChan ? logChan.name : 'Created' }
+      ]);
+
       return message.reply({
         embeds: [
           createStyledEmbed({
             title: `${emojis.SUCCESS} Ticket Desk Deployed Successfully`,
+            subtitle: `${emojis.TICKETS} Ticket Panel Status`,
             description:
+              '```\n' + statusBox + '\n```\n\n' +
               `• **Ticket Panel**: Active in <#${message.channel.id}>\n` +
               `• **Staff Role Linked**: ${staffRole ? `<@&${staffRole.id}>` : '`Created`'}\n` +
               `• **Ticket Logs**: ${logChan ? `<#${logChan.id}>` : '`Created`'}\n` +
