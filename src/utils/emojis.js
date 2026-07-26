@@ -149,11 +149,11 @@ module.exports = {
   OBJ_AN_BOT: { name: 'an_bot', id: '1530948362784870510', animated: true },
   OBJ_AN_BAN: { name: 'an_ban', id: '1530948358540230807', animated: true },
 
-  OBJ_LOCK: { name: 'emoji_LOCK', id: '1529377727042420897' },
-  OBJ_UNLOCK: { name: 'emoji_UNLOCK', id: '1529377753781239828' },
-  OBJ_HIDE: { name: 'emoji_HIDE', id: '1529377710265340034' },
-  OBJ_HUMAN: { name: 'emoji_HUMAN', id: '1529377712211492975' },
-  OBJ_SCROLL: { name: 'orange_white_shinobi_scroll', id: '1529377768528285827' }
+  OBJ_LOCK: { name: 'an_quarantine', id: '1530948395328339998', animated: true },
+  OBJ_UNLOCK: { name: 'an_joingate', id: '1530948378823888937', animated: true },
+  OBJ_HIDE: { name: 'an_webhook', id: '1530948419164569721', animated: true },
+  OBJ_HUMAN: { name: 'an_whitelist', id: '1530948424273362974', animated: true },
+  OBJ_SCROLL: { name: 'an_whitelist', id: '1530948424273362974', animated: true }
 };
 
 function resolveEmojiForReaction(client, guild, rawEmoji) {

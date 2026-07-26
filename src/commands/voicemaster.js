@@ -96,38 +96,38 @@ function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
 function buildVoiceMasterActionRows() {
   // Row 1: Status, Limit, Logs, Ban, Unban
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_status').setEmoji(emojis.OBJ_ZAP || '⚡').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_limit').setEmoji(emojis.OBJ_HUMAN || '👥').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_logs').setEmoji(emojis.OBJ_SCROLL || '📜').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_ban').setEmoji(emojis.OBJ_MOD || emojis.MOD).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unban').setEmoji(emojis.OBJ_UNLOCK || '🔓').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('vm_status').setEmoji(emojis.OBJ_AN_SHIELD).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_limit').setEmoji(emojis.OBJ_AN_WHITELIST).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_logs').setEmoji(emojis.OBJ_AN_WEBHOOK).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_ban').setEmoji(emojis.OBJ_AN_BAN).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unban').setEmoji(emojis.OBJ_AN_JOINGATE).setStyle(ButtonStyle.Secondary)
   );
 
   // Row 2: Hide, Unhide, Region, Unlock, Lock
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_hide').setEmoji(emojis.OBJ_HIDE || '🙈').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unhide').setEmoji(emojis.OBJ_VOICE || '👁️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_region').setEmoji(emojis.OBJ_HOME || '🌐').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unlock').setEmoji(emojis.OBJ_UNLOCK || '🔓').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_lock').setEmoji(emojis.OBJ_LOCK || '🔒').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('vm_hide').setEmoji(emojis.OBJ_AN_QUARANTINE).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unhide').setEmoji(emojis.OBJ_AN_CHANNEL).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_region').setEmoji(emojis.OBJ_AN_GUILD).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unlock').setEmoji(emojis.OBJ_AN_JOINGATE).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_lock').setEmoji(emojis.OBJ_AN_QUARANTINE).setStyle(ButtonStyle.Secondary)
   );
 
   // Row 3: Trust, Untrust, Bitrate, Invite, Kick
   const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_trust').setEmoji(emojis.OBJ_TOOLS || '➕').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_untrust').setEmoji(emojis.OBJ_REMOVE || '➖').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_bitrate').setEmoji(emojis.OBJ_INFO || '📶').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_invite').setEmoji(emojis.OBJ_INVITES || '📞').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_kick').setEmoji(emojis.OBJ_REMOVE || '🚫').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('vm_trust').setEmoji(emojis.OBJ_AN_ROLE).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_untrust').setEmoji(emojis.OBJ_AN_SPAM).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_bitrate').setEmoji(emojis.OBJ_AN_RAID).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_invite').setEmoji(emojis.OBJ_AN_WEBHOOK).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_kick').setEmoji(emojis.OBJ_AN_KICK).setStyle(ButtonStyle.Secondary)
   );
 
   // Row 4: Suppress, Unsuppress, Chat, Claim, Transfer
   const row4 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_suppress').setEmoji(emojis.OBJ_DISABLED || '🔇').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unsuppress').setEmoji(emojis.OBJ_VOICE || '🎙️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_chat').setEmoji(emojis.OBJ_MESSAGES || '💬').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_claim').setEmoji(emojis.OBJ_OWNER || '👑').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_transfer').setEmoji(emojis.OBJ_PRIORITY || '↗️').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('vm_suppress').setEmoji(emojis.OBJ_AN_PANIC).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unsuppress').setEmoji(emojis.OBJ_AN_BOT).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_chat').setEmoji(emojis.OBJ_AN_SPAM).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_claim').setEmoji(emojis.OBJ_AN_ROLE).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_transfer').setEmoji(emojis.OBJ_AN_GUILD).setStyle(ButtonStyle.Secondary)
   );
 
   return [row1, row2, row3, row4];
