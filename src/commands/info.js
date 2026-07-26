@@ -1,6 +1,8 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const { createAdaptiveButton } = require('../utils/buttonTheme');
 const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, version: djsVersion } = require('discord.js');
+
 const os = require('os');
 const db = require('../database/db');
 
@@ -136,65 +138,28 @@ function buildServerInfoMainEmbed(guild, owner, activeTab = 'overview', author, 
 
 function buildServerInfoRow1(activeTab = 'overview') {
   return new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId('sinfo_overview')
-      .setLabel('Overview')
-      .setEmoji(emojis.OBJ_OVERVIEW)
-      .setStyle(activeTab === 'overview' ? ButtonStyle.Success : ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId('sinfo_channels')
-      .setLabel('Channels')
-      .setEmoji(emojis.OBJ_CHANNELS)
-      .setStyle(activeTab === 'channels' ? ButtonStyle.Success : ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId('sinfo_emojis')
-      .setLabel('Emojis')
-      .setEmoji(emojis.OBJ_EMOJIS)
-      .setStyle(activeTab === 'emojis' ? ButtonStyle.Success : ButtonStyle.Primary)
+    createAdaptiveButton({ customId: 'sinfo_overview', label: 'Overview', emoji: emojis.OBJ_OVERVIEW, isActive: activeTab === 'overview' }),
+    createAdaptiveButton({ customId: 'sinfo_channels', label: 'Channels', emoji: emojis.OBJ_CHANNELS, isActive: activeTab === 'channels' }),
+    createAdaptiveButton({ customId: 'sinfo_emojis', label: 'Emojis', emoji: emojis.OBJ_EMOJIS, isActive: activeTab === 'emojis' })
   );
 }
 
 function buildServerInfoRow2(guild, activeTab = 'overview') {
   return new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId('sinfo_features')
-      .setLabel('Features')
-      .setEmoji(emojis.OBJ_FEATURES)
-      .setStyle(activeTab === 'features' ? ButtonStyle.Success : ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId('sinfo_roles')
-      .setLabel('Roles')
-      .setEmoji(emojis.OBJ_ROLES)
-      .setStyle(activeTab === 'roles' ? ButtonStyle.Success : ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId('sinfo_icon')
-      .setLabel('Icon')
-      .setEmoji(emojis.OBJ_ICON)
-      .setStyle(activeTab === 'icon' ? ButtonStyle.Success : ButtonStyle.Primary)
+    createAdaptiveButton({ customId: 'sinfo_features', label: 'Features', emoji: emojis.OBJ_FEATURES, isActive: activeTab === 'features' }),
+    createAdaptiveButton({ customId: 'sinfo_roles', label: 'Roles', emoji: emojis.OBJ_ROLES, isActive: activeTab === 'roles' }),
+    createAdaptiveButton({ customId: 'sinfo_icon', label: 'Icon', emoji: emojis.OBJ_ICON, isActive: activeTab === 'icon' })
   );
 }
 
 function buildServerInfoRow3(guild, activeTab = 'overview') {
   return new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId('sinfo_banner')
-      .setLabel('Banner')
-      .setEmoji(emojis.OBJ_BANNER)
-      .setStyle(activeTab === 'banner' ? ButtonStyle.Success : ButtonStyle.Primary)
-      .setDisabled(!guild.bannerURL()),
-    new ButtonBuilder()
-      .setCustomId('sinfo_splash')
-      .setLabel('Splash')
-      .setEmoji(emojis.OBJ_SPLASH)
-      .setStyle(activeTab === 'splash' ? ButtonStyle.Success : ButtonStyle.Primary)
-      .setDisabled(!guild.splashURL()),
-    new ButtonBuilder()
-      .setCustomId('sinfo_refresh')
-      .setLabel('Refresh')
-      .setEmoji(emojis.OBJ_REFRESH)
-      .setStyle(ButtonStyle.Success)
+    createAdaptiveButton({ customId: 'sinfo_banner', label: 'Banner', emoji: emojis.OBJ_BANNER, isActive: activeTab === 'banner', disabled: !guild.bannerURL() }),
+    createAdaptiveButton({ customId: 'sinfo_splash', label: 'Splash', emoji: emojis.OBJ_SPLASH, isActive: activeTab === 'splash', disabled: !guild.splashURL() }),
+    createAdaptiveButton({ customId: 'sinfo_refresh', label: 'Refresh', emoji: emojis.OBJ_REFRESH, type: 'action' })
   );
 }
+
 
 
 
