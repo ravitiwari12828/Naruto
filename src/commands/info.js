@@ -139,27 +139,27 @@ function buildServerInfoRow1(activeTab = 'overview') {
     new ButtonBuilder()
       .setCustomId('sinfo_overview')
       .setLabel('Overview')
-      .setEmoji('ℹ️')
+      .setEmoji(emojis.OBJ_OVERVIEW || 'ℹ️')
       .setStyle(activeTab === 'overview' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_channels')
       .setLabel('Channels')
-      .setEmoji('📁')
+      .setEmoji(emojis.OBJ_CHANNELS || '📁')
       .setStyle(activeTab === 'channels' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_emojis')
       .setLabel('Emojis')
-      .setEmoji('🎨')
+      .setEmoji(emojis.OBJ_EMOJIS || '🎨')
       .setStyle(activeTab === 'emojis' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_features')
       .setLabel('Features')
-      .setEmoji(emojis.OBJ_SHIELD || emojis.SHIELD || '🛡️')
+      .setEmoji(emojis.OBJ_FEATURES || '🌐')
       .setStyle(activeTab === 'features' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_roles')
       .setLabel('Roles')
-      .setEmoji('🎭')
+      .setEmoji(emojis.OBJ_ROLES || '🎭')
       .setStyle(activeTab === 'roles' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 }
@@ -169,27 +169,28 @@ function buildServerInfoRow2(guild, activeTab = 'overview') {
     new ButtonBuilder()
       .setCustomId('sinfo_icon')
       .setLabel('Icon')
-      .setEmoji('🖼️')
+      .setEmoji(emojis.OBJ_ICON || '🖼️')
       .setStyle(activeTab === 'icon' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_banner')
       .setLabel('Banner')
-      .setEmoji('🌆')
+      .setEmoji(emojis.OBJ_BANNER || '🌆')
       .setStyle(activeTab === 'banner' ? ButtonStyle.Primary : ButtonStyle.Secondary)
       .setDisabled(!guild.bannerURL()),
     new ButtonBuilder()
       .setCustomId('sinfo_splash')
       .setLabel('Splash')
-      .setEmoji('🎨')
+      .setEmoji(emojis.OBJ_SPLASH || '🎨')
       .setStyle(activeTab === 'splash' ? ButtonStyle.Primary : ButtonStyle.Secondary)
       .setDisabled(!guild.splashURL()),
     new ButtonBuilder()
       .setCustomId('sinfo_refresh')
       .setLabel('Refresh')
-      .setEmoji('🔄')
+      .setEmoji(emojis.OBJ_REFRESH || '🔄')
       .setStyle(ButtonStyle.Success)
   );
 }
+
 
 module.exports = {
   name: 'info',
