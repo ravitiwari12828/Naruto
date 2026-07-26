@@ -91,18 +91,32 @@ class ResilientDatabase {
       // Load master database state from MongoDB Atlas
       const doc = await BotDataModel.findOne({ key: 'master_database' });
       if (doc && doc.data && typeof doc.data === 'object') {
-        // Smart merge: Merge cloud keys into memory, preserving non-empty cloud collections
+        // Smart merge: Merge cloud keys into memory, taking highest user message/XP stats
         for (const key of Object.keys(doc.data)) {
           const cloudVal = doc.data[key];
-          if (cloudVal && (Array.isArray(cloudVal) ? cloudVal.length > 0 : Object.keys(cloudVal).length > 0)) {
-            this.data[key] = cloudVal;
+          if (cloudVal) {
+            if (key === 'users' && typeof cloudVal === 'object') {
+              for (const uid of Object.keys(cloudVal)) {
+                if (!this.data.users[uid]) {
+                  this.data.users[uid] = cloudVal[uid];
+                } else {
+                  this.data.users[uid].messages = Math.max(this.data.users[uid].messages || 0, cloudVal[uid].messages || 0);
+                  this.data.users[uid].xp = Math.max(this.data.users[uid].xp || 0, cloudVal[uid].xp || 0);
+                  this.data.users[uid].level = Math.max(this.data.users[uid].level || 1, cloudVal[uid].level || 1);
+                  this.data.users[uid].voiceSeconds = Math.max(this.data.users[uid].voiceSeconds || 0, cloudVal[uid].voiceSeconds || 0);
+                  this.data.users[uid].invites = Math.max(this.data.users[uid].invites || 0, cloudVal[uid].invites || 0);
+                }
+              }
+            } else if (Array.isArray(cloudVal) ? cloudVal.length > 0 : Object.keys(cloudVal).length > 0) {
+              this.data[key] = cloudVal;
+            }
           }
         }
         console.log('☁️ [MongoDB Cloud] Successfully restored all guild data, levels, autoreacts & settings from cloud!');
         this.saveJSONFileOnly();
       }
 
-      // Backup active memory data back to cloud
+      // Backup merged active memory data back to cloud
       await BotDataModel.findOneAndUpdate(
         { key: 'master_database' },
         { data: this.data, updatedAt: new Date() },
