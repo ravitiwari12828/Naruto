@@ -140,6 +140,63 @@ function renderAutomodConfigEmbed(config, guild, author, clientUser) {
   });
 }
 
+function renderEmbedForTab(activeTab, config, guild, author, clientUser) {
+  if (activeTab === 'misc') {
+    return renderMiscSettingsEmbed(config, guild, author, clientUser);
+  }
+  if (activeTab === 'config') {
+    return renderAutomodConfigEmbed(config, guild, author, clientUser);
+  }
+  if (activeTab === 'blacklists') {
+    const words = (config.wordBlacklist || []).join(', ') || 'None';
+    const links = (config.linkBlacklist || []).join(', ') || 'None';
+    const boxLines = [
+      '╭────────────────────────────────────╮',
+      '│         BLACKLIST COMMANDS         │',
+      '├────────────────────────────────────┤',
+      '│ .addword <word>                    │',
+      '│ .delword <word>                    │',
+      '│ .addlink <domain>                  │',
+      '│ .dellink <domain>                  │',
+      '│ .addcategory <name>                │',
+      '│ .delcategory <name>                │',
+      '│ .blacklist                         │',
+      '╰────────────────────────────────────╯'
+    ];
+    return createStyledEmbed({
+      title: `🔤 Word & Link Blacklists — ${guild.name}`,
+      description:
+        `**Active Blacklisted Words:**\n\`\`\`${words}\`\`\`\n` +
+        `**Active Blacklisted Link Domains:**\n\`\`\`${links}\`\`\`\n\n` +
+        '```\n' + boxLines.join('\n') + '\n```',
+      requestedBy: author,
+      clientUser
+    });
+  }
+  if (activeTab === 'antibot') {
+    const wl = (config.whitelistedBots || []).map(id => `<@${id}>`).join(', ') || '*None*';
+    const boxLines = [
+      '╭────────────────────────────────────╮',
+      '│          ANTIBOT COMMANDS          │',
+      '├────────────────────────────────────┤',
+      '│ .antibot wl @bot                   │',
+      '│ .antibot unwl @bot                 │',
+      '│ .antibot list                      │',
+      '╰────────────────────────────────────╯'
+    ];
+    return createStyledEmbed({
+      title: `🤖 AntiBot Security Status — ${guild.name}`,
+      description:
+        `**Whitelisted Authorized Bots:**\n${wl}\n\n` +
+        '```\n' + boxLines.join('\n') + '\n```',
+      requestedBy: author,
+      clientUser
+    });
+  }
+
+  return renderAutomodFiltersEmbed(config, guild, author, clientUser);
+}
+
 function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
   const f = config;
   const m = config.misc || {};
@@ -451,16 +508,9 @@ module.exports = {
     }
 
     // Default Interactive Panel
-    let embed;
-    if (sub === 'misc') {
-      embed = renderMiscSettingsEmbed(config, guild, author, clientUser);
-    } else if (sub === 'config') {
-      embed = renderAutomodConfigEmbed(config, guild, author, clientUser);
-    } else {
-      embed = renderAutomodFiltersEmbed(config, guild, author, clientUser);
-    }
-
-    const components = buildAutomodInteractiveComponents(config, sub === 'misc' ? 'misc' : (sub === 'config' ? 'misc' : 'filters'));
+    let currentTab = sub === 'misc' ? 'misc' : (sub === 'config' ? 'config' : 'filters');
+    const embed = renderEmbedForTab(currentTab, config, guild, author, clientUser);
+    const components = buildAutomodInteractiveComponents(config, currentTab);
 
     const msg = await message.channel.send({ embeds: [embed], components });
 
@@ -476,72 +526,14 @@ module.exports = {
       if (interaction.isStringSelectMenu() && interaction.customId === 'automod_category_select') {
         const val = interaction.values[0];
 
-        if (val === 'tab_misc') {
-          const mEmbed = renderMiscSettingsEmbed(config, guild, author, clientUser);
-          const mRows = buildAutomodInteractiveComponents(config, 'misc');
-          return interaction.update({ embeds: [mEmbed], components: mRows });
-        }
+        if (val === 'tab_misc') currentTab = 'misc';
+        else if (val === 'tab_blacklists') currentTab = 'blacklists';
+        else if (val === 'tab_antibot') currentTab = 'antibot';
+        else currentTab = 'filters';
 
-        if (val === 'tab_blacklists') {
-          const words = (config.wordBlacklist || []).join(', ') || 'None';
-          const links = (config.linkBlacklist || []).join(', ') || 'None';
-
-          const boxLines = [
-            '╭────────────────────────────────────╮',
-            '│         BLACKLIST COMMANDS         │',
-            '├────────────────────────────────────┤',
-            '│ .addword <word>                    │',
-            '│ .delword <word>                    │',
-            '│ .addlink <domain>                  │',
-            '│ .dellink <domain>                  │',
-            '│ .addcategory <name>                │',
-            '│ .delcategory <name>                │',
-            '│ .blacklist                         │',
-            '╰────────────────────────────────────╯'
-          ];
-
-          const bEmbed = createStyledEmbed({
-            title: `🔤 Word & Link Blacklists — ${guild.name}`,
-            description:
-              `**Active Blacklisted Words:**\n\`\`\`${words}\`\`\`\n` +
-              `**Active Blacklisted Link Domains:**\n\`\`\`${links}\`\`\`\n\n` +
-              '```\n' + boxLines.join('\n') + '\n```',
-            requestedBy: author,
-            clientUser
-          });
-          const bRows = buildAutomodInteractiveComponents(config, 'blacklists');
-          return interaction.update({ embeds: [bEmbed], components: bRows });
-        }
-
-        if (val === 'tab_antibot') {
-          const wl = (config.whitelistedBots || []).map(id => `<@${id}>`).join(', ') || '*None*';
-
-          const boxLines = [
-            '╭────────────────────────────────────╮',
-            '│          ANTIBOT COMMANDS          │',
-            '├────────────────────────────────────┤',
-            '│ .antibot wl @bot                   │',
-            '│ .antibot unwl @bot                 │',
-            '│ .antibot list                      │',
-            '╰────────────────────────────────────╯'
-          ];
-
-          const abEmbed = createStyledEmbed({
-            title: `🤖 AntiBot Security Status — ${guild.name}`,
-            description:
-              `**Whitelisted Authorized Bots:**\n${wl}\n\n` +
-              '```\n' + boxLines.join('\n') + '\n```',
-            requestedBy: author,
-            clientUser
-          });
-          const abRows = buildAutomodInteractiveComponents(config, 'antibot');
-          return interaction.update({ embeds: [abEmbed], components: abRows });
-        }
-
-        // Default Filters tab
-        const fEmbed = renderAutomodFiltersEmbed(config, guild, author, clientUser);
-        const fRows = buildAutomodInteractiveComponents(config, 'filters');
-        return interaction.update({ embeds: [fEmbed], components: fRows });
+        const updatedEmbed = renderEmbedForTab(currentTab, config, guild, author, clientUser);
+        const updatedRows = buildAutomodInteractiveComponents(config, currentTab);
+        return interaction.update({ embeds: [updatedEmbed], components: updatedRows });
       }
 
       // Handle Compact Emoji Buttons with Ephemeral Feedback
@@ -589,8 +581,8 @@ module.exports = {
           responseMsg = `🔄 AutoMod Settings Refreshed!`;
         }
 
-        const newEmbed = renderAutomodFiltersEmbed(config, guild, author, clientUser);
-        const newRows = buildAutomodInteractiveComponents(config, 'filters');
+        const newEmbed = renderEmbedForTab(currentTab, config, guild, author, clientUser);
+        const newRows = buildAutomodInteractiveComponents(config, currentTab);
         await msg.edit({ embeds: [newEmbed], components: newRows }).catch(() => {});
 
         return interaction.reply({ content: responseMsg, flags: 64 });
