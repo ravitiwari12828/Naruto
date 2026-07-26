@@ -18,6 +18,17 @@ module.exports = {
   EMOTES: '<a:emotes:1530950804146491505>',
   ACTIONS: '<a:actions:1530950799490945085>',
 
+  // --- UTILITY & STATUS EMOJIS ---
+  SUCCESS: '<:emoji_green_enabled:1529377708012732506>',
+  ENABLED: '<:emoji_green_enabled:1529377708012732506>',
+  DISABLED: '<:emoji_red_disabled:1529377739302506516>',
+  WARNING: '<:emoji_warning_alert:1529377755735527465>',
+  ERROR: '<:emoji_red_disabled:1529377739302506516>',
+  REMOVE: '<:emoji_REMOVE:1529377741252595802>',
+  RESET: '<a:refresh_sleek_premium:1530937141675294730>',
+  INFO: '<a:analytics:1530942545893265518>',
+  LOADING: '<a:refresh_sleek_premium:1530937141675294730>',
+
 
 
 
