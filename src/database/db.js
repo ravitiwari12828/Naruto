@@ -86,23 +86,29 @@ class ResilientDatabase {
         serverSelectionTimeoutMS: 10000
       });
       this.useMongo = true;
-      console.log('✅ [MongoDB Cloud] Connected successfully! Loading cloud database state...');
+      console.log('✅ [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
 
       // Load master database state from MongoDB Atlas
       const doc = await BotDataModel.findOne({ key: 'master_database' });
-      if (doc && doc.data) {
-        this.data = Object.assign(this.data, doc.data);
+      if (doc && doc.data && typeof doc.data === 'object') {
+        // Smart merge: Merge cloud keys into memory, preserving non-empty cloud collections
+        for (const key of Object.keys(doc.data)) {
+          const cloudVal = doc.data[key];
+          if (cloudVal && (Array.isArray(cloudVal) ? cloudVal.length > 0 : Object.keys(cloudVal).length > 0)) {
+            this.data[key] = cloudVal;
+          }
+        }
         console.log('☁️ [MongoDB Cloud] Successfully restored all guild data, levels, autoreacts & settings from cloud!');
         this.saveJSONFileOnly();
-      } else {
-        // First time cloud setup: upload current local data to MongoDB
-        await BotDataModel.findOneAndUpdate(
-          { key: 'master_database' },
-          { data: this.data, updatedAt: new Date() },
-          { upsert: true }
-        );
-        console.log('☁️ [MongoDB Cloud] Created master cloud database backup!');
       }
+
+      // Backup active memory data back to cloud
+      await BotDataModel.findOneAndUpdate(
+        { key: 'master_database' },
+        { data: this.data, updatedAt: new Date() },
+        { upsert: true }
+      );
+      console.log('☁️ [MongoDB Cloud] Master cloud database backup active!');
     } catch (err) {
       console.error('⚠️ [MongoDB Cloud Error] Failed to connect to MongoDB Atlas:', err.message);
     }
@@ -138,7 +144,7 @@ class ResilientDatabase {
           { data: this.data, updatedAt: new Date() },
           { upsert: true }
         ).catch(err => console.error('⚠️ [MongoDB Sync Error]:', err.message));
-      }, 2000);
+      }, 500);
     }
   }
 
