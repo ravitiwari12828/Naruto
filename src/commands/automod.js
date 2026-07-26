@@ -10,6 +10,12 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const db = require('../database/db');
 const emojis = require('../utils/emojis');
 
+function formatBoxLine(key, value) {
+  const k = (key + ' : ').padEnd(11, ' ');
+  const v = String(value).slice(0, 13).padEnd(13, ' ');
+  return '│ ' + k + v + ' │';
+}
+
 function renderAutomodFiltersEmbed(config, guild, author, clientUser) {
   const f = config;
 
@@ -149,7 +155,6 @@ module.exports = {
     let sub = args[0]?.toLowerCase();
 
     if (['misc', 'miscellaneous'].includes(invoked)) sub = 'misc';
-    if (invoked === 'antibot') sub = 'antibot';
     if (invoked === 'filter' || invoked === 'filters') sub = 'filters';
     if (['addword', 'delword', 'removeword', 'addlink', 'dellink', 'removelink', 'addcategory', 'delcategory', 'removecategory', 'blacklist', 'badwords'].includes(invoked)) {
       sub = invoked;
@@ -167,6 +172,107 @@ module.exports = {
     // Permission Check
     if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
       return message.reply(`${emojis.WARNING || emojis.WARNING} You need **Manage Server** permission to configure AutoMod & Miscellaneous settings.`);
+    }
+
+    // ─────────────────────────────────────────
+    // ANTIBOT WHITELIST COMMANDS (.antibot wl / unwl / list)
+    // ─────────────────────────────────────────
+    if (invoked === 'antibot' || sub === 'antibot') {
+      const action = (invoked === 'antibot' ? args[0] : args[1])?.toLowerCase();
+      const targetUser = message.mentions.users.first() || message.client.users.cache.get(args[1]) || message.client.users.cache.get(args[2]);
+
+      // .antibot wl @bot / .antibot whitelist @bot
+      if (['wl', 'whitelist', 'add'].includes(action)) {
+        if (!targetUser) {
+          return message.reply(`${emojis.WARNING} Usage: \`.antibot wl @bot\`\nExample: \`.antibot wl @Shadowking\``);
+        }
+
+        if (!config.whitelistedBots) config.whitelistedBots = [];
+        if (!config.whitelistedBots.includes(targetUser.id)) {
+          config.whitelistedBots.push(targetUser.id);
+          db.updateAutomod(guild.id, 'whitelistedBots', config.whitelistedBots);
+        }
+
+        const boxLines = [
+          '╭──────────────────────────╮',
+          '│   ANTIBOT WHITELIST      │',
+          '├──────────────────────────┤',
+          formatBoxLine('Action', 'WHITELIST'),
+          formatBoxLine('Bot', ('@' + targetUser.username).slice(0, 13)),
+          formatBoxLine('Status', 'Authorized'),
+          '╰──────────────────────────╯'
+        ];
+
+        const embed = createStyledEmbed({
+          title: `${emojis.BOT || '🤖'} AntiBot Whitelist Updated`,
+          description:
+            `Successfully whitelisted **${targetUser.tag}**! It is now authorized to join and exist in **${guild.name}**.\n\n` +
+            '```\n' + boxLines.join('\n') + '\n```',
+          requestedBy: author,
+          clientUser
+        });
+
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      // .antibot unwl @bot / .antibot unwhitelist @bot / .antibot remove @bot
+      if (['unwl', 'unwhitelist', 'remove', 'del', 'delete'].includes(action)) {
+        if (!targetUser) {
+          return message.reply(`${emojis.WARNING} Usage: \`.antibot unwl @bot\`\nExample: \`.antibot unwl @Shadowking\``);
+        }
+
+        if (config.whitelistedBots) {
+          config.whitelistedBots = config.whitelistedBots.filter(id => id !== targetUser.id);
+          db.updateAutomod(guild.id, 'whitelistedBots', config.whitelistedBots);
+        }
+
+        const boxLines = [
+          '╭──────────────────────────╮',
+          '│   ANTIBOT WHITELIST      │',
+          '├──────────────────────────┤',
+          formatBoxLine('Action', 'UNWHITELIST'),
+          formatBoxLine('Bot', ('@' + targetUser.username).slice(0, 13)),
+          formatBoxLine('Status', 'Revoked'),
+          '╰──────────────────────────╯'
+        ];
+
+        const embed = createStyledEmbed({
+          title: `${emojis.BOT || '🤖'} AntiBot Whitelist Removed`,
+          description:
+            `Removed **${targetUser.tag}** from the authorized bot whitelist.\n\n` +
+            '```\n' + boxLines.join('\n') + '\n```',
+          requestedBy: author,
+          clientUser
+        });
+
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      // .antibot list / .antibot status / .antibot
+      const botList = (config.whitelistedBots || []).map(id => `<@${id}>`).join(', ') || '*No bots whitelisted.*';
+      const boxLines = [
+        '╭──────────────────────────╮',
+        '│   ANTIBOT SECURITY HUB   │',
+        '├──────────────────────────┤',
+        formatBoxLine('AntiBotAdd', 'ENABLED [OK]'),
+        formatBoxLine('Whitelisted', (config.whitelistedBots || []).length + ' Bot(s)'),
+        formatBoxLine('Bot Gate', 'Active [OK]'),
+        '╰──────────────────────────╯'
+      ];
+
+      const embed = createStyledEmbed({
+        title: `${emojis.BOT || '🤖'} AntiBot Security Status — ${guild.name}`,
+        description:
+          `Welcome **${author.username}**! Below is your server **AntiBot Security Grid**.\n\n` +
+          '```\n' + boxLines.join('\n') + '\n```\n\n' +
+          `**🤖 Whitelisted Authorized Bots:**\n${botList}\n\n` +
+          `**⚡ Management Commands:**\n` +
+          `\`\`\`\n.antibot wl @bot   - Whitelist bot\n.antibot unwl @bot - Remove bot whitelist\n\`\`\``,
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.channel.send({ embeds: [embed] });
     }
 
     // ─────────────────────────────────────────
