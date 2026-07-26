@@ -307,31 +307,26 @@ function renderPanicComponents(config) {
   const jg = config.joinGate;
   const aq = config.autoQuarantine;
 
-  // Row 1: Executive Master Controls
+  // Row 1: Executive Master Controls (Compact Emoji-Only Square Buttons)
   const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('toggle_shield')
-      .setLabel(config.enabled ? 'Shield: ON' : 'Shield: OFF')
-      .setEmoji(config.enabled ? emojis.SHIELD : emojis.ERROR)
+      .setEmoji(config.enabled ? (emojis.OBJ_SHIELD || emojis.SHIELD || '🛡️') : (emojis.OBJ_ERROR || emojis.ERROR || '❌'))
       .setStyle(config.enabled ? ButtonStyle.Success : ButtonStyle.Danger),
     new ButtonBuilder()
       .setCustomId('toggle_panic')
-      .setLabel(config.panicmode ? 'Panic: ACTIVE' : 'Panic: OFF')
       .setEmoji(config.panicmode ? '🚨' : '🟢')
       .setStyle(config.panicmode ? ButtonStyle.Danger : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_joingate')
-      .setLabel(jg.enabled ? 'JoinGate: ON' : 'JoinGate: OFF')
       .setEmoji('🚪')
       .setStyle(jg.enabled ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('toggle_quarantine')
-      .setLabel(aq.enabled ? 'Quarantine: ON' : 'Quarantine: OFF')
       .setEmoji('☣️')
       .setStyle(aq.enabled ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('an_whitelist_mgr')
-      .setLabel('Whitelist')
       .setEmoji('👥')
       .setStyle(ButtonStyle.Primary)
   );
