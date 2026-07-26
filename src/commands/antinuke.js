@@ -488,27 +488,103 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // DEDICATED WHITELIST PANEL & GRANULAR PERMS (.whitelist)
+    // DEDICATED WHITELIST PANEL & GRANULAR PERMS (.whitelist / .whitelisted)
     // ─────────────────────────────────────────
-    if (invoked === 'whitelist' || sub === 'whitelist') {
-      const action = (invoked === 'whitelist' ? args[0] : args[1])?.toLowerCase();
-      const user = message.mentions.users.first() || (args[1] && args[1].match(/^\d{17,20}$/) ? await message.client.users.fetch(args[1]).catch(() => null) : null) || (args[2] && args[2].match(/^\d{17,20}$/) ? await message.client.users.fetch(args[2]).catch(() => null) : null);
+    if (invoked === 'whitelist' || invoked === 'whitelisted' || sub === 'whitelist' || sub === 'whitelisted') {
+      const action = (invoked === 'whitelist' || invoked === 'whitelisted' ? args[0] : args[1])?.toLowerCase();
+      const user = message.mentions.users.first() || (args[0] && args[0].match(/^\d{17,20}$/) ? await message.client.users.fetch(args[0]).catch(() => null) : null) || (args[1] && args[1].match(/^\d{17,20}$/) ? await message.client.users.fetch(args[1]).catch(() => null) : null);
+
+      // Granular 21-Event Audit View for a specific target user (.whitelist @user or .whitelist status @user)
+      if (user && (action === 'status' || !action || action === user.id || action.startsWith('<@'))) {
+        const permsSet = config.whitelistedUsers.get(user.id) || new Set();
+
+        const isAll = permsSet.has('all');
+        const has = (p) => isAll || permsSet.has(p);
+
+        const auditBox = createDynamicBox(`PERMISSIONS AUDIT — ${user.username.toUpperCase()}`, [
+          { key: 'Ban', value: has('ban') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Kick', value: has('kick') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Prune Members', value: has('kick') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Bot Add', value: has('bot') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Guild Update', value: has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Channel Create', value: has('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Channel Delete', value: has('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Channel Update', value: has('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Role Create', value: has('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Role Delete', value: has('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Role Update', value: has('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Role Dangerous', value: has('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Mention @everyone', value: has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Webhook Create', value: has('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Webhook Update', value: has('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Webhook Delete', value: has('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Member Update', value: has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Member Dangerous', value: has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Anti Integration', value: has('bot') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Anti Sticker', value: has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Anti Emoji', value: has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' }
+        ]);
+
+        const cmdBox = createDynamicBox('WHITELIST COMMANDS', [
+          '.whitelist add @user [perms]',
+          '.whitelist perms @user +ban -role',
+          '.whitelist remove @user',
+          '.whitelisted'
+        ]);
+
+        const embed = createStyledEmbed({
+          title: `🛡️ Whitelist Granular Event Audit — ${user.username}`,
+          subtitle: `Realtime Permission Bypass Audit for ${guild.name}`,
+          description:
+            `**Target User:** <@${user.id}> (\`${user.tag}\`)\n` +
+            `**Global Bypass Status:** ${isAll ? '`FULL BYPASS (ALL EVENTS)`' : (permsSet.size > 0 ? `\`PARTIAL BYPASS (${permsSet.size} EVENTS)\`` : '`NOT WHITELISTED`')}\n\n` +
+            '```\n' + auditBox + '\n```\n' +
+            '```\n' + cmdBox + '\n```',
+          requestedBy: author,
+          clientUser
+        });
+
+        const row = new ActionRowBuilder().addComponents(
+          new ButtonBuilder().setCustomId(`an_wl_all_${user.id}`).setLabel('Whitelist All Events').setEmoji('🛡️').setStyle(ButtonStyle.Success),
+          new ButtonBuilder().setCustomId(`an_unwl_all_${user.id}`).setLabel('Revoke Whitelist').setEmoji('❌').setStyle(ButtonStyle.Danger)
+        );
+
+        const msg = await message.channel.send({ embeds: [embed], components: [row] });
+        const collector = msg.createMessageComponentCollector({ time: 120000 });
+
+        collector.on('collect', async (interaction) => {
+          if (interaction.user.id !== author.id && author.id !== guild.ownerId) {
+            return interaction.reply({ content: `${emojis.WARNING} Only the server owner or command author can use these buttons.`, flags: 64 });
+          }
+
+          if (interaction.customId === `an_wl_all_${user.id}`) {
+            config.whitelistedUsers.set(user.id, new Set(['all']));
+            antinukeConfigs.set(guild.id, config);
+            return interaction.reply({ content: `${emojis.SUCCESS} Whitelisted **${user.tag}** for **ALL EVENTS**!`, flags: 64 });
+          }
+
+          if (interaction.customId === `an_unwl_all_${user.id}`) {
+            config.whitelistedUsers.delete(user.id);
+            antinukeConfigs.set(guild.id, config);
+            return interaction.reply({ content: `${emojis.SUCCESS} Revoked all whitelist permissions for **${user.tag}**.`, flags: 64 });
+          }
+        });
+
+        return;
+      }
 
       // .whitelist add @user [perms]
-      if (action === 'add' && (user || args[1])) {
-        const targetUser = user || await message.client.users.fetch(args[1]).catch(() => null);
-        if (!targetUser) return message.reply(`👥 Usage: \`.whitelist add @user [perms]\``);
-
+      if (action === 'add' && user) {
         const permArgs = args.slice(2).map(p => p.toLowerCase()).filter(p => ALL_PERMS.includes(p));
         const grantedPerms = permArgs.length > 0 ? new Set(permArgs) : new Set(['all']);
 
-        config.whitelistedUsers.set(targetUser.id, grantedPerms);
+        config.whitelistedUsers.set(user.id, grantedPerms);
         antinukeConfigs.set(guild.id, config);
 
         const embed = createStyledEmbed({
           title: `👥 Member Whitelisted with Granular Perms`,
           description:
-            `**User:** <@${targetUser.id}> (\`${targetUser.tag}\`)\n` +
+            `**User:** <@${user.id}> (\`${user.tag}\`)\n` +
             `**Granted Permissions:** ${formatUserPerms(grantedPerms)}\n\n` +
             `**Management Commands:**\n` +
             `\`\`\`\n` +
@@ -520,93 +596,50 @@ module.exports = {
         return message.channel.send({ embeds: [embed] });
       }
 
-      // .whitelist perms @user <+perm / -perm>
-      if (action === 'perms' || action === 'config' || action === 'edit') {
-        const targetUser = user || await message.client.users.fetch(args[1]).catch(() => null);
-        if (!targetUser) return message.reply(`${emojis.WARNING} Usage: \`.whitelist perms @user +ban -role +channel\``);
-
-        let permsSet = config.whitelistedUsers.get(targetUser.id);
-        if (!permsSet) {
-          permsSet = new Set(['all']);
-          config.whitelistedUsers.set(targetUser.id, permsSet);
-        }
-
-        const changes = args.slice(2);
-        if (changes.length === 0) {
-          const embed = createStyledEmbed({
-            title: `${emojis.GEAR} Whitelist Permissions — ${targetUser.username}`,
-            description:
-              `**Current Granted Permissions:**\n${formatUserPerms(permsSet)}\n\n` +
-              `**Available Permissions:**\n` +
-              `\`ban\`, \`kick\`, \`bot\`, \`channel\`, \`role\`, \`webhook\`, \`guild\`, \`all\`\n\n` +
-              `**To Toggle Permissions:**\n` +
-              `\`.whitelist perms @user +ban -role\` (Turn ON ban, Turn OFF role)\n` +
-              `\`.whitelist perms @user +all\` (Grant all bypasses)\n` +
-              `\`.whitelist perms @user -all\` (Revoke all bypasses)`,
-            requestedBy: author,
-            clientUser
-          });
-          return message.channel.send({ embeds: [embed] });
-        }
-
-        changes.forEach(change => {
-          const sign = change[0];
-          const permName = change.slice(1).toLowerCase();
-
-          if (sign === '+' && ALL_PERMS.includes(permName)) {
-            if (permName === 'all') {
-              permsSet.clear();
-              permsSet.add('all');
-            } else {
-              permsSet.delete('all');
-              permsSet.add(permName);
-            }
-          } else if (sign === '-' && ALL_PERMS.includes(permName)) {
-            permsSet.delete('all');
-            permsSet.delete(permName);
-          }
-        });
-
-        config.whitelistedUsers.set(targetUser.id, permsSet);
-        antinukeConfigs.set(guild.id, config);
-
-        return message.reply(`${emojis.SUCCESS} Updated whitelist perms for **${targetUser.tag}**: ${formatUserPerms(permsSet)}`);
-      }
-
       // .whitelist remove @user
-      if (action === 'remove' && (user || args[1])) {
-        const targetUser = user || await message.client.users.fetch(args[1]).catch(() => null);
-        if (targetUser) {
-          config.whitelistedUsers.delete(targetUser.id);
-          antinukeConfigs.set(guild.id, config);
-          return message.reply(`${emojis.SUCCESS} Removed **${targetUser.tag}** from AntiNuke Whitelist.`);
-        }
+      if (action === 'remove' && user) {
+        config.whitelistedUsers.delete(user.id);
+        antinukeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} Removed **${user.tag}** from AntiNuke Whitelist.`);
       }
 
-      // Default DEDICATED WHITELIST DASHBOARD PANEL
-      const entries = [];
+      // Default DEDICATED WHITELISTED USERS LIST PANEL (&whitelisted / .whitelist list)
+      const listItems = [];
       for (const [id, permsSet] of config.whitelistedUsers.entries()) {
-        entries.push(`• <@${id}> (\`${id}\`)\n  └ **Perms**: ${formatUserPerms(permsSet)}`);
+        const u = message.client.users.cache.get(id);
+        const nameStr = u ? `@${u.username}` : `<@${id}>`;
+        const permStr = permsSet.has('all') ? 'All Events' : Array.from(permsSet).join(', ').toUpperCase();
+        listItems.push(`• ${nameStr} :- ${permStr}`);
       }
 
-      const listText = entries.join('\n\n') || '*No users currently whitelisted.*';
+      const listContent = listItems.join('\n') || '• No users whitelisted yet.';
+
+      const wlBox = createDynamicBox('WHITELISTED USERS', listItems.length > 0 ? listItems : ['• None configured']);
+      const cmdBox = createDynamicBox('WHITELIST COMMANDS', [
+        '.whitelist add @user',
+        '.whitelist remove @user',
+        '.whitelist status @user',
+        '.whitelisted'
+      ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.SHIELD} AntiNuke Whitelist & Permission Panel`,
-        subtitle: `Granular Security Bypass Management`,
+        title: `🔴 Whitelisted Users — ${guild.name}`,
+        subtitle: `Authorized Security Bypass Delegation`,
         description:
-          `Below is your server whitelist delegation status.\n\n` +
-          `**Whitelisted Members & Granted Permissions:**\n${listText}\n\n` +
-          `**Whitelist Management Commands:**\n` +
-          `\`\`\`\n` +
-          `.whitelist add @user [perms]\n` +
-          `.whitelist perms @user +ban -role\n` +
-          `.whitelist remove @user\n` +
-          `\`\`\``,
+          `Below are all authorized whitelisted users for **${guild.name}**:\n\n` +
+          '```\n' + wlBox + '\n```\n' +
+          '```\n' + cmdBox + '\n```',
         requestedBy: author,
         clientUser
       });
-      return message.channel.send({ embeds: [embed] });
+
+      const navRow = new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId('wl_page_back').setLabel('Go Back').setEmoji('🔴').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId('wl_page_prev').setLabel('Previous').setStyle(ButtonStyle.Secondary).setDisabled(true),
+        new ButtonBuilder().setCustomId('wl_page_next').setLabel('Next').setStyle(ButtonStyle.Secondary).setDisabled(true)
+      );
+
+      return message.channel.send({ embeds: [embed], components: [navRow] });
     }
 
     // 1. .antinuke enable [feature/all]

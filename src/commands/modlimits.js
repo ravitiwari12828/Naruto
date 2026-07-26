@@ -1,20 +1,39 @@
+const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  StringSelectMenuBuilder
+} = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { PermissionsBitField } = require('discord.js');
+const { createDynamicBox } = require('../utils/boxBuilder');
 
-// Global Daily Mod Limits Store (guildId -> { enabled, limits: { ban, kick, mute, purge, channelDelete }, usage: Map(userId -> { ban, kick, mute, purge, channelDelete, resetAt }) })
+// Global Daily / 10-Min Mod Limits Store
 const modLimitsStore = new Map();
 
 function getOrCreateModLimits(guildId) {
   if (!modLimitsStore.has(guildId)) {
     modLimitsStore.set(guildId, {
       enabled: true,
+      logChannelId: null,
+      timeWindowMin: 10,
       limits: {
-        ban: 5,
-        kick: 10,
-        mute: 15,
-        purge: 10,
-        channelDelete: 3
+        memberUpdate: 6,
+        channelCreate: 3,
+        channelDelete: 3,
+        channelUpdate: 4,
+        roleCreate: 3,
+        roleDelete: 2,
+        roleUpdate: 3,
+        ban: 3,
+        kick: 3,
+        guildUpdate: 0,
+        timeout: 6,
+        mention: 3,
+        webhookCreate: 3,
+        webhookDelete: 3,
+        webhookUpdate: 2
       },
       bypasses: new Set(),
       usage: new Map()
@@ -26,8 +45,6 @@ function getOrCreateModLimits(guildId) {
 function checkAndIncrementModAction(guildId, moderatorId, actionType) {
   const config = getOrCreateModLimits(guildId);
   if (!config.enabled) return { allowed: true };
-
-  // Bypass server owner & whitelisted bypass users
   if (config.bypasses.has(moderatorId)) return { allowed: true };
 
   const limit = config.limits[actionType];
@@ -38,12 +55,11 @@ function checkAndIncrementModAction(guildId, moderatorId, actionType) {
 
   if (!userUsage || now > userUsage.resetAt) {
     userUsage = {
-      ban: 0,
-      kick: 0,
-      mute: 0,
-      purge: 0,
-      channelDelete: 0,
-      resetAt: now + 86400000 // 24 Hours Reset
+      memberUpdate: 0, channelCreate: 0, channelDelete: 0, channelUpdate: 0,
+      roleCreate: 0, roleDelete: 0, roleUpdate: 0, ban: 0, kick: 0,
+      guildUpdate: 0, timeout: 0, mention: 0, webhookCreate: 0,
+      webhookDelete: 0, webhookUpdate: 0,
+      resetAt: now + (config.timeWindowMin * 60 * 1000)
     };
   }
 
@@ -71,20 +87,26 @@ function checkAndIncrementModAction(guildId, moderatorId, actionType) {
 
 module.exports = {
   name: 'modlimits',
-  description: 'Daily Moderation Action Quota & Anti-Rogue Moderator Protection System',
-  aliases: ['actionlimits', 'modquota', 'limitmod', 'dailyquota'],
+  description: 'AntiNuke Action Rate Limits & Audit Protection System',
+  aliases: ['limit', 'limits', 'actionlimits', 'modquota', 'limitmod', 'rate-limit'],
   modLimitsStore,
   checkAndIncrementModAction,
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
-    const sub = args[0]?.toLowerCase();
+    let sub = args[0]?.toLowerCase();
+
+    // Shift sub if 'modlimits' or 'limit' was used as sub
+    if (['modlimits', 'limit', 'limits'].includes(sub)) {
+      sub = args[1]?.toLowerCase();
+      args = args.slice(1);
+    }
 
     const author = message.author;
     const guild = message.guild;
 
     if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-      return message.reply(`${emojis.WARNING} Only Administrators and Server Owners can configure daily moderation limits.`);
+      return message.reply(`${emojis.WARNING} Only Administrators and Server Owners can configure AntiNuke action limits.`);
     }
 
     let clientUser = message.client.user;
@@ -94,87 +116,115 @@ module.exports = {
 
     const config = getOrCreateModLimits(guild.id);
 
-    // .modlimits enable / disable
-    if (sub === 'enable') {
+    // .limit enable / disable
+    if (sub === 'enable' || sub === 'on') {
       config.enabled = true;
       modLimitsStore.set(guild.id, config);
-      return message.reply(`${emojis.SHIELD} Daily Moderation Action Limits are now **ENABLED**!`);
+      return message.reply(`${emojis.SHIELD} AntiNuke Action Rate Limits are now **ENABLED**!`);
     }
 
-    if (sub === 'disable') {
+    if (sub === 'disable' || sub === 'off') {
       config.enabled = false;
       modLimitsStore.set(guild.id, config);
-      return message.reply(`${emojis.WARNING} Daily Moderation Action Limits are now **DISABLED**.`);
+      return message.reply(`${emojis.WARNING} AntiNuke Action Rate Limits are now **DISABLED**.`);
     }
 
-    // .modlimits set <action> <limit> (e.g. .modlimits set ban 5)
+    // .limit log #channel
+    if (sub === 'log' || sub === 'logs' || sub === 'channel') {
+      const chan = message.mentions.channels.first() || guild.channels.cache.get(args[1]);
+      if (!chan) return message.reply(`${emojis.WARNING} Usage: \`.limit log #channel\``);
+
+      config.logChannelId = chan.id;
+      modLimitsStore.set(guild.id, config);
+      return message.reply(`${emojis.SUCCESS} AntiNuke Limit Logging channel set to ${chan}.`);
+    }
+
+    // .limit set <action> <limit> (e.g. .limit set ban 3)
     if (sub === 'set') {
       const action = args[1]?.toLowerCase();
       const newLimit = parseInt(args[2]);
 
-      const validActions = ['ban', 'kick', 'mute', 'purge', 'channelDelete'];
-      if (!validActions.includes(action) || isNaN(newLimit) || newLimit < 0) {
-        return message.reply(`${emojis.WARNING} Usage: \`.modlimits set <ban|kick|mute|purge|channelDelete> <limit>\``);
+      const keyMap = {
+        'memberupdate': 'memberUpdate', 'channelcreate': 'channelCreate',
+        'channeldelete': 'channelDelete', 'channelupdate': 'channelUpdate',
+        'rolecreate': 'roleCreate', 'roledelete': 'roleDelete',
+        'roleupdate': 'roleUpdate', 'ban': 'ban', 'kick': 'kick',
+        'guildupdate': 'guildUpdate', 'timeout': 'timeout', 'mention': 'mention',
+        'webhookcreate': 'webhookCreate', 'webhookdelete': 'webhookDelete',
+        'webhookupdate': 'webhookUpdate'
+      };
+
+      const matchedKey = keyMap[action];
+      if (!matchedKey || isNaN(newLimit) || newLimit < 0) {
+        return message.reply(`${emojis.WARNING} Usage: \`.limit set <action> <count>\` (e.g. \`.limit set ban 3\`)`);
       }
 
-      config.limits[action] = newLimit;
+      config.limits[matchedKey] = newLimit;
       modLimitsStore.set(guild.id, config);
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR} Daily Moderation Quota Updated`,
-        description: `Set daily **${action.toUpperCase()}** limit per moderator to **\`${newLimit} actions / 24hrs\`**.`,
+        title: `${emojis.GEAR} AntiNuke Limit Updated`,
+        description: `Set **${matchedKey}** limit to **\`${newLimit} actions / 10 Minutes\`**.`,
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    // .modlimits reset @user
+    // .limit reset
     if (sub === 'reset') {
-      const target = message.mentions.users.first();
-      if (!target) return message.reply(`${emojis.WARNING} Usage: \`.modlimits reset @moderator\``);
-
-      config.usage.delete(target.id);
+      config.limits = {
+        memberUpdate: 6, channelCreate: 3, channelDelete: 3, channelUpdate: 4,
+        roleCreate: 3, roleDelete: 2, roleUpdate: 3, ban: 3, kick: 3,
+        guildUpdate: 0, timeout: 6, mention: 3, webhookCreate: 3,
+        webhookDelete: 3, webhookUpdate: 2
+      };
+      config.usage.clear();
       modLimitsStore.set(guild.id, config);
 
-      return message.reply(`${emojis.SUCCESS} Reset daily moderation action counters for **${target.tag}**.`);
+      return message.reply(`${emojis.SUCCESS} Reset all AntiNuke rate limits back to default settings!`);
     }
 
-    // .modlimits bypass @role / @user
-    if (sub === 'bypass') {
-      const target = message.mentions.users.first() || message.mentions.roles.first();
-      if (!target) return message.reply(`${emojis.WARNING} Usage: \`.modlimits bypass @user/@role\``);
+    // Default: Executive Monospaced Limits Panel
+    const logChan = config.logChannelId ? `<#${config.logChannelId}>` : '`Not Set`';
 
-      if (config.bypasses.has(target.id)) {
-        config.bypasses.delete(target.id);
-        return message.reply(`${emojis.SUCCESS} Removed **${target.name || target.tag}** from moderation quota bypass list.`);
-      } else {
-        config.bypasses.add(target.id);
-        return message.reply(`${emojis.SHIELD} Added **${target.name || target.tag}** to moderation quota bypass list!`);
-      }
-    }
+    const limitsBox = createDynamicBox('CURRENT ANTINUKE LIMITS', [
+      { key: 'Member Update', value: config.limits.memberUpdate },
+      { key: 'Channel Create', value: config.limits.channelCreate },
+      { key: 'Channel Delete', value: config.limits.channelDelete },
+      { key: 'Channel Update', value: config.limits.channelUpdate },
+      { key: 'Role Create', value: config.limits.roleCreate },
+      { key: 'Role Delete', value: config.limits.roleDelete },
+      { key: 'Role Update', value: config.limits.roleUpdate },
+      { key: 'Ban', value: config.limits.ban },
+      { key: 'Kick', value: config.limits.kick },
+      { key: 'Guild Update', value: config.limits.guildUpdate },
+      { key: 'Timeout', value: config.limits.timeout },
+      { key: 'Mention', value: config.limits.mention },
+      { key: 'Webhook Create', value: config.limits.webhookCreate },
+      { key: 'Webhook Delete', value: config.limits.webhookDelete },
+      { key: 'Webhook Update', value: config.limits.webhookUpdate }
+    ]);
 
-    // Default: View Mod Limits & Usage Status Dashboard
-    const boxMain = [
-      '╭──────────────────────────╮',
-      '│   MODERATION QUOTA HUB   │',
-      '├──────────────────────────┤',
-      '│ Protection : ' + (config.enabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
-      '│ Ban Quota  : ' + (config.limits.ban + ' / 24h').padEnd(12, ' '),
-      '│ Kick Quota : ' + (config.limits.kick + ' / 24h').padEnd(12, ' '),
-      '│ Mute Quota : ' + (config.limits.mute + ' / 24h').padEnd(12, ' '),
-      '│ Purge Quota: ' + (config.limits.purge + ' / 24h').padEnd(12, ' '),
-      '│ ChanDelete : ' + (config.limits.channelDelete + ' / 24h').padEnd(12, ' '),
-      '╰──────────────────────────╯'
-    ];
+    const cmdBox = createDynamicBox('LIMIT COMMANDS', [
+      '.limit set <action> <count>',
+      '.limit log #channel',
+      '.limit reset',
+      '.limit status'
+    ]);
 
     const description =
-      `Welcome **${author.username}**! Below is your **Daily Moderation Action Quota Grid**.\n\n` +
-      '```\n' + boxMain.join('\n') + '\n```';
+      `Welcome **${author.username}**! Below is your server **AntiNuke Action Rate Limits Grid**.\n\n` +
+      '```\n' + limitsBox + '\n```\n' +
+      '```\n' + cmdBox + '\n```\n\n' +
+      `**📜 Configuration Mappings:**\n` +
+      `• **Logging Channel**: ${logChan}\n` +
+      `• **Time Window**: \`${config.timeWindowMin} Minutes\` *(Fixed Security Window)*\n\n` +
+      `*💡 You can customize these limits using the \`.limit set <action> <count>\` command!*`;
 
     const embed = createStyledEmbed({
-      title: `${emojis.SHIELD} Daily Moderation Action Quotas & Rate Limits`,
-      subtitle: `Anti-Rogue Moderator Protection Grid`,
+      title: `${emojis.SHIELD} AntiNuke Action Rate Limits & Quota Grid`,
+      subtitle: `Realtime Server Action Audit Protection`,
       description,
       requestedBy: author,
       clientUser
