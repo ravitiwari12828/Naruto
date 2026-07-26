@@ -93,8 +93,7 @@ module.exports = {
       const aiResponse = await generateAIAnswer(query, mode);
 
       const statusBox = createDynamicBox('PRIORITY AI SUMMARY', [
-        { key: 'Query', value: query.length > 20 ? query.slice(0, 18) + '…' : query },
-        { key: 'Engine', value: mode === 'code' ? 'Code Compiler' : 'Sage AI Engine' },
+        { key: 'Task  ', value: mode === 'code' ? 'Code Compiler' : 'Sage AI Engine' },
         { key: 'Status', value: '🟢 Completed' }
       ]);
 

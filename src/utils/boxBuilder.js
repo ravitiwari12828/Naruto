@@ -7,10 +7,10 @@
 // Strip emojis & surrogate pairs to calculate exact visual character width in monospaced font
 function getVisualWidth(str) {
   if (!str) return 0;
-  // Replace unicode emoji surrogate pairs & custom emoji tokens with single char 'X'
+  // Replace custom emoji tokens with single char 'X' and unicode emojis with 'XX' (2 cols in monospaced font)
   const clean = String(str)
     .replace(/<a?:[a-zA-Z0-9_]+:\d+>/g, 'X')
-    .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDE4F]|\uD83D[\uDE80-\uDEF6]/g, 'X');
+    .replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDE4F]|\uD83D[\uDE80-\uDEF6]|[\u2600-\u27BF]/g, 'XX');
   return clean.length;
 }
 
