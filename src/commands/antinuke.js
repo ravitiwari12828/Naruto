@@ -515,22 +515,22 @@ module.exports = {
           { key: 'Prune Members', value: has('prune') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
           { key: 'Bot Add', value: has('bot') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
           { key: 'Guild Update', value: has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Channel Create', value: has('channel_create') || has('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Channel Delete', value: has('channel_delete') || has('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Channel Update', value: has('channel_update') || has('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Role Create', value: has('role_create') || has('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Role Delete', value: has('role_delete') || has('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Role Update', value: has('role_update') || has('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Role Dangerous', value: has('role_dangerous') || has('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Mention @everyone', value: has('everyone') || has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Webhook Create', value: has('webhook_create') || has('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Webhook Update', value: has('webhook_update') || has('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Webhook Delete', value: has('webhook_delete') || has('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Member Update', value: has('member_update') || has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Member Dangerous', value: has('member_dangerous') || has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Anti Integration', value: has('integration') || has('bot') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Anti Sticker', value: has('sticker') || has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Anti Emoji', value: has('emoji') || has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' }
+          { key: 'Channel Create', value: has('channel_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Channel Delete', value: has('channel_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Channel Update', value: has('channel_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Role Create', value: has('role_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Role Delete', value: has('role_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Role Update', value: has('role_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Role Dangerous', value: has('role_dangerous') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Mention @everyone', value: has('everyone') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Webhook Create', value: has('webhook_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Webhook Update', value: has('webhook_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Webhook Delete', value: has('webhook_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Member Update', value: has('member_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Member Dangerous', value: has('member_dangerous') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Anti Integration', value: has('integration') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Anti Sticker', value: has('sticker') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+          { key: 'Anti Emoji', value: has('emoji') ? 'ALLOWED [OK]' : 'BLOCKED [X]' }
         ]);
 
         const cmdBox = createDynamicBox('WHITELIST COMMANDS', [
@@ -555,7 +555,9 @@ module.exports = {
         const selectRow = new ActionRowBuilder().addComponents(
           new StringSelectMenuBuilder()
             .setCustomId(`wl_select_perm_${user.id}`)
-            .setPlaceholder('❯ Choose Specific Permission to Toggle...')
+            .setPlaceholder('❯ Select Permissions to Grant (Multi-Select Allowed)...')
+            .setMinValues(1)
+            .setMaxValues(23)
             .addOptions([
               { label: 'All Permissions', value: 'all', description: 'Grant or revoke full bypass for ALL events', emoji: '🛡️' },
               { label: 'Anti Ban', value: 'ban', description: 'Whitelist for ban actions', emoji: '🔨' },
@@ -599,22 +601,16 @@ module.exports = {
           let userPerms = config.whitelistedUsers.get(user.id) || new Set();
 
           if (interaction.customId === `wl_select_perm_${user.id}`) {
-            const selected = interaction.values[0];
+            const selectedValues = interaction.values;
 
-            if (selected === 'all') {
-              if (userPerms.has('all')) {
-                userPerms.clear();
-              } else {
-                userPerms.clear();
-                userPerms.add('all');
-              }
+            if (selectedValues.includes('all')) {
+              userPerms.clear();
+              userPerms.add('all');
             } else {
               userPerms.delete('all');
-              if (userPerms.has(selected)) {
-                userPerms.delete(selected);
-              } else {
-                userPerms.add(selected);
-              }
+              // Multi-select sync: Grant exact set of selected checkboxes!
+              userPerms.clear();
+              selectedValues.forEach(v => userPerms.add(v));
             }
           } else if (interaction.customId === `an_wl_all_${user.id}`) {
             userPerms = new Set(['all']);
@@ -640,22 +636,22 @@ module.exports = {
             { key: 'Prune Members', value: hasNew('prune') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
             { key: 'Bot Add', value: hasNew('bot') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
             { key: 'Guild Update', value: hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Channel Create', value: hasNew('channel_create') || hasNew('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Channel Delete', value: hasNew('channel_delete') || hasNew('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Channel Update', value: hasNew('channel_update') || hasNew('channel') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Role Create', value: hasNew('role_create') || hasNew('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Role Delete', value: hasNew('role_delete') || hasNew('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Role Update', value: hasNew('role_update') || hasNew('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Role Dangerous', value: hasNew('role_dangerous') || hasNew('role') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Mention @everyone', value: hasNew('everyone') || hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Webhook Create', value: hasNew('webhook_create') || hasNew('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Webhook Update', value: hasNew('webhook_update') || hasNew('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Webhook Delete', value: hasNew('webhook_delete') || hasNew('webhook') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Member Update', value: hasNew('member_update') || hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Member Dangerous', value: hasNew('member_dangerous') || hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Anti Integration', value: hasNew('integration') || hasNew('bot') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Anti Sticker', value: hasNew('sticker') || hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Anti Emoji', value: hasNew('emoji') || hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' }
+            { key: 'Channel Create', value: hasNew('channel_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Channel Delete', value: hasNew('channel_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Channel Update', value: hasNew('channel_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Role Create', value: hasNew('role_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Role Delete', value: hasNew('role_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Role Update', value: hasNew('role_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Role Dangerous', value: hasNew('role_dangerous') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Mention @everyone', value: hasNew('everyone') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Webhook Create', value: hasNew('webhook_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Webhook Update', value: hasNew('webhook_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Webhook Delete', value: hasNew('webhook_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Member Update', value: hasNew('member_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Member Dangerous', value: hasNew('member_dangerous') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Anti Integration', value: hasNew('integration') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Anti Sticker', value: hasNew('sticker') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
+            { key: 'Anti Emoji', value: hasNew('emoji') ? 'ALLOWED [OK]' : 'BLOCKED [X]' }
           ]);
 
           const updatedEmbed = createStyledEmbed({
