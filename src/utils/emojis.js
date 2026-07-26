@@ -90,6 +90,17 @@ module.exports = {
   NINE_TAILS: '<:emoji_nine_tails_flame:1529377731718938674>',
   KUNAI: '<:emoji_crossed_kunai:1529377695656317078>',
 
+  // --- ANIMATED CUSTOM DISCORD EMOJIS ---
+  ANIMATED_SPLASH: '<a:splash_sleek_premium:1530937151116542106>',
+  ANIMATED_ROLES: '<a:roles_sleek_premium:1530937146502807552>',
+  ANIMATED_REFRESH: '<a:refresh_sleek_premium:1530937141675294730>',
+  ANIMATED_OVERVIEW: '<a:overview_sleek_premium:1530937136121909298>',
+  ANIMATED_ICON: '<a:icon_sleek_premium:1530937130237562900>',
+  ANIMATED_FEATURES: '<a:features_sleek_premium:1530937125288018100>',
+  ANIMATED_EMOJIS: '<a:emojis_sleek_premium:1530937119672107240>',
+  ANIMATED_CHANNELS: '<a:channels_sleek_premium:1530937114039025774>',
+  ANIMATED_BANNER: '<a:banner_sleek_premium:1530937109639204864>',
+
   // --- OBJECTS FOR DISCORD SELECT MENU DROPDOWNS & BUTTONS ---
   OBJ_FUN: { name: 'emoji_fun', id: '1529474957934067892' },
   OBJ_GIVEAWAY: { name: 'emoji_giveaway', id: '1529474963856167023' },
@@ -102,10 +113,19 @@ module.exports = {
   OBJ_MUSIC: { name: 'emoji_music', id: '1529918009433391234' },
   OBJ_WELCOME: { name: 'emoji_welcome', id: '1529720228781490206' },
   OBJ_STICKY: { name: 'emoji_sticky', id: '1529720225975636040' },
-  OBJ_ROLES: { name: 'emoji_roles', id: '1529720223211454595' },
+  OBJ_ROLES: { name: 'roles_sleek_premium', id: '1530937146502807552', animated: true },
   OBJ_REACTIONROLES: { name: 'emoji_reactionroles', id: '1529720219390443612' },
   OBJ_PROFILE: { name: 'emoji_profile', id: '1529720216265687150' },
   OBJ_ANTINUKE: { name: 'emoji_antinuke', id: '1529720213120225371' },
+
+  OBJ_SPLASH: { name: 'splash_sleek_premium', id: '1530937151116542106', animated: true },
+  OBJ_REFRESH: { name: 'refresh_sleek_premium', id: '1530937141675294730', animated: true },
+  OBJ_OVERVIEW: { name: 'overview_sleek_premium', id: '1530937136121909298', animated: true },
+  OBJ_ICON: { name: 'icon_sleek_premium', id: '1530937130237562900', animated: true },
+  OBJ_FEATURES: { name: 'features_sleek_premium', id: '1530937125288018100', animated: true },
+  OBJ_EMOJIS: { name: 'emojis_sleek_premium', id: '1530937119672107240', animated: true },
+  OBJ_CHANNELS: { name: 'channels_sleek_premium', id: '1530937114039025774', animated: true },
+  OBJ_BANNER: { name: 'banner_sleek_premium', id: '1530937109639204864', animated: true },
 
   OBJ_ZAP: { name: 'emoji_analytics_zap', id: '1529910228345163978' },
   OBJ_TOOLS: { name: 'emoji_TOOLS', id: '1529377751524442112' },
@@ -133,3 +153,4 @@ module.exports = {
   OBJ_HUMAN: { name: 'emoji_HUMAN', id: '1529377712211492975' },
   OBJ_SCROLL: { name: 'orange_white_shinobi_scroll', id: '1529377768528285827' }
 };
+
