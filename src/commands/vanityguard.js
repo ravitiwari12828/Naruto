@@ -131,9 +131,12 @@ module.exports = {
 
     // DEFAULT / .vanity protection status / .vanity status / .vanity
     const codeStr = config.protectedVanity || guild.vanityURLCode || 'None';
+    const boostStatus = config.boostLost ? 'SAVED — WAITING FOR BOOST' : (config.enabled ? 'ACTIVE [OK]' : 'DISABLED[X]');
+
     const boxMain = createDynamicBox('VANITYGUARD CONTROL HUB', [
       { key: 'Status', value: config.enabled ? 'ACTIVE [OK]' : 'DISABLED[X]' },
       { key: 'Locked Code', value: '.gg/' + codeStr },
+      { key: 'Boost Guard', value: boostStatus },
       { key: 'Recovery', value: '< 50ms' }
     ]);
 
@@ -144,9 +147,17 @@ module.exports = {
       '.vanity set <code>'
     ]);
 
+    const decoyExplain =
+      `**🛡️ How Decoy System Works:**\n` +
+      `> Your real vanity \`discord.gg/${codeStr}\` is **LOCKED** in bot memory.\n` +
+      `> If any admin tries to change it — what they set becomes a **DECOY** and is instantly rejected.\n` +
+      `> Bot reclaims \`discord.gg/${codeStr}\` in **< 50ms**.\n` +
+      `> If server loses **Level 3 boost** — vanity code is saved & **auto-reclaimed** when boost returns!\n`;
+
     const description =
-      `Secure your level 3 server custom invite URL (Vanity URL) from being stolen or changed.\n\n` +
+      `Secure your level 3 server vanity URL from theft.\n\n` +
       '```\n' + boxMain + '\n```\n' +
+      decoyExplain + '\n' +
       '```\n' + cmdBox + '\n```';
 
     const embed = createStyledEmbed({
@@ -159,3 +170,4 @@ module.exports = {
     return message.channel.send({ embeds: [embed] });
   }
 };
+

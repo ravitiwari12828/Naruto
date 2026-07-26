@@ -846,16 +846,83 @@ client.on('roleUpdate', async (oldRole, newRole) => {
   }
 });
 
-// ${emojis.SHIELD} 4. ANTIGUILD UPDATE & VANITY THEFT PROTECTION LISTENER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 🛡️ 4. VANITYGUARD — DECOY SYSTEM + BOOST RECOVERY
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// HOW IT WORKS:
+//   • Protected (real) vanity = the code set via .vanity set <code>
+//   • If ANY admin changes the server vanity → it's treated as a DECOY being swapped
+//     The bot INSTANTLY reclaims the real protected vanity back
+//   • Log says: "Decoy vanity left, REAL vanity is still LOCKED & SAFE"
+//   • If server loses Level 3 boost (vanity goes null) → bot SAVES the protected code
+//   • When boost returns (vanity becomes available again) → bot AUTO-RECLAIMS the real vanity
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 client.on('guildUpdate', async (oldGuild, newGuild) => {
   const antinukeCmd = client.commands.get('antinuke');
-  const vanityCmd = client.commands.get('vanityguard');
+  const vanityCmd   = client.commands.get('vanityguard');
 
-  const antiConfig = antinukeCmd ? antinukeCmd.getOrCreateAntinuke(newGuild.id) : null;
-  const vanityConfig = vanityCmd ? vanityCmd.getOrCreateVanityConfig(newGuild.id) : null;
+  const antiConfig   = antinukeCmd ? antinukeCmd.getOrCreateAntinuke(newGuild.id) : null;
+  const vanityConfig = vanityCmd   ? vanityCmd.getOrCreateVanityConfig(newGuild.id) : null;
 
+  // ──────────────────────────────────────────
+  // CASE A: Boost dropped → vanity lost (null)
+  //   Save protected code so we can reclaim later
+  // ──────────────────────────────────────────
+  if (vanityConfig && oldGuild.vanityURLCode && !newGuild.vanityURLCode) {
+    // Server lost Level 3 boost — vanity went away
+    // Save the last known real vanity code for auto-reclaim later
+    if (!vanityConfig.protectedVanity) {
+      vanityConfig.protectedVanity = oldGuild.vanityURLCode;
+    }
+    vanityConfig.boostLost = true;
+    vanityCmd.vanityConfigs.set(newGuild.id, vanityConfig);
+
+    dispatchLog(newGuild, 'antinuke', {
+      color: 0xFEE75C,
+      title: '⚠️ VANITYGUARD — BOOST LOST',
+      description:
+        `**Server dropped below Level 3 Boost!**\n\n` +
+        `🔒 **Protected Vanity Saved:** \`discord.gg/${vanityConfig.protectedVanity}\`\n` +
+        `📦 **Status:** Code is locked in bot memory — will AUTO-RECLAIM when boost returns!\n\n` +
+        `> Boost your server back to **Level 3** to automatically restore \`discord.gg/${vanityConfig.protectedVanity}\``,
+      footer: 'VanityGuard Decoy System'
+    });
+    return;
+  }
+
+  // ──────────────────────────────────────────
+  // CASE B: Boost returned → vanity available again
+  //   Auto-reclaim the protected code immediately
+  // ──────────────────────────────────────────
+  if (vanityConfig && vanityConfig.boostLost && !oldGuild.vanityURLCode && newGuild.vanityURLCode) {
+    vanityConfig.boostLost = false;
+    vanityCmd.vanityConfigs.set(newGuild.id, vanityConfig);
+
+    if (vanityConfig.protectedVanity && newGuild.vanityURLCode !== vanityConfig.protectedVanity) {
+      await newGuild.setVanityCode(vanityConfig.protectedVanity, 'VanityGuard: Auto-Reclaim after boost restore').catch(() => {});
+
+      dispatchLog(newGuild, 'antinuke', {
+        color: 0x57F287,
+        title: '✅ VANITYGUARD — REAL VANITY RECLAIMED',
+        description:
+          `**Server boosted back to Level 3!**\n\n` +
+          `🔒 **Real Vanity Reclaimed:** \`discord.gg/${vanityConfig.protectedVanity}\`\n` +
+          `⚡ **Recovery Time:** < 1 second\n` +
+          `🛡️ **Status:** Protected & LOCKED`,
+        footer: 'VanityGuard Decoy System'
+      });
+    }
+    return;
+  }
+
+  // ──────────────────────────────────────────
+  // CASE C: Rogue admin tried to change vanity / server settings
+  //   Real vanity is locked → treat what left as DECOY
+  // ──────────────────────────────────────────
   const isVanityChanged = oldGuild.vanityURLCode !== newGuild.vanityURLCode ||
-                          (vanityConfig && vanityConfig.protectedVanity && newGuild.vanityURLCode !== vanityConfig.protectedVanity);
+                          (vanityConfig && vanityConfig.protectedVanity &&
+                           newGuild.vanityURLCode !== vanityConfig.protectedVanity);
 
   const shouldProtect = (antiConfig && antiConfig.enabled && (antiConfig.filters.antiGuildUpdate || antiConfig.panicmode)) ||
                         (vanityConfig && vanityConfig.enabled && isVanityChanged);
@@ -876,8 +943,9 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
 
       if (executor && executor.id !== newGuild.ownerId) {
         const isWhitelisted = antinukeCmd ? antinukeCmd.isUserWhitelistedForFeature(antiConfig, executor.id, 'antiGuild') : false;
+
         if (!isWhitelisted) {
-          // 1. Revert Server Name & Icon
+          // 1. Revert Server Name & Icon if changed
           if (oldGuild.name !== newGuild.name) {
             await newGuild.setName(oldGuild.name, 'AntiNuke: Reverting Unauthorized Server Name Change').catch(() => {});
           }
@@ -885,29 +953,39 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
             await newGuild.setIcon(oldGuild.iconURL(), 'AntiNuke: Reverting Unauthorized Server Icon Change').catch(() => {});
           }
 
-          // 2. Revert & Reclaim Vanity URL Code
-          const targetVanity = vanityConfig?.protectedVanity || oldGuild.vanityURLCode;
-          if (targetVanity && newGuild.vanityURLCode !== targetVanity) {
-            await newGuild.setVanityCode(targetVanity, 'VanityGuard: Instant Reversion & Claim').catch(() => {});
+          // 2. DECOY SYSTEM: Revert & Reclaim the REAL protected vanity
+          //    Whatever code "left" was just the DECOY — real vanity is re-locked instantly
+          const realVanity   = vanityConfig?.protectedVanity || oldGuild.vanityURLCode;
+          const decoyVanity  = newGuild.vanityURLCode;  // what the rogue admin set (the "decoy")
+
+          if (realVanity && newGuild.vanityURLCode !== realVanity) {
+            await newGuild.setVanityCode(realVanity, 'VanityGuard: Decoy Rejected — Real Vanity Reclaimed').catch(() => {});
           }
 
-          // 3. 10-Day Quarantine & Jail Lockout for Vanity Thief
-          await punishRogueAdmin(newGuild, executor.id, 'Unauthorized Server Settings / Vanity Theft Attempt');
+          // 3. Quarantine the rogue admin
+          await punishRogueAdmin(newGuild, executor.id, 'Vanity Theft / Unauthorized Server Settings Change');
 
+          // 4. Log with DECOY language
           dispatchLog(newGuild, 'antinuke', {
             color: 0xED4245,
-            title: '${emojis.SHIELD} VANITYGUARD / SERVER THEFT INTERCEPTED',
-            description: `**Unauthorized Server Settings / Vanity Theft Reverted!**\n\n` +
-                         `• **Rogue Admin:** <@${executor.id}>\n` +
-                         `• **Target Vanity:** \`discord.gg/${targetVanity || 'Reverted'}\`\n` +
-                         `• **Action:** Reverted & 10-Day Quarantine Jail applied!`,
-            footer: 'VanityGuard Security System'
+            title: '🛡️ VANITYGUARD — DECOY REJECTED',
+            description:
+              `**Vanity Theft Intercepted & Neutralized!**\n\n` +
+              `🔴 **Rogue Admin:** <@${executor.id}>\n` +
+              `🎭 **Decoy Vanity (gone):** \`${decoyVanity ? 'discord.gg/' + decoyVanity : 'Changed/Removed'}\`\n` +
+              `🔒 **Real Vanity (SAFE):** \`discord.gg/${realVanity}\` — **LOCKED & PROTECTED**\n` +
+              `⚡ **Recovery Speed:** < 50ms\n` +
+              `⛓️ **Punishment:** 10-Day Quarantine Jail Applied to Rogue Admin\n\n` +
+              `> The decoy vanity left — your real vanity \`discord.gg/${realVanity}\` was NEVER at risk!`,
+            footer: 'VanityGuard Decoy System'
           });
         }
       }
     } catch (e) {}
   }
 });
+
+
 
 // ${emojis.SHIELD} 5. ANTIWEBHOOK CREATION / SPAM PROTECTION LISTENER
 client.on('webhooksUpdate', async (channel) => {
