@@ -28,50 +28,65 @@ function getOrCreateVMConfig(guildId) {
 }
 
 /**
- * Builds the ultra-aesthetic VoiceMaster Control Center embed with custom 3D emojis.
- * Includes the button grid reference image and full per-button usage guide.
+ * Builds the ultra-aesthetic VoiceMaster Control Center embed.
+ * Uses createDynamicBox monospaced boxes for each row of buttons.
  */
 function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
+  const { createDynamicBox } = require('../utils/boxBuilder');
   const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`➕ Join to Create`';
   const voiceIcon = emojis.VOICE || '🎙️';
+
+  const row1Box = createDynamicBox('ROW 1 — STATUS & MOD', [
+    'Status  : Info & settings',
+    'Limit   : Set user limit',
+    'Logs    : Activity log',
+    'Ban     : Ban from VC',
+    'Unban   : Unban a member'
+  ]);
+
+  const row2Box = createDynamicBox('ROW 2 — VISIBILITY', [
+    'Hide    : Make VC hidden',
+    'Unhide  : Show VC to all',
+    'Region  : Voice region',
+    'Unlock  : Open VC to all',
+    'Lock    : Block new joins'
+  ]);
+
+  const row3Box = createDynamicBox('ROW 3 — TRUST & AUDIO', [
+    'Trust   : Grant speak',
+    'Untrust : Remove speak',
+    'Bitrate : Audio quality',
+    'Invite  : Invite a member',
+    'Kick    : Remove from VC'
+  ]);
+
+  const row4Box = createDynamicBox('ROW 4 — CONTROLS', [
+    'Suppress: Mute all members',
+    'Unsprs  : Restore voices',
+    'Chat    : Toggle text chat',
+    'Claim   : Take ownership',
+    'Transfer: Give VC to user'
+  ]);
+
+
+
   return new EmbedBuilder()
     .setColor(0x2B2D31)
     .setTitle(`${voiceIcon} VoiceMaster Control Center`)
     .setDescription(
-      `Join ${triggerMention} to automatically create your private voice room.\n` +
-      `Use the **20 control buttons** below to manage your room:\n\n` +
-
-      `**— Row 1 — Status & Moderation —**\n` +
-      `⚡ **Status** · View your VC info & current settings\n` +
-      `👥 **Limit** · Set a user limit on your voice room\n` +
-      `📜 **Logs** · View activity log of your voice room\n` +
-      `🛡️ **Ban** · Ban a member from entering your VC\n` +
-      `🔓 **Unban** · Unban a previously banned member\n\n` +
-
-      `**— Row 2 — Visibility & Access —**\n` +
-      `🙈 **Hide** · Make your VC invisible to everyone\n` +
-      `👁️ **Unhide** · Make your VC visible again to all\n` +
-      `🌐 **Region** · Change the server voice region\n` +
-      `🔓 **Unlock** · Allow anyone to join your VC freely\n` +
-      `🔒 **Lock** · Lock your VC so no new members can join\n\n` +
-
-      `**— Row 3 — Trust & Bitrate —**\n` +
-      `➕ **Trust** · Grant a member permission to speak freely\n` +
-      `➖ **Untrust** · Remove trust from a member in your VC\n` +
-      `📶 **Bitrate** · Set the audio bitrate of your voice room\n` +
-      `📞 **Invite** · Send a VC join invite to a member\n` +
-      `🚫 **Kick** · Kick a member out of your voice room\n\n` +
-
-      `**— Row 4 — Controls & Ownership —**\n` +
-      `🔇 **Suppress** · Mute all members (no one can speak)\n` +
-      `🎙️ **Unsuppress** · Restore speaking permissions for all\n` +
-      `💬 **Chat** · Toggle the VC text chat on or off\n` +
-      `👑 **Claim** · Claim ownership if the owner left the VC\n` +
-      `↗️ **Transfer** · Transfer your VC ownership to someone else`
+      `Join ${triggerMention} to create your private voice room.\n\n` +
+      '```\n' + row1Box + '\n```\n' +
+      '```\n' + row2Box + '\n```\n' +
+      '```\n' + row3Box + '\n```\n' +
+      '```\n' + row4Box + '\n```'
     )
     .setImage('attachment://vm_buttons.png')
     .setFooter({ text: 'Naruto VoiceMaster • 20-Control Private Audio Suite' });
 }
+
+
+
+
 
 
 /**
