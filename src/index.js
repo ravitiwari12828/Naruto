@@ -1448,16 +1448,20 @@ client.on('messageCreate', async (message) => {
         if (contentLower.includes(cleanTrigger)) {
           let reactionEmoji = ar.emoji ? ar.emoji.trim() : null;
           if (reactionEmoji) {
-            // 1. Custom emoji syntax <:name:id> or <a:name:id>
+            // 1. Custom Discord Emoji <a:name:id> or <:name:id>
             const customMatch = reactionEmoji.match(/<a?:[a-zA-Z0-9_]+:(\d+)>/);
             if (customMatch) {
               reactionEmoji = customMatch[1];
-            } else if (/^:[a-zA-Z0-9_]+:$/.test(reactionEmoji) || !/^\S+$/.test(reactionEmoji)) {
-              // Name format like :name:
+            } else if (/^:[a-zA-Z0-9_]+:$/.test(reactionEmoji)) {
+              // Discord shortcode format like :name:
               const eName = reactionEmoji.replace(/:/g, '').toLowerCase();
-              const foundEmoji = message.guild.emojis.cache.find(e => e.name.toLowerCase() === eName) ||
+              const foundEmoji = message.guild?.emojis.cache.find(e => e.name.toLowerCase() === eName) ||
                                  client.emojis.cache.find(e => e.name.toLowerCase() === eName);
-              if (foundEmoji) reactionEmoji = foundEmoji.id;
+              if (foundEmoji) {
+                reactionEmoji = foundEmoji.id;
+              } else {
+                continue; // invalid shortcode, skip
+              }
             }
 
             message.react(reactionEmoji).catch(err => {

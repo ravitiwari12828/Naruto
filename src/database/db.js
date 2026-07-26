@@ -632,13 +632,20 @@ class ResilientDatabase {
 
   addAutoreact(guildId, trigger, emoji) {
     if (!this.data.autoreacts[guildId]) this.data.autoreacts[guildId] = [];
+    const cleanTrigger = trigger.toLowerCase().trim();
+    this.data.autoreacts[guildId] = this.data.autoreacts[guildId].filter(item => item.trigger !== cleanTrigger);
+
     const id = Date.now().toString(36);
-    const item = { id, trigger: trigger.toLowerCase().trim(), emoji };
+    const item = { id, trigger: cleanTrigger, emoji };
     this.data.autoreacts[guildId].push(item);
 
     if (this.useSqlite && this.sqliteDb) {
       this.sqliteDb.run(
-        `INSERT OR REPLACE INTO autoreacts (id, guildId, trigger, emoji) VALUES (?, ?, ?, ?)`,
+        `DELETE FROM autoreacts WHERE guildId = ? AND trigger = ?`,
+        [guildId, cleanTrigger]
+      );
+      this.sqliteDb.run(
+        `INSERT INTO autoreacts (id, guildId, trigger, emoji) VALUES (?, ?, ?, ?)`,
         [id, guildId, item.trigger, item.emoji]
       );
     }

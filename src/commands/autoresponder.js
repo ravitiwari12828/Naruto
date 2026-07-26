@@ -26,7 +26,7 @@ module.exports = {
 
       if (sub === 'add' || sub === 'create') {
         const trigger = args[1]?.toLowerCase();
-        const emoji = args[2];
+        const emoji = args.slice(2).join(' ');
         if (!trigger || !emoji) {
           return message.reply(`${emojis.WARNING} Usage: \`.react add <triggerWord> <emoji>\``);
         }
