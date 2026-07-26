@@ -99,6 +99,47 @@ function renderMiscSettingsEmbed(config, guild, author, clientUser) {
   });
 }
 
+function renderAutomodConfigEmbed(config, guild, author, clientUser) {
+  const f = config;
+  const m = config.misc || {};
+
+  const boxLines = [
+    '╭────────────────────────────────────╮',
+    '│    FULL AUTOMOD CONFIGURATION      │',
+    '├────────────────────────────────────┤',
+    formatBoxLine('AntiSpam', f.antiSpam ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('InviteLink', f.inviteLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('Malicious', f.maliciousLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('NSFW Links', f.nsfwLinks ? 'ENABLED [OK]' : 'DISABLED[X]'),
+    formatBoxLine('Word List', String((f.wordBlacklist || []).length).padStart(2, '0') + ' words'),
+    formatBoxLine('Link List', String((f.linkBlacklist || []).length).padStart(2, '0') + ' links'),
+    formatBoxLine('ConfirmMsg', m.moderatorConfirmation !== false ? 'YES   [OK]' : 'NO    [OFF]'),
+    formatBoxLine('Always DM', m.alwaysDmPunished !== false ? 'YES   [OK]' : 'NO    [OFF]'),
+    formatBoxLine('Anon Staff', m.hideStaffIdentity ? 'ON    [OK]' : 'OFF   [OFF]'),
+    formatBoxLine('Timeout', String(m.defaultTimeoutMinutes || 2880) + 'm'),
+    formatBoxLine('Ban Purge', String(m.daysPurgedOnBan || 7) + 'd'),
+    formatBoxLine('Bots WL', String((f.whitelistedBots || []).length) + ' bot(s)'),
+    '├────────────────────────────────────┤',
+    '│     AUTOMOD CONTROL COMMANDS       │',
+    '├────────────────────────────────────┤',
+    '│ .automod                           │',
+    '│ .moderation                        │',
+    '│ .blacklist                         │',
+    '│ .antibot list                      │',
+    '╰────────────────────────────────────╯'
+  ];
+
+  return createStyledEmbed({
+    title: `${emojis.GEAR || '⚙️'} Full AutoMod Configuration — ${guild.name}`,
+    subtitle: `Complete Server Security & Content Protection Summary`,
+    description:
+      `Welcome **${author.username}**! Below is your server **Full AutoMod Configuration Grid**.\n\n` +
+      '```\n' + boxLines.join('\n') + '\n```',
+    requestedBy: author,
+    clientUser
+  });
+}
+
 function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
   const f = config;
   const m = config.misc || {};
@@ -174,8 +215,15 @@ module.exports = {
     const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
-    if (['misc', 'miscellaneous'].includes(invoked)) sub = 'misc';
-    if (invoked === 'filter' || invoked === 'filters') sub = 'filters';
+    if (['misc', 'miscellaneous', 'moderation', 'mod'].includes(invoked) || ['misc', 'miscellaneous', 'moderation', 'mod'].includes(sub)) {
+      sub = 'misc';
+    }
+    if (invoked === 'config' || sub === 'config') {
+      sub = 'config';
+    }
+    if (invoked === 'filter' || invoked === 'filters' || sub === 'filter' || sub === 'filters') {
+      sub = 'filters';
+    }
     if (['addword', 'delword', 'removeword', 'addlink', 'dellink', 'removelink', 'addcategory', 'delcategory', 'removecategory', 'blacklist', 'badwords'].includes(invoked)) {
       sub = invoked;
     }
@@ -403,8 +451,16 @@ module.exports = {
     }
 
     // Default Interactive Panel
-    const embed = sub === 'misc' ? renderMiscSettingsEmbed(config, guild, author, clientUser) : renderAutomodFiltersEmbed(config, guild, author, clientUser);
-    const components = buildAutomodInteractiveComponents(config, sub === 'misc' ? 'misc' : 'filters');
+    let embed;
+    if (sub === 'misc') {
+      embed = renderMiscSettingsEmbed(config, guild, author, clientUser);
+    } else if (sub === 'config') {
+      embed = renderAutomodConfigEmbed(config, guild, author, clientUser);
+    } else {
+      embed = renderAutomodFiltersEmbed(config, guild, author, clientUser);
+    }
+
+    const components = buildAutomodInteractiveComponents(config, sub === 'misc' ? 'misc' : (sub === 'config' ? 'misc' : 'filters'));
 
     const msg = await message.channel.send({ embeds: [embed], components });
 
