@@ -284,7 +284,7 @@ function renderAntinukeDashboard(config, author, clientUser) {
 
   const description =
     `Welcome **${author.username}**! Below is your executive **AntiNuke & Security Control Suite**.\n\n` +
-    `**🛡️ Main System Status**\n` +
+    `**${emojis.SHIELD} Main System Status**\n` +
     '```\n' + boxMain.join('\n') + '\n```\n\n' +
     `**🚪 Join Gate Security**\n` +
     '```\n' + boxGate.join('\n') + '\n```\n\n' +
@@ -294,7 +294,7 @@ function renderAntinukeDashboard(config, author, clientUser) {
     `${extraOwnersList}`;
 
   return createStyledEmbed({
-    title: `${emojis.SHIELD || '🛡️'} AntiNuke & Security Control Suite`,
+    title: `${emojis.SHIELD || '${emojis.SHIELD}'} AntiNuke & Security Control Suite`,
     subtitle: `Shinobi-Grade Server Protection & Executive Guard`,
     description,
     requestedBy: author,
@@ -312,7 +312,7 @@ function renderPanicComponents(config) {
     new ButtonBuilder()
       .setCustomId('toggle_shield')
       .setLabel(config.enabled ? 'Shield: ON' : 'Shield: OFF')
-      .setEmoji(config.enabled ? '🛡️' : '❌')
+      .setEmoji(config.enabled ? '${emojis.SHIELD}' : '${emojis.ERROR}')
       .setStyle(config.enabled ? ButtonStyle.Success : ButtonStyle.Danger),
     new ButtonBuilder()
       .setCustomId('toggle_panic')
@@ -338,7 +338,7 @@ function renderPanicComponents(config) {
 
   // Row 2: Filter Perms Group 1
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('toggle_ban').setEmoji('🔨').setStyle(f.antiBan ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('toggle_ban').setEmoji('${emojis.MOD}').setStyle(f.antiBan ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('toggle_kick').setEmoji('👢').setStyle(f.antiKick ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('toggle_bot').setEmoji('🤖').setStyle(f.antiBotAdd ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('toggle_channel').setEmoji('📁').setStyle(f.antiChannelCreate ? ButtonStyle.Success : ButtonStyle.Secondary),
@@ -396,7 +396,7 @@ module.exports = {
     const isExtraOwner = config.extraOwners.has(author.id) || ['1420687548807905324', '1529362747047805029', '1514546738055348237'].includes(author.id);
 
     if (!isServerOwner && !isExtraOwner) {
-      return message.reply(`${emojis.WARNING || '⚠️'} **Access Denied**: Only the **Server Owner** and **Extra Owners** can configure AntiNuke security, Whitelists, Extra Owners, JoinGate, or Auto Quarantine!`);
+      return message.reply(`${emojis.WARNING || '${emojis.WARNING}'} **Access Denied**: Only the **Server Owner** and **Extra Owners** can configure AntiNuke security, Whitelists, Extra Owners, JoinGate, or Auto Quarantine!`);
     }
 
     // ─────────────────────────────────────────
@@ -538,7 +538,7 @@ module.exports = {
       // .whitelist perms @user <+perm / -perm>
       if (action === 'perms' || action === 'config' || action === 'edit') {
         const targetUser = user || await message.client.users.fetch(args[1]).catch(() => null);
-        if (!targetUser) return message.reply(`⚠️ Usage: \`.whitelist perms @user +ban -role +channel\``);
+        if (!targetUser) return message.reply(`${emojis.WARNING} Usage: \`.whitelist perms @user +ban -role +channel\``);
 
         let permsSet = config.whitelistedUsers.get(targetUser.id);
         if (!permsSet) {
@@ -549,7 +549,7 @@ module.exports = {
         const changes = args.slice(2);
         if (changes.length === 0) {
           const embed = createStyledEmbed({
-            title: `⚙️ Whitelist Permissions — ${targetUser.username}`,
+            title: `${emojis.GEAR} Whitelist Permissions — ${targetUser.username}`,
             description:
               `**Current Granted Permissions:**\n${formatUserPerms(permsSet)}\n\n` +
               `**Available Permissions:**\n` +
@@ -585,7 +585,7 @@ module.exports = {
         config.whitelistedUsers.set(targetUser.id, permsSet);
         antinukeConfigs.set(guild.id, config);
 
-        return message.reply(`✅ Updated whitelist perms for **${targetUser.tag}**: ${formatUserPerms(permsSet)}`);
+        return message.reply(`${emojis.SUCCESS} Updated whitelist perms for **${targetUser.tag}**: ${formatUserPerms(permsSet)}`);
       }
 
       // .whitelist remove @user
@@ -594,7 +594,7 @@ module.exports = {
         if (targetUser) {
           config.whitelistedUsers.delete(targetUser.id);
           antinukeConfigs.set(guild.id, config);
-          return message.reply(`✅ Removed **${targetUser.tag}** from AntiNuke Whitelist.`);
+          return message.reply(`${emojis.SUCCESS} Removed **${targetUser.tag}** from AntiNuke Whitelist.`);
         }
       }
 
@@ -607,7 +607,7 @@ module.exports = {
       const listText = entries.join('\n\n') || '*No users currently whitelisted.*';
 
       const embed = createStyledEmbed({
-        title: `🛡️ AntiNuke Whitelist & Permission Panel`,
+        title: `${emojis.SHIELD} AntiNuke Whitelist & Permission Panel`,
         subtitle: `Granular Security Bypass Management`,
         description:
           `Below is your server whitelist delegation status.\n\n` +
@@ -632,14 +632,14 @@ module.exports = {
         config.enabled = true;
         Object.keys(config.filters).forEach(k => config.filters[k] = true);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`🛡️ AntiNuke Security System & ALL protection filters are now **ENABLED**!`);
+        return message.reply(`${emojis.SHIELD} AntiNuke Security System & ALL protection filters are now **ENABLED**!`);
       }
 
       if (FILTER_MAP[target]) {
         config.enabled = true;
         FILTER_MAP[target].forEach(k => config.filters[k] = true);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`✅ AntiNuke feature **${target.toUpperCase()}** enabled successfully!`);
+        return message.reply(`${emojis.SUCCESS} AntiNuke feature **${target.toUpperCase()}** enabled successfully!`);
       }
     }
 
@@ -651,13 +651,13 @@ module.exports = {
         config.enabled = false;
         Object.keys(config.filters).forEach(k => config.filters[k] = false);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`⚠️ AntiNuke Security System is now **DISABLED**.`);
+        return message.reply(`${emojis.WARNING} AntiNuke Security System is now **DISABLED**.`);
       }
 
       if (FILTER_MAP[target]) {
         FILTER_MAP[target].forEach(k => config.filters[k] = false);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`⚠️ AntiNuke feature **${target.toUpperCase()}** disabled.`);
+        return message.reply(`${emojis.WARNING} AntiNuke feature **${target.toUpperCase()}** disabled.`);
       }
     }
 
@@ -730,7 +730,7 @@ module.exports = {
 
       if (!isOwnerBtn && !isExtraOwnerBtn) {
         return interaction.reply({
-          content: `❌ **Access Denied**: Only the **Server Owner** and **Extra Owners** can toggle security settings!`,
+          content: `${emojis.ERROR} **Access Denied**: Only the **Server Owner** and **Extra Owners** can toggle security settings!`,
           flags: 64
         });
       }

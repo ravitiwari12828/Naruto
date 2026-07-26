@@ -25,8 +25,8 @@ module.exports = {
 
     const logTypes = [
       { key: 'narutologs', name: 'naruto-logs', title: '🌀 Naruto Master Audit Log' },
-      { key: 'modlogs', name: 'mod-logs', title: '🔨 Moderation Action Log' },
-      { key: 'antinuke', name: 'antinuke-logs', title: '🛡️ AntiNuke Protection Log' },
+      { key: 'modlogs', name: 'mod-logs', title: '${emojis.MOD} Moderation Action Log' },
+      { key: 'antinuke', name: 'antinuke-logs', title: '${emojis.SHIELD} AntiNuke Protection Log' },
       { key: 'automod', name: 'automod-logs', title: '🤖 AutoMod Enforcement Log' },
       { key: 'server', name: 'server-logs', title: '📁 Server Configuration Log' },
       { key: 'messages', name: 'message-logs', title: '💬 Message Edit & Delete Log' },
@@ -51,7 +51,7 @@ module.exports = {
         try {
           const testEmbed = new EmbedBuilder()
             .setColor(0x7E0808)
-            .setTitle(`✅ Log Test: ${item.title}`)
+            .setTitle(`${emojis.SUCCESS} Log Test: ${item.title}`)
             .setDescription(`This is an automated verification test sent by **Naruto Bot** to confirm that <#${channel.id}> is active and receiving logs correctly.`)
             .addFields([
               { name: 'Channel Name', value: `#${channel.name}`, inline: true },
@@ -79,6 +79,6 @@ module.exports = {
       clientUser
     });
 
-    return statusMsg.edit({ content: `✅ **Log Verification Test Completed!**`, embeds: [reportEmbed] });
+    return statusMsg.edit({ content: `${emojis.SUCCESS} **Log Verification Test Completed!**`, embeds: [reportEmbed] });
   }
 };

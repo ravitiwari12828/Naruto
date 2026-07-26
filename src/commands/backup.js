@@ -179,12 +179,12 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId(`confirm_restore_${backupId}`)
           .setLabel('Confirm Restore')
-          .setEmoji('✅')
+          .setEmoji('${emojis.SUCCESS}')
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
           .setCustomId(`cancel_restore_${backupId}`)
           .setLabel('Cancel')
-          .setEmoji('❌')
+          .setEmoji('${emojis.ERROR}')
           .setStyle(ButtonStyle.Secondary)
       );
 
@@ -195,7 +195,7 @@ module.exports = {
                      `• **Backup Created:** <t:${Math.floor(backup.createdAt / 1000)}:F>\n` +
                      `• **Saved Roles:** \`${backup.rolesCount}\`\n` +
                      `• **Saved Channels:** \`${backup.channelsCount}\`\n\n` +
-                     `⚠️ *Click **Confirm Restore** below to initiate restoration.*`,
+                     `${emojis.WARNING} *Click **Confirm Restore** below to initiate restoration.*`,
         requestedBy: author,
         clientUser
       });
@@ -209,7 +209,7 @@ module.exports = {
         }
 
         if (i.customId.startsWith('cancel_restore_')) {
-          await i.update({ content: '❌ Backup restoration cancelled.', embeds: [], components: [] });
+          await i.update({ content: '${emojis.ERROR} Backup restoration cancelled.', embeds: [], components: [] });
           return;
         }
 
@@ -277,7 +277,7 @@ module.exports = {
             }
 
             const successEmbed = createStyledEmbed({
-              title: `✅ Server Backup Restored Successfully!`,
+              title: `${emojis.SUCCESS} Server Backup Restored Successfully!`,
               subtitle: `Restoration Complete for [ ${backupId} ]`,
               description: `All missing roles, categories, and channels have been recreated and synchronized!`,
               requestedBy: author,
@@ -302,7 +302,7 @@ module.exports = {
 
       const deleted = db.deleteBackup(guild.id, backupId);
       if (deleted) {
-        return message.reply(`✅ Backup snapshot \`${backupId}\` deleted successfully.`);
+        return message.reply(`${emojis.SUCCESS} Backup snapshot \`${backupId}\` deleted successfully.`);
       } else {
         return message.reply(`${emojis.WARNING} Backup snapshot \`${backupId}\` not found.`);
       }

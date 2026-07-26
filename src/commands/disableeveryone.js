@@ -68,7 +68,7 @@ module.exports = {
       await statusMsg.delete().catch(() => {});
 
       const successEmbed = createStyledEmbed({
-        title: `🛡️ Everyone & Here Pings Neutralized Server-Wide!`,
+        title: `${emojis.SHIELD} Everyone & Here Pings Neutralized Server-Wide!`,
         subtitle: `Zero-Tolerance Mention Protection Applied`,
         fields: [
           { name: '🎭 Roles Cleansed', value: `\`${rolesStrippedCount}\` Roles stripped of \`MentionEveryone\``, inline: true },

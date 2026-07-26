@@ -58,7 +58,7 @@ module.exports = {
       vanityConfigs.set(guild.id, config);
 
       const embed = createStyledEmbed({
-        title: `${emojis.SHIELD || '🛡️'} VanityGuard Enabled!`,
+        title: `${emojis.SHIELD || '${emojis.SHIELD}'} VanityGuard Enabled!`,
         description: `**Vanity URL Anti-Theft Guard is now ACTIVE!**\n\n` +
                      `• **Protected Vanity:** \`${config.protectedVanity ? 'discord.gg/' + config.protectedVanity : 'Not Set (Run .vanityguard set <code\>)'}\`\n` +
                      `• **Recovery Latency:** \`< 50ms\` (Sub-millisecond Reversion)\n` +
@@ -90,7 +90,7 @@ module.exports = {
         title: `⚡ Protected Vanity URL Code Locked!`,
         fields: [
           { name: '🌐 Protected URL', value: `\`discord.gg/${code}\``, inline: true },
-          { name: '🛡️ Guard Status', value: `\`ACTIVE (24/7 Monitoring)\``, inline: true },
+          { name: '${emojis.SHIELD} Guard Status', value: `\`ACTIVE (24/7 Monitoring)\``, inline: true },
           { name: '⚡ Auto-Restoration', value: `If anyone alters \`discord.gg/${code}\`, Naruto will instantly reclaim it & lock out the thief for 10 Days!`, inline: false }
         ],
         requestedBy: author,

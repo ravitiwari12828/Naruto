@@ -176,7 +176,7 @@ module.exports = {
         description:
           `Successfully configured Naruto Leveling Engine & Role Hierarchy for **${guild.name}**!\n\n` +
           `• **Announcement Channel**: <#${chan.id}>\n` +
-          `• **System Status**: \`ENABLED ✅\`\n` +
+          `• **System Status**: \`ENABLED ${emojis.SUCCESS}\`\n` +
           `${createdSummary}\n\n` +
           `**👑 Configured Shinobi Role Hierarchy (Highest ➔ Lowest):**\n` +
           `👑 **Hokage** (Highest Hierarchy & Top Permissions)\n` +

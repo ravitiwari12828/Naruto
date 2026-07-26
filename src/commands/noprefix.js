@@ -106,7 +106,7 @@ module.exports = {
       if (!user) return message.reply(`${emojis.WARNING} Usage: \`.noprefix remove @user\``);
 
       noPrefixStore.delete(user.id);
-      return message.reply(`⚠️ **${user.tag}** (\`${user.id}\`) has been removed from No-Prefix access.`);
+      return message.reply(`${emojis.WARNING} **${user.tag}** (\`${user.id}\`) has been removed from No-Prefix access.`);
     }
 
     // 3. .noprefix list / status

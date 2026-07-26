@@ -8,10 +8,10 @@ try {
 } catch (e) {}
 
 process.on('uncaughtException', (err) => {
-  console.error('⚠️ [Uncaught Exception]:', err.message || err);
+  console.error('${emojis.WARNING} [Uncaught Exception]:', err.message || err);
 });
 process.on('unhandledRejection', (reason) => {
-  console.error('⚠️ [Unhandled Rejection]:', reason?.message || reason);
+  console.error('${emojis.WARNING} [Unhandled Rejection]:', reason?.message || reason);
 });
 
 // Render / Web Hosting Keepalive HTTP Server
@@ -201,7 +201,7 @@ client.on('guildMemberAdd', async (member) => {
               // Dispatch Security Log
               dispatchLog(member.guild, 'antinuke', {
                 color: 0xED4245,
-                title: '🛡️ ANTIBOT-ADD SECURITY INTERCEPTED',
+                title: '${emojis.SHIELD} ANTIBOT-ADD SECURITY INTERCEPTED',
                 description:
                   `**Unauthorized Bot Addition Intercepted & Blocked!**\n\n` +
                   `• **Unauthorized Admin:** <@${executor.id}> (\`${executor.tag}\`)\n` +
@@ -477,7 +477,7 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
   }
 });
 
-// 🛡️ REUSABLE FAIL-SAFE ROGUE ADMIN 10-DAY QUARANTINE & JAIL LOCKOUT HELPER
+// ${emojis.SHIELD} REUSABLE FAIL-SAFE ROGUE ADMIN 10-DAY QUARANTINE & JAIL LOCKOUT HELPER
 async function punishRogueAdmin(guild, executorId, reason) {
   if (!guild || !executorId || executorId === guild.ownerId) return;
 
@@ -553,7 +553,7 @@ async function punishRogueAdmin(guild, executorId, reason) {
   });
 }
 
-// 🛡️ 1. ANTIBAN & ANTIKICK PROTECTION LISTENER
+// ${emojis.SHIELD} 1. ANTIBAN & ANTIKICK PROTECTION LISTENER
 client.on('guildBanAdd', async (ban) => {
   const guild = ban.guild;
   const antinukeCmd = client.commands.get('antinuke');
@@ -585,7 +585,7 @@ client.on('guildBanAdd', async (ban) => {
 
           dispatchLog(guild, 'antinuke', {
             color: 0xED4245,
-            title: '🛡️ ANTIBAN PROTECTION TRIGGERED',
+            title: '${emojis.SHIELD} ANTIBAN PROTECTION TRIGGERED',
             description: `**Unauthorized Ban Reverted & Admin Locked Out!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Banned Member:** ${ban.user.tag}\n• **Action:** Member unbanned, Admin roles stripped & channel locked out!`,
             footer: 'AntiNuke Security System'
           });
@@ -595,7 +595,7 @@ client.on('guildBanAdd', async (ban) => {
   }
 });
 
-// 🛡️ 2. ANTICHANNEL CREATED / DELETED LISTENERS
+// ${emojis.SHIELD} 2. ANTICHANNEL CREATED / DELETED LISTENERS
 client.on('channelCreate', async (channel) => {
   if (!channel.guild) return;
   const guild = channel.guild;
@@ -626,7 +626,7 @@ client.on('channelCreate', async (channel) => {
 
             dispatchLog(guild, 'antinuke', {
               color: 0xED4245,
-              title: '🛡️ ANTICHANNEL PROTECTION TRIGGERED',
+              title: '${emojis.SHIELD} ANTICHANNEL PROTECTION TRIGGERED',
               description: `**Unauthorized Channel Creation Blocked!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Channel Deleted:** \`${channel.name}\`\n• **Action:** Channel deleted & Admin locked out!`,
               footer: 'AntiNuke Security System'
             });
@@ -682,7 +682,7 @@ client.on('channelDelete', async (channel) => {
 
             dispatchLog(guild, 'antinuke', {
               color: 0xED4245,
-              title: '🛡️ ANTICHANNEL DELETION RESTORED',
+              title: '${emojis.SHIELD} ANTICHANNEL DELETION RESTORED',
               description: `**Unauthorized Channel Deletion Reverted!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Restored Channel:** \`${channel.name}\`\n• **Action:** Channel recreated & Admin locked out!`,
               footer: 'AntiNuke Security System'
             });
@@ -701,7 +701,7 @@ client.on('channelDelete', async (channel) => {
   });
 });
 
-// 🛡️ 3. ANTIROLE CREATED / DELETED LISTENERS
+// ${emojis.SHIELD} 3. ANTIROLE CREATED / DELETED LISTENERS
 client.on('roleCreate', async (role) => {
   const guild = role.guild;
   const antinukeCmd = client.commands.get('antinuke');
@@ -730,7 +730,7 @@ client.on('roleCreate', async (role) => {
 
             dispatchLog(guild, 'antinuke', {
               color: 0xED4245,
-              title: '🛡️ ANTIROLE PROTECTION TRIGGERED',
+              title: '${emojis.SHIELD} ANTIROLE PROTECTION TRIGGERED',
               description: `**Unauthorized Role Creation Blocked!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Role Deleted:** \`${role.name}\`\n• **Action:** Role deleted & Admin locked out!`,
               footer: 'AntiNuke Security System'
             });
@@ -743,7 +743,7 @@ client.on('roleCreate', async (role) => {
 
   dispatchLog(role.guild, 'roles', {
     color: 0x57F287,
-    title: '🛡️ Role Created',
+    title: '${emojis.SHIELD} Role Created',
     description: `**Role:** <@&${role.id}> (\`${role.name}\`)`,
     footer: `Role ID: ${role.id}`
   });
@@ -776,7 +776,7 @@ client.on('roleDelete', async (role) => {
 
             dispatchLog(guild, 'antinuke', {
               color: 0xED4245,
-              title: '🛡️ ANTIROLE DELETION INTERCEPTED',
+              title: '${emojis.SHIELD} ANTIROLE DELETION INTERCEPTED',
               description: `**Unauthorized Role Deletion Intercepted!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Role Deleted:** \`${role.name}\`\n• **Action:** Admin roles stripped & total channel lockout applied!`,
               footer: 'AntiNuke Security System'
             });
@@ -795,7 +795,7 @@ client.on('roleDelete', async (role) => {
   });
 });
 
-// 🛡️ AUTO QUARANTINE & PUBLIC ROLES (@everyone) PROTECTION LISTENER
+// ${emojis.SHIELD} AUTO QUARANTINE & PUBLIC ROLES (@everyone) PROTECTION LISTENER
 client.on('roleUpdate', async (oldRole, newRole) => {
   const guild = newRole.guild;
   const antinukeCmd = client.commands.get('antinuke');
@@ -846,7 +846,7 @@ client.on('roleUpdate', async (oldRole, newRole) => {
   }
 });
 
-// 🛡️ 4. ANTIGUILD UPDATE & VANITY THEFT PROTECTION LISTENER
+// ${emojis.SHIELD} 4. ANTIGUILD UPDATE & VANITY THEFT PROTECTION LISTENER
 client.on('guildUpdate', async (oldGuild, newGuild) => {
   const antinukeCmd = client.commands.get('antinuke');
   const vanityCmd = client.commands.get('vanityguard');
@@ -896,7 +896,7 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
 
           dispatchLog(newGuild, 'antinuke', {
             color: 0xED4245,
-            title: '🛡️ VANITYGUARD / SERVER THEFT INTERCEPTED',
+            title: '${emojis.SHIELD} VANITYGUARD / SERVER THEFT INTERCEPTED',
             description: `**Unauthorized Server Settings / Vanity Theft Reverted!**\n\n` +
                          `• **Rogue Admin:** <@${executor.id}>\n` +
                          `• **Target Vanity:** \`discord.gg/${targetVanity || 'Reverted'}\`\n` +
@@ -909,7 +909,7 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
   }
 });
 
-// 🛡️ 5. ANTIWEBHOOK CREATION / SPAM PROTECTION LISTENER
+// ${emojis.SHIELD} 5. ANTIWEBHOOK CREATION / SPAM PROTECTION LISTENER
 client.on('webhooksUpdate', async (channel) => {
   if (!channel || !channel.guild) return;
   const guild = channel.guild;
@@ -945,7 +945,7 @@ client.on('webhooksUpdate', async (channel) => {
 
           dispatchLog(guild, 'antinuke', {
             color: 0xED4245,
-            title: '🛡️ ANTIWEBHOOK CREATION INTERCEPTED',
+            title: '${emojis.SHIELD} ANTIWEBHOOK CREATION INTERCEPTED',
             description: `**Unauthorized Webhook Creation Blocked & Deleted!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Channel:** <#${channel.id}>\n• **Action:** Webhooks deleted & Admin locked out!`,
             footer: 'AntiNuke Security System'
           });
@@ -984,7 +984,7 @@ client.on('messageDelete', async (message) => {
 
 // Message Listener (DM ModMail, AutoMod, Activity, Autoresponder, Autoreact, Sticky Notes, Commands)
 client.on('messageCreate', async (message) => {
-  // 🛡️ STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION (Applies to ALL Users & Added Bots, even with Top Role / Admin!)
+  // ${emojis.SHIELD} STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION (Applies to ALL Users & Added Bots, even with Top Role / Admin!)
   if (message.guild && (message.content.includes('@everyone') || message.content.includes('@here'))) {
     const antinukeCmd = client.commands.get('antinuke');
     if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
@@ -1012,7 +1012,7 @@ client.on('messageCreate', async (message) => {
           // 3. DISPATCH SECURITY LOG
           dispatchLog(message.guild, 'antinuke', {
             color: 0xED4245,
-            title: '🛡️ ANTI-EVERYONE MASS PING INTERCEPTED',
+            title: '${emojis.SHIELD} ANTI-EVERYONE MASS PING INTERCEPTED',
             description:
               `**Unauthorized Mass Ping Blocked!**\n\n` +
               `• **Sender:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
@@ -1080,7 +1080,7 @@ client.on('messageCreate', async (message) => {
   // 🎟️ TICKET MESSAGE RECEIPT REACTION & ANONYMOUS STAFF MODE
   if (message.guild && message.channel.topic && message.channel.topic.includes('ticket|')) {
     // React to confirm message receipt for both user & staff
-    await message.react('✅').catch(() => {});
+    await message.react('${emojis.SUCCESS}').catch(() => {});
 
     // Anonymous Staff Mode masking
     if (message.channel.topic.includes('anon:on')) {
@@ -1311,7 +1311,7 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // 🛡️ WICK-GRADE AUTOMOD FILTERS EVALUATION
+  // ${emojis.SHIELD} WICK-GRADE AUTOMOD FILTERS EVALUATION
   const automod = db.getAutomod(message.guild.id);
   const contentLower = message.content.toLowerCase();
 
@@ -1331,7 +1331,7 @@ client.on('messageCreate', async (message) => {
       const maliciousPatterns = [/grabify/i, /iplogger/i, /free-nitro/i, /discord-nitro/i, /steamgift/i, /bit\.ly/i];
       if (maliciousPatterns.some(pat => pat.test(message.content))) {
         await message.delete().catch(() => {});
-        return message.channel.send(`🛡️ <@${message.author.id}>, **Malicious/Phishing link blocked!**`)
+        return message.channel.send(`${emojis.SHIELD} <@${message.author.id}>, **Malicious/Phishing link blocked!**`)
           .then(msg => setTimeout(() => msg.delete().catch(() => {}), 6000));
       }
     }
@@ -1341,7 +1341,7 @@ client.on('messageCreate', async (message) => {
       const badWords = ['fuck', 'shit', 'bitch', 'asshole', 'cunt', 'nigger', ...(automod.wordBlacklist || [])];
       if (badWords.some(w => w && contentLower.includes(w.toLowerCase()))) {
         await message.delete().catch(() => {});
-        return message.channel.send(`⚠️ <@${message.author.id}>, blacklisted word/profanity is **DISABLED** on this server!`)
+        return message.channel.send(`${emojis.WARNING} <@${message.author.id}>, blacklisted word/profanity is **DISABLED** on this server!`)
           .then(msg => setTimeout(() => msg.delete().catch(() => {}), 5000));
       }
     }
@@ -1544,14 +1544,14 @@ client.on('interactionCreate', async (interaction) => {
 
     if (existingTicket) {
       return interaction.editReply({
-        content: `⚠️ You already have an open ticket in ${existingTicket}! Each user can only have **1 open ticket** at a time. Please close your active ticket before creating a new one.`
+        content: `${emojis.WARNING} You already have an open ticket in ${existingTicket}! Each user can only have **1 open ticket** at a time. Please close your active ticket before creating a new one.`
       }).catch(() => {});
     }
 
     const me = guild.members.me;
     if (!me.permissions.has(PermissionsBitField.Flags.ManageChannels) || !me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
       return interaction.editReply({
-        content: `❌ **Missing Bot Permissions**: The bot needs **Manage Channels** and **Manage Roles** permissions to create ticket channels and set permissions.`
+        content: `${emojis.ERROR} **Missing Bot Permissions**: The bot needs **Manage Channels** and **Manage Roles** permissions to create ticket channels and set permissions.`
       }).catch(() => {});
     }
 
@@ -1602,11 +1602,11 @@ client.on('interactionCreate', async (interaction) => {
 
       db.recordAnalyticsEvent(guild.id, user.id, 'ticket_created', 1);
       ticketCmd.ticketConfigs.set(guild.id, config);
-      return interaction.editReply({ content: `✅ Ticket created! Head over to ${ticketChan}` }).catch(() => {});
+      return interaction.editReply({ content: `${emojis.SUCCESS} Ticket created! Head over to ${ticketChan}` }).catch(() => {});
     } catch (e) {
       console.error('Failed to create ticket channel:', e);
       return interaction.editReply({
-        content: `❌ **Failed to Create Ticket**: \`${e.message || 'Permission Error'}\`.`
+        content: `${emojis.ERROR} **Failed to Create Ticket**: \`${e.message || 'Permission Error'}\`.`
       }).catch(() => {});
     }
   }
@@ -1664,7 +1664,7 @@ client.on('interactionCreate', async (interaction) => {
         res = await player.search({ query, source: 'ytmsearch' }, interaction.user);
       }
       if (!res || !res.tracks.length) {
-        return interaction.editReply({ content: `❌ Could not find track: **${query}**.` }).catch(() => {});
+        return interaction.editReply({ content: `${emojis.ERROR} Could not find track: **${query}**.` }).catch(() => {});
       }
 
       const track = res.tracks[0];
@@ -1677,7 +1677,7 @@ client.on('interactionCreate', async (interaction) => {
         return interaction.editReply({ content: `✨ **Added to Queue:** \`${track.info.title}\` at position **#${player.queue.tracks.length}**.` }).catch(() => {});
       }
     } catch (e) {
-      return interaction.editReply({ content: `❌ Failed to play suggested song: ${e.message}` }).catch(() => {});
+      return interaction.editReply({ content: `${emojis.ERROR} Failed to play suggested song: ${e.message}` }).catch(() => {});
     }
   }
 
@@ -1744,7 +1744,7 @@ client.on('interactionCreate', async (interaction) => {
 
       return interaction.editReply({ content: `🎶 Applied Audio Filters: **${filterNames.join(', ')}**!` }).catch(() => {});
     } catch (e) {
-      return interaction.editReply({ content: `❌ Error applying audio filters: ${e.message}` }).catch(() => {});
+      return interaction.editReply({ content: `${emojis.ERROR} Error applying audio filters: ${e.message}` }).catch(() => {});
     }
   }
 
@@ -1788,7 +1788,7 @@ client.on('interactionCreate', async (interaction) => {
       }
       const res = db.addFavorite(interaction.user.id, currentTrack);
       if (!res.added) {
-        return interaction.editReply({ content: `⚠️ ${res.message}` }).catch(() => {});
+        return interaction.editReply({ content: `${emojis.WARNING} ${res.message}` }).catch(() => {});
       }
       return interaction.editReply({ content: `❤️ **Saved to Favorites:** [${res.favorite.title}](${res.favorite.uri})!` }).catch(() => {});
     }
@@ -1948,7 +1948,7 @@ client.on('interactionCreate', async (interaction) => {
           return interaction.editReply({ content: `▶️ Playing now: **${lastTrack.info.title}**!` }).catch(() => {});
         }
       }
-      return interaction.editReply({ content: `⚠️ No track found to play now.` }).catch(() => {});
+      return interaction.editReply({ content: `${emojis.WARNING} No track found to play now.` }).catch(() => {});
     }
 
     if (action === 'queue_playnext') {
@@ -1967,7 +1967,7 @@ client.on('interactionCreate', async (interaction) => {
         const removed = player.queue.tracks.pop();
         return interaction.editReply({ content: `🗑️ Removed **${removed?.info?.title || 'Track'}** from queue.` }).catch(() => {});
       }
-      return interaction.editReply({ content: `⚠️ Queue is empty.` }).catch(() => {});
+      return interaction.editReply({ content: `${emojis.WARNING} Queue is empty.` }).catch(() => {});
     }
 
     if (action === 'music_autoplay') {
@@ -1983,7 +1983,7 @@ client.on('interactionCreate', async (interaction) => {
       }
       const res = db.addFavorite(interaction.user.id, currentTrack);
       if (!res.added) {
-        return interaction.editReply({ content: `⚠️ ${res.message}` }).catch(() => {});
+        return interaction.editReply({ content: `${emojis.WARNING} ${res.message}` }).catch(() => {});
       }
       return interaction.editReply({ content: `❤️ **Saved to Favorites:** [${res.favorite.title}](${res.favorite.uri})!` }).catch(() => {});
     }
@@ -2018,7 +2018,7 @@ client.on('interactionCreate', async (interaction) => {
       const artist = currentTrack.info.author || '';
       const res = await lyricsCmd.fetchLyrics(cleanTitle, artist);
       if (!res || !res.lyrics) {
-        return interaction.editReply({ content: `❌ **Lyrics Not Found** for **${cleanTitle}**.` }).catch(() => {});
+        return interaction.editReply({ content: `${emojis.ERROR} **Lyrics Not Found** for **${cleanTitle}**.` }).catch(() => {});
       }
       let lyricsText = res.lyrics;
       if (lyricsText.length > 1900) lyricsText = lyricsText.slice(0, 1900) + '\n...*(truncated)*';
@@ -2033,11 +2033,11 @@ client.on('interactionCreate', async (interaction) => {
     const gw = giveawayCmd ? giveawayCmd.giveaways.get(gwId) : null;
 
     if (!gw) {
-      return interaction.reply({ content: `⚠️ This giveaway is no longer active!`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `${emojis.WARNING} This giveaway is no longer active!`, flags: 64 }).catch(() => {});
     }
 
     if (gw.ended) {
-      return interaction.reply({ content: `⚠️ This giveaway has already ended!`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `${emojis.WARNING} This giveaway has already ended!`, flags: 64 }).catch(() => {});
     }
 
     if (!gw.entries) gw.entries = new Set();
@@ -2121,7 +2121,7 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.reply({ content: `📞 Support staff summoned!`, flags: 64 }).catch(() => {});
     } catch (e) {
       console.error('ticket_callstaff_btn error:', e);
-      return interaction.reply({ content: `❌ Failed to call staff: ${e.message}`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `${emojis.ERROR} Failed to call staff: ${e.message}`, flags: 64 }).catch(() => {});
     }
   }
 
@@ -2140,18 +2140,18 @@ client.on('interactionCreate', async (interaction) => {
                       Array.from(config.staffRoles).some(rId => member.roles.cache.has(rId));
 
       if (!isStaff) {
-        return interaction.reply({ content: `❌ Only support staff members can claim tickets!`, flags: 64 }).catch(() => {});
+        return interaction.reply({ content: `${emojis.ERROR} Only support staff members can claim tickets!`, flags: 64 }).catch(() => {});
       }
 
       if (!message.embeds?.[0]) {
-        return interaction.reply({ content: `❌ Could not read ticket embed. Please re-run ticket setup.`, flags: 64 }).catch(() => {});
+        return interaction.reply({ content: `${emojis.ERROR} Could not read ticket embed. Please re-run ticket setup.`, flags: 64 }).catch(() => {});
       }
 
       const embed = EmbedBuilder.from(message.embeds[0]);
       const claimedField = embed.data.fields?.find(f => f.name.includes('Claimed'));
 
       if (claimedField && !claimedField.value.toLowerCase().includes('unclaimed') && !claimedField.value.toLowerCase().includes('none')) {
-        return interaction.reply({ content: `⚠️ This ticket is already claimed by ${claimedField.value}!`, flags: 64 }).catch(() => {});
+        return interaction.reply({ content: `${emojis.WARNING} This ticket is already claimed by ${claimedField.value}!`, flags: 64 }).catch(() => {});
       }
 
       embed.spliceFields(2, 1, { name: '👑 Claimed By', value: `<@${user.id}> (\`${user.tag}\`)`, inline: true });
@@ -2164,7 +2164,7 @@ client.on('interactionCreate', async (interaction) => {
       }
       await channel.setTopic(topic).catch(() => {});
       await message.edit({ embeds: [embed] }).catch(() => {});
-      await interaction.reply({ content: `🛡️ Ticket claimed by <@${user.id}>.` }).catch(() => {});
+      await interaction.reply({ content: `${emojis.SHIELD} Ticket claimed by <@${user.id}>.` }).catch(() => {});
 
       if (ticketCmd) {
         const priorityMatch = topic.match(/priority:([^|]+)/);
@@ -2182,7 +2182,7 @@ client.on('interactionCreate', async (interaction) => {
       }
     } catch (e) {
       console.error('ticket_claim_btn error:', e);
-      return interaction.reply({ content: `❌ Failed to claim ticket: ${e.message}`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `${emojis.ERROR} Failed to claim ticket: ${e.message}`, flags: 64 }).catch(() => {});
     }
   }
 
@@ -2195,7 +2195,7 @@ client.on('interactionCreate', async (interaction) => {
       const ticketCmd = client.commands.get('ticket');
 
       if (!message.embeds?.[0]) {
-        return interaction.reply({ content: `❌ Could not read ticket embed.`, flags: 64 }).catch(() => {});
+        return interaction.reply({ content: `${emojis.ERROR} Could not read ticket embed.`, flags: 64 }).catch(() => {});
       }
 
       let topic = channel.topic || '';
@@ -2218,7 +2218,7 @@ client.on('interactionCreate', async (interaction) => {
       }
     } catch (e) {
       console.error('ticket_priority_btn error:', e);
-      return interaction.reply({ content: `❌ Failed to update priority: ${e.message}`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `${emojis.ERROR} Failed to update priority: ${e.message}`, flags: 64 }).catch(() => {});
     }
   }
 
@@ -2246,7 +2246,7 @@ client.on('interactionCreate', async (interaction) => {
       }).catch(() => {});
     } catch (e) {
       console.error('ticket_anon_btn error:', e);
-      return interaction.reply({ content: `❌ Failed to toggle anon mode: ${e.message}`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `${emojis.ERROR} Failed to toggle anon mode: ${e.message}`, flags: 64 }).catch(() => {});
     }
   }
 
@@ -2265,7 +2265,7 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.reply({ content: `🔒 Ticket locked by <@${user.id}>.` }).catch(() => {});
     } catch (e) {
       console.error('ticket_lock_btn error:', e);
-      return interaction.reply({ content: `❌ Failed to lock ticket: ${e.message}`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `${emojis.ERROR} Failed to lock ticket: ${e.message}`, flags: 64 }).catch(() => {});
     }
   }
 
@@ -2335,7 +2335,7 @@ client.on('interactionCreate', async (interaction) => {
                     Array.from(config.staffRoles).some(rId => member.roles.cache.has(rId));
 
     if (!isStaff) {
-      return interaction.reply({ content: `❌ Only support staff members can add users to tickets!`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `${emojis.ERROR} Only support staff members can add users to tickets!`, flags: 64 }).catch(() => {});
     }
 
     return interaction.reply({
@@ -2408,7 +2408,7 @@ client.on('interactionCreate', async (interaction) => {
       case 'logs':
         return interaction.reply({ content: `📜 **Room Logs**: Private channel generated for **<@${interaction.user.id}>** with active members: \`${channel.members.size}\`.`, flags: 64 });
       case 'ban':
-        return interaction.reply({ content: `🔨 **Ban Member**: Use \`.vc ban @user\` to disconnect and ban a member from your room.`, flags: 64 });
+        return interaction.reply({ content: `${emojis.MOD} **Ban Member**: Use \`.vc ban @user\` to disconnect and ban a member from your room.`, flags: 64 });
       case 'unban':
         return interaction.reply({ content: `🔓 **Unban Member**: Use \`.vc unban @user\` to unban a member from joining your room.`, flags: 64 });
 
@@ -2460,7 +2460,7 @@ client.on('interactionCreate', async (interaction) => {
         return interaction.reply({ content: `↗️ **Transfer Ownership**: Use \`.vc transfer @user\` to pass room ownership to another user.`, flags: 64 });
 
       default:
-        return interaction.reply({ content: `⚙️ VoiceMaster action executed.`, flags: 64 });
+        return interaction.reply({ content: `${emojis.GEAR} VoiceMaster action executed.`, flags: 64 });
     }
   }
 
@@ -2670,7 +2670,7 @@ if (process.env.DISCORD_TOKEN && process.env.DISCORD_TOKEN !== 'your_discord_bot
     console.error('Failed to log in:', err.message);
   });
 } else {
-  console.log('\n⚠️ DISCORD_TOKEN is not set in .env file!\n');
+  console.log('\n${emojis.WARNING} DISCORD_TOKEN is not set in .env file!\n');
 }
 
 module.exports = client;

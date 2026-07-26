@@ -131,7 +131,7 @@ module.exports = {
 
     const res = await fetchLyrics(query, artist);
     if (!res || !res.lyrics) {
-      return searchingMsg.edit(`❌ **Lyrics Not Found**: Could not find lyrics for **${query}**.`);
+      return searchingMsg.edit(`${emojis.ERROR} **Lyrics Not Found**: Could not find lyrics for **${query}**.`);
     }
 
     // Split lyrics into max 3500 chars for Discord embed limit
@@ -155,7 +155,7 @@ module.exports = {
 
     if (res.image) embed.setThumbnail(res.image);
 
-    return searchingMsg.edit({ content: `✅ Lyrics found!`, embeds: [embed] });
+    return searchingMsg.edit({ content: `${emojis.SUCCESS} Lyrics found!`, embeds: [embed] });
   },
 
   fetchLyrics

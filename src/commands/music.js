@@ -470,11 +470,11 @@ module.exports = {
           }
         } catch (err) {
           console.error('[Music Play Error]', err.message || err);
-          return message.reply(`❌ Could not play track: **${err.message || 'Search Error'}**. Please try another title or URL.`);
+          return message.reply(`${emojis.ERROR} Could not play track: **${err.message || 'Search Error'}**. Please try another title or URL.`);
         }
       }
 
-      return message.reply(`⚠️ Lavalink nodes are currently connecting. Please try again in a few seconds.`);
+      return message.reply(`${emojis.WARNING} Lavalink nodes are currently connecting. Please try again in a few seconds.`);
     }
 
     // 2. PAUSE / RESUME
@@ -575,7 +575,7 @@ module.exports = {
         }
         return message.reply(`🔊 **Joined Voice Channel:** Successfully connected to <#${channel.id}>!`);
       } catch (err) {
-        return message.reply(`❌ Failed to join voice channel: ${err.message}`);
+        return message.reply(`${emojis.ERROR} Failed to join voice channel: ${err.message}`);
       }
     }
 
@@ -768,7 +768,7 @@ module.exports = {
         const currentTrack = player?.queue?.current;
         if (!currentTrack) return message.reply(`${emojis.WARNING} No track currently playing to add to favorites!`);
         const res = db.addFavorite(author.id, currentTrack);
-        if (!res.added) return message.reply(`⚠️ ${res.message}`);
+        if (!res.added) return message.reply(`${emojis.WARNING} ${res.message}`);
         return message.reply(`❤️ **Saved to Favorites:** [${res.favorite.title}](${res.favorite.uri}) (Total: ${res.total} tracks).`);
       }
 

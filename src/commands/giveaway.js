@@ -202,7 +202,7 @@ module.exports = {
       }
 
       const lines = all.map(gw =>
-        `• **ID:** \`${gw.id}\` | **Prize:** ${gw.prize} | **Status:** ${gw.ended ? '✅ Ended' : '🟢 Active'}`
+        `• **ID:** \`${gw.id}\` | **Prize:** ${gw.prize} | **Status:** ${gw.ended ? '${emojis.SUCCESS} Ended' : '🟢 Active'}`
       );
 
       const embed = createStyledEmbed({

@@ -46,7 +46,7 @@ module.exports = {
       ];
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR || '⚙️'} Server Automation Control Center`,
+        title: `${emojis.GEAR || '${emojis.GEAR}'} Server Automation Control Center`,
         subtitle: `Overview for ${message.guild.name}`,
         description:
           `Welcome **${message.author.username}**! Active automation status:\n\n` +
@@ -145,7 +145,7 @@ module.exports = {
       ];
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR || '⚙️'} Automations Commands`,
+        title: `${emojis.GEAR || '${emojis.GEAR}'} Automations Commands`,
         subtitle: `${message.guild.name} Automation Control`,
         description:
           `Welcome **${message.author.username}**! Below is the executive suite for **Automations**.\n` +
@@ -195,7 +195,7 @@ module.exports = {
       boxLines.push('╰──────────────────────────╯');
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR || '⚙️'} AutoRole Configuration`,
+        title: `${emojis.GEAR || '${emojis.GEAR}'} AutoRole Configuration`,
         subtitle: `${message.guild.name} Auto-Assign Settings`,
         description:
           `Current AutoRole settings for **${message.guild.name}**:\n\n` +
@@ -227,7 +227,7 @@ module.exports = {
         ];
 
         const embed = createStyledEmbed({
-          title: `⚙️ AutoRole Updated`,
+          title: `${emojis.GEAR} AutoRole Updated`,
           description: '```\n' + boxLines.join('\n') + '\n```',
           requestedBy: message.author,
           clientUser
@@ -250,7 +250,7 @@ module.exports = {
         ];
 
         const embed = createStyledEmbed({
-          title: `⚙️ AutoRole Updated`,
+          title: `${emojis.GEAR} AutoRole Updated`,
           description: '```\n' + boxLines.join('\n') + '\n```',
           requestedBy: message.author,
           clientUser
@@ -276,7 +276,7 @@ module.exports = {
         boxLines.push('╰──────────────────────────╯');
 
         const embed = createStyledEmbed({
-          title: `⚙️ AutoRole: ${sub.toUpperCase()}`,
+          title: `${emojis.GEAR} AutoRole: ${sub.toUpperCase()}`,
           description: '```\n' + boxLines.join('\n') + '\n```',
           requestedBy: message.author,
           clientUser
@@ -302,7 +302,7 @@ module.exports = {
       ];
 
       const embed = createStyledEmbed({
-        title: `⚙️ AutoRole Settings Reset`,
+        title: `${emojis.GEAR} AutoRole Settings Reset`,
         description: '```\n' + boxLines.join('\n') + '\n```',
         requestedBy: message.author,
         clientUser

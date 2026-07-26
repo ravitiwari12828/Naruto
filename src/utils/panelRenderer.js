@@ -85,8 +85,8 @@ const CATEGORIES = [
     value: 'antinuke',
     description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, BypassRole & 21 Security Filters',
     customEmoji: emojis.OBJ_ANTINUKE,
-    unicodeFallback: '🛡️',
-    heading: `${emojis.ANTINUKE || '🛡️'} AntiNuke & Security Commands`,
+    unicodeFallback: '${emojis.SHIELD}',
+    heading: `${emojis.ANTINUKE || '${emojis.SHIELD}'} AntiNuke & Security Commands`,
     commands: [
       'antinuke', 'antinuke enable', 'antinuke disable',
       'whitelist add', 'whitelist remove',
@@ -160,8 +160,8 @@ const CATEGORIES = [
     value: 'mod',
     description: 'Ban, kick, mute, purge, nuke, roles & more',
     customEmoji: emojis.OBJ_MOD,
-    unicodeFallback: '🔨',
-    heading: `${emojis.MOD || '🔨'} Moderation Commands`,
+    unicodeFallback: '${emojis.MOD}',
+    heading: `${emojis.MOD || '${emojis.MOD}'} Moderation Commands`,
     commands: [
       'ban', 'hackban', 'kick',
       'mute', 'unmute',
@@ -210,8 +210,8 @@ const CATEGORIES = [
     value: 'autorole',
     description: 'Auto-role rules & massrole assignment',
     customEmoji: emojis.OBJ_GEAR,
-    unicodeFallback: '⚙️',
-    heading: `${emojis.GEAR || '⚙️'} Automations Commands`,
+    unicodeFallback: '${emojis.GEAR}',
+    heading: `${emojis.GEAR || '${emojis.GEAR}'} Automations Commands`,
     commands: [
       'automation',
       'autorole config',
@@ -238,8 +238,8 @@ const CATEGORIES = [
     value: 'automod',
     description: 'Security filters & bot join whitelist',
     customEmoji: emojis.OBJ_SHIELD,
-    unicodeFallback: '🛡️',
-    heading: `${emojis.SHIELD || '🛡️'} AutoMod Commands`,
+    unicodeFallback: '${emojis.SHIELD}',
+    heading: `${emojis.SHIELD || '${emojis.SHIELD}'} AutoMod Commands`,
     commands: [
       'automod config', 'antibot config',
       'moderation', 'filter'
@@ -522,7 +522,7 @@ async function renderModuleHelpPanel(message, categoryValue) {
   collector.on('collect', async (interaction) => {
     if (interaction.user.id !== author.id) {
       return interaction.reply({
-        content: `${emojis.DISABLED || '❌'} Only the user who executed the command can interact with this panel.`,
+        content: `${emojis.DISABLED || '${emojis.ERROR}'} Only the user who executed the command can interact with this panel.`,
         flags: 64
       });
     }

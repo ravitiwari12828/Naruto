@@ -107,11 +107,11 @@ module.exports = {
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId('log_setup_multi')
-            .setLabel('🛡️ 1-Click Pro Setup (8 Channels)')
+            .setLabel('${emojis.SHIELD} 1-Click Pro Setup (8 Channels)')
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
             .setCustomId('log_setup_disable')
-            .setLabel('❌ Disable Logging')
+            .setLabel('${emojis.ERROR} Disable Logging')
             .setStyle(ButtonStyle.Danger)
         )
       ];
@@ -147,7 +147,7 @@ async function getOrCreateLogCategory(guild) {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: '❌ Only the administrator can use these buttons.', ephemeral: true });
+        return interaction.reply({ content: '${emojis.ERROR} Only the administrator can use these buttons.', ephemeral: true });
       }
 
       await interaction.deferUpdate();
@@ -188,7 +188,7 @@ async function getOrCreateLogCategory(guild) {
 
         const categoryStructure = [
           {
-            name: '🛡️ · Security Logs ·',
+            name: '${emojis.SHIELD} · Security Logs ·',
             channels: [
               { key: 'noprefix', name: 'noprefix-audit' },
               { key: 'securitydef', name: 'security-defense' },

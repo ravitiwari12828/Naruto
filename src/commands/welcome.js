@@ -184,12 +184,12 @@ module.exports = {
       if (opt === 'off' || opt === 'disable') {
         config.joinDmEnabled = false;
         welcomeConfigs.set(guild.id, config);
-        return message.reply(`✅ **Join DM Message** has been **Disabled**.`);
+        return message.reply(`${emojis.SUCCESS} **Join DM Message** has been **Disabled**.`);
       }
       if (opt === 'on' || opt === 'enable') {
         config.joinDmEnabled = true;
         welcomeConfigs.set(guild.id, config);
-        return message.reply(`✅ **Join DM Message** has been **Enabled**!`);
+        return message.reply(`${emojis.SUCCESS} **Join DM Message** has been **Enabled**!`);
       }
 
       const text = args.slice(1).join(' ');
@@ -210,12 +210,12 @@ module.exports = {
       if (opt === 'off' || opt === 'disable') {
         config.leaveDmEnabled = false;
         welcomeConfigs.set(guild.id, config);
-        return message.reply(`✅ **Leave DM Message** has been **Disabled**.`);
+        return message.reply(`${emojis.SUCCESS} **Leave DM Message** has been **Disabled**.`);
       }
       if (opt === 'on' || opt === 'enable') {
         config.leaveDmEnabled = true;
         welcomeConfigs.set(guild.id, config);
-        return message.reply(`✅ **Leave DM Message** has been **Enabled**!`);
+        return message.reply(`${emojis.SUCCESS} **Leave DM Message** has been **Enabled**!`);
       }
 
       const text = args.slice(1).join(' ');
@@ -244,12 +244,12 @@ module.exports = {
       if (opt === 'off' || opt === 'disable') {
         config.boostEnabled = false;
         welcomeConfigs.set(guild.id, config);
-        return message.reply(`✅ **Server Boost Message** has been **Disabled**.`);
+        return message.reply(`${emojis.SUCCESS} **Server Boost Message** has been **Disabled**.`);
       }
       if (opt === 'on' || opt === 'enable') {
         config.boostEnabled = true;
         welcomeConfigs.set(guild.id, config);
-        return message.reply(`✅ **Server Boost Message** has been **Enabled**!`);
+        return message.reply(`${emojis.SUCCESS} **Server Boost Message** has been **Enabled**!`);
       }
 
       const text = args.slice(1).join(' ');
@@ -292,7 +292,7 @@ module.exports = {
     if (sub === 'reset') {
       welcomeConfigs.delete(guild.id);
       const embed = createStyledEmbed({
-        title: `${emojis.SUCCESS || '✅'} Welcome System Reset`,
+        title: `${emojis.SUCCESS || '${emojis.SUCCESS}'} Welcome System Reset`,
         description: `Welcome configuration for **${guild.name}** has been restored to factory defaults.`,
         requestedBy: author,
         clientUser

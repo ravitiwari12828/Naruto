@@ -60,7 +60,7 @@ module.exports = {
         `*Click any button below to trigger immediate server protection setup!*`;
 
       return createStyledEmbed({
-        title: `🛡️ One-Click Server Security & Protection Setup`,
+        title: `${emojis.SHIELD} One-Click Server Security & Protection Setup`,
         subtitle: `Shinobi Defense Grid Wizard`,
         description,
         requestedBy: author,
@@ -76,7 +76,7 @@ module.exports = {
           .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
           .setCustomId('setup_antinuke')
-          .setLabel('🛡️ Enable AntiNuke Grid')
+          .setLabel('${emojis.SHIELD} Enable AntiNuke Grid')
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
           .setCustomId('setup_automod')
@@ -114,7 +114,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: '❌ Only the administrator who invoked `.securesetup` can use these buttons.', ephemeral: true });
+        return interaction.reply({ content: '${emojis.ERROR} Only the administrator who invoked `.securesetup` can use these buttons.', ephemeral: true });
       }
 
       await interaction.deferUpdate();
@@ -165,7 +165,7 @@ module.exports = {
           config.whitelistedUsers.add(author.id);
           antinukeConfigs.set(guild.id, config);
         }
-        actionStatus = `🛡️ AntiNuke Shield enabled with 21 protection filters!`;
+        actionStatus = `${emojis.SHIELD} AntiNuke Shield enabled with 21 protection filters!`;
       }
 
       else if (interaction.customId === 'setup_automod') {
@@ -190,7 +190,7 @@ module.exports = {
             });
             actionStatus = `📜 Security audit channel created: <#${logChan.id}>!`;
           } catch (e) {
-            actionStatus = `❌ Failed to create channel: ${e.message}`;
+            actionStatus = `${emojis.ERROR} Failed to create channel: ${e.message}`;
           }
         } else {
           actionStatus = `📜 Security channel already exists: <#${logChan.id}>`;

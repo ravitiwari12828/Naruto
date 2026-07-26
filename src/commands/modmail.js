@@ -260,9 +260,9 @@ module.exports = {
         });
 
         activeModmailTickets.set(targetTicket.userId, targetTicket);
-        return message.reply(`✅ Sent reply to **${user.tag}**.`);
+        return message.reply(`${emojis.SUCCESS} Sent reply to **${user.tag}**.`);
       } catch (e) {
-        return message.reply(`❌ Could not send DM reply to user: ${e.message}`);
+        return message.reply(`${emojis.ERROR} Could not send DM reply to user: ${e.message}`);
       }
     }
 
@@ -398,7 +398,7 @@ module.exports = {
         config.transcriptChanId = transcriptChan ? transcriptChan.id : null;
         config.enabled = true;
         modmailConfigs.set(guild.id, config);
-        await i.reply({ content: `✅ ModMail system deployed successfully!`, ephemeral: true });
+        await i.reply({ content: `${emojis.SUCCESS} ModMail system deployed successfully!`, ephemeral: true });
       } else if (i.customId === 'mm_active') {
         await i.reply({ content: `📬 Current Active ModMail Tickets in server: **${activeCount}**`, ephemeral: true });
       } else if (i.customId === 'mm_transcripts') {

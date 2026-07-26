@@ -1,3 +1,4 @@
+const emojis = require('../utils/emojis');
 const { LavalinkManager } = require('lavalink-client');
 
 let lavalink = null;
@@ -78,7 +79,7 @@ function initLavalink(client) {
   });
 
   lavalink.nodeManager.on('disconnect', (node, reason) => {
-    console.log(`⚠️ [Lavalink] Node disconnected from ${node.id}:`, reason?.message || reason);
+    console.log(`${emojis.WARNING} [Lavalink] Node disconnected from ${node.id}:`, reason?.message || reason);
   });
 
   lavalink.nodeManager.on('reconnecting', (node) => {
@@ -86,7 +87,7 @@ function initLavalink(client) {
   });
 
   lavalink.nodeManager.on('error', (node, error) => {
-    console.log(`⚠️ [Lavalink] Node error on ${node.id}:`, error?.message || error);
+    console.log(`${emojis.WARNING} [Lavalink] Node error on ${node.id}:`, error?.message || error);
   });
 
   // Forward raw gateway voice packets to Lavalink
@@ -242,17 +243,17 @@ function initLavalink(client) {
   // TRACK ERROR & STUCK HANDLERS: Smooth auto-skip
   // ─────────────────────────────────────────
   lavalink.on('trackError', async (player, track, payload) => {
-    console.error(`⚠️ [Lavalink Track Error] ${track?.info?.title}:`, payload?.exception?.message || payload);
+    console.error(`${emojis.WARNING} [Lavalink Track Error] ${track?.info?.title}:`, payload?.exception?.message || payload);
     if (!player) return;
     try {
       const channel = client.channels.cache.get(player.textChannelId);
-      if (channel) channel.send(`⚠️ **Playback Error:** Failed to stream \`${track?.info?.title || 'Track'}\`. Auto-skipping...`).catch(() => {});
+      if (channel) channel.send(`${emojis.WARNING} **Playback Error:** Failed to stream \`${track?.info?.title || 'Track'}\`. Auto-skipping...`).catch(() => {});
       await player.skip().catch(() => {});
     } catch (e) {}
   });
 
   lavalink.on('trackStuck', async (player, track, payload) => {
-    console.warn(`⚠️ [Lavalink Track Stuck] ${track?.info?.title}`);
+    console.warn(`${emojis.WARNING} [Lavalink Track Stuck] ${track?.info?.title}`);
     if (!player) return;
     try {
       await player.skip().catch(() => {});

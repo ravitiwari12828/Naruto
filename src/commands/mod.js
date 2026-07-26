@@ -38,7 +38,7 @@ function recordAndLogCase(guild, { action, targetId, targetTag, executorId, exec
 
   dispatchLog(guild, 'modcases', {
     color,
-    title: `🛡️ Case #${caseData.caseId} | ${caseData.action}`,
+    title: `${emojis.SHIELD} Case #${caseData.caseId} | ${caseData.action}`,
     description:
       `• **Target:** <@${caseData.targetId}> (\`${caseData.targetTag}\`)\n` +
       `• **Moderator:** <@${caseData.executorId}> (\`${caseData.executorTag}\`)\n` +
@@ -80,7 +80,7 @@ module.exports = {
       }
     }
 
-    // 1. 🔨 BAN
+    // 1. ${emojis.MOD} BAN
     if (invoked === 'ban') {
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return botMissingPerms(message, 'Ban Members');
@@ -118,7 +118,7 @@ module.exports = {
       });
 
       const embed = createStyledEmbed({
-        title: `🔨 User Banned [Case #${cData.caseId}]`,
+        title: `${emojis.MOD} User Banned [Case #${cData.caseId}]`,
         description: `**<@${targetId}>** (\`${targetUser.tag || targetId}\`) has been banished from the village!\n\n**Case ID:** \`#${cData.caseId}\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
@@ -159,7 +159,7 @@ module.exports = {
       });
 
       const embed = createStyledEmbed({
-        title: `🔨 Hackban Executed [Case #${cData.caseId}]`,
+        title: `${emojis.MOD} Hackban Executed [Case #${cData.caseId}]`,
         description: `User ID **\`${userId}\`** has been pre-emptively banned.\n\n**Case ID:** \`#${cData.caseId}\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
@@ -279,7 +279,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 6. ✅ UNBAN
+    // 6. ${emojis.SUCCESS} UNBAN
     if (invoked === 'unban') {
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
 
@@ -298,7 +298,7 @@ module.exports = {
       });
 
       const embed = createStyledEmbed({
-        title: `✅ User Unbanned [Case #${cData.caseId}]`,
+        title: `${emojis.SUCCESS} User Unbanned [Case #${cData.caseId}]`,
         description: `User ID \`${userId}\` has been pardoned and may return to the village.`,
         requestedBy: message.author,
         clientUser
@@ -306,7 +306,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 7. ✅ UNBAN ALL
+    // 7. ${emojis.SUCCESS} UNBAN ALL
     if (invoked === 'unbanall') {
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
       if (!author.permissions.has(PermissionsBitField.Flags.Administrator)) return missingPerms(message, 'Administrator');
@@ -319,7 +319,7 @@ module.exports = {
       }
 
       const embed = createStyledEmbed({
-        title: `✅ Mass Unban Complete`,
+        title: `${emojis.SUCCESS} Mass Unban Complete`,
         description: `**${count}** banned user(s) have been pardoned from the village.`,
         requestedBy: message.author,
         clientUser
@@ -460,7 +460,7 @@ module.exports = {
         const admins = guild.members.cache.filter(m => m.permissions.has(PermissionsBitField.Flags.Administrator) && !m.user.bot);
         const lines = [...admins.values()].slice(0, 25).map(a => `• <@${a.id}> (\`${a.user.tag}\`)`);
         const embed = createStyledEmbed({
-          title: `🛡️ Server Administrators List`,
+          title: `${emojis.SHIELD} Server Administrators List`,
           description: lines.join('\n') || '*No administrators found.*',
           requestedBy: message.author, clientUser,
           footerText: `Total Admins: ${admins.size}`
@@ -498,7 +498,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 14. ⚠️ WARN / UNWARN / CLEARWARNS
+    // 14. ${emojis.WARNING} WARN / UNWARN / CLEARWARNS
     if (['warn', 'unwarn', 'rmwarn', 'warnremove', 'clearwarns'].includes(invoked)) {
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Moderate Members');
 
@@ -539,7 +539,7 @@ module.exports = {
         });
 
         const embed = createStyledEmbed({
-          title: `✅ Warning Case #${caseIdArg} Revoked [Case #${cData.caseId}]`,
+          title: `${emojis.SUCCESS} Warning Case #${caseIdArg} Revoked [Case #${cData.caseId}]`,
           description:
             `• **Revoked Case:** \`#${caseIdArg}\`\n` +
             `• **Member:** <@${targetUserId}> (\`${c.targetTag}\`)\n` +
@@ -603,7 +603,7 @@ module.exports = {
         });
 
         const embed = createStyledEmbed({
-          title: `✅ Warning Removed [Case #${cData.caseId}]`,
+          title: `${emojis.SUCCESS} Warning Removed [Case #${cData.caseId}]`,
           description: `**Member:** <@${targetUser.id}> (\`${targetUser.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Remaining Warnings:** \`${newWarns}\`\n**Reason:** ${reason}`,
           requestedBy: message.author,
           clientUser
@@ -626,11 +626,11 @@ module.exports = {
       });
 
       try {
-        await targetUser.send(`⚠️ You have received Warning #${warnCount} [Case #${cData.caseId}] in **${guild.name}**.\n**Reason:** ${reason}`);
+        await targetUser.send(`${emojis.WARNING} You have received Warning #${warnCount} [Case #${cData.caseId}] in **${guild.name}**.\n**Reason:** ${reason}`);
       } catch (e) {}
 
       const embed = createStyledEmbed({
-        title: `⚠️ User Warned [Case #${cData.caseId}]`,
+        title: `${emojis.WARNING} User Warned [Case #${cData.caseId}]`,
         description: `**Member:** <@${targetUser.id}> (\`${targetUser.tag}\`)\n**Case ID:** \`#${cData.caseId}\`\n**Warning Count:** \`${warnCount} warning(s)\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
@@ -638,7 +638,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 15. 🛡️ CASE / CASES / MODLOGS (.case <id> | .cases [@user])
+    // 15. ${emojis.SHIELD} CASE / CASES / MODLOGS (.case <id> | .cases [@user])
     if (['case', 'cases', 'modlogs', 'caseinfo'].includes(invoked)) {
       const targetUser = message.mentions.users.first();
       const caseIdInput = args[0] && !isNaN(args[0]) ? parseInt(args[0]) : null;
@@ -648,7 +648,7 @@ module.exports = {
         if (!c) return message.reply(`${emojis.WARNING} Case **#${caseIdInput}** not found in this server.`);
 
         const embed = createStyledEmbed({
-          title: `🛡️ Moderation Case #${c.caseId}`,
+          title: `${emojis.SHIELD} Moderation Case #${c.caseId}`,
           description:
             `• **Action:** \`${c.action}\`\n` +
             `• **Target:** <@${c.targetId}> (\`${c.targetTag}\`)\n` +
@@ -668,7 +668,7 @@ module.exports = {
 
         const lines = userCases.map(c => `\`Case #${c.caseId}\` | **${c.action}** — ${c.reason.length > 40 ? c.reason.slice(0, 40) + '...' : c.reason} (By <@${c.executorId}>)`);
         const embed = createStyledEmbed({
-          title: `🛡️ Cases for User`,
+          title: `${emojis.SHIELD} Cases for User`,
           description: lines.join('\n'),
           requestedBy: message.author,
           clientUser,
@@ -684,7 +684,7 @@ module.exports = {
       const lines = recentCases.map(c => `\`Case #${c.caseId}\` | **${c.action}** on <@${c.targetId}> — *${c.reason.length > 30 ? c.reason.slice(0, 30) + '...' : c.reason}*`);
 
       const embed = createStyledEmbed({
-        title: `🛡️ Server Moderation Cases`,
+        title: `${emojis.SHIELD} Server Moderation Cases`,
         description: lines.join('\n'),
         requestedBy: message.author,
         clientUser,

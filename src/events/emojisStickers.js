@@ -1,3 +1,4 @@
+const emojis = require('../utils/emojis');
 const { AuditLogEvent, EmbedBuilder } = require('discord.js');
 const { dispatchLog } = require('../utils/logger');
 
@@ -18,7 +19,7 @@ module.exports = (client) => {
       .setColor('#00ff00')
       .setTitle('Emoji created')
       .setThumbnail(emoji.url)
-      .setDescription(`**Name:** ${emoji.name}\n**ID:** \`${emoji.id}\`\n**Animated:** ${emoji.animated ? '✅' : '❌'}`);
+      .setDescription(`**Name:** ${emoji.name}\n**ID:** \`${emoji.id}\`\n**Animated:** ${emoji.animated ? '${emojis.SUCCESS}' : '${emojis.ERROR}'}`);
     
     if (executor) {
       embed.setFooter({ text: `@${executor.username}`, iconURL: executor.displayAvatarURL() });
@@ -35,7 +36,7 @@ module.exports = (client) => {
       .setColor('#ff0000')
       .setTitle('Emoji deleted')
       .setThumbnail(emoji.url)
-      .setDescription(`**Name:** ${emoji.name}\n**ID:** \`${emoji.id}\`\n**Animated:** ${emoji.animated ? '✅' : '❌'}\n**Created:** ${createdAgo}`);
+      .setDescription(`**Name:** ${emoji.name}\n**ID:** \`${emoji.id}\`\n**Animated:** ${emoji.animated ? '${emojis.SUCCESS}' : '${emojis.ERROR}'}\n**Created:** ${createdAgo}`);
     
     if (executor) {
       embed.setFooter({ text: `@${executor.username}`, iconURL: executor.displayAvatarURL() });

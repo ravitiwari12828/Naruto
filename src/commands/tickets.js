@@ -230,7 +230,7 @@ function buildTicketActionRows() {
 
   const row2 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('ticket_addmember_btn').setEmoji(emojis.OBJ_TOOLS || '➕').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_close_btn').setEmoji(emojis.OBJ_REMOVE || '❌').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('ticket_close_btn').setEmoji(emojis.OBJ_REMOVE || '${emojis.ERROR}').setStyle(ButtonStyle.Danger)
   );
 
   return [row1, row2];
@@ -281,7 +281,7 @@ module.exports = {
     // 1. TICKET SETUP (Deploys multi-category dropdown panel & log channels)
     if (['panel', 'setup', 'panel_deploy', 'wizard'].includes(sub)) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`${emojis.WARNING || '⚠️'} Only Administrators can run ticket setup.`);
+        return message.reply(`${emojis.WARNING || '${emojis.WARNING}'} Only Administrators can run ticket setup.`);
       }
 
       const { logChan, transcriptChan, staffRole } = await ensureTicketLogChannels(guild);
@@ -321,7 +321,7 @@ module.exports = {
       return message.reply({
         embeds: [
           createStyledEmbed({
-            title: `✅ Ticket Desk Deployed Successfully`,
+            title: `${emojis.SUCCESS} Ticket Desk Deployed Successfully`,
             description:
               `• **Ticket Panel**: Active in <#${message.channel.id}>\n` +
               `• **Staff Role Linked**: ${staffRole ? `<@&${staffRole.id}>` : '`Created`'}\n` +
@@ -340,7 +340,7 @@ module.exports = {
       const topic = message.channel.topic || '';
 
       if (!topic.includes('ticket|')) {
-        return message.reply(`⚠️ Command must be executed inside an active ticket channel!`);
+        return message.reply(`${emojis.WARNING} Command must be executed inside an active ticket channel!`);
       }
 
       const isAnonOn = topic.includes('anon:on');
@@ -381,13 +381,13 @@ module.exports = {
 
       const staffPings = Array.from(config.staffRoles).map(id => `<@&${id}>`).join(' ') || '@here';
       await message.channel.send({ content: `📞 **Call Staff Alert**: ${staffPings}\n<@${author.id}> has summoned support staff!` }).catch(() => {});
-      return message.reply({ content: `✅ Support staff summoned!`, flags: 64 });
+      return message.reply({ content: `${emojis.SUCCESS} Support staff summoned!`, flags: 64 });
     }
 
     // 4. STAFF ROLES MANAGEMENT
     if (sub === 'staff' || sub === 'staffrole') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`⚠️ Only Administrators can manage ticket staff roles.`);
+        return message.reply(`${emojis.WARNING} Only Administrators can manage ticket staff roles.`);
       }
 
       const action = args[1]?.toLowerCase();
@@ -396,17 +396,17 @@ module.exports = {
       if (action === 'add' && role) {
         config.staffRoles.add(role.id);
         ticketConfigs.set(guild.id, config);
-        return message.reply({ content: `✅ Added <@&${role.id}> as Ticket Support Staff.`, allowedMentions: { parse: [], repliedUser: false } });
+        return message.reply({ content: `${emojis.SUCCESS} Added <@&${role.id}> as Ticket Support Staff.`, allowedMentions: { parse: [], repliedUser: false } });
       } else if (action === 'remove' && role) {
         config.staffRoles.delete(role.id);
         ticketConfigs.set(guild.id, config);
-        return message.reply({ content: `✅ Removed <@&${role.id}> from Ticket Support Staff.`, allowedMentions: { parse: [], repliedUser: false } });
+        return message.reply({ content: `${emojis.SUCCESS} Removed <@&${role.id}> from Ticket Support Staff.`, allowedMentions: { parse: [], repliedUser: false } });
       } else {
         const staffList = Array.from(config.staffRoles).map(id => `<@&${id}>`).join('\n') || 'None assigned (Administrators only)';
         return message.reply({
           embeds: [
             createStyledEmbed({
-              title: `🛡️ Ticket Staff Roles`,
+              title: `${emojis.SHIELD} Ticket Staff Roles`,
               description: `**Current Support Staff Roles:**\n${staffList}\n\n**Usage:**\n\`.ticket staff add @role\`\n\`.ticket staff remove @role\``,
               requestedBy: author,
               clientUser
@@ -422,10 +422,10 @@ module.exports = {
                       Array.from(config.staffRoles).some(rId => message.member.roles.cache.has(rId));
 
       if (!isStaff) {
-        return message.reply(`⚠️ Only support staff members can claim tickets!`);
+        return message.reply(`${emojis.WARNING} Only support staff members can claim tickets!`);
       }
 
-      return message.reply(`✅ Ticket claimed by <@${author.id}>.`);
+      return message.reply(`${emojis.SUCCESS} Ticket claimed by <@${author.id}>.`);
     }
 
     // 6. REOPEN TICKET (.ticket reopen / .reopen)
@@ -441,7 +441,7 @@ module.exports = {
         }).catch(() => {});
       }
 
-      return message.reply(`✅ Ticket reopened by <@${author.id}>.`);
+      return message.reply(`${emojis.SUCCESS} Ticket reopened by <@${author.id}>.`);
     }
 
     // 7. LOCK TICKET (.ticket lock / .lock)
@@ -460,7 +460,7 @@ module.exports = {
     // 8. TICKET TRANSCRIPT (.ticket transcript / .transcript)
     if (sub === 'transcript') {
       const fetchedMsgs = await message.channel.messages.fetch({ limit: 100 }).catch(() => null);
-      if (!fetchedMsgs) return message.reply(`⚠️ Could not fetch ticket message history.`);
+      if (!fetchedMsgs) return message.reply(`${emojis.WARNING} Could not fetch ticket message history.`);
 
       const buffer = generateTranscriptBuffer(message.channel, fetchedMsgs, author);
       const attachment = new AttachmentBuilder(buffer, { name: `transcript-${message.channel.name}.txt` });

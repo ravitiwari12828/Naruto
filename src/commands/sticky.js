@@ -32,7 +32,7 @@ module.exports = {
     // .sticky set <content>
     if (sub === 'set' || sub === 'add' || sub === 'create') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-        return message.reply(`${emojis.DISABLED || '❌'} You need **Manage Messages** permission to set sticky notes.`);
+        return message.reply(`${emojis.DISABLED || '${emojis.ERROR}'} You need **Manage Messages** permission to set sticky notes.`);
       }
 
       const content = args[0]?.toLowerCase() === 'set' || args[0]?.toLowerCase() === 'add' ? args.slice(1).join(' ') : args.join(' ');
@@ -62,18 +62,18 @@ module.exports = {
         authorId: author.id
       });
 
-      return message.reply(`✅ Sticky note active for <#${channelId}>!`);
+      return message.reply(`${emojis.SUCCESS} Sticky note active for <#${channelId}>!`);
     }
 
     // .sticky remove / delete / off / .unsticky
     if (['remove', 'delete', 'clear', 'off', 'disable', 'reset'].includes(sub)) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-        return message.reply(`${emojis.DISABLED || '❌'} You need **Manage Messages** permission to remove sticky notes.`);
+        return message.reply(`${emojis.DISABLED || '${emojis.ERROR}'} You need **Manage Messages** permission to remove sticky notes.`);
       }
 
       const existing = stickyNotes.get(channelId);
       if (!existing) {
-        return message.reply(`⚠️ No sticky note active in <#${channelId}>.`);
+        return message.reply(`${emojis.WARNING} No sticky note active in <#${channelId}>.`);
       }
 
       // Delete sticky data FIRST to prevent race condition
@@ -97,7 +97,7 @@ module.exports = {
       const guildStickyEntries = Array.from(stickyNotes.values()).filter(s => s.guildId === guildId);
 
       if (guildStickyEntries.length === 0) {
-        return message.reply(`⚠️ No active sticky notes on this server.`);
+        return message.reply(`${emojis.WARNING} No active sticky notes on this server.`);
       }
 
       const lines = guildStickyEntries.map((s, i) =>

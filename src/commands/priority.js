@@ -41,7 +41,7 @@ module.exports = {
 
     const query = args.slice(1).join(' ');
     if (!query) {
-      return message.reply(`⚠️ Please provide a prompt or question! Example: \`.priority ${sub} How do Ninjutsu work?\``);
+      return message.reply(`${emojis.WARNING} Please provide a prompt or question! Example: \`.priority ${sub} How do Ninjutsu work?\``);
     }
 
     const waitingMsg = await message.reply(`${emojis.SHINOBI} *Summoning Sage AI wisdom...*`);

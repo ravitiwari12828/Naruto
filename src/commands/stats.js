@@ -1,3 +1,4 @@
+const emojis = require('../utils/emojis');
 const {
   ActionRowBuilder,
   ButtonBuilder,
@@ -134,7 +135,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: '❌ Only the command requester can use these buttons.', ephemeral: true });
+        return interaction.reply({ content: '${emojis.ERROR} Only the command requester can use these buttons.', ephemeral: true });
       }
 
       await interaction.deferUpdate();

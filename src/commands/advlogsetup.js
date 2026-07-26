@@ -100,7 +100,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: '❌ Only the administrator can use these buttons.', ephemeral: true });
+        return interaction.reply({ content: '${emojis.ERROR} Only the administrator can use these buttons.', ephemeral: true });
       }
 
       await interaction.deferUpdate();
@@ -110,7 +110,7 @@ module.exports = {
       if (interaction.customId === 'advlog_deploy_all') {
         const categoryStructure = [
           {
-            name: '🛡️ · Security Logs ·',
+            name: '${emojis.SHIELD} · Security Logs ·',
             channels: [
               { key: 'noprefix', name: 'noprefix-audit' },
               { key: 'securitydef', name: 'security-defense' },

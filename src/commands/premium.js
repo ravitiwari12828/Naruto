@@ -89,7 +89,7 @@ module.exports = {
       premiumGuilds.delete(targetGuildId);
 
       const embed = createStyledEmbed({
-        title: `⚠️ Premium Revoked from Guild`,
+        title: `${emojis.WARNING} Premium Revoked from Guild`,
         description: `Server ID **\`${targetGuildId}\`** premium tier has been revoked.`,
         requestedBy: author,
         clientUser
@@ -122,7 +122,7 @@ module.exports = {
       if (!user) return message.reply(`${emojis.WARNING} Mention a user or provide a User ID e.g. \`.premium revokeuser @user\``);
 
       premiumUsers.delete(user.id);
-      return message.reply(`⚠️ **${user.tag}** premium status has been revoked.`);
+      return message.reply(`${emojis.WARNING} **${user.tag}** premium status has been revoked.`);
     }
 
     // 5. PREMIUM STATUS / CHECK (.premium status)
@@ -136,8 +136,8 @@ module.exports = {
       const embed = createStyledEmbed({
         title: `💎 Premium Status Dashboard`,
         fields: [
-          { name: '🏰 Current Server Status', value: isGuildPrem ? `\`PREMIUM GUILD ✅\`\n(${formatExpiryText(guildExp)})` : '`STANDARD TIER ⚪`', inline: true },
-          { name: '👤 Your User Status', value: isUserPrem ? `\`PREMIUM VIP ✅\`\n(${formatExpiryText(userExp)})` : '`STANDARD USER ⚪`', inline: true },
+          { name: '🏰 Current Server Status', value: isGuildPrem ? `\`PREMIUM GUILD ${emojis.SUCCESS}\`\n(${formatExpiryText(guildExp)})` : '`STANDARD TIER ⚪`', inline: true },
+          { name: '👤 Your User Status', value: isUserPrem ? `\`PREMIUM VIP ${emojis.SUCCESS}\`\n(${formatExpiryText(userExp)})` : '`STANDARD USER ⚪`', inline: true },
           { name: '💎 Total Premium Guilds', value: `\`${premiumGuilds.size}\` servers`, inline: true },
           { name: '👤 Total Premium Users', value: `\`${premiumUsers.size}\` users`, inline: true }
         ],

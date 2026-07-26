@@ -1,3 +1,4 @@
+const emojis = require('../utils/emojis');
 const { isBotOwner } = require('../utils/owners');
 
 // Global Bot Owner Guild Whitelist & Private Lockdown Store
@@ -99,7 +100,7 @@ module.exports = {
       title: `🔒 Private Server Join Authorization System`,
       subtitle: `Bot Owner Security & Access Control`,
       fields: [
-        { name: '⚙️ Private Lockdown Status', value: botLockStore.lockdownEnabled ? '`ENABLED 🔒 (Private Mode)`' : '`DISABLED 🔓 (Public Mode)`', inline: true },
+        { name: '${emojis.GEAR} Private Lockdown Status', value: botLockStore.lockdownEnabled ? '`ENABLED 🔒 (Private Mode)`' : '`DISABLED 🔓 (Public Mode)`', inline: true },
         { name: '🏠 Authorized Servers', value: `\`${botLockStore.whitelistedGuilds.size}\` Whitelisted Guilds`, inline: true },
         { name: '👑 Active Servers', value: `\`${client.guilds.cache.size}\` Servers Joined`, inline: true }
       ],

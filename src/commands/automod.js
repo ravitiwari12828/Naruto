@@ -86,7 +86,7 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
         label: 'AutoMod Filters Suite',
         value: 'tab_filters',
         description: 'AntiSpam, Invite Links, Malicious Links & NSFW Links',
-        emoji: '🛡️',
+        emoji: '${emojis.SHIELD}',
         default: activeTab === 'filters'
       },
       {
@@ -100,7 +100,7 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
         label: 'Miscellaneous Settings',
         value: 'tab_misc',
         description: 'Log channels, prefix, timeout duration, DM settings',
-        emoji: '⚙️',
+        emoji: '${emojis.GEAR}',
         default: activeTab === 'misc'
       },
       {
@@ -118,7 +118,7 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
   const buttonRow1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('am_btn_spam').setEmoji('💬').setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('am_btn_invites').setEmoji('📢').setStyle(f.inviteLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji('🛡️').setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji('${emojis.SHIELD}').setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('am_btn_nsfw').setEmoji('🔞').setStyle(f.nsfwLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('am_btn_words').setEmoji('🔤').setStyle(f.profanity ? ButtonStyle.Success : ButtonStyle.Secondary)
   );
@@ -166,7 +166,7 @@ module.exports = {
 
     // Permission Check
     if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-      return message.reply(`${emojis.WARNING || '⚠️'} You need **Manage Server** permission to configure AutoMod & Miscellaneous settings.`);
+      return message.reply(`${emojis.WARNING || '${emojis.WARNING}'} You need **Manage Server** permission to configure AutoMod & Miscellaneous settings.`);
     }
 
     // ─────────────────────────────────────────
@@ -176,71 +176,71 @@ module.exports = {
     // .addword <word> / .automod addword <word>
     if (sub === 'addword' || (sub === 'word' && args[1]?.toLowerCase() === 'add')) {
       const val = (sub === 'addword' ? args.join(' ') : args.slice(2).join(' ')).toLowerCase().trim();
-      if (!val) return message.reply(`⚠️ Usage: \`.addword <word to block>\``);
+      if (!val) return message.reply(`${emojis.WARNING} Usage: \`.addword <word to block>\``);
 
       if (!config.wordBlacklist.includes(val)) {
         config.wordBlacklist.push(val);
         db.updateAutomod(guild.id, 'wordBlacklist', config.wordBlacklist);
       }
-      return message.reply(`✅ Added \`${val}\` to AutoMod Word Blacklist.`);
+      return message.reply(`${emojis.SUCCESS} Added \`${val}\` to AutoMod Word Blacklist.`);
     }
 
     // .delword <word> / .automod delword <word>
     if (sub === 'delword' || sub === 'removeword' || (sub === 'word' && (args[1]?.toLowerCase() === 'del' || args[1]?.toLowerCase() === 'remove'))) {
       const val = (['delword', 'removeword'].includes(sub) ? args.join(' ') : args.slice(2).join(' ')).toLowerCase().trim();
-      if (!val) return message.reply(`⚠️ Usage: \`.delword <word to remove>\``);
+      if (!val) return message.reply(`${emojis.WARNING} Usage: \`.delword <word to remove>\``);
 
       config.wordBlacklist = config.wordBlacklist.filter(w => w !== val);
       db.updateAutomod(guild.id, 'wordBlacklist', config.wordBlacklist);
-      return message.reply(`✅ Removed \`${val}\` from AutoMod Word Blacklist.`);
+      return message.reply(`${emojis.SUCCESS} Removed \`${val}\` from AutoMod Word Blacklist.`);
     }
 
     // .addlink <domain> / .automod addlink <domain>
     if (sub === 'addlink' || (sub === 'link' && args[1]?.toLowerCase() === 'add')) {
       const val = (sub === 'addlink' ? args.join(' ') : args.slice(2).join(' ')).toLowerCase().trim();
-      if (!val) return message.reply(`⚠️ Usage: \`.addlink <domain or website to block>\``);
+      if (!val) return message.reply(`${emojis.WARNING} Usage: \`.addlink <domain or website to block>\``);
 
       if (!config.linkBlacklist.includes(val)) {
         config.linkBlacklist.push(val);
         db.updateAutomod(guild.id, 'linkBlacklist', config.linkBlacklist);
       }
-      return message.reply(`✅ Added \`${val}\` to AutoMod Link Blacklist.`);
+      return message.reply(`${emojis.SUCCESS} Added \`${val}\` to AutoMod Link Blacklist.`);
     }
 
     // .dellink <domain> / .automod dellink <domain>
     if (sub === 'dellink' || sub === 'removelink' || (sub === 'link' && (args[1]?.toLowerCase() === 'del' || args[1]?.toLowerCase() === 'remove'))) {
       const val = (['dellink', 'removelink'].includes(sub) ? args.join(' ') : args.slice(2).join(' ')).toLowerCase().trim();
-      if (!val) return message.reply(`⚠️ Usage: \`.dellink <domain to remove>\``);
+      if (!val) return message.reply(`${emojis.WARNING} Usage: \`.dellink <domain to remove>\``);
 
       config.linkBlacklist = config.linkBlacklist.filter(l => l !== val);
       db.updateAutomod(guild.id, 'linkBlacklist', config.linkBlacklist);
-      return message.reply(`✅ Removed \`${val}\` from AutoMod Link Blacklist.`);
+      return message.reply(`${emojis.SUCCESS} Removed \`${val}\` from AutoMod Link Blacklist.`);
     }
 
     // .addcategory <name> [words] / .automod addcategory <name> [words]
     if (sub === 'addcategory' || (sub === 'category' && args[1]?.toLowerCase() === 'add')) {
       const name = (sub === 'addcategory' ? args[0] : args[2])?.toLowerCase().trim();
       const words = (sub === 'addcategory' ? args.slice(1) : args.slice(3)).map(w => w.toLowerCase());
-      if (!name) return message.reply(`⚠️ Usage: \`.addcategory <CategoryName> [word1 word2 ...]\``);
+      if (!name) return message.reply(`${emojis.WARNING} Usage: \`.addcategory <CategoryName> [word1 word2 ...]\``);
 
       if (!config.customCategories) config.customCategories = {};
       config.customCategories[name] = words;
       db.updateAutomod(guild.id, 'customCategories', config.customCategories);
 
-      return message.reply(`✅ Created custom AutoMod category **${name.toUpperCase()}** with **${words.length}** initial words!`);
+      return message.reply(`${emojis.SUCCESS} Created custom AutoMod category **${name.toUpperCase()}** with **${words.length}** initial words!`);
     }
 
     // .delcategory <name> / .automod delcategory <name>
     if (sub === 'delcategory' || sub === 'removecategory' || (sub === 'category' && (args[1]?.toLowerCase() === 'del' || args[1]?.toLowerCase() === 'remove'))) {
       const name = (['delcategory', 'removecategory'].includes(sub) ? args[0] : args[2])?.toLowerCase().trim();
-      if (!name) return message.reply(`⚠️ Usage: \`.delcategory <CategoryName>\``);
+      if (!name) return message.reply(`${emojis.WARNING} Usage: \`.delcategory <CategoryName>\``);
 
       if (config.customCategories && config.customCategories[name]) {
         delete config.customCategories[name];
         db.updateAutomod(guild.id, 'customCategories', config.customCategories);
-        return message.reply(`✅ Removed custom AutoMod category **${name.toUpperCase()}**.`);
+        return message.reply(`${emojis.SUCCESS} Removed custom AutoMod category **${name.toUpperCase()}**.`);
       }
-      return message.reply(`⚠️ Category \`${name}\` not found.`);
+      return message.reply(`${emojis.WARNING} Category \`${name}\` not found.`);
     }
 
     // .blacklist / .automod blacklist / .badwords
@@ -278,7 +278,7 @@ module.exports = {
     collector.on('collect', async (interaction) => {
       // Permission Check for interaction
       if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-        return interaction.reply({ content: `⚠️ Only Server Managers can edit AutoMod configuration.`, flags: 64 });
+        return interaction.reply({ content: `${emojis.WARNING} Only Server Managers can edit AutoMod configuration.`, flags: 64 });
       }
 
       // Handle Dropdown Select Menu
@@ -341,7 +341,7 @@ module.exports = {
         } else if (id === 'am_btn_malicious') {
           config.maliciousLinks = !config.maliciousLinks;
           db.updateAutomod(guild.id, 'maliciousLinks', config.maliciousLinks);
-          responseMsg = `🛡️ **Malicious Links Filter** is now **${config.maliciousLinks ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.SHIELD} **Malicious Links Filter** is now **${config.maliciousLinks ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_nsfw') {
           config.nsfwLinks = !config.nsfwLinks;
           db.updateAutomod(guild.id, 'nsfwLinks', config.nsfwLinks);

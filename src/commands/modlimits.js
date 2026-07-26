@@ -104,7 +104,7 @@ module.exports = {
     if (sub === 'disable') {
       config.enabled = false;
       modLimitsStore.set(guild.id, config);
-      return message.reply(`⚠️ Daily Moderation Action Limits are now **DISABLED**.`);
+      return message.reply(`${emojis.WARNING} Daily Moderation Action Limits are now **DISABLED**.`);
     }
 
     // .modlimits set <action> <limit> (e.g. .modlimits set ban 5)
@@ -121,7 +121,7 @@ module.exports = {
       modLimitsStore.set(guild.id, config);
 
       const embed = createStyledEmbed({
-        title: `⚙️ Daily Moderation Quota Updated`,
+        title: `${emojis.GEAR} Daily Moderation Quota Updated`,
         description: `Set daily **${action.toUpperCase()}** limit per moderator to **\`${newLimit} actions / 24hrs\`**.`,
         requestedBy: author,
         clientUser
@@ -173,7 +173,7 @@ module.exports = {
       '```\n' + boxMain.join('\n') + '\n```';
 
     const embed = createStyledEmbed({
-      title: `🛡️ Daily Moderation Action Quotas & Rate Limits`,
+      title: `${emojis.SHIELD} Daily Moderation Action Quotas & Rate Limits`,
       subtitle: `Anti-Rogue Moderator Protection Grid`,
       description,
       requestedBy: author,

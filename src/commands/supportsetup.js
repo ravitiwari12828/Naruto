@@ -183,9 +183,9 @@ module.exports = {
       const techCat = await guild.channels.create({ name: '「 ⚡ · SHINOBI DACT LABS 」', type: ChannelType.GuildCategory });
 
       await guild.channels.create({ name: '🐍・python-jutsu', type: ChannelType.GuildText, parent: techCat.id });
-      await guild.channels.create({ name: '🛡️・cyber-defense', type: ChannelType.GuildText, parent: techCat.id });
+      await guild.channels.create({ name: '${emojis.SHIELD}・cyber-defense', type: ChannelType.GuildText, parent: techCat.id });
       await guild.channels.create({ name: '⚡・javascript-jutsu', type: ChannelType.GuildText, parent: techCat.id });
-      await guild.channels.create({ name: '⚙️・java-jutsu', type: ChannelType.GuildText, parent: techCat.id });
+      await guild.channels.create({ name: '${emojis.GEAR}・java-jutsu', type: ChannelType.GuildText, parent: techCat.id });
 
       // ─────────────────────────────────────────
       // 7. CATEGORY 6: SANIN & VIP VAULT (LOCKED)
@@ -233,7 +233,7 @@ module.exports = {
       await guild.channels.create({ name: '🔊 Ichiraku Ramen VC', type: ChannelType.GuildVoice, parent: voiceCat.id });
 
       const logsCat = await guild.channels.create({
-        name: '「 🛡️ · ANBU AUDIT LOGS 」',
+        name: '「 ${emojis.SHIELD} · ANBU AUDIT LOGS 」',
         type: ChannelType.GuildCategory,
         permissionOverwrites: [
           { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -243,7 +243,7 @@ module.exports = {
       });
 
       await guild.channels.create({ name: '📢・noprefix-audit-logs', type: ChannelType.GuildText, parent: logsCat.id });
-      await guild.channels.create({ name: '🛡️・security-defense-logs', type: ChannelType.GuildText, parent: logsCat.id });
+      await guild.channels.create({ name: '${emojis.SHIELD}・security-defense-logs', type: ChannelType.GuildText, parent: logsCat.id });
 
       // ─────────────────────────────────────────
       // POPULATE EMBEDS & TICKET PANEL
@@ -327,9 +327,9 @@ module.exports = {
         clientUser
       });
 
-      return statusMsg.edit({ content: `✅ Konoha Shinobi Support Server Setup Complete!`, embeds: [completeEmbed] });
+      return statusMsg.edit({ content: `${emojis.SUCCESS} Konoha Shinobi Support Server Setup Complete!`, embeds: [completeEmbed] });
     } catch (e) {
-      return statusMsg.edit(`❌ Support server setup failed: ${e.message}`);
+      return statusMsg.edit(`${emojis.ERROR} Support server setup failed: ${e.message}`);
     }
   }
 };

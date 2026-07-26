@@ -81,15 +81,15 @@ function buildServerInfoMainEmbed(guild, owner, activeTab = 'overview', author, 
   } else if (activeTab === 'icon') {
     const iconURL = guild.iconURL({ dynamic: true, size: 1024 });
     title = `${guild.name} • Server Icon`;
-    description = iconURL ? `🖼️ **Server Icon Image**\n[Click for High-Res Original Image](${iconURL})` : `⚠️ *This server does not have an icon.*`;
+    description = iconURL ? `🖼️ **Server Icon Image**\n[Click for High-Res Original Image](${iconURL})` : `${emojis.WARNING} *This server does not have an icon.*`;
   } else if (activeTab === 'banner') {
     const bannerURL = guild.bannerURL({ dynamic: true, size: 1024 });
     title = `${guild.name} • Server Banner`;
-    description = bannerURL ? `🌆 **Server Banner Image**\n[Click for High-Res Original Image](${bannerURL})` : `⚠️ *This server does not have a banner.*`;
+    description = bannerURL ? `🌆 **Server Banner Image**\n[Click for High-Res Original Image](${bannerURL})` : `${emojis.WARNING} *This server does not have a banner.*`;
   } else if (activeTab === 'splash') {
     const splashURL = guild.splashURL({ dynamic: true, size: 1024 });
     title = `${guild.name} • Invite Splash`;
-    description = splashURL ? `🎨 **Invite Splash Image**\n[Click for High-Res Original Image](${splashURL})` : `⚠️ *This server does not have an invite splash.*`;
+    description = splashURL ? `🎨 **Invite Splash Image**\n[Click for High-Res Original Image](${splashURL})` : `${emojis.WARNING} *This server does not have an invite splash.*`;
   } else {
     // OVERVIEW
     const ownerName = owner ? owner.user.username : 'Unknown';
@@ -154,7 +154,7 @@ function buildServerInfoRow1(activeTab = 'overview') {
     new ButtonBuilder()
       .setCustomId('sinfo_features')
       .setLabel('Features')
-      .setEmoji('🛡️')
+      .setEmoji('${emojis.SHIELD}')
       .setStyle(activeTab === 'features' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('sinfo_roles')
