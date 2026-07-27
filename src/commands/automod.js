@@ -508,12 +508,13 @@ module.exports = {
       }
 
       // Handle Dropdown Select Menu
-      if (interaction.isStringSelectMenu() && interaction.customId === 'automod_category_select') {
+      if (interaction.isStringSelectMenu() && (interaction.customId === 'automod_select_tab' || interaction.customId === 'automod_category_select')) {
         const val = interaction.values[0];
 
         if (val === 'tab_misc') currentTab = 'misc';
-        else if (val === 'tab_blacklists') currentTab = 'blacklists';
+        else if (val === 'tab_words' || val === 'tab_blacklists') currentTab = 'words';
         else if (val === 'tab_antibot') currentTab = 'antibot';
+        else if (val === 'tab_overview') currentTab = 'overview';
         else currentTab = 'filters';
 
         const updatedEmbed = renderEmbedForTab(currentTab, config, guild, author, clientUser);
@@ -521,7 +522,7 @@ module.exports = {
         return interaction.update({ embeds: [updatedEmbed], components: updatedRows });
       }
 
-      // Handle Compact Emoji Buttons with Ephemeral Feedback
+      // Handle Compact Emoji Buttons with Custom Animated Emoji Ephemeral Feedback
       if (interaction.isButton()) {
         const id = interaction.customId;
         let responseMsg = '';
@@ -529,41 +530,41 @@ module.exports = {
         if (id === 'am_btn_spam') {
           config.antiSpam = !config.antiSpam;
           db.updateAutomod(guild.id, 'antiSpam', config.antiSpam);
-          responseMsg = `💬 **AntiSpam Filter** is now **${config.antiSpam ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_SPAM || '💬'} **AntiSpam Filter** is now **${config.antiSpam ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_invites') {
           config.inviteLinks = !config.inviteLinks;
           db.updateAutomod(guild.id, 'inviteLinks', config.inviteLinks);
-          responseMsg = `📢 **Invite Links Filter** is now **${config.inviteLinks ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_WEBHOOK || '📢'} **Invite Links Filter** is now **${config.inviteLinks ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_malicious') {
           config.maliciousLinks = !config.maliciousLinks;
           db.updateAutomod(guild.id, 'maliciousLinks', config.maliciousLinks);
-          responseMsg = `${emojis.SHIELD} **Malicious Links Filter** is now **${config.maliciousLinks ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_SHIELD || '🛡️'} **Malicious Links Filter** is now **${config.maliciousLinks ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_nsfw') {
           config.nsfwLinks = !config.nsfwLinks;
           db.updateAutomod(guild.id, 'nsfwLinks', config.nsfwLinks);
-          responseMsg = `🔞 **NSFW Links Filter** is now **${config.nsfwLinks ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_PANIC || '🔞'} **NSFW Links Filter** is now **${config.nsfwLinks ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_words') {
           config.profanity = !config.profanity;
           db.updateAutomod(guild.id, 'profanity', config.profanity);
-          responseMsg = `🔤 **Word Blacklist Filter** is now **${config.profanity ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_ROLE || '🔤'} **Word Blacklist Filter** is now **${config.profanity ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_confirm') {
           config.misc.moderatorConfirmation = !config.misc.moderatorConfirmation;
           db.updateAutomod(guild.id, 'misc', config.misc);
-          responseMsg = `📝 **Moderator Confirmation Messages** are now **${config.misc.moderatorConfirmation ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_WHITELIST || '📝'} **Moderator Confirmation Messages** are now **${config.misc.moderatorConfirmation ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_dm') {
           config.misc.alwaysDmPunished = !config.misc.alwaysDmPunished;
           db.updateAutomod(guild.id, 'misc', config.misc);
-          responseMsg = `📬 **Always DM Punished Members** is now **${config.misc.alwaysDmPunished ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_BOT || '📬'} **Always DM Punished Members** is now **${config.misc.alwaysDmPunished ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_anon') {
           config.misc.hideStaffIdentity = !config.misc.hideStaffIdentity;
           db.updateAutomod(guild.id, 'misc', config.misc);
-          responseMsg = `🎭 **Anonymous Staff Mode** is now **${config.misc.hideStaffIdentity ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_ROLE || '🎭'} **Anonymous Staff Mode** is now **${config.misc.hideStaffIdentity ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_purge') {
           config.misc.autoPurgeMessages = !config.misc.autoPurgeMessages;
           db.updateAutomod(guild.id, 'misc', config.misc);
-          responseMsg = `🗑️ **Auto Purge Messages of Punished Member** is now **${config.misc.autoPurgeMessages ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_BAN || '🗑️'} **Auto Purge Messages of Punished Member** is now **${config.misc.autoPurgeMessages ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_refresh') {
-          responseMsg = `🔄 AutoMod Settings Refreshed!`;
+          responseMsg = `${emojis.REFRESH || '🔄'} AutoMod Settings Refreshed!`;
         }
 
         const newEmbed = renderEmbedForTab(currentTab, config, guild, author, clientUser);
