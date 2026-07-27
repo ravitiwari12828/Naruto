@@ -17,6 +17,8 @@ module.exports = {
   QUICK_LINKS: '<a:quick_links:1530949796884512810>',
   EMOTES: '<a:emotes:1530950804146491505>',
   ACTIONS: '<a:actions:1530950799490945085>',
+  PREMIUM: '<:emoji_premium:1529532998397984790>',
+  LOCK: '<a:an_quarantine:1530948395328339998>',
 
   // --- UTILITY & STATUS EMOJIS ---
   SUCCESS: '<:emoji_green_enabled:1529377708012732506>',

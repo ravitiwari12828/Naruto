@@ -37,7 +37,7 @@ module.exports = {
       .setDescription(
         `Welcome **${author.username}**! Below is your executive management suite for **Bot Owner Controls**.\n` +
         `Type any command below in your server to execute.\n\n` +
-        `**${emojis.PREMIUM} Premium Management**\n` +
+        `**${emojis.PREMIUM || '👑'} Premium Management**\n` +
         `\`\`\`\n` +
         `.premium activate [guildId] [7d/30d/1y/lifetime]\n` +
         `.premium revoke <guildId>\n` +
@@ -45,13 +45,13 @@ module.exports = {
         `.premium revokeuser @user\n` +
         `.premium status\n` +
         `\`\`\`\n\n` +
-        `**${emojis.ANALYTICS_ZAP} No-Prefix Authorization**\n` +
+        `**${emojis.ANALYTICS_ZAP || '⚡'} No-Prefix Authorization**\n` +
         `\`\`\`\n` +
         `.noprefix add @user [7d/30d/1y/lifetime]\n` +
         `.noprefix remove @user\n` +
         `.noprefix list\n` +
         `\`\`\`\n\n` +
-        `**${emojis.LOCK} Private Lockdown & Whitelist**\n` +
+        `**${emojis.LOCK || emojis.AN_QUARANTINE || '🔒'} Private Lockdown & Whitelist**\n` +
         `\`\`\`\n` +
         `.botlock enable\n` +
         `.botlock disable\n` +
@@ -59,13 +59,13 @@ module.exports = {
         `.botlock remove <guildId>\n` +
         `.botlock list\n` +
         `\`\`\`\n\n` +
-        `**${emojis.OWNER_CROWN} Extra Owner & Security Delegation**\n` +
+        `**${emojis.OWNER_CROWN || '👑'} Extra Owner & Security Delegation**\n` +
         `\`\`\`\n` +
         `.extraowner add @user\n` +
         `.extraowner remove @user\n` +
         `.extraowner list\n` +
         `\`\`\`\n\n` +
-        `**${emojis.ANTINUKE} Emergency Panic & Executive Mass Deletion**\n` +
+        `**${emojis.ANTINUKE || '🛡️'} Emergency Panic & Executive Mass Deletion**\n` +
         `\`\`\`\n` +
         `.panicmode enable\n` +
         `.panicmode disable\n` +
@@ -74,7 +74,7 @@ module.exports = {
         `.nukechannels\n` +
         `.nukeserver\n` +
         `\`\`\`\n\n` +
-        `**${emojis.STATS_NEW || '📈'} Bot Internal Stats & Setup**\n` +
+        `**${emojis.STATS_NEW || emojis.ANALYTICS_ZAP || '📈'} Bot Internal Stats & Setup**\n` +
         `\`\`\`\n` +
         `.securesetup\n` +
         `.botstats\n` +
