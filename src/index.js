@@ -1155,6 +1155,7 @@ client.on('messageCreate', async (message) => {
   }
 
   if (message.author.bot) return;
+  const contentLower = message.content ? message.content.toLowerCase().trim() : '';
 
   // ⚡ AUTOMATIC SPAM CONTROL (Timeout 2 Minutes on Fast Message Spamming)
   if (message.guild && message.member) {
@@ -1437,9 +1438,8 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // ${emojis.SHIELD} WICK-GRADE AUTOMOD FILTERS EVALUATION
+  // 🛡️ WICK-GRADE AUTOMOD FILTERS EVALUATION
   const automod = db.getAutomod(message.guild.id);
-  const contentLower = message.content.toLowerCase();
 
   if (automod.enabled && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
     // 1. INVITE LINKS FILTER
@@ -2645,6 +2645,26 @@ client.on('interactionCreate', async (interaction) => {
 client.on('guildMemberAdd', async (member) => {
   if (!member || !member.guild) return;
 
+  // 1. AutoRole Assignment (Humans & Bots)
+  try {
+    const arConfig = db.getAutoroles(member.guild.id);
+    const isBot = member.user.bot;
+    const targetRoles = isBot ? (arConfig.bots || []) : (arConfig.humans || []);
+
+    for (const roleId of targetRoles) {
+      const role = member.guild.roles.cache.get(roleId);
+      if (role && !member.roles.cache.has(role.id)) {
+        const me = member.guild.members.me;
+        if (me && me.permissions.has(PermissionsBitField.Flags.ManageRoles) && role.position < me.roles.highest.position) {
+          await member.roles.add(role, `AutoRole Assignment (${isBot ? 'Bot' : 'Human'})`).catch(() => {});
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[AutoRole Join Error]:', e.message);
+  }
+
+  // 2. AutoNick Assignment
   const rolesCmd = client.commands.get('roles');
   if (rolesCmd && rolesCmd.getOrCreateRoleConfig) {
     const roleCfg = rolesCmd.getOrCreateRoleConfig(member.guild.id);

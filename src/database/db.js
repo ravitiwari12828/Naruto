@@ -678,6 +678,7 @@ class ResilientDatabase {
   }
 
   getAutoresponses(guildId) {
+    if (!this.data.autoresponses) this.data.autoresponses = {};
     return this.data.autoresponses[guildId] || [];
   }
 
