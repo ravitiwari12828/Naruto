@@ -42,7 +42,7 @@ async function generateAIAnswer(prompt, mode = 'general') {
   const apiKey = rawKey ? rawKey.trim().replace(/^["']|["']$/g, '') : null;
 
   if (apiKey) {
-    const models = ['gemini-1.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash'];
+    const models = ['gemini-1.5-flash-latest', 'gemini-2.0-flash', 'gemini-2.0-flash-lite', 'gemini-1.5-pro-latest'];
     for (const model of models) {
       try {
         const geminiPromise = fetchGeminiAPI(cleanPrompt, apiKey, mode, model);
@@ -52,7 +52,11 @@ async function generateAIAnswer(prompt, mode = 'general') {
           return geminiRes.trim();
         }
       } catch (err) {
-        console.log(`[Gemini API Warning (${model})]:`, err.message);
+        if (err.message.includes('429')) {
+          console.log(`[Gemini API Rate Limit (${model})]: Free tier quota exceeded. Seamlessly switching to Deep Knowledge Engine!`);
+        } else {
+          console.log(`[Gemini API Warning (${model})]:`, err.message);
+        }
       }
     }
   }
