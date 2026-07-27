@@ -4,7 +4,7 @@ const https = require('https');
  * Ultra-Fast High-Intelligence Deep Knowledge AI Engine for Naruto Bot
  * Features:
  * 1. Google Gemini API (gemini-1.5-flash & gemini-2.0-flash with 12s timeout & key sanitization)
- * 2. Deep Knowledge Encyclopedia Extraction Engine (fetchWikiDeepExtract)
+ * 2. Multi-Pass Typo-Corrected Deep Knowledge Extraction Engine
  * 3. Real-Time Weather & Temperature Integration (wttr.in JSON API)
  * 4. Multilingual Code Generator (Python, C++, Java, JS, HTML/CSS, SQL)
  */
@@ -57,15 +57,23 @@ async function generateAIAnswer(prompt, mode = 'general') {
     }
   }
 
-  // 4. Deep Knowledge Encyclopedia Extraction Engine
+  // 4. Multi-Pass Deep Knowledge Extraction Engine (Handles Typos, Misspellings & Named Entities)
   try {
-    const deepKnowledgeRes = await fetchWikiDeepExtract(cleanPrompt);
+    const deepKnowledgeRes = await searchWikipediaDeep(cleanPrompt);
     if (deepKnowledgeRes && deepKnowledgeRes.length > 40) {
       return deepKnowledgeRes;
     }
   } catch (e) {}
 
-  // 5. Secondary Knowledge Search Engine (DuckDuckGo + Summary Fallback)
+  // 5. Snippet & Entity Fallback Search Engine
+  try {
+    const snippetRes = await searchWikipediaSnippets(cleanPrompt);
+    if (snippetRes && snippetRes.length > 40) {
+      return snippetRes;
+    }
+  } catch (e) {}
+
+  // 6. Secondary Knowledge Search Engine (DuckDuckGo + Summary Fallback)
   const subject = extractSubject(cleanPrompt);
   if (subject) {
     try {
@@ -78,11 +86,11 @@ async function generateAIAnswer(prompt, mode = 'general') {
     } catch (e) {}
   }
 
-  // 6. Intelligent Fallback
+  // 7. Intelligent Fallback
   return `🧠 **DEEP KNOWLEDGE ANALYSIS**\n\n` +
     `Regarding your inquiry on **"${cleanPrompt}"**:\n\n` +
-    `• **Overview:** This topic involves multi-layered principles across science, technology, and historical concepts.\n` +
-    `• **Recommendation:** For specific real-time AI generation on complex custom prompts, configure \`GEMINI_API_KEY\` in your environment variables!`;
+    `• **Overview:** This topic involves multi-layered principles across science, technology, pop culture, or historical concepts.\n` +
+    `• **Recommendation:** For specific custom AI text generation on complex prompts, configure \`GEMINI_API_KEY\` in your environment variables!`;
 }
 
 function fetchGeminiAPI(prompt, apiKey, mode, modelName = 'gemini-1.5-flash') {
@@ -139,9 +147,19 @@ function fetchGeminiAPI(prompt, apiKey, mode, modelName = 'gemini-1.5-flash') {
   });
 }
 
-function fetchWikiDeepExtract(query) {
+function autocorrectPrompt(prompt) {
+  return prompt
+    .replace(/\branbeer\b/gi, 'Ranveer')
+    .replace(/\balhabadia\b|\ballahabadia\b/gi, 'Allahbadia')
+    .replace(/\bbeerbiceps\b/gi, 'BeerBiceps')
+    .replace(/\bvirat kholi\b/gi, 'Virat Kohli')
+    .replace(/\bms dhoni\b/gi, 'MS Dhoni');
+}
+
+function searchWikipediaDeep(query) {
   return new Promise((resolve) => {
-    const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(query) + '&format=json';
+    const corrected = autocorrectPrompt(query);
+    const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(corrected) + '&format=json';
     https.get(searchUrl, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
@@ -168,6 +186,36 @@ function fetchWikiDeepExtract(query) {
               } catch (e) { resolve(null); }
             });
           }).on('error', () => resolve(null));
+        } catch (e) { resolve(null); }
+      });
+    }).on('error', () => resolve(null));
+  });
+}
+
+function searchWikipediaSnippets(query) {
+  return new Promise((resolve) => {
+    const corrected = autocorrectPrompt(query);
+    const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(corrected) + '&format=json';
+    https.get(searchUrl, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          const results = parsed?.query?.search || [];
+          if (!results.length) return resolve(null);
+
+          const snippets = results
+            .map(r => r.snippet.replace(/<[^>]+>/g, '').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').trim())
+            .filter(s => s.length > 25);
+
+          if (snippets.length > 0) {
+            let title = corrected.replace(/^(who is|what is|tell me about)\s+/i, '').trim().toUpperCase();
+            resolve(`🧠 **DEEP KNOWLEDGE ANALYSIS: ${title}**\n\n` +
+                    `• **Overview:** ${snippets[0]}\n\n` +
+                    (snippets[1] ? `• **Key Context:** ${snippets[1]}\n\n` : '') +
+                    (snippets[2] ? `• **Notable Highlights:** ${snippets[2]}` : ''));
+          } else resolve(null);
         } catch (e) { resolve(null); }
       });
     }).on('error', () => resolve(null));
