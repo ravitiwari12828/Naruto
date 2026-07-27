@@ -230,7 +230,7 @@ const CATEGORIES = [
     description: 'Auto-role rules & massrole assignment',
     customEmoji: emojis.OBJ_GEAR,
     unicodeFallback: emojis.GEAR,
-    heading: `${emojis.GEAR || emojis.GEAR} Automations Commands`,
+    heading: `${emojis.GEAR || '⚙️'} Automations Commands`,
     commands: [
       'automation',
       'autorole config',

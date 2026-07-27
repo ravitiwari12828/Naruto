@@ -32,6 +32,8 @@ module.exports = {
   LOADING: '<a:refresh_sleek_premium:1530937141675294730>',
 
   // --- LOWERCASE & CAMELCASE ALIASES FOR ECONOMY & COMMANDS (ANIMATED DISCORD EMOJIS) ---
+  GEAR: '<:emoji_settings_gear:1529377750861742111>',
+  gear: '<:emoji_settings_gear:1529377750861742111>',
   error: '<:emoji_red_disabled:1529377739302506516>',
   success: '<:emoji_green_enabled:1529377708012732506>',
   warning: '<:emoji_warning_alert:1529377755735527465>',
