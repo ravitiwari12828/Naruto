@@ -10,7 +10,7 @@ const ENTRY_FEE = 100;
 module.exports = {
   name: 'heist',
   description: 'Start a group bank heist — others join within 20s, then the vault odds decide who gets paid.',
-  usage: '!heist',
+  usage: '.heist',
   cooldown: 30000,
   async execute(message) {
     const starter = db.economy(message.guild.id, message.author.id);

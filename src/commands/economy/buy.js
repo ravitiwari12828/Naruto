@@ -3,41 +3,44 @@ const db = require('../../database/db');
 const config = require('../../config');
 const emojis = require('../../utils/emojis');
 const items = require('../../config/items');
-const { fmt } = require('../../utils/economyCore');
+const { addItem, fmt } = require('../../utils/economyCore');
 
 module.exports = {
   name: 'buy',
   description: 'Buy a tool or consumable from the shop.',
-  usage: '!buy <item id> [amount]',
+  usage: '.buy <item id> [amount]',
   cooldown: 3000,
   async execute(message, args) {
     const itemId = (args[0] || '').toLowerCase();
     const amount = Math.max(1, parseInt(args[1], 10) || 1);
-    const shopItem = items.TOOLS[itemId] || items.CONSUMABLES[itemId];
+    const shopItem = items.findItem(itemId) || items.TOOLS[itemId] || items.CONSUMABLES[itemId] || items.RESOURCES[itemId];
+
     if (!shopItem) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} That's not a purchasable item. Check \`!shop\` for valid IDs.`)],
+        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} That item is not available for purchase. Type \`.shop\` to view valid item IDs.`)],
       });
     }
 
     const eco = db.economy(message.guild.id, message.author.id);
-    const cost = shopItem.price * amount;
-    if (eco.balance < cost) {
+    const totalCost = shopItem.price * amount;
+
+    if (totalCost > eco.balance) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You need **${fmt(cost)}** ${emojis.coin} but only have **${fmt(eco.balance)}**.`)],
+        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Insufficient wallet balance! You need **${fmt(totalCost)}** ${emojis.coin} to buy **${amount}x ${shopItem.name}**. Wallet: **${fmt(eco.balance)}** ${emojis.coin}.`)],
       });
     }
 
-    eco.balance -= cost;
-    eco.inventory[itemId] = (eco.inventory[itemId] || 0) + amount;
+    eco.balance -= totalCost;
+    addItem(eco.inventory, shopItem.id, amount);
     db.setEconomy(message.guild.id, message.author.id, eco);
 
-    await message.channel.send({
+    return message.channel.send({
       embeds: [new EmbedBuilder()
         .setColor(config.successColor)
-        .setTitle(`${emojis.success} Purchase Complete`)
-        .setDescription(`Bought **${amount}× ${shopItem.emoji} ${shopItem.name}** for **${fmt(cost)}** ${emojis.coin}.`)
-        .setFooter({ text: `Remaining balance: ${fmt(eco.balance)} coins` })],
+        .setTitle(`${emojis.money} Item Purchased!`)
+        .setDescription(`You bought **${amount}x ${shopItem.name}** ${shopItem.emoji} for **${fmt(totalCost)}** ${emojis.coin}.\n-# Check your inventory with \`.inventory\`.`)
+        .setFooter({ text: `New Wallet Balance: ${fmt(eco.balance)} ${emojis.coin}` })
+        .setTimestamp()],
     });
   },
 };

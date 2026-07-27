@@ -7,7 +7,7 @@ const { fmt } = require('../../utils/economyCore');
 module.exports = {
   name: 'beg',
   description: 'Beg for a small handful of coins (short cooldown, low reward).',
-  usage: '!beg',
+  usage: '.beg',
   cooldown: 30000,
   async execute(message) {
     const acc = db.economy(message.guild.id, message.author.id);

@@ -10,7 +10,7 @@ const PRICE = 250;
 module.exports = {
   name: 'mysterybox',
   description: 'Buy a mystery box for a random item, coins, or gems with an animated rarity reveal.',
-  usage: '!mysterybox',
+  usage: '.mysterybox',
   cooldown: 5000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);

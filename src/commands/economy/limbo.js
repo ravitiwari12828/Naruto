@@ -7,7 +7,7 @@ const { fmt } = require('../../utils/economyCore');
 module.exports = {
   name: 'limbo',
   description: 'Pick a target multiplier — if the roll beats it, you win big. Higher target = higher risk.',
-  usage: '!limbo <bet> <target multiplier e.g. 2.5>',
+  usage: '.limbo <bet> <target multiplier e.g. 2.5>',
   cooldown: 3000,
   async execute(message, args) {
     const bet = parseInt(args[0], 10);
@@ -17,7 +17,7 @@ module.exports = {
       return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Give a valid bet you can afford.`)] });
     }
     if (!target || target < 1.1 || target > 100) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Pick a target multiplier between 1.1 and 100, e.g. \`!limbo 100 2.5\`.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Pick a target multiplier between 1.1 and 100, e.g. \`.limbo 100 2.5\`.`)] });
     }
 
     // House-edge-adjusted roll: win chance is roughly 1/target (minus a small edge).

@@ -6,7 +6,7 @@ const emojis = require('../../utils/emojis');
 module.exports = {
   name: 'streak',
   description: 'View your daily/weekly claim streaks.',
-  usage: '!streak',
+  usage: '.streak',
   cooldown: 3000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);

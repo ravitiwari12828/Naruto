@@ -6,8 +6,8 @@ const items = require('../../config/items');
 
 module.exports = {
   name: 'job',
-  description: 'Choose a job — it changes your !work flavor text and pay range.',
-  usage: '!job',
+  description: 'Choose a job — it changes your .work flavor text and pay range.',
+  usage: '.job',
   cooldown: 3000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);
@@ -19,7 +19,7 @@ module.exports = {
       })));
     const row = new ActionRowBuilder().addComponents(menu);
     const sent = await message.channel.send({
-      embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle(`${emojis.work} Career Center`).setDescription('Pick a job to boost your `!work` earnings.')],
+      embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle(`${emojis.work} Career Center`).setDescription('Pick a job to boost your `.work` earnings.')],
       components: [row],
     });
     const collector = sent.createMessageComponentCollector({ time: 30000, max: 1, filter: (i) => i.user.id === message.author.id });
@@ -28,7 +28,7 @@ module.exports = {
       eco.job = i.values[0];
       db.setEconomy(message.guild.id, message.author.id, eco);
       await i.update({
-        embeds: [new EmbedBuilder().setColor(config.successColor).setTitle(`${job.emoji} You're now a ${job.name}!`).setDescription(`Use \`!work\` to earn ${job.payMin}-${job.payMax} coins per shift.`)],
+        embeds: [new EmbedBuilder().setColor(config.successColor).setTitle(`${job.emoji} You're now a ${job.name}!`).setDescription(`Use \`.work\` to earn ${job.payMin}-${job.payMax} coins per shift.`)],
         components: [],
       });
     });

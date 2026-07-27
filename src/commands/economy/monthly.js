@@ -8,7 +8,7 @@ const MONTH = 30 * 24 * 60 * 60 * 1000;
 module.exports = {
   name: 'monthly',
   description: 'Claim your monthly reward (the biggest recurring payout).',
-  usage: '!monthly',
+  usage: '.monthly',
   cooldown: 3000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);

@@ -37,11 +37,11 @@ const JOBS = {
 };
 
 const PET_SPECIES = {
-  dog: { id: 'dog', name: 'Ninken Dog', emoji: '🐕', price: 5000, perk: '+10% Hunt Reward' },
-  cat: { id: 'cat', name: 'Ninja Cat', emoji: '🐈', price: 4500, perk: '+5% Crime Success' },
-  fox: { id: 'fox', name: 'Nine-Tails Fox (Kurama)', emoji: '🦊', price: 50000, perk: '+50% All Rewards' },
-  hawk: { id: 'hawk', name: 'Messenger Hawk', emoji: '🦅', price: 8000, perk: '+15% Work Salary' },
-  toad: { id: 'toad', name: 'Mount Myoboku Toad', emoji: '🐸', price: 12000, perk: '+20% Battle Damage' }
+  dog: { id: 'dog', name: 'Ninken Dog', emoji: '🐕', price: 5000, basePower: 25, rarity: '⚪ Common', perk: '+10% Hunt Reward' },
+  cat: { id: 'cat', name: 'Ninja Cat', emoji: '🐈', price: 4500, basePower: 20, rarity: '⚪ Common', perk: '+5% Crime Success' },
+  fox: { id: 'fox', name: 'Nine-Tails Fox (Kurama)', emoji: '🦊', price: 50000, basePower: 120, rarity: '🟠 Legendary', perk: '+50% All Rewards' },
+  hawk: { id: 'hawk', name: 'Messenger Hawk', emoji: '🦅', price: 8000, basePower: 45, rarity: '🔵 Rare', perk: '+15% Work Salary' },
+  toad: { id: 'toad', name: 'Mount Myoboku Toad', emoji: '🐸', price: 12000, basePower: 70, rarity: '🟣 Epic', perk: '+20% Battle Damage' }
 };
 
 const STOCKS = {

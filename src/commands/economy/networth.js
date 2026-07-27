@@ -7,7 +7,7 @@ const { fmt } = require('../../utils/economyCore');
 module.exports = {
   name: 'networth',
   description: 'Shows your total wealth (wallet + bank).',
-  usage: '!networth [@user]',
+  usage: '.networth [@user]',
   cooldown: 3000,
   async execute(message) {
     const target = message.mentions.users.first() || message.author;

@@ -16,13 +16,13 @@ const MONSTERS = [
 module.exports = {
   name: 'battle',
   description: 'Send your active pet to battle a wild monster for coins and XP.',
-  usage: '!battle',
+  usage: '.battle',
   cooldown: 3000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);
     if (!eco.pets?.length) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You need a pet first — use \`!pet adopt\`.`)],
+        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You need a pet first — use \`.pet adopt\`.`)],
       });
     }
 

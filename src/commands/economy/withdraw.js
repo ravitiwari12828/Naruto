@@ -7,7 +7,7 @@ const { fmt } = require('../../utils/economyCore');
 module.exports = {
   name: 'withdraw',
   description: 'Withdraw coins from your bank.',
-  usage: '!withdraw <amount|all>',
+  usage: '.withdraw <amount|all>',
   async execute(message, args) {
     const eco = db.economy(message.guild.id, message.author.id);
     const amount = args[0] === 'all' ? eco.bank : parseInt(args[0], 10);
@@ -16,7 +16,7 @@ module.exports = {
       return message.reply({
         embeds: [new EmbedBuilder()
           .setColor(config.errorColor)
-          .setDescription(`${emojis.error} Enter a valid amount to withdraw (up to your bank balance of **${fmt(eco.bank)}** ${emojis.coin}).\n-# Usage: \`!withdraw <amount|all>\``)],
+          .setDescription(`${emojis.error} Enter a valid amount to withdraw (up to your bank balance of **${fmt(eco.bank)}** ${emojis.coin}).\n-# Usage: \`.withdraw <amount|all>\``)],
       });
     }
 

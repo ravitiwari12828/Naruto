@@ -7,7 +7,7 @@ const { fmt } = require('../../utils/economyCore');
 module.exports = {
   name: 'crime',
   description: 'High risk, high reward — commit a (fake) crime for coins, or get caught and pay a fine.',
-  usage: '!crime',
+  usage: '.crime',
   cooldown: 60000,
   async execute(message) {
     const acc = db.economy(message.guild.id, message.author.id);

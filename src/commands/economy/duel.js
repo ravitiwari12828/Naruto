@@ -7,7 +7,7 @@ const { fmt } = require('../../utils/economyCore');
 module.exports = {
   name: 'duel',
   description: 'Challenge another member to a coin-wager pet duel.',
-  usage: '!duel @user <bet>',
+  usage: '.duel @user <bet>',
   cooldown: 5000,
   async execute(message, args) {
     const target = message.mentions.users.first();
@@ -16,13 +16,13 @@ module.exports = {
       return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Mention someone to duel.`)] });
     }
     if (!bet || bet <= 0) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Usage: \`!duel @user <bet>\``)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Usage: \`.duel @user <bet>\``)] });
     }
 
     const challenger = db.economy(message.guild.id, message.author.id);
     const opponent = db.economy(message.guild.id, target.id);
     if (!challenger.pets?.length || !opponent.pets?.length) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Both duelists need a pet — use \`!pet adopt\`.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Both duelists need a pet — use \`.pet adopt\`.`)] });
     }
     if (challenger.balance < bet) {
       return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You don't have **${fmt(bet)}** coins to wager.`)] });

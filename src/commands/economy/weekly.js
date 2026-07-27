@@ -8,7 +8,7 @@ const WEEK = 7 * 24 * 60 * 60 * 1000;
 module.exports = {
   name: 'weekly',
   description: 'Claim your weekly reward (bigger than daily).',
-  usage: '!weekly',
+  usage: '.weekly',
   cooldown: 3000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);

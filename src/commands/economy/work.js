@@ -10,8 +10,8 @@ const GENERIC_LINES = ['delivered pizzas', 'walked dogs', 'coded a bot', 'busked
 
 module.exports = {
   name: 'work',
-  description: 'Work your job to earn coins (1 hour cooldown). Use !job to specialize.',
-  usage: '!work',
+  description: 'Work your job to earn coins (1 hour cooldown). Use .job to specialize.',
+  usage: '.work',
   cooldown: 3000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);
@@ -40,7 +40,7 @@ module.exports = {
       .setTitle(`${job?.emoji || emojis.work} ${job ? job.name : 'Work'} Shift Complete`)
       .setDescription(`You ${line} and earned **${fmt(earned)}** ${emojis.coin}!`)
       .addFields({ name: `${emojis.money} New Balance`, value: `${fmt(eco.balance)} ${emojis.coin}`, inline: true })
-      .setFooter({ text: job ? 'Use !job to switch careers anytime.' : 'Tip: use !job to pick a career for better pay.' })
+      .setFooter({ text: job ? 'Use .job to switch careers anytime.' : 'Tip: use .job to pick a career for better pay.' })
       .setTimestamp();
 
     await message.channel.send({ embeds: [embed] });

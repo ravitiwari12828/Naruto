@@ -7,7 +7,7 @@ const { fmt } = require('../../utils/economyCore');
 module.exports = {
   name: 'balance',
   description: "Shows a member's wallet and bank balance.",
-  usage: '!balance [@user]',
+  usage: '.balance [@user]',
   async execute(message) {
     const target = message.mentions.users?.first() || message.author;
     const eco = db.economy(message.guild.id, target.id);
@@ -27,7 +27,7 @@ module.exports = {
         { name: '\u200b', value: `-# Bank capacity\n${bar} ${fmt(eco.bank)}/${fmt(eco.bankLimit)}` },
         { name: `${emojis.chart} Net Worth`, value: `**${fmt(net)}** ${emojis.coin}`, inline: true },
       )
-      .setFooter({ text: 'Use !deposit or !withdraw to move coins between wallet and bank.' })
+      .setFooter({ text: 'Use .deposit or .withdraw to move coins between wallet and bank.' })
       .setTimestamp();
 
     message.channel.send({ embeds: [embed] });

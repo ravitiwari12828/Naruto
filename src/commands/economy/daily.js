@@ -11,7 +11,7 @@ const STREAK_CAP_DAYS = 50; // 50 * 15 = 750, matches the bonus cap below
 module.exports = {
   name: 'daily',
   description: 'Claim your daily reward — keep your streak alive for bigger payouts.',
-  usage: '!daily',
+  usage: '.daily',
   cooldown: 3000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);

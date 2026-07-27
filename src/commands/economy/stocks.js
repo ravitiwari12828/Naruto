@@ -5,75 +5,83 @@ const emojis = require('../../utils/emojis');
 const items = require('../../config/items');
 const { fmt } = require('../../utils/economyCore');
 
-// Simple simulated market: each ticker's price random-walks a little every
-// time it's looked up. Fully self-contained fiction — not real financial data.
-function tick(guildId) {
-  const state = db.get(`stockmarket_${guildId}`, {});
-  for (const [ticker, info] of Object.entries(items.STOCKS)) {
-    if (!state[ticker]) state[ticker] = info.price;
-    const change = (Math.random() - 0.48) * (state[ticker] * 0.08);
-    state[ticker] = Math.max(5, Math.round(state[ticker] + change));
-  }
-  db.set(`stockmarket_${guildId}`, state);
-  return state;
-}
-
 module.exports = {
   name: 'stocks',
-  description: 'View simulated stock prices, or buy/sell shares: !stocks buy TICKER amount',
-  usage: '!stocks [buy|sell TICKER amount]',
+  aliases: ['stock', 'share', 'shares'],
+  description: 'View the Leaf Village Stock Market and trade company shares.',
+  usage: '.stocks [buy|sell <ticker> <amount>]',
   cooldown: 3000,
   async execute(message, args) {
-    const prices = tick(message.guild.id);
     const sub = (args[0] || '').toLowerCase();
+    const ticker = (args[1] || '').toUpperCase();
+    const amount = parseInt(args[2], 10) || 1;
 
-    if (sub === 'buy' || sub === 'sell') {
-      const ticker = (args[1] || '').toUpperCase();
-      const amount = Math.max(1, parseInt(args[2], 10) || 1);
-      if (!items.STOCKS[ticker]) {
-        return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Unknown ticker. Valid: ${Object.keys(items.STOCKS).join(', ')}`)] });
+    const eco = db.economy(message.guild.id, message.author.id);
+    eco.stocks = eco.stocks || {};
+
+    if (sub === 'buy') {
+      const stock = items.STOCKS[ticker];
+      if (!stock) {
+        return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Invalid ticker symbol. Valid tickers: **${Object.keys(items.STOCKS).join(', ')}**`)] });
       }
 
-      const eco = db.economy(message.guild.id, message.author.id);
-      const price = prices[ticker];
-      const cost = price * amount;
-
-      if (sub === 'buy') {
-        if (eco.balance < cost) {
-          return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You need **${fmt(cost)}** ${emojis.coin} to buy ${amount} shares of ${ticker}.`)] });
-        }
-        eco.balance -= cost;
-        eco.stocks[ticker] = (eco.stocks[ticker] || 0) + amount;
-      } else {
-        if ((eco.stocks[ticker] || 0) < amount) {
-          return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You don't own **${amount}** shares of ${ticker}.`)] });
-        }
-        eco.stocks[ticker] -= amount;
-        eco.balance += cost;
+      const totalCost = stock.price * amount;
+      if (eco.balance < totalCost) {
+        return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You need **${fmt(totalCost)}** ${emojis.coin} to buy **${amount}x ${ticker}**. Wallet: **${fmt(eco.balance)}** ${emojis.coin}.`)] });
       }
+
+      eco.balance -= totalCost;
+      eco.stocks[ticker] = (eco.stocks[ticker] || 0) + amount;
       db.setEconomy(message.guild.id, message.author.id, eco);
 
       return message.channel.send({
         embeds: [new EmbedBuilder()
           .setColor(config.successColor)
-          .setTitle(`${emojis.arrowUp} ${sub === 'buy' ? 'Bought' : 'Sold'} Shares`)
-          .setDescription(`${sub === 'buy' ? 'Bought' : 'Sold'} **${amount}× ${ticker}** at **${fmt(price)}** ${emojis.coin} each — total **${fmt(cost)}** ${emojis.coin}.`)
-          .setFooter({ text: `New balance: ${fmt(eco.balance)} coins` })],
+          .setTitle(`📈 Stock Purchase Successful!`)
+          .setDescription(`Purchased **${amount}x ${ticker}** (${stock.name}) for **${fmt(totalCost)}** ${emojis.coin}.\n-# You now own **${eco.stocks[ticker]}** shares of ${ticker}.`)
+          .setFooter({ text: `New Wallet Balance: ${fmt(eco.balance)} ${emojis.coin}` })],
       });
     }
 
-    const eco = db.economy(message.guild.id, message.author.id);
-    const lines = Object.entries(items.STOCKS).map(([ticker, info]) => {
+    if (sub === 'sell') {
+      const stock = items.STOCKS[ticker];
+      if (!stock) {
+        return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Invalid ticker symbol. Valid tickers: **${Object.keys(items.STOCKS).join(', ')}**`)] });
+      }
+
       const owned = eco.stocks[ticker] || 0;
-      return `**${ticker}** (${info.name}) — ${fmt(prices[ticker])} ${emojis.coin}${owned ? ` — you own ${owned}` : ''}`;
+      if (owned < amount) {
+        return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You only own **${owned}** shares of **${ticker}**.`)] });
+      }
+
+      const totalReturn = stock.price * amount;
+      eco.stocks[ticker] -= amount;
+      if (eco.stocks[ticker] <= 0) delete eco.stocks[ticker];
+      eco.balance += totalReturn;
+      db.setEconomy(message.guild.id, message.author.id, eco);
+
+      return message.channel.send({
+        embeds: [new EmbedBuilder()
+          .setColor(config.successColor)
+          .setTitle(`📉 Stock Sale Successful!`)
+          .setDescription(`Sold **${amount}x ${ticker}** (${stock.name}) for **+${fmt(totalReturn)}** ${emojis.coin}.\n-# Remaining shares: **${eco.stocks[ticker] || 0}**`)
+          .setFooter({ text: `New Wallet Balance: ${fmt(eco.balance)} ${emojis.coin}` })],
+      });
+    }
+
+    const lines = Object.entries(items.STOCKS).map(([sym, st]) => {
+      const owned = eco.stocks[sym] || 0;
+      return `📈 **${sym}** — ${st.name}\n-# Price: **${fmt(st.price)}** ${emojis.coin} (${st.trend}) • Owned: **${owned}** • Buy: \`.stocks buy ${sym} 1\``;
     });
-    await message.channel.send({
-      embeds: [new EmbedBuilder()
-        .setColor(config.embedColor)
-        .setTitle('📈 Stock Market')
-        .setDescription(lines.join('\n'))
-        .setFooter({ text: '!stocks buy/sell <TICKER> <amount>' })
-        .setTimestamp()],
-    });
+
+    const embed = new EmbedBuilder()
+      .setColor(config.embedColor)
+      .setTitle(`📈 Leaf Village Stock Market`)
+      .setThumbnail(message.guild.iconURL({ dynamic: true }) || message.client.user.displayAvatarURL())
+      .setDescription(lines.join('\n\n'))
+      .setFooter({ text: 'Use .stocks buy <ticker> <amount> or .stocks sell <ticker> <amount>' })
+      .setTimestamp();
+
+    return message.channel.send({ embeds: [embed] });
   },
 };

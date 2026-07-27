@@ -13,7 +13,7 @@ const QUEST_POOL = [
 module.exports = {
   name: 'quest',
   description: 'View or start your daily quest for bonus coins.',
-  usage: '!quest',
+  usage: '.quest',
   cooldown: 3000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);
@@ -34,7 +34,7 @@ module.exports = {
       .setColor(complete ? config.successColor : config.embedColor)
       .setTitle(`${emojis.target} Daily Quest`)
       .setDescription(`**${q.label}**\n\n${bar}  ${Math.min(q.progress, q.target)}/${q.target}\n\nReward: **${fmt(q.reward)}** ${emojis.coin}`)
-      .setFooter({ text: complete ? (q.claimed ? 'Already claimed — check back tomorrow!' : 'Complete! Run !quest claim to collect your reward.') : 'Resets daily.' });
+      .setFooter({ text: complete ? (q.claimed ? 'Already claimed — check back tomorrow!' : 'Complete! Run .quest claim to collect your reward.') : 'Resets daily.' });
 
     if (complete && !q.claimed && message.content.split(/\s+/)[1]?.toLowerCase() === 'claim') {
       eco.balance += q.reward;

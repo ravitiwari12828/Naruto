@@ -13,19 +13,19 @@ const DESTINATIONS = [
 
 module.exports = {
   name: 'adventure',
-  description: 'Send your pet on a 30-minute adventure for a reward — claim it later with !claim.',
-  usage: '!adventure',
+  description: 'Send your pet on a 30-minute adventure for a reward — claim it later with .claim.',
+  usage: '.adventure',
   cooldown: 3000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);
     if (!eco.pets?.length) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You need a pet first — use \`!pet adopt\`.`)],
+        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You need a pet first — use \`.pet adopt\`.`)],
       });
     }
     if (eco.adventure) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(config.warnColor).setDescription(`${emojis.warning} Your pet is already on an adventure! Use \`!claim\` once it's back.`)],
+        embeds: [new EmbedBuilder().setColor(config.warnColor).setDescription(`${emojis.warning} Your pet is already on an adventure! Use \`.claim\` once it's back.`)],
       });
     }
 
@@ -41,7 +41,7 @@ module.exports = {
         .setTitle('🗺️ Adventure Started!')
         .setDescription(`**${pet.name}** set off for **${destination.name}**!`)
         .addFields({ name: `${emojis.hourglass} Reward Ready In`, value: '**30 minutes**' })
-        .setFooter({ text: 'Use !claim once your pet gets back.' })
+        .setFooter({ text: 'Use .claim once your pet gets back.' })
         .setTimestamp()],
     });
   },

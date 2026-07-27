@@ -247,9 +247,11 @@ const CATEGORIES = [
     heading: `${emojis.AUTORESPOND || '💬'} Autoresponder Commands`,
     commands: [
       'autoresponder config',
-      'ar add',
-      'ar remove',
-      'autoreact config'
+      'ar add <trigger> <reply>',
+      'ar remove <trigger>',
+      'autoreact add <trigger> <emoji>',
+      'autoreact remove <trigger>',
+      'autoreact list'
     ]
   },
   {

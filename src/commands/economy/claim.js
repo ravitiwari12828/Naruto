@@ -7,13 +7,13 @@ const { cooldownLeft, fmt } = require('../../utils/economyCore');
 module.exports = {
   name: 'claim',
   description: "Claim your pet's completed adventure reward.",
-  usage: '!claim',
+  usage: '.claim',
   cooldown: 3000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);
     if (!eco.adventure) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You don't have an adventure in progress. Start one with \`!adventure\`.`)],
+        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You don't have an adventure in progress. Start one with \`.adventure\`.`)],
       });
     }
 

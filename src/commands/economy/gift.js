@@ -18,7 +18,7 @@ module.exports = {
     const itemId = (args.find((a) => !a.startsWith('<')) || '').toLowerCase();
     const item = items.findItem(itemId);
     if (!item) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Unknown item. Check \`!inventory\` for the item id.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Unknown item. Check \`.inventory\` for the item id.`)] });
     }
 
     const amount = Math.max(1, parseInt(args[args.length - 1], 10) || 1);

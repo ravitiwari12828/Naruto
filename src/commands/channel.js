@@ -61,10 +61,11 @@ async function unhideChannelCompletely(ch, everyoneRole) {
 module.exports = {
   name: 'channel',
   description: 'Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall',
-  aliases: ['disable', 'enable', 'hide', 'unhide', 'hideall', 'unhideall', 'lock', 'lockall', 'unlockall', 'chan'],
+  aliases: ['disable', 'enable', 'hide', 'unhide', 'hideall', 'unhideall', 'lock', 'unlock', 'lockall', 'unlockall', 'chan'],
 
   async execute(message, args) {
-    const invokedName = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invokedName = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0] ? args[0].toLowerCase() : null;
 
     let clientUser = message.client.user;
@@ -72,7 +73,7 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const directAliases = ['disable', 'enable', 'hide', 'unhide', 'hideall', 'unhideall', 'lock', 'lockall', 'unlockall'];
+    const directAliases = ['disable', 'enable', 'hide', 'unhide', 'hideall', 'unhideall', 'lock', 'unlock', 'lockall', 'unlockall'];
     if (directAliases.includes(invokedName)) {
       sub = invokedName;
     }

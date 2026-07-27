@@ -8,7 +8,7 @@ const { removeItem, addItem } = require('../../utils/economyCore');
 module.exports = {
   name: 'trade',
   description: 'Propose a coin-for-item (or item-for-item) trade with another member.',
-  usage: '!trade @user <your item id> <amount> <their item id> <amount>',
+  usage: '.trade @user <your item id> <amount> <their item id> <amount>',
   cooldown: 5000,
   async execute(message, args) {
     const target = message.mentions.users.first();
@@ -22,7 +22,7 @@ module.exports = {
     const giveQty = Math.max(1, parseInt(giveAmt, 10) || 1);
     const wantQty = Math.max(1, parseInt(wantAmt, 10) || 1);
     if (!giveItem || !wantItem) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Usage: \`!trade @user <your item id> <amount> <their item id> <amount>\``)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Usage: \`.trade @user <your item id> <amount> <their item id> <amount>\``)] });
     }
 
     const embed = new EmbedBuilder()

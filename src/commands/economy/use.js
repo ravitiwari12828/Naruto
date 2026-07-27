@@ -8,13 +8,13 @@ const { removeItem } = require('../../utils/economyCore');
 module.exports = {
   name: 'use',
   description: 'Use a consumable item from your inventory.',
-  usage: '!use <item id>',
+  usage: '.use <item id>',
   cooldown: 3000,
   async execute(message, args) {
     const itemId = (args[0] || '').toLowerCase();
     const consumable = items.CONSUMABLES[itemId];
     if (!consumable) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} That's not a usable item. Check \`!inventory\`.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} That's not a usable item. Check \`.inventory\`.`)] });
     }
 
     const eco = db.economy(message.guild.id, message.author.id);
@@ -38,7 +38,7 @@ module.exports = {
         break;
       case 'bait':
         eco.guaranteedFish = true;
-        effectText = 'Your next `!fish` is guaranteed to catch something!';
+        effectText = 'Your next `.fish` is guaranteed to catch something!';
         break;
       default:
         effectText = 'Nothing seemed to happen.';

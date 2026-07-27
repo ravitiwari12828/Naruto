@@ -15,7 +15,7 @@ function rankValue(card) { return RANKS.indexOf(card.rank); }
 module.exports = {
   name: 'higherlower',
   description: 'Guess if the next card is higher or lower — cash out anytime before you lose it all.',
-  usage: '!higherlower <bet>',
+  usage: '.higherlower <bet>',
   cooldown: 5000,
   async execute(message, args) {
     const bet = parseInt(args[0], 10);

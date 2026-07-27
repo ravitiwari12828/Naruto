@@ -12,7 +12,7 @@ const PAYOUTS = { '🍒': 2, '🍋': 3, '🔔': 5, '⭐': 10, '💎': 25, '💀'
 module.exports = {
   name: 'scratchcard',
   description: 'Buy and scratch an instant-win scratchcard.',
-  usage: '!scratchcard',
+  usage: '.scratchcard',
   cooldown: 5000,
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);

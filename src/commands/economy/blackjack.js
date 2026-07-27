@@ -31,26 +31,27 @@ function handValue(hand) {
 }
 
 function fmtHand(hand, hideSecond = false) {
-  if (hideSecond) return `${hand[0].r}${hand[0].s} 🂠`;
-  return hand.map(c => `${c.r}${c.s}`).join(' ');
+  if (hideSecond) return `\`[ ${hand[0].s} ${hand[0].r} ]\` \`[ 🎴 ? ]\``;
+  return hand.map(c => `\`[ ${c.s} ${c.r} ]\``).join(' ');
 }
 
 module.exports = {
   name: 'blackjack',
-  description: 'Play a hand of Blackjack against the dealer for coins.',
-  usage: '!blackjack <bet>',
+  aliases: ['bj'],
+  description: 'Play an interactive hand of Blackjack against the dealer for coins.',
+  usage: '.blackjack <bet>',
   cooldown: 3000,
   async execute(message, args) {
-    const bet = parseInt(args[0], 10);
+    let bet = parseInt(args[0], 10);
     const eco = db.economy(message.guild.id, message.author.id);
     if (!bet || bet <= 0) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Give me a valid bet, e.g. \`!blackjack 100\`.`)],
+        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Specify a valid bet, e.g. \`.blackjack 100\`.`)],
       });
     }
     if (bet > eco.balance) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You don't have that many coins in your wallet. Wallet: **${fmt(eco.balance)}** ${emojis.coin}.`)],
+        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You don't have enough coins in your wallet. Wallet: **${fmt(eco.balance)}** ${emojis.coin}.`)],
       });
     }
 
@@ -59,60 +60,84 @@ module.exports = {
     const dealer = [deck.pop(), deck.pop()];
 
     const render = (finished, resultText = null) => new EmbedBuilder()
-      .setColor(resultText ? (resultText.includes(emojis.success) ? config.successColor : resultText.includes(emojis.error) ? config.errorColor : config.warnColor) : config.embedColor)
-      .setTitle(`${emojis.cards} Blackjack`)
-      .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
+      .setColor(resultText ? (resultText.includes('win') || resultText.includes('Blackjack') ? config.successColor : resultText.includes('lose') || resultText.includes('Bust') ? config.errorColor : config.warnColor) : config.embedColor)
+      .setAuthor({ name: `${message.author.username}'s Blackjack Game`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+      .setTitle(`🃏 OwO Blackjack Table`)
       .addFields(
-        { name: `Dealer's Hand${finished ? ` (${handValue(dealer)})` : ''}`, value: fmtHand(dealer, !finished) },
-        { name: `Your Hand (${handValue(player)})`, value: fmtHand(player) },
+        { name: `🤖 Dealer (${finished ? handValue(dealer) : '?'})`, value: fmtHand(dealer, !finished), inline: false },
+        { name: `👤 You (${handValue(player)})`, value: fmtHand(player), inline: false },
       )
-      .setDescription(resultText || 'Hit to draw another card, or Stand to let the dealer play.')
-      .setFooter({ text: `Bet: ${fmt(bet)} ${emojis.coin} • Wallet: ${fmt(eco.balance)} coins` });
+      .setDescription(resultText || 'Hit to draw a card, Stand to stay, or Double your bet!')
+      .setFooter({ text: `Current Bet: ${fmt(bet)} ${emojis.coin} • Wallet: ${fmt(eco.balance)} coins` })
+      .setTimestamp();
 
-    const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('bj_hit').setLabel('Hit').setEmoji('🃏').setStyle(ButtonStyle.Primary),
-      new ButtonBuilder().setCustomId('bj_stand').setLabel('Stand').setEmoji('✋').setStyle(ButtonStyle.Secondary),
-    );
+    const getRow = (canDouble) => {
+      const r = new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId('bj_hit').setLabel('Hit').setEmoji('🃏').setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId('bj_stand').setLabel('Stand').setEmoji('🛑').setStyle(ButtonStyle.Success),
+      );
+      if (canDouble && eco.balance >= bet * 2) {
+        r.addComponents(new ButtonBuilder().setCustomId('bj_double').setLabel('Double').setEmoji('🪙').setStyle(ButtonStyle.Warning));
+      }
+      return r;
+    };
 
     if (handValue(player) === 21) {
-      eco.balance += Math.floor(bet * 1.5);
+      const winAmount = Math.floor(bet * 1.5);
+      eco.balance += winAmount;
       db.setEconomy(message.guild.id, message.author.id, eco);
-      return message.channel.send({ embeds: [render(true, `${emojis.success} **Blackjack!** You win **${fmt(Math.floor(bet * 1.5))}** coins!`)] });
+      return message.channel.send({ embeds: [render(true, `${emojis.success} **BLACKJACK!** You won **+${fmt(winAmount)}** ${emojis.coin}!`)] });
     }
 
-    const sent = await message.channel.send({ embeds: [render(false)], components: [row] });
-    const collector = sent.createMessageComponentCollector({ time: 30000 });
+    const sent = await message.channel.send({ embeds: [render(false)], components: [getRow(true)] });
+    const collector = sent.createMessageComponentCollector({ time: 45000 });
 
-    const finish = async (i) => {
-      let resultText;
+    const finish = async (i, finalBet = bet) => {
       let dealerValue = handValue(dealer);
       while (dealerValue < 17) { dealer.push(deck.pop()); dealerValue = handValue(dealer); }
       const playerValue = handValue(player);
 
       let delta;
-      if (playerValue > 21) { delta = -bet; resultText = `${emojis.error} Bust! You lose **${fmt(bet)}** coins.`; }
-      else if (dealerValue > 21) { delta = bet; resultText = `${emojis.success} Dealer busts! You win **${fmt(bet)}** coins!`; }
-      else if (playerValue > dealerValue) { delta = bet; resultText = `${emojis.success} You win **${fmt(bet)}** coins!`; }
-      else if (playerValue < dealerValue) { delta = -bet; resultText = `${emojis.error} Dealer wins. You lose **${fmt(bet)}** coins.`; }
-      else { delta = 0; resultText = `${emojis.info} Push — bet returned.`; }
+      let resultText;
+      if (playerValue > 21) {
+        delta = -finalBet;
+        resultText = `${emojis.error} **Bust (${playerValue})!** You lost **-${fmt(finalBet)}** ${emojis.coin}.`;
+      } else if (dealerValue > 21) {
+        delta = finalBet;
+        resultText = `${emojis.success} **Dealer Bust (${dealerValue})!** You won **+${fmt(finalBet)}** ${emojis.coin}!`;
+      } else if (playerValue > dealerValue) {
+        delta = finalBet;
+        resultText = `${emojis.success} **You Won!** (${playerValue} vs ${dealerValue}) You won **+${fmt(finalBet)}** ${emojis.coin}!`;
+      } else if (playerValue < dealerValue) {
+        delta = -finalBet;
+        resultText = `${emojis.error} **Dealer Won!** (${dealerValue} vs ${playerValue}) You lost **-${fmt(finalBet)}** ${emojis.coin}.`;
+      } else {
+        delta = 0;
+        resultText = `${emojis.info} **Push!** Both scored ${playerValue}. Bet returned.`;
+      }
 
       eco.balance += delta;
       db.setEconomy(message.guild.id, message.author.id, eco);
-      const disabledRow = new ActionRowBuilder().addComponents(
-        ButtonBuilder.from(row.components[0]).setDisabled(true),
-        ButtonBuilder.from(row.components[1]).setDisabled(true),
-      );
-      await i.update({ embeds: [render(true, resultText)], components: [disabledRow] });
+
+      await i.update({ embeds: [render(true, resultText)], components: [] });
       collector.stop();
     };
 
     collector.on('collect', async (i) => {
-      if (i.user.id !== message.author.id) return i.reply({ content: `${emojis.error} This isn't your game.`, ephemeral: true });
+      if (i.user.id !== message.author.id) return i.reply({ content: `${emojis.error} This is not your game.`, ephemeral: true });
+
       if (i.customId === 'bj_hit') {
         player.push(deck.pop());
         if (handValue(player) >= 21) return finish(i);
-        return i.update({ embeds: [render(false)], components: [row] });
+        return i.update({ embeds: [render(false)], components: [getRow(false)] });
       }
+
+      if (i.customId === 'bj_double') {
+        bet *= 2;
+        player.push(deck.pop());
+        return finish(i, bet);
+      }
+
       return finish(i);
     });
 

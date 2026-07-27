@@ -17,7 +17,7 @@ const RECIPES = {
 module.exports = {
   name: 'craft',
   description: 'Craft a tier-2 tool from gathered resources instead of buying it.',
-  usage: '!craft <rod|bow|drill|chainsaw|drillrig>',
+  usage: '.craft <rod|bow|drill|chainsaw|drillrig>',
   cooldown: 3000,
   async execute(message, args) {
     const key = (args[0] || '').toLowerCase();

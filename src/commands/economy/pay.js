@@ -7,14 +7,14 @@ const { fmt } = require('../../utils/economyCore');
 module.exports = {
   name: 'pay',
   description: 'Pay coins to another member.',
-  usage: '!pay @user <amount>',
+  usage: '.pay @user <amount>',
   async execute(message, args) {
     const target = message.mentions.users?.first();
     if (!target || target.id === message.author.id) {
       return message.reply({
         embeds: [new EmbedBuilder()
           .setColor(config.errorColor)
-          .setDescription(`${emojis.error} Mention a valid member to pay.\n-# Usage: \`!pay @user <amount>\``)],
+          .setDescription(`${emojis.error} Mention a valid member to pay.\n-# Usage: \`.pay @user <amount>\``)],
       });
     }
 

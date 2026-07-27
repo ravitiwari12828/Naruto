@@ -19,7 +19,7 @@ module.exports = {
       return message.reply({ embeds: [new EmbedBuilder().setColor(config.warnColor).setDescription(`${emojis.hourglass} Already collected. Try again in **${cd.text}**.`)] });
     }
     if (eco.bank <= 0) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You have nothing banked. Use \`!deposit\` first — interest only applies to banked coins.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} You have nothing banked. Use \`.deposit\` first — interest only applies to banked coins.`)] });
     }
 
     const earned = Math.max(1, Math.floor(eco.bank * RATE));

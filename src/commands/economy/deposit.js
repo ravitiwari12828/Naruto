@@ -7,7 +7,7 @@ const { fmt } = require('../../utils/economyCore');
 module.exports = {
   name: 'deposit',
   description: 'Deposit coins into your bank.',
-  usage: '!deposit <amount|all>',
+  usage: '.deposit <amount|all>',
   async execute(message, args) {
     const eco = db.economy(message.guild.id, message.author.id);
     const amount = args[0] === 'all' ? eco.balance : parseInt(args[0], 10);
@@ -16,7 +16,7 @@ module.exports = {
       return message.reply({
         embeds: [new EmbedBuilder()
           .setColor(config.errorColor)
-          .setDescription(`${emojis.error} Enter a valid amount to deposit (up to your wallet balance of **${fmt(eco.balance)}** ${emojis.coin}).\n-# Usage: \`!deposit <amount|all>\``)],
+          .setDescription(`${emojis.error} Enter a valid amount to deposit (up to your wallet balance of **${fmt(eco.balance)}** ${emojis.coin}).\n-# Usage: \`.deposit <amount|all>\``)],
       });
     }
 
