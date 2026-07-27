@@ -272,11 +272,11 @@ function buildMusicActionRows(player = null) {
     .setMinValues(1)
     .setMaxValues(5)
     .addOptions([
-      { label: 'Reset Filters', value: 'filter_reset', description: 'Disable all active audio effects', emoji: '🚫' },
-      { label: 'Bass Boost', value: 'filter_bassboost', description: 'Deep, rich low-frequency amplification', emoji: '🔊' },
-      { label: '8D Audio', value: 'filter_8d', description: 'Immersive 360-degree spatial audio panning', emoji: '🎧' },
-      { label: 'Nightcore', value: 'filter_nightcore', description: 'Upbeat tempo & increased vocal pitch', emoji: '🌙' },
-      { label: 'Vaporwave', value: 'filter_vaporwave', description: 'Slowed aesthetic retro synthwave vibe', emoji: '☁️' }
+      { label: 'Reset Filters', value: 'filter_reset', description: 'Disable all active audio effects', emoji: emojis.OBJ_AN_RESET_FILTER || '🚫' },
+      { label: 'Bass Boost', value: 'filter_bassboost', description: 'Deep, rich low-frequency amplification', emoji: emojis.OBJ_AN_BASSBOOST || '🔊' },
+      { label: '8D Audio', value: 'filter_8d', description: 'Immersive 360-degree spatial audio panning', emoji: emojis.OBJ_AN_8D_AUDIO || '🎧' },
+      { label: 'Nightcore', value: 'filter_nightcore', description: 'Upbeat tempo & increased vocal pitch', emoji: emojis.OBJ_AN_NIGHTCORE || '🌙' },
+      { label: 'Vaporwave', value: 'filter_vaporwave', description: 'Slowed aesthetic retro synthwave vibe', emoji: emojis.OBJ_AN_VAPORWAVE || '☁️' }
     ]);
 
   const row5 = new ActionRowBuilder().addComponents(filterSelect);

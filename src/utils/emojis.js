@@ -178,6 +178,19 @@ module.exports = {
   OBJ_AN_CLEAR: { name: 'an_clear', id: '1531155961409044580', animated: true },
   OBJ_AN_LOOP: { name: 'an_loop', id: '1531155966224105542', animated: true },
 
+  // --- AUDIO FILTER ANIMATED DISCORD EMOJIS ---
+  AN_VAPORWAVE: '<a:an_vaporwave:1531159067362594890>',
+  AN_RESET_FILTER: '<a:an_reset_filter:1531159065038819502>',
+  AN_NIGHTCORE: '<a:an_nightcore:1531159062929215679>',
+  AN_BASSBOOST: '<a:an_bassboost:1531159060572012735>',
+  AN_8D_AUDIO: '<a:an_8d_audio:1531159057136615539>',
+
+  OBJ_AN_VAPORWAVE: { name: 'an_vaporwave', id: '1531159067362594890', animated: true },
+  OBJ_AN_RESET_FILTER: { name: 'an_reset_filter', id: '1531159065038819502', animated: true },
+  OBJ_AN_NIGHTCORE: { name: 'an_nightcore', id: '1531159062929215679', animated: true },
+  OBJ_AN_BASSBOOST: { name: 'an_bassboost', id: '1531159060572012735', animated: true },
+  OBJ_AN_8D_AUDIO: { name: 'an_8d_audio', id: '1531159057136615539', animated: true },
+
   OBJ_LOCK: { name: 'an_quarantine', id: '1530948395328339998', animated: true },
   OBJ_UNLOCK: { name: 'an_joingate', id: '1530948378823888937', animated: true },
   OBJ_HIDE: { name: 'an_webhook', id: '1530948419164569721', animated: true },
