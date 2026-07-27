@@ -92,8 +92,8 @@ module.exports = {
     try {
       const aiResponse = await generateAIAnswer(query, mode);
 
-      const statusBox = createDynamicBox('PRIORITY AI SUMMARY', [
-        { key: 'Task  ', value: mode === 'code' ? 'Code Compiler' : 'Sage AI Engine' },
+      const statusBox = createDynamicBox('AI RESPONSE SUMMARY', [
+        { key: 'Engine', value: mode === 'code' ? 'Code Compiler' : 'Sage AI Engine' },
         { key: 'Status', value: '🟢 Completed' }
       ]);
 
@@ -105,6 +105,7 @@ module.exports = {
           aiResponse.slice(0, 3500),
         requestedBy: message.author,
         clientUser,
+        showThumbnail: false,
         footerText: 'Powered by Naruto One Priority AI'
       });
 
