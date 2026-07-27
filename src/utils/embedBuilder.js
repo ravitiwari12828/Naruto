@@ -33,12 +33,14 @@ function createStyledEmbed({
   thumbnailUrl = null,
   color = ACCENT_COLOR
 }) {
-  let botUserObj = clientUser || (requestedBy && requestedBy.client ? requestedBy.client.user : null);
-  let clientRef = (botUserObj && botUserObj.client) ? botUserObj.client : (requestedBy ? requestedBy.client : null);
-
-  let botIcon = (botUserObj && typeof botUserObj.displayAvatarURL === 'function')
-    ? botUserObj.displayAvatarURL({ dynamic: true, size: 512 })
-    : null;
+  let botUserObj = clientUser;
+  if (!botUserObj && requestedBy) {
+    if (requestedBy.client && requestedBy.client.user) {
+      botUserObj = requestedBy.client.user;
+    } else if (typeof requestedBy.displayAvatarURL === 'function') {
+      botUserObj = requestedBy;
+    }
+  }
 
   const embed = new EmbedBuilder().setColor(color);
 

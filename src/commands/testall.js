@@ -52,24 +52,23 @@ module.exports = {
     for (const cmd of testList) {
       try {
         // Create mock context that intercepts sends/replies without spamming Discord
-        const mockMessage = {
-          ...message,
-          author: dummyUser,
-          member: dummyMember,
-          guild: dummyGuild,
-          channel: {
-            ...message.channel,
-            send: async () => ({ edit: async () => {}, delete: async () => {}, createMessageComponentCollector: () => ({ on: () => {}, stop: () => {} }) }),
-            sendTyping: async () => {}
-          },
-          reply: async () => ({ edit: async () => {} }),
-          mentions: {
-            users: new Map([[dummyUser.id, dummyUser]]),
-            members: new Map([[dummyUser.id, dummyMember]]),
-            channels: new Map([[message.channel.id, message.channel]]),
-            roles: new Map()
-          },
-          content: `.${cmd.name} ${dummyUser.id} 100 test`
+        const mockMessage = Object.create(message);
+        mockMessage.author = dummyUser;
+        mockMessage.member = dummyMember;
+        mockMessage.guild = dummyGuild;
+        mockMessage.client = message.client;
+        mockMessage.content = `.${cmd.name} ${dummyUser.id} 100 test`;
+        mockMessage.channel = {
+          ...message.channel,
+          send: async () => ({ edit: async () => {}, delete: async () => {}, createMessageComponentCollector: () => ({ on: () => {}, stop: () => {} }) }),
+          sendTyping: async () => {}
+        };
+        mockMessage.reply = async () => ({ edit: async () => {} });
+        mockMessage.mentions = {
+          users: new Map([[dummyUser.id, dummyUser]]),
+          members: new Map([[dummyUser.id, dummyMember]]),
+          channels: new Map([[message.channel.id, message.channel]]),
+          roles: new Map()
         };
 
         // Dummy arguments array
