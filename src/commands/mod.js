@@ -801,8 +801,52 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 15. ${emojis.SHIELD} CASE / CASES / MODLOGS (.case <id> | .cases [@user])
-    if (['case', 'cases', 'modlogs', 'caseinfo'].includes(invoked)) {
+    // 15. 🛡️ CASE / CASES / MODLOGS (.case <id> | .cases [@user] | .modlogs [#channel])
+    if (['case', 'cases', 'modlogs', 'modlog', 'caseinfo'].includes(invoked)) {
+      const targetChan = message.mentions.channels.first();
+      const firstArg = args[0]?.toLowerCase();
+
+      // IF USER MENTIONS A CHANNEL OR TYPES .modlogs #channel / .modlog set #channel -> CONFIGURE LOG CHANNEL
+      if (targetChan || firstArg === 'set' || firstArg === 'channel') {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return message.reply(`${emojis.WARNING} Only Administrators can configure moderation log channels.`);
+        }
+
+        const chanToSet = targetChan || message.guild.channels.cache.get(args[1] || args[0]);
+        if (!chanToSet) {
+          return message.reply(`${emojis.WARNING} Usage: \`.modlogs #channel\` or \`.modlogs set #channel\``);
+        }
+
+        const logsetupCmd = message.client.commands.get('logsetup');
+        if (logsetupCmd && logsetupCmd.loggingConfigs) {
+          const cfg = logsetupCmd.loggingConfigs.get(guild.id) || { enabled: true, mode: 'specialized' };
+          cfg.modLogs = chanToSet.id;
+          logsetupCmd.loggingConfigs.set(guild.id, cfg);
+        }
+
+        const automod = db.getAutomod(guild.id);
+        automod.modlogsChannelId = chanToSet.id;
+        db.updateAutomod(guild.id, 'misc', automod.misc || {});
+
+        const { createDynamicBox } = require('../utils/boxBuilder');
+        const box = createDynamicBox('MODLOGS CHANNEL SET', [
+          { key: 'Channel', value: '#' + chanToSet.name.slice(0, 14) },
+          { key: 'Status ', value: 'Active [OK]' },
+          { key: 'Module ', value: 'Moderation Audit Logs' }
+        ]);
+
+        const embed = createStyledEmbed({
+          title: `${emojis.MOD || '🛡️'} Moderation Log Channel Configured`,
+          description:
+            `Successfully set **${chanToSet}** as the primary Moderation Audit Log channel for **${guild.name}**!\n\n` +
+            '```\n' + box + '\n```',
+          requestedBy: message.author,
+          clientUser
+        });
+
+        return message.channel.send({ embeds: [embed] });
+      }
+
       const targetUser = message.mentions.users.first();
       const caseIdInput = args[0] && !isNaN(args[0]) ? parseInt(args[0]) : null;
 
@@ -824,7 +868,7 @@ module.exports = {
         return message.channel.send({ embeds: [embed] });
       }
 
-      const userId = targetUser ? targetUser.id : (args[0] && args[0].length > 10 ? args[0] : null);
+      const userId = targetUser ? targetUser.id : (args[0] && args[0].length > 15 && !isNaN(args[0]) ? args[0] : null);
       if (userId) {
         const userCases = db.getUserCases(guild.id, userId);
         if (userCases.length === 0) return message.reply(`${emojis.INFO} No moderation cases found for <@${userId}>.`);

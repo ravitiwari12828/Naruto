@@ -372,10 +372,32 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
         `\`\`\`\n` +
         `.cuddle .hug .kiss .lick .nom .pat .poke .slap .stare .highfive .bite .greet .punch .handholding .tickle .kill .hold .pats .wave .boop .snuggle .bully\n` +
         `\`\`\``
-
       )
       .setFooter({
         text: `Requested by ${message.author.username} • Total 59 commands`,
+        iconURL: message.author.displayAvatarURL({ dynamic: true })
+      });
+
+    if (devPortalBanner) embed.setImage(devPortalBanner);
+    return embed;
+  }
+
+  if (cat.value === 'welcome') {
+    const embed = new EmbedBuilder()
+      .setColor(0x7E0808)
+      .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
+      .setTitle(`${emojis.CELEBRATION || '🍥'} Naruto One Help & Command Center`)
+      .setDescription(
+        `Welcome **${message.author.username}**! Below is the executive suite for **Naruto One**.\n` +
+        `Use the dropdown menu below to explore all modules, settings & features.\n\n` +
+        `**📌 Quick Feature Highlights:**\n` +
+        `• **Wick-Grade Security**: AntiNuke, AntiRaid, AntiSpam, AntiBot & Join Gate.\n` +
+        `• **High-Fidelity Audio**: Spotify, YouTube & SoundCloud player with Filters.\n` +
+        `• **Automation Grid**: AutoRole, AutoResponder, AutoReact & VoiceMaster.\n` +
+        `• **Naruto RPG**: Shinobi ranks, Chakra leveling & Jutsu battles!`
+      )
+      .setFooter({
+        text: `Requested by ${message.author.username} • Type .help <module> for specific commands`,
         iconURL: message.author.displayAvatarURL({ dynamic: true })
       });
 
@@ -388,7 +410,6 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     const embed = new EmbedBuilder()
       .setColor(0x7E0808)
       .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
-      .setThumbnail(botAvatarURL)
       .setTitle(`🎶 Music Player Suite & Control Panel`)
       .setDescription(
         `Welcome **${message.author.username}**! Below is the executive suite for **Music**.\n\n` +
@@ -438,7 +459,6 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   const embed = new EmbedBuilder()
     .setColor(0x7E0808)
     .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
-    .setThumbnail(botAvatarURL)
     .setTitle(`${cat.heading}`)
     .setDescription(
       `Welcome **${message.author.username}**! Below is the executive suite for **${cat.label}**.\n` +
