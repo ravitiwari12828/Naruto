@@ -131,10 +131,10 @@ function buildMusicPlayerEmbed(track, player) {
   const durationStr = formatDuration(durationMs);
   const artworkUrl = track?.info?.artworkUrl || track?.pluginInfo?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
 
-  const cleanTitle = String(title).length > 25 ? String(title).slice(0, 23) + '…' : String(title);
-  const cleanArtist = String(artist).length > 25 ? String(artist).slice(0, 23) + '…' : String(artist);
+  const cleanTitle = String(title).length > 15 ? String(title).slice(0, 14) + '…' : String(title);
+  const cleanArtist = String(artist).length > 15 ? String(artist).slice(0, 14) + '…' : String(artist);
 
-  const innerW = 36;
+  const innerW = 28;
   const topBorder = '╭' + '─'.repeat(innerW + 2) + '╮';
   const midBorder = '├' + '─'.repeat(innerW + 2) + '┤';
   const botBorder = '╰' + '─'.repeat(innerW + 2) + '╯';
