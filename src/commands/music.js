@@ -131,10 +131,10 @@ function buildMusicPlayerEmbed(track, player) {
   const durationStr = formatDuration(durationMs);
   const artworkUrl = track?.info?.artworkUrl || track?.pluginInfo?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
 
-  const cleanTitle = String(title).length > 11 ? String(title).slice(0, 10) + '…' : String(title);
-  const cleanArtist = String(artist).length > 11 ? String(artist).slice(0, 10) + '…' : String(artist);
+  const cleanTitle = String(title).length > 9 ? String(title).slice(0, 8) + '…' : String(title);
+  const cleanArtist = String(artist).length > 9 ? String(artist).slice(0, 8) + '…' : String(artist);
 
-  const innerW = 20;
+  const innerW = 16;
   const topBorder = '╭' + '─'.repeat(innerW + 2) + '╮';
   const midBorder = '├' + '─'.repeat(innerW + 2) + '┤';
   const botBorder = '╰' + '─'.repeat(innerW + 2) + '╯';
@@ -154,7 +154,7 @@ function buildMusicPlayerEmbed(track, player) {
     '│ Title  : ' + padEnd(cleanTitle, innerW - 10) + ' │',
     '│ Artist : ' + padEnd(cleanArtist, innerW - 10) + ' │',
     '│ Time   : ' + padEnd(durationStr, innerW - 10) + ' │',
-    '│ Status : ' + padEnd('STREAMING', innerW - 10) + ' │',
+    '│ Status : ' + padEnd('LIVE', innerW - 10) + ' │',
     botBorder
   ];
 
