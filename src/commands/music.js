@@ -129,42 +129,20 @@ function buildMusicPlayerEmbed(track, player) {
   const artist = track?.info?.author || 'Unknown Artist';
   const durationMs = track?.info?.duration || 0;
   const durationStr = formatDuration(durationMs);
-  const artworkUrl = track?.info?.artworkUrl || track?.pluginInfo?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
 
-  const cleanTitle = String(title).length > 9 ? String(title).slice(0, 8) + '…' : String(title);
-  const cleanArtist = String(artist).length > 9 ? String(artist).slice(0, 8) + '…' : String(artist);
+  const { createDynamicBox } = require('../utils/boxBuilder');
 
-  const innerW = 16;
-  const topBorder = '╭' + '─'.repeat(innerW + 2) + '╮';
-  const midBorder = '├' + '─'.repeat(innerW + 2) + '┤';
-  const botBorder = '╰' + '─'.repeat(innerW + 2) + '╯';
-
-  const padCenter = (str, w) => {
-    const pad = Math.max(0, w - str.length);
-    const left = Math.floor(pad / 2);
-    return ' '.repeat(left) + str + ' '.repeat(pad - left);
-  };
-
-  const padEnd = (str, w) => str + ' '.repeat(Math.max(0, w - str.length));
-
-  const boxLines = [
-    topBorder,
-    '│ ' + padCenter('TRACK INFO', innerW) + ' │',
-    midBorder,
-    '│ Title  : ' + padEnd(cleanTitle, innerW - 10) + ' │',
-    '│ Artist : ' + padEnd(cleanArtist, innerW - 10) + ' │',
-    '│ Time   : ' + padEnd(durationStr, innerW - 10) + ' │',
-    '│ Status : ' + padEnd('LIVE', innerW - 10) + ' │',
-    botBorder
-  ];
-
-  const boxText = '```\n' + boxLines.join('\n') + '\n```';
+  const boxText = createDynamicBox('TRACK INFORMATION', [
+    { key: 'Title   ', value: title.length > 25 ? title.slice(0, 23) + '…' : title },
+    { key: 'Artist  ', value: artist.length > 25 ? artist.slice(0, 23) + '…' : artist },
+    { key: 'Duration', value: durationStr },
+    { key: 'Playback', value: 'STREAMING NOW' }
+  ]);
 
   return new EmbedBuilder()
     .setColor(0xFF007F)
     .setTitle(`${emojis.MUSIC || '🎶'} Now Playing`)
-    .setThumbnail(artworkUrl)
-    .setDescription(boxText + `\n*Currently streaming in voice channel*`);
+    .setDescription('```\n' + boxText + '\n```\n*Currently streaming in voice channel*');
 }
 
 const { isGuildPremium, isUserPremium } = require('./premium');
