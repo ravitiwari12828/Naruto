@@ -302,21 +302,17 @@ module.exports = {
           db.updateAutomod(guild.id, 'whitelistedBots', config.whitelistedBots);
         }
 
-        const boxLines = [
-          '╭──────────────────────────╮',
-          '│    ANTIBOT WHITELIST     │',
-          '├──────────────────────────┤',
-          formatBoxLine('Action', 'WHITELIST'),
-          formatBoxLine('Bot', ('@' + targetUser.username).slice(0, 13)),
-          formatBoxLine('Status', 'Authorized'),
-          '╰──────────────────────────╯'
-        ];
+        const box = createDynamicBox('ANTIBOT WHITELIST', [
+          { key: 'Action', value: 'WHITELIST' },
+          { key: 'Bot   ', value: ('@' + targetUser.username).slice(0, 13) },
+          { key: 'Status', value: 'Authorized' }
+        ]);
 
         const embed = createStyledEmbed({
-          title: `${emojis.BOT || '🤖'} AntiBot Whitelist Updated`,
+          title: `${emojis.AN_BOT || emojis.BOT || '🤖'} AntiBot Whitelist Updated`,
           description:
             `Successfully whitelisted **${targetUser.tag}**! It is now authorized to join and exist in **${guild.name}**.\n\n` +
-            '```\n' + boxLines.join('\n') + '\n```',
+            '```\n' + box + '\n```',
           requestedBy: author,
           clientUser
         });
@@ -335,21 +331,17 @@ module.exports = {
           db.updateAutomod(guild.id, 'whitelistedBots', config.whitelistedBots);
         }
 
-        const boxLines = [
-          '╭──────────────────────────╮',
-          '│    ANTIBOT WHITELIST     │',
-          '├──────────────────────────┤',
-          formatBoxLine('Action', 'UNWHITELIST'),
-          formatBoxLine('Bot', ('@' + targetUser.username).slice(0, 13)),
-          formatBoxLine('Status', 'Revoked'),
-          '╰──────────────────────────╯'
-        ];
+        const box = createDynamicBox('ANTIBOT WHITELIST', [
+          { key: 'Action', value: 'UNWHITELIST' },
+          { key: 'Bot   ', value: ('@' + targetUser.username).slice(0, 13) },
+          { key: 'Status', value: 'Revoked' }
+        ]);
 
         const embed = createStyledEmbed({
-          title: `${emojis.BOT || '🤖'} AntiBot Whitelist Removed`,
+          title: `${emojis.AN_BOT || emojis.BOT || '🤖'} AntiBot Whitelist Removed`,
           description:
             `Removed **${targetUser.tag}** from the authorized bot whitelist.\n\n` +
-            '```\n' + boxLines.join('\n') + '\n```',
+            '```\n' + box + '\n```',
           requestedBy: author,
           clientUser
         });
@@ -359,21 +351,17 @@ module.exports = {
 
       // .antibot list / .antibot status / .antibot
       const botList = (config.whitelistedBots || []).map(id => `<@${id}>`).join(', ') || '*No bots whitelisted.*';
-      const boxLines = [
-        '╭──────────────────────────╮',
-        '│   ANTIBOT SECURITY HUB   │',
-        '├──────────────────────────┤',
-        formatBoxLine('AntiBotAdd', 'ENABLED [OK]'),
-        formatBoxLine('Whitelisted', (config.whitelistedBots || []).length + ' Bot(s)'),
-        formatBoxLine('Bot Gate', 'Active [OK]'),
-        '╰──────────────────────────╯'
-      ];
+      const box = createDynamicBox('ANTIBOT SECURITY HUB', [
+        { key: 'AntiBotAdd ', value: 'ENABLED [OK]' },
+        { key: 'Whitelisted', value: String((config.whitelistedBots || []).length) + ' Bot(s)' },
+        { key: 'Bot Gate   ', value: 'Active [OK]' }
+      ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.BOT || '🤖'} AntiBot Security Status — ${guild.name}`,
+        title: `${emojis.AN_BOT || emojis.BOT || '🤖'} AntiBot Security Status — ${guild.name}`,
         description:
           `Welcome **${author.username}**! Below is your server **AntiBot Security Grid**.\n\n` +
-          '```\n' + boxLines.join('\n') + '\n```\n\n' +
+          '```\n' + box + '\n```\n\n' +
           `**🤖 Whitelisted Authorized Bots:**\n${botList}\n\n` +
           `**⚡ Management Commands:**\n` +
           `\`\`\`\n.antibot wl @bot   - Whitelist bot\n.antibot unwl @bot - Remove bot whitelist\n\`\`\``,
