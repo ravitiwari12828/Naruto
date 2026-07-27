@@ -32,6 +32,22 @@ const SUBCOMMAND_PRESETS = {
   ninja: ['profile', 'jutsu', 'chakra', 'quest', 'lb']
 };
 
+const MODULE_ALIASES = {
+  automations: ['autorole', 'massrole', 'automation'],
+  automation: ['autorole', 'massrole', 'automation'],
+  autorole: ['autorole', 'massrole'],
+  autoresponder: ['autoresponder', 'ar', 'autoreact'],
+  autorespond: ['autoresponder', 'ar', 'autoreact'],
+  automod: ['automod', 'antibot', 'moderation', 'filter'],
+  security: ['antinuke', 'vanityguard', 'quarantine', 'securesetup'],
+  channel: ['channel', 'lock', 'unlock', 'hide', 'unhide', 'lockall', 'unlockall'],
+  moderation: ['mod', 'modlogs', 'modlimits', 'channel'],
+  economy: ['balance', 'deposit', 'withdraw', 'pay', 'networth', 'leaderboard', 'blackjack', 'plinko', 'crash', 'roulette', 'dice', 'higherlower', 'work', 'job', 'mine', 'dig', 'fish', 'chop', 'hunt', 'crime', 'daily', 'weekly', 'monthly', 'shop', 'buy', 'sell', 'inventory', 'pet', 'marry', 'stocks', 'quest'],
+  casino: ['blackjack', 'plinko', 'crash', 'roulette', 'dice', 'higherlower', 'limbo', 'scratchcard'],
+  naruto: ['ninja'],
+  rpg: ['ninja']
+};
+
 module.exports = {
   name: 'testall',
   aliases: ['testsuite', 'testcmds', 'diag', 'auditcmds'],
@@ -58,10 +74,13 @@ module.exports = {
     let testList = Array.from(uniqueCommands.values());
 
     if (filterModule) {
+      const aliasMatch = MODULE_ALIASES[filterModule];
       testList = testList.filter(cmd => {
+        if (aliasMatch && aliasMatch.includes(cmd.name)) return true;
         const nameMatch = cmd.name.toLowerCase().includes(filterModule);
+        const aliasListMatch = cmd.aliases && Array.isArray(cmd.aliases) && cmd.aliases.some(a => a.toLowerCase().includes(filterModule));
         const catMatch = cmd.category?.toLowerCase().includes(filterModule);
-        return nameMatch || catMatch;
+        return nameMatch || aliasListMatch || catMatch;
       });
     }
 
