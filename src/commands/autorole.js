@@ -13,7 +13,6 @@ module.exports = {
     const invokedName = message.content.startsWith('.')
       ? message.content.slice(1).split(/ +/)[0].toLowerCase()
       : message.content.trim().split(/ +/)[0].toLowerCase();
-    let sub = args[0] ? args[0].toLowerCase() : null;
 
     let clientUser = message.client.user;
     try {
@@ -37,7 +36,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR || emojis.GEAR} Server Automation Control Center`,
+        title: `${emojis.ROLES || '🎭'} Server Automation Control Center`,
         subtitle: `Overview for ${message.guild.name}`,
         description:
           `Welcome **${message.author.username}**! Active automation status:\n\n` +
@@ -49,7 +48,7 @@ module.exports = {
     }
 
     // ━━━━━ 2. .massrole [target: humans|bots|all] <action: add|remove> <role> ━━━━━
-    if (invokedName === 'massrole' || sub === 'massrole') {
+    if (invokedName === 'massrole' || (args[0] && args[0].toLowerCase() === 'massrole')) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
         return message.reply(`${emojis.DISABLED} You need **Manage Roles** permission to run massrole.`);
       }
@@ -57,9 +56,8 @@ module.exports = {
         return message.reply(`${emojis.WARNING} I need **Manage Roles** permission to execute massrole!`);
       }
 
-      // Check all args for target & action
-      let targetMode = 'humans'; // 'humans', 'bots', 'all'
-      let action = 'add'; // 'add', 'remove'
+      let targetMode = 'humans';
+      let action = 'add';
 
       const lowerArgs = args.map(a => a.toLowerCase());
       if (lowerArgs.includes('bots') || lowerArgs.includes('bot')) targetMode = 'bots';
@@ -107,24 +105,20 @@ module.exports = {
         }
       }
 
-      const boxLines = [
-        '╭──────────────────────────╮',
-        '│    MASSROLE EXECUTION    │',
-        '├──────────────────────────┤',
-        formatBoxLine('Action', action.toUpperCase()),
-        formatBoxLine('Target', targetLabel),
-        formatBoxLine('Role', '@' + role.name),
-        formatBoxLine('Members', count),
-        formatBoxLine('Status', 'Completed'),
-        '╰──────────────────────────╯'
-      ];
+      const box = createDynamicBox('MASSROLE EXECUTION', [
+        { key: 'Action ', value: action.toUpperCase() },
+        { key: 'Target ', value: targetLabel },
+        { key: 'Role   ', value: '@' + (role.name.length > 15 ? role.name.slice(0, 13) + '…' : role.name) },
+        { key: 'Count  ', value: count + ' member(s)' },
+        { key: 'Status ', value: 'Completed' }
+      ]);
 
       const embed = createStyledEmbed({
         title: `${emojis.ROLES || '🎭'} Massrole Execution Complete`,
         subtitle: `Action: ${action.toUpperCase()}`,
         description:
           `Successfully ${action === 'add' ? 'granted' : 'removed'} **${role.name}** for **${count}** ${targetLabel.toLowerCase()}.\n\n` +
-          '```\n' + boxLines.join('\n') + '\n```',
+          '```\n' + box + '\n```',
         requestedBy: message.author,
         clientUser
       });
@@ -132,26 +126,52 @@ module.exports = {
       return statusMsg.edit({ content: ' ', embeds: [embed] });
     }
 
-    // ━━━━━ 3. .autorole HELP ━━━━━
-    if (!sub || sub === 'help') {
-      const boxLines = [
-        '╭──────────────────────────╮',
-        '│   AUTOMATION COMMANDS    │',
-        '├──────────────────────────┤',
-        '│ .automation              │',
-        '│ .autorole config         │',
-        '│ .massrole add            │',
-        '│ .massrole remove         │',
-        '╰──────────────────────────╯'
-      ];
+    // ━━━━━ FLEXIBLE ARGUMENT PARSER FOR .autorole ━━━━━
+    const lowerArgs = args.map(a => a.toLowerCase());
+
+    let target = null; // 'humans' or 'bots'
+    let action = null; // 'add', 'remove', 'reset', 'config'
+
+    // Identify target: human/humans vs bot/bots
+    if (lowerArgs.some(a => ['human', 'humans', 'user', 'users', 'member', 'members'].includes(a))) {
+      target = 'humans';
+    } else if (lowerArgs.some(a => ['bot', 'bots'].includes(a))) {
+      target = 'bots';
+    }
+
+    // Identify action: add vs remove vs reset vs config
+    if (lowerArgs.some(a => ['add', 'give', 'grant', 'set'].includes(a))) {
+      action = 'add';
+    } else if (lowerArgs.some(a => ['remove', 'take', 'delete', 'rem'].includes(a))) {
+      action = 'remove';
+    } else if (lowerArgs.some(a => ['reset', 'clear'].includes(a))) {
+      action = 'reset';
+    } else if (lowerArgs.some(a => ['config', 'list', 'show', 'view'].includes(a))) {
+      action = 'config';
+    }
+
+    const currentConfig = db.getAutoroles(message.guild.id);
+
+    // ━━━━━ 3. .autorole HELP (if no args or help) ━━━━━
+    if (args.length === 0 || lowerArgs.includes('help')) {
+      const box = createDynamicBox('AUTOMATION COMMANDS', [
+        '.autorole human add @role',
+        '.autorole human remove @role',
+        '.autorole bot add @role',
+        '.autorole bot remove @role',
+        '.autorole config',
+        '.autorole reset',
+        '.massrole humans add @role',
+        '.automation'
+      ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR || emojis.GEAR} Automations Commands`,
+        title: `${emojis.ROLES || '🎭'} AutoRole & Automation Suite`,
         subtitle: `${message.guild.name} Automation Control`,
         description:
-          `Welcome **${message.author.username}**! Below is the executive suite for **Automations**.\n` +
-          `Type any command below in your server to execute.\n\n` +
-          '```\n' + boxLines.join('\n') + '\n```',
+          `Welcome **${message.author.username}**! Below is the executive suite for **AutoRoles**.\n` +
+          `You can use flexible syntax like \`.autorole human add @role\` or \`.autorole add human @role\`.\n\n` +
+          '```\n' + box + '\n```',
         requestedBy: message.author,
         clientUser,
         footerText: 'AutoRole & Automation suite'
@@ -160,155 +180,122 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    const currentConfig = db.getAutoroles(message.guild.id);
-
-    // ━━━━━ 4. .autorole config ━━━━━
-    if (sub === 'config') {
+    // ━━━━━ 4. .autorole config / list / show ━━━━━
+    if (action === 'config' || lowerArgs.includes('config') || lowerArgs.includes('list')) {
       const humanRolesList = currentConfig.humans?.map(r => message.guild.roles.cache.get(r)?.name || r) || [];
       const botRolesList = currentConfig.bots?.map(r => message.guild.roles.cache.get(r)?.name || r) || [];
 
-      const boxLines = [
-        '╭──────────────────────────╮',
-        '│  AUTOROLE CONFIGURATION  │',
-        '├──────────────────────────┤',
-        '│ Human AutoRoles:         │'
-      ];
-
+      const items = [];
+      items.push('--- HUMAN AUTOROLES ---');
       if (humanRolesList.length === 0) {
-        boxLines.push('│   • None configured      │');
+        items.push('• None configured');
       } else {
-        humanRolesList.forEach(name => {
-          boxLines.push('│   • ' + ('@' + name).slice(0, 20).padEnd(20, ' ') + ' │');
-        });
+        humanRolesList.forEach(name => items.push('• @' + name));
       }
 
-      boxLines.push('│                          │');
-      boxLines.push('│ Bot AutoRoles:           │');
-
+      items.push('--- BOT AUTOROLES ---');
       if (botRolesList.length === 0) {
-        boxLines.push('│   • None configured      │');
+        items.push('• None configured');
       } else {
-        botRolesList.forEach(name => {
-          boxLines.push('│   • ' + ('@' + name).slice(0, 20).padEnd(20, ' ') + ' │');
-        });
+        botRolesList.forEach(name => items.push('• @' + name));
       }
 
-      boxLines.push('╰──────────────────────────╯');
+      const box = createDynamicBox('AUTOROLE CONFIGURATION', items);
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR || emojis.GEAR} AutoRole Configuration`,
+        title: `${emojis.ROLES || '🎭'} AutoRole Configuration`,
         subtitle: `${message.guild.name} Auto-Assign Settings`,
         description:
           `Current AutoRole settings for **${message.guild.name}**:\n\n` +
-          '```\n' + boxLines.join('\n') + '\n```',
+          '```\n' + box + '\n```',
         requestedBy: message.author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ━━━━━ 5. .autorole humans / bots [add/remove/list] ━━━━━
-    if (sub === 'humans' || sub === 'bots') {
-      const action = args[1] ? args[1].toLowerCase() : 'list';
-      const role = message.mentions.roles.first() || (args[2] ? message.guild.roles.cache.get(args[2]) : null);
+    // ━━━━━ 5. .autorole reset [all/humans/bots] ━━━━━
+    if (action === 'reset' || lowerArgs.includes('reset')) {
+      const resetTarget = target || 'all';
+      if (resetTarget === 'all' || resetTarget === 'humans') db.setAutorole(message.guild.id, 'humans', null, 'reset');
+      if (resetTarget === 'all' || resetTarget === 'bots') db.setAutorole(message.guild.id, 'bots', null, 'reset');
 
-      if (action === 'add') {
-        if (!role) return message.reply(`${emojis.WARNING} Please specify a role to add! Example: \`.autorole ${sub} add @Role\``);
-        db.setAutorole(message.guild.id, sub, role.id, 'add');
-
-        const boxLines = [
-          '╭──────────────────────────╮',
-          '│    AUTOROLE UPDATED      │',
-          '├──────────────────────────┤',
-          formatBoxLine('Target', sub.toUpperCase()),
-          formatBoxLine('Action', 'ADD'),
-          formatBoxLine('Role', '@' + role.name),
-          formatBoxLine('Status', 'Saved'),
-          '╰──────────────────────────╯'
-        ];
-
-        const embed = createStyledEmbed({
-          title: `${emojis.GEAR} AutoRole Updated`,
-          description: '```\n' + boxLines.join('\n') + '\n```',
-          requestedBy: message.author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
-
-      } else if (action === 'remove') {
-        if (!role) return message.reply(`${emojis.WARNING} Please specify a role to remove! Example: \`.autorole ${sub} remove @Role\``);
-        db.setAutorole(message.guild.id, sub, role.id, 'remove');
-
-        const boxLines = [
-          '╭──────────────────────────╮',
-          '│    AUTOROLE UPDATED      │',
-          '├──────────────────────────┤',
-          formatBoxLine('Target', sub.toUpperCase()),
-          formatBoxLine('Action', 'REMOVE'),
-          formatBoxLine('Role', '@' + role.name),
-          formatBoxLine('Status', 'Saved'),
-          '╰──────────────────────────╯'
-        ];
-
-        const embed = createStyledEmbed({
-          title: `${emojis.GEAR} AutoRole Updated`,
-          description: '```\n' + boxLines.join('\n') + '\n```',
-          requestedBy: message.author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
-
-      } else {
-        const rolesList = currentConfig[sub]?.map(r => message.guild.roles.cache.get(r)?.name || r) || [];
-
-        const boxLines = [
-          '╭──────────────────────────╮',
-          '│  AUTOROLE LIST: ' + sub.toUpperCase().padEnd(8, ' ') + ' │',
-          '├──────────────────────────┤'
-        ];
-
-        if (rolesList.length === 0) {
-          boxLines.push('│   • None configured      │');
-        } else {
-          rolesList.forEach(name => {
-            boxLines.push('│   • ' + ('@' + name).slice(0, 20).padEnd(20, ' ') + ' │');
-          });
-        }
-        boxLines.push('╰──────────────────────────╯');
-
-        const embed = createStyledEmbed({
-          title: `${emojis.GEAR} AutoRole: ${sub.toUpperCase()}`,
-          description: '```\n' + boxLines.join('\n') + '\n```',
-          requestedBy: message.author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
-      }
-    }
-
-    // ━━━━━ 6. .autorole reset [all/humans/bots] ━━━━━
-    if (sub === 'reset') {
-      const target = args[1] ? args[1].toLowerCase() : 'all';
-      if (target === 'all' || target === 'humans') db.setAutorole(message.guild.id, 'humans', null, 'reset');
-      if (target === 'all' || target === 'bots') db.setAutorole(message.guild.id, 'bots', null, 'reset');
-
-      const boxLines = [
-        '╭──────────────────────────╮',
-        '│     AUTOROLE RESET       │',
-        '├──────────────────────────┤',
-        formatBoxLine('Target', target.toUpperCase()),
-        formatBoxLine('Action', 'RESET'),
-        formatBoxLine('Status', 'Complete'),
-        '╰──────────────────────────╯'
-      ];
+      const box = createDynamicBox('AUTOROLE RESET', [
+        { key: 'Target ', value: resetTarget.toUpperCase() },
+        { key: 'Action ', value: 'RESET' },
+        { key: 'Status ', value: 'Complete' }
+      ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.GEAR} AutoRole Settings Reset`,
-        description: '```\n' + boxLines.join('\n') + '\n```',
+        title: `${emojis.ROLES || '🎭'} AutoRole Settings Reset`,
+        description: '```\n' + box + '\n```',
         requestedBy: message.author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
+
+    // ━━━━━ 6. .autorole [human/bot] [add/remove] @role ━━━━━
+    if (target && (action === 'add' || action === 'remove')) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
+        return message.reply(`${emojis.DISABLED} You need **Manage Roles** permission to configure AutoRoles.`);
+      }
+
+      const role = message.mentions.roles.first() ||
+                   message.guild.roles.cache.find(r => lowerArgs.includes(r.id) || lowerArgs.includes(r.name.toLowerCase()));
+
+      if (!role) {
+        return message.reply(
+          `${emojis.WARNING} Please mention or specify a valid role!\n` +
+          `**Example:** \`.autorole ${target === 'bots' ? 'bot' : 'human'} ${action} @Role\``
+        );
+      }
+
+      if (role.position >= message.guild.members.me.roles.highest.position) {
+        return message.reply(`${emojis.WARNING} I cannot set **${role.name}** as AutoRole because it is positioned higher than or equal to my highest role!`);
+      }
+
+      db.setAutorole(message.guild.id, target, role.id, action);
+
+      const box = createDynamicBox('AUTOROLE UPDATED', [
+        { key: 'Target ', value: target.toUpperCase() },
+        { key: 'Action ', value: action.toUpperCase() },
+        { key: 'Role   ', value: '@' + (role.name.length > 15 ? role.name.slice(0, 13) + '…' : role.name) },
+        { key: 'Status ', value: 'Saved' }
+      ]);
+
+      const embed = createStyledEmbed({
+        title: `${emojis.ROLES || '🎭'} AutoRole Settings Updated`,
+        description:
+          `Successfully ${action === 'add' ? 'added' : 'removed'} **${role.name}** for AutoRole (**${target.toUpperCase()}**).\n\n` +
+          '```\n' + box + '\n```',
+        requestedBy: message.author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // Fallback if target or action missing
+    const box = createDynamicBox('AUTOMATION COMMANDS', [
+      '.autorole human add @role',
+      '.autorole human remove @role',
+      '.autorole bot add @role',
+      '.autorole bot remove @role',
+      '.autorole config',
+      '.autorole reset',
+      '.massrole humans add @role',
+      '.automation'
+    ]);
+
+    const embed = createStyledEmbed({
+      title: `${emojis.ROLES || '🎭'} AutoRole & Automation Suite`,
+      subtitle: `${message.guild.name} Automation Control`,
+      description:
+        `Welcome **${message.author.username}**! Below is the executive suite for **AutoRoles**.\n\n` +
+        '```\n' + box + '\n```',
+      requestedBy: message.author,
+      clientUser
+    });
+    return message.channel.send({ embeds: [embed] });
   }
 };
