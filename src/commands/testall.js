@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, Collection } = require('discord.js');
 const emojis = require('../utils/emojis');
 const config = require('../config');
 const { isBotOwner } = require('../utils/owners');
@@ -64,11 +64,16 @@ module.exports = {
           sendTyping: async () => {}
         };
         mockMessage.reply = async () => ({ edit: async () => {} });
+        const mockUsers = new Collection([[dummyUser.id, dummyUser]]);
+        const mockMembers = new Collection([[dummyUser.id, dummyMember]]);
+        const mockChannels = new Collection([[message.channel.id, message.channel]]);
+        const mockRoles = new Collection();
+
         mockMessage.mentions = {
-          users: new Map([[dummyUser.id, dummyUser]]),
-          members: new Map([[dummyUser.id, dummyMember]]),
-          channels: new Map([[message.channel.id, message.channel]]),
-          roles: new Map()
+          users: mockUsers,
+          members: mockMembers,
+          channels: mockChannels,
+          roles: mockRoles
         };
 
         // Dummy arguments array
