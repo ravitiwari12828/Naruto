@@ -192,6 +192,25 @@ const CATEGORIES = [
     ]
   },
   {
+    label: 'Economy & Casino',
+    value: 'economy',
+    description: 'Banking, Casino Games, Jobs, Pets, Stocks & Shop',
+    customEmoji: emojis.OBJ_PRIORITY,
+    unicodeFallback: '🪙',
+    heading: `${emojis.PRIORITY || '🪙'} Economy & Casino Suite`,
+    commands: [
+      'balance', 'deposit', 'withdraw',
+      'pay', 'networth', 'leaderboard',
+      'blackjack', 'plinko', 'crash',
+      'roulette', 'dice', 'higherlower',
+      'work', 'job', 'mine', 'dig',
+      'fish', 'chop', 'hunt', 'crime',
+      'daily', 'weekly', 'monthly',
+      'shop', 'buy', 'sell', 'inventory',
+      'pet', 'marry', 'stocks', 'quest'
+    ]
+  },
+  {
     label: 'Channel Moderation',
     value: 'channel',
     description: 'Lock, unlock, hide and mass lockdown channels',

@@ -98,21 +98,31 @@ const client = new Client({
 
 client.commands = new Collection();
 
-// Load Commands Dynamically
-const commandsPath = path.join(__dirname, 'commands');
-if (fs.existsSync(commandsPath)) {
-  const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
-  for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = require(filePath);
-    if (command.name) {
-      client.commands.set(command.name, command);
-      if (command.aliases && Array.isArray(command.aliases)) {
-        command.aliases.forEach(alias => client.commands.set(alias, command));
+// Load Commands Dynamically (Recursively scan subdirectories)
+function loadCommands(dir) {
+  if (!fs.existsSync(dir)) return;
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      loadCommands(fullPath);
+    } else if (entry.isFile() && entry.name.endsWith('.js')) {
+      try {
+        const command = require(fullPath);
+        if (command.name) {
+          client.commands.set(command.name, command);
+          if (command.aliases && Array.isArray(command.aliases)) {
+            command.aliases.forEach(alias => client.commands.set(alias, command));
+          }
+        }
+      } catch (e) {
+        console.error(`[Command Load Error (${entry.name})]:`, e.message);
       }
     }
   }
 }
+
+loadCommands(commandsPath);
 
 // Ready Event
 client.once('clientReady', async () => {

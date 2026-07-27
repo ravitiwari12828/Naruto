@@ -960,6 +960,46 @@ class ResilientDatabase {
     this.saveJSON();
     return vote;
   }
+
+  economy(guildId, userId) {
+    const key = `${guildId}:${userId}`;
+    if (!this.data.economyStore) this.data.economyStore = {};
+    if (!this.data.economyStore[key]) {
+      const u = this.getUser(guildId, userId);
+      this.data.economyStore[key] = {
+        balance: u.balance !== undefined ? u.balance : 1000,
+        bank: 0,
+        bankLimit: 50000,
+        gems: 10,
+        inventory: {},
+        lastDaily: 0,
+        lastWeekly: 0,
+        lastMonthly: 0,
+        lastWork: 0,
+        dailyStreak: 0,
+        job: null,
+        pets: [],
+        stocks: {},
+        cooldowns: {},
+        stats: {},
+        marry: null,
+        quest: null
+      };
+    }
+    return this.data.economyStore[key];
+  }
+
+  setEconomy(guildId, userId, ecoData) {
+    const key = `${guildId}:${userId}`;
+    if (!this.data.economyStore) this.data.economyStore = {};
+    this.data.economyStore[key] = ecoData;
+    if (ecoData.balance !== undefined) {
+      const u = this.getUser(guildId, userId);
+      u.balance = ecoData.balance;
+    }
+    this.saveJSON();
+    return ecoData;
+  }
 }
 
 const db = new ResilientDatabase();
