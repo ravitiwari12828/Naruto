@@ -122,6 +122,7 @@ function loadCommands(dir) {
   }
 }
 
+const commandsPath = path.join(__dirname, 'commands');
 loadCommands(commandsPath);
 
 // Ready Event
