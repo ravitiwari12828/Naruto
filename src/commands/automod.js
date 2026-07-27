@@ -362,8 +362,8 @@ module.exports = {
         description:
           `Welcome **${author.username}**! Below is your server **AntiBot Security Grid**.\n\n` +
           '```\n' + box + '\n```\n\n' +
-          `**🤖 Whitelisted Authorized Bots:**\n${botList}\n\n` +
-          `**⚡ Management Commands:**\n` +
+          `**${emojis.AN_BOT || '🤖'} Whitelisted Authorized Bots:**\n${botList}\n\n` +
+          `**${emojis.ANALYTICS_ZAP || '⚡'} Management Commands:**\n` +
           `\`\`\`\n.antibot wl @bot   - Whitelist bot\n.antibot unwl @bot - Remove bot whitelist\n\`\`\``,
         requestedBy: author,
         clientUser
