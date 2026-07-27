@@ -126,17 +126,33 @@ module.exports = {
     }
 
     // Default Roles Help
+    const { createDynamicBox } = require('../utils/boxBuilder');
+
+    const cmdBox = createDynamicBox('SPECIAL ROLE COMMANDS', [
+      '.rolesetup <type> <@role>',
+      '.friend <@user>',
+      '.girl <@user>',
+      '.guest <@user>',
+      '.official <@user>',
+      '.vip <@user>',
+      '.invcrole <@role>',
+      '.autonick <template>'
+    ]);
+
+    const typeBox = createDynamicBox('SYSTEM ROLE TYPES', [
+      'friend, girl, guest,',
+      'official, vip, invcrole'
+    ]);
+
     const embed = createStyledEmbed({
-      title: `🎭 Special Role System Commands`,
+      title: `${emojis.ROLES || '🎭'} Special Role System Suite`,
+      subtitle: `Automated Special Roles & In-VC Role Management`,
       description:
-        `\`.rolesetup <type> <@role>\` — Setup special roles (\`friend\`, \`girl\`, \`guest\`, \`official\`, \`vip\`, \`invcrole\`)\n` +
-        `\`.friend <@user>\` — Toggle Friend role\n` +
-        `\`.girl <@user>\` — Toggle Girl role\n` +
-        `\`.guest <@user>\` — Toggle Guest role\n` +
-        `\`.official <@user>\` — Toggle Official role\n` +
-        `\`.vip <@user>\` — Toggle VIP role\n` +
-        `\`.invcrole <@role>\` — Auto role given when user joins Voice Channel\n` +
-        `\`.autonick <template>\` — Auto nickname assigned to new members`,
+        `Welcome **${author.username}**! Below is your executive **Special Role Control Panel**.\n\n` +
+        `**📜 Command Suite**\n` +
+        '```\n' + cmdBox + '\n```\n\n' +
+        `**🏷️ Supported Role Types**\n` +
+        '```\n' + typeBox + '\n```',
       requestedBy: author,
       clientUser
     });
