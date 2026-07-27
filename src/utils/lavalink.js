@@ -138,11 +138,60 @@ function initLavalink(client) {
     }
   });
 
+  // 🎧 HELPER: DYNAMIC VOICE CHANNEL STATUS AUTO-SETTER
+  async function updateVoiceChannelStatus(player, track) {
+    if (!player || !player.voiceChannelId) return;
+    try {
+      const songTitle = track?.info?.title || 'Unknown Song';
+      const artistName = track?.info?.author || 'Unknown Artist';
+      let statusText = `🎵 ${songTitle} - ${artistName}`;
+      if (statusText.length > 500) statusText = statusText.slice(0, 497) + '...';
+
+      const vcId = player.voiceChannelId;
+      const vcChannel = client.channels.cache.get(vcId) || await client.channels.fetch(vcId).catch(() => null);
+      if (vcChannel) {
+        if (typeof vcChannel.setVoiceStatus === 'function') {
+          await vcChannel.setVoiceStatus(statusText).catch(() => {});
+        } else {
+          const { Routes } = require('discord.js');
+          await client.rest.put(Routes.channelVoiceStatus(vcId), {
+            body: { status: statusText }
+          }).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.error('[VoiceStatus Set Error]:', e.message);
+    }
+  }
+
+  async function clearVoiceChannelStatus(player) {
+    if (!player || !player.voiceChannelId) return;
+    try {
+      const vcId = player.voiceChannelId;
+      const vcChannel = client.channels.cache.get(vcId) || await client.channels.fetch(vcId).catch(() => null);
+      if (vcChannel) {
+        if (typeof vcChannel.setVoiceStatus === 'function') {
+          await vcChannel.setVoiceStatus('').catch(() => {});
+        } else {
+          const { Routes } = require('discord.js');
+          await client.rest.put(Routes.channelVoiceStatus(vcId), {
+            body: { status: '' }
+          }).catch(() => {});
+        }
+      }
+    } catch (e) {}
+  }
+
   // ─────────────────────────────────────────
-  // TRACK START: Send STELLAR BEATS card & auto-delete previous card
+  // TRACK START: Send STELLAR BEATS card & set Voice Channel Status
   // ─────────────────────────────────────────
   lavalink.on('trackStart', async (player, track) => {
-    if (!player || !player.textChannelId) return;
+    if (!player) return;
+
+    // Automatically set Voice Channel Status: 🎵 Song Name - Artist Name
+    await updateVoiceChannelStatus(player, track);
+
+    if (!player.textChannelId) return;
     try {
       // Dynamically fetch 5 recommended songs matching current track's artist/genre
       const artist = track?.info?.author || '';
@@ -176,7 +225,12 @@ function initLavalink(client) {
   // QUEUE END: Handle queue completion & 24/7 AFK persistence
   // ─────────────────────────────────────────
   lavalink.on('queueEnd', async (player) => {
-    if (!player || !player.textChannelId) return;
+    if (!player) return;
+
+    // Clear Voice Channel Status
+    await clearVoiceChannelStatus(player);
+
+    if (!player.textChannelId) return;
 
     // If Autoplay is enabled, trackEnd handles loading recommended tracks
     if (player.autoplay) return;
@@ -225,14 +279,17 @@ function initLavalink(client) {
   });
 
   // ─────────────────────────────────────────
-  // PLAYER DESTROY: Clean up last message reference
+  // PLAYER DESTROY: Clean up last message reference & voice status
   // ─────────────────────────────────────────
   lavalink.on('playerDestroy', async (player) => {
-    if (player && player.lastMessage) {
-      try {
-        await player.lastMessage.delete().catch(() => {});
-        player.lastMessage = null;
-      } catch (e) {}
+    if (player) {
+      await clearVoiceChannelStatus(player);
+      if (player.lastMessage) {
+        try {
+          await player.lastMessage.delete().catch(() => {});
+          player.lastMessage = null;
+        } catch (e) {}
+      }
     }
   });
 
