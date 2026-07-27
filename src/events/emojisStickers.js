@@ -2,6 +2,27 @@ const emojis = require('../utils/emojis');
 const { AuditLogEvent, EmbedBuilder } = require('discord.js');
 const { dispatchLog } = require('../utils/logger');
 
+// 30-second Event Deduplication Cache to prevent duplicate log messages
+const processedEvents = new Map();
+
+function isDuplicateEvent(eventKey) {
+  const now = Date.now();
+  if (processedEvents.has(eventKey)) {
+    const timestamp = processedEvents.get(eventKey);
+    if (now - timestamp < 30000) {
+      return true;
+    }
+  }
+  processedEvents.set(eventKey, now);
+  // Auto-cleanup stale keys
+  if (processedEvents.size > 500) {
+    for (const [k, ts] of processedEvents.entries()) {
+      if (now - ts > 30000) processedEvents.delete(k);
+    }
+  }
+  return false;
+}
+
 module.exports = (client) => {
   async function fetchExecutor(guild, type, targetId) {
     if (!guild.members.me.permissions.has('ViewAuditLog')) return null;
@@ -14,6 +35,9 @@ module.exports = (client) => {
   }
 
   client.on('emojiCreate', async (emoji) => {
+    const key = `emojiCreate:${emoji.guild.id}:${emoji.id}`;
+    if (isDuplicateEvent(key)) return;
+
     const executor = await fetchExecutor(emoji.guild, AuditLogEvent.EmojiCreate, emoji.id);
     const embed = new EmbedBuilder()
       .setColor('#00ff00')
@@ -30,6 +54,9 @@ module.exports = (client) => {
   });
 
   client.on('emojiDelete', async (emoji) => {
+    const key = `emojiDelete:${emoji.guild.id}:${emoji.id}`;
+    if (isDuplicateEvent(key)) return;
+
     const executor = await fetchExecutor(emoji.guild, AuditLogEvent.EmojiDelete, emoji.id);
     const createdAgo = `<t:${Math.floor(emoji.createdTimestamp / 1000)}:R>`;
     const embed = new EmbedBuilder()
@@ -48,6 +75,9 @@ module.exports = (client) => {
 
   client.on('emojiUpdate', async (oldEmoji, newEmoji) => {
     if (oldEmoji.name === newEmoji.name) return;
+    const key = `emojiUpdate:${newEmoji.guild.id}:${newEmoji.id}:${newEmoji.name}`;
+    if (isDuplicateEvent(key)) return;
+
     const executor = await fetchExecutor(newEmoji.guild, AuditLogEvent.EmojiUpdate, newEmoji.id);
     const embed = new EmbedBuilder()
       .setColor('#ffff00')
@@ -65,6 +95,9 @@ module.exports = (client) => {
 
   // STICKERS
   client.on('stickerCreate', async (sticker) => {
+    const key = `stickerCreate:${sticker.guild.id}:${sticker.id}`;
+    if (isDuplicateEvent(key)) return;
+
     const executor = await fetchExecutor(sticker.guild, AuditLogEvent.StickerCreate, sticker.id);
     const embed = new EmbedBuilder()
       .setColor('#00ff00')
@@ -81,6 +114,9 @@ module.exports = (client) => {
   });
 
   client.on('stickerDelete', async (sticker) => {
+    const key = `stickerDelete:${sticker.guild.id}:${sticker.id}`;
+    if (isDuplicateEvent(key)) return;
+
     const executor = await fetchExecutor(sticker.guild, AuditLogEvent.StickerDelete, sticker.id);
     const createdAgo = `<t:${Math.floor(sticker.createdTimestamp / 1000)}:R>`;
     const embed = new EmbedBuilder()
@@ -99,6 +135,9 @@ module.exports = (client) => {
 
   client.on('stickerUpdate', async (oldSticker, newSticker) => {
     if (oldSticker.name === newSticker.name && oldSticker.description === newSticker.description) return;
+    const key = `stickerUpdate:${newSticker.guild.id}:${newSticker.id}:${newSticker.name}`;
+    if (isDuplicateEvent(key)) return;
+
     const executor = await fetchExecutor(newSticker.guild, AuditLogEvent.StickerUpdate, newSticker.id);
     const embed = new EmbedBuilder()
       .setColor('#ffff00')
