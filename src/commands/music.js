@@ -131,21 +131,38 @@ function buildMusicPlayerEmbed(track, player) {
   const durationStr = formatDuration(durationMs);
   const artworkUrl = track?.info?.artworkUrl || track?.pluginInfo?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
 
-  const boxText =
-    '```\n' +
-    '╭──────────────────────────╮\n' +
-    '│    TRACK INFORMATION     │\n' +
-    '├──────────────────────────┤\n' +
-    '│ Title    : ' + String(title).slice(0, 13).padEnd(13, ' ') + ' │\n' +
-    '│ Artist   : ' + String(artist).slice(0, 13).padEnd(13, ' ') + ' │\n' +
-    '│ Duration : ' + String(durationStr).padEnd(13, ' ') + ' │\n' +
-    '│ Playback : STREAMING NOW │\n' +
-    '╰──────────────────────────╯\n' +
-    '```';
+  const cleanTitle = String(title).length > 25 ? String(title).slice(0, 23) + '…' : String(title);
+  const cleanArtist = String(artist).length > 25 ? String(artist).slice(0, 23) + '…' : String(artist);
+
+  const innerW = 36;
+  const topBorder = '╭' + '─'.repeat(innerW + 2) + '╮';
+  const midBorder = '├' + '─'.repeat(innerW + 2) + '┤';
+  const botBorder = '╰' + '─'.repeat(innerW + 2) + '╯';
+
+  const padCenter = (str, w) => {
+    const pad = Math.max(0, w - str.length);
+    const left = Math.floor(pad / 2);
+    return ' '.repeat(left) + str + ' '.repeat(pad - left);
+  };
+
+  const padEnd = (str, w) => str + ' '.repeat(Math.max(0, w - str.length));
+
+  const boxLines = [
+    topBorder,
+    '│ ' + padCenter('TRACK INFORMATION', innerW) + ' │',
+    midBorder,
+    '│ Title    : ' + padEnd(cleanTitle, innerW - 13) + ' │',
+    '│ Artist   : ' + padEnd(cleanArtist, innerW - 13) + ' │',
+    '│ Duration : ' + padEnd(durationStr, innerW - 13) + ' │',
+    '│ Playback : ' + padEnd('STREAMING NOW', innerW - 13) + ' │',
+    botBorder
+  ];
+
+  const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   return new EmbedBuilder()
     .setColor(0xFF007F)
-    .setAuthor({ name: '🎶 Now Playing' })
+    .setTitle(`${emojis.MUSIC || '🎶'} Now Playing`)
     .setThumbnail(artworkUrl)
     .setDescription(boxText + `\n*Currently streaming in voice channel*`);
 }
