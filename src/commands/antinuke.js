@@ -229,13 +229,23 @@ function isUserWhitelistedForFeature(config, userId, featureName) {
   if (perms.has('all')) return true;
 
   const fname = featureName.toLowerCase();
-  if (fname.includes('ban') && perms.has('ban')) return true;
-  if (fname.includes('kick') && perms.has('kick')) return true;
+
+  // Exact match (e.g. 'channel_create', 'role_delete', 'ban', etc.)
+  if (perms.has(fname)) return true;
+
+  // Category fallback checks
+  if ((fname.includes('ban') || fname.includes('unban')) && (perms.has('ban') || perms.has('unban'))) return true;
+  if ((fname.includes('kick') || fname.includes('prune')) && (perms.has('kick') || perms.has('prune'))) return true;
   if (fname.includes('bot') && perms.has('bot')) return true;
-  if (fname.includes('channel') && perms.has('channel')) return true;
-  if (fname.includes('role') && perms.has('role')) return true;
-  if (fname.includes('webhook') && perms.has('webhook')) return true;
+  if (fname.includes('channel') && (perms.has('channel') || perms.has('channel_create') || perms.has('channel_delete') || perms.has('channel_update'))) return true;
+  if (fname.includes('role') && (perms.has('role') || perms.has('role_create') || perms.has('role_delete') || perms.has('role_update') || perms.has('role_dangerous'))) return true;
+  if (fname.includes('webhook') && (perms.has('webhook') || perms.has('webhook_create') || perms.has('webhook_delete') || perms.has('webhook_update'))) return true;
   if (fname.includes('guild') && perms.has('guild')) return true;
+  if ((fname.includes('everyone') || fname.includes('here')) && perms.has('everyone')) return true;
+  if (fname.includes('member') && (perms.has('member_update') || perms.has('member_dangerous'))) return true;
+  if (fname.includes('emoji') && perms.has('emoji')) return true;
+  if (fname.includes('sticker') && perms.has('sticker')) return true;
+  if (fname.includes('integration') && perms.has('integration')) return true;
 
   return false;
 }
@@ -676,25 +686,26 @@ module.exports = {
 
       // .whitelist add @user [perms]
       if (action === 'add' && user) {
-        const permArgs = args.slice(2).map(p => p.toLowerCase()).filter(p => ALL_PERMS.includes(p));
-        const grantedPerms = permArgs.length > 0 ? new Set(permArgs) : new Set(['all']);
+        const permArgs = args.slice(2).map(p => p.toLowerCase()).filter(p => ALL_PERMS.includes(p) || p === 'all');
+        if (permArgs.length > 0) {
+          const grantedPerms = new Set(permArgs);
+          config.whitelistedUsers.set(user.id, grantedPerms);
+          antinukeConfigs.set(guild.id, config);
 
-        config.whitelistedUsers.set(user.id, grantedPerms);
-        antinukeConfigs.set(guild.id, config);
-
-        const embed = createStyledEmbed({
-          title: `👥 Member Whitelisted with Granular Perms`,
-          description:
-            `**User:** <@${user.id}> (\`${user.tag}\`)\n` +
-            `**Granted Permissions:** ${formatUserPerms(grantedPerms)}\n\n` +
-            `**Management Commands:**\n` +
-            `\`\`\`\n` +
-            `.whitelist perms @user +ban -role\n` +
-            `\`\`\``,
-          requestedBy: author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
+          const embed = createStyledEmbed({
+            title: `👥 Member Whitelisted with Granular Perms`,
+            description:
+              `**User:** <@${user.id}> (\`${user.tag}\`)\n` +
+              `**Granted Permissions:** ${formatUserPerms(grantedPerms)}\n\n` +
+              `**Management Panel:**\n` +
+              `\`\`\`\n` +
+              `.whitelist @${user.username}\n` +
+              `\`\`\``,
+            requestedBy: author,
+            clientUser
+          });
+          return message.channel.send({ embeds: [embed] });
+        }
       }
 
       // .whitelist remove @user
