@@ -1,12 +1,12 @@
 const https = require('https');
 
 /**
- * Ultra-Fast High-Intelligence AI Engine for Naruto Bot
+ * Ultra-Fast High-Intelligence Deep Knowledge AI Engine for Naruto Bot
  * Features:
  * 1. Google Gemini API (gemini-1.5-flash & gemini-2.0-flash with 12s timeout & key sanitization)
- * 2. Real-Time Weather & Temperature Integration (wttr.in JSON API)
- * 3. Multilingual Code Generator (Python, C++, Java, JS, HTML/CSS, SQL)
- * 4. Deep Wikipedia & Knowledge Search Engine (searchWikipediaDeep)
+ * 2. Deep Knowledge Encyclopedia Extraction Engine (fetchWikiDeepExtract)
+ * 3. Real-Time Weather & Temperature Integration (wttr.in JSON API)
+ * 4. Multilingual Code Generator (Python, C++, Java, JS, HTML/CSS, SQL)
  */
 async function generateAIAnswer(prompt, mode = 'general') {
   if (!prompt || !prompt.trim()) {
@@ -16,7 +16,7 @@ async function generateAIAnswer(prompt, mode = 'general') {
   const cleanPrompt = prompt.trim();
   const promptLower = cleanPrompt.toLowerCase();
 
-  // 1. Weather / Temperature Detector
+  // 1. Real-Time Weather / Temperature Detector
   if (promptLower.includes('temperature') || promptLower.includes('weather') || promptLower.includes('forecast') || promptLower.includes('temp')) {
     const locMatch = cleanPrompt.match(/\b(?:in|for|at)\s+([a-zA-Z\s]+)/i);
     let location = 'Delhi';
@@ -32,7 +32,12 @@ async function generateAIAnswer(prompt, mode = 'general') {
     } catch (e) {}
   }
 
-  // 2. Attempt Google Gemini API if key is provided
+  // 2. Multilingual Code Generation Engine for .code or programming prompts
+  if (mode === 'code' || promptLower.includes('code') || promptLower.includes('function') || promptLower.includes('python') || promptLower.includes('java') || promptLower.includes('c++')) {
+    return generateCodeSnippet(cleanPrompt);
+  }
+
+  // 3. Attempt Google Gemini API if GEMINI_API_KEY is provided
   let rawKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || process.env.GEMINI_KEY;
   const apiKey = rawKey ? rawKey.trim().replace(/^["']|["']$/g, '') : null;
 
@@ -50,23 +55,17 @@ async function generateAIAnswer(prompt, mode = 'general') {
         console.log(`[Gemini API Warning (${model})]:`, err.message);
       }
     }
-  } else {
-    console.log('[AI Engine Notice]: GEMINI_API_KEY environment variable is not set. Using Deep Knowledge Search.');
   }
 
-  // 3. Multilingual Code Generation Engine for .code or programming prompts
-  if (mode === 'code' || promptLower.includes('code') || promptLower.includes('function') || promptLower.includes('python') || promptLower.includes('java') || promptLower.includes('c++')) {
-    return generateCodeSnippet(cleanPrompt);
-  }
-
-  // 4. Deep Knowledge Engine Search (Wikipedia & DuckDuckGo)
+  // 4. Deep Knowledge Encyclopedia Extraction Engine
   try {
-    const deepKnowledgeRes = await searchWikipediaDeep(cleanPrompt);
-    if (deepKnowledgeRes && deepKnowledgeRes.length > 30) {
+    const deepKnowledgeRes = await fetchWikiDeepExtract(cleanPrompt);
+    if (deepKnowledgeRes && deepKnowledgeRes.length > 40) {
       return deepKnowledgeRes;
     }
   } catch (e) {}
 
+  // 5. Secondary Knowledge Search Engine (DuckDuckGo + Summary Fallback)
   const subject = extractSubject(cleanPrompt);
   if (subject) {
     try {
@@ -74,18 +73,21 @@ async function generateAIAnswer(prompt, mode = 'general') {
       const wikiPromise = fetchWikiSummary(subject);
       const knowledgeRes = await Promise.race([ddgPromise, wikiPromise]);
       if (knowledgeRes && knowledgeRes.length > 30) {
-        return `**${subject.toUpperCase()}**\n\n${knowledgeRes}`;
+        return `🧠 **DEEP KNOWLEDGE ANALYSIS: ${subject.toUpperCase()}**\n\n${knowledgeRes}`;
       }
     } catch (e) {}
   }
 
-  // 5. Intelligent Fallback Response
-  return generateIntelligentResponse(cleanPrompt);
+  // 6. Intelligent Fallback
+  return `🧠 **DEEP KNOWLEDGE ANALYSIS**\n\n` +
+    `Regarding your inquiry on **"${cleanPrompt}"**:\n\n` +
+    `• **Overview:** This topic involves multi-layered principles across science, technology, and historical concepts.\n` +
+    `• **Recommendation:** For specific real-time AI generation on complex custom prompts, configure \`GEMINI_API_KEY\` in your environment variables!`;
 }
 
 function fetchGeminiAPI(prompt, apiKey, mode, modelName = 'gemini-1.5-flash') {
   return new Promise((resolve, reject) => {
-    let systemInstruction = 'You are Naruto One AI, an intelligent, helpful, and concise AI assistant built for Discord. Give clear, accurate, and structured answers.';
+    let systemInstruction = 'You are Naruto One AI, an intelligent, helpful, and concise AI assistant built for Discord. Give clear, accurate, and structured answers with deep explanations.';
     if (mode === 'code') {
       systemInstruction = 'You are an expert software engineer. Provide clear, working code with syntax highlighting in the requested language (Python, C++, Java, JS, etc.) with concise comments.';
     }
@@ -137,6 +139,41 @@ function fetchGeminiAPI(prompt, apiKey, mode, modelName = 'gemini-1.5-flash') {
   });
 }
 
+function fetchWikiDeepExtract(query) {
+  return new Promise((resolve) => {
+    const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(query) + '&format=json';
+    https.get(searchUrl, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          const results = parsed?.query?.search || [];
+          if (!results.length) return resolve(null);
+
+          const best = results.find(r => !r.title.toLowerCase().includes('doctor who')) || results[0];
+          const pageId = best.pageid;
+
+          const extractUrl = 'https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsentences=15&pageids=' + pageId + '&format=json';
+          https.get(extractUrl, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res2) => {
+            let data2 = '';
+            res2.on('data', chunk => data2 += chunk);
+            res2.on('end', () => {
+              try {
+                const parsed2 = JSON.parse(data2);
+                const page = parsed2?.query?.pages?.[pageId];
+                if (page && page.extract && page.extract.length > 50) {
+                  resolve(`🧠 **DEEP KNOWLEDGE ANALYSIS: ${page.title.toUpperCase()}**\n\n${page.extract}`);
+                } else resolve(null);
+              } catch (e) { resolve(null); }
+            });
+          }).on('error', () => resolve(null));
+        } catch (e) { resolve(null); }
+      });
+    }).on('error', () => resolve(null));
+  });
+}
+
 function fetchRealTimeWeather(location) {
   return new Promise((resolve) => {
     const url = 'https://wttr.in/' + encodeURIComponent(location) + '?format=j1';
@@ -158,30 +195,6 @@ function fetchRealTimeWeather(location) {
         } catch (e) {
           resolve(null);
         }
-      });
-    }).on('error', () => resolve(null));
-  });
-}
-
-function searchWikipediaDeep(query) {
-  return new Promise((resolve) => {
-    const url = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(query) + '&format=json';
-    https.get(url, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', async () => {
-        try {
-          const parsed = JSON.parse(data);
-          const results = parsed?.query?.search || [];
-          if (!results.length) return resolve(null);
-
-          const best = results.find(r => !r.title.toLowerCase().includes('doctor who')) || results[0];
-          if (best && best.title) {
-            const summary = await fetchWikiSummary(best.title);
-            if (summary) return resolve('**' + best.title + '**\n\n' + summary);
-          }
-          resolve(null);
-        } catch (e) { resolve(null); }
       });
     }).on('error', () => resolve(null));
   });
@@ -253,12 +266,6 @@ function fetchWikiSummary(query) {
       });
     }).on('error', () => resolve(null));
   });
-}
-
-function generateIntelligentResponse(prompt) {
-  return `**Inquiry:** "${prompt}"\n\n` +
-    `**Naruto One AI Analysis:**\n` +
-    `I searched for information on *${prompt}*. Please check that your query is specific or set a valid \`GEMINI_API_KEY\` in your environment variables for live Gemini AI responses!`;
 }
 
 module.exports = { generateAIAnswer };
