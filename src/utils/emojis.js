@@ -31,6 +31,21 @@ module.exports = {
   INFO: '<a:analytics:1530942545893265518>',
   LOADING: '<a:refresh_sleek_premium:1530937141675294730>',
 
+  // --- LOWERCASE & CAMELCASE ALIASES FOR ECONOMY & COMMANDS (ANIMATED DISCORD EMOJIS) ---
+  error: '<:emoji_red_disabled:1529377739302506516>',
+  success: '<:emoji_green_enabled:1529377708012732506>',
+  warning: '<:emoji_warning_alert:1529377755735527465>',
+  coin: '<a:an_star:1531155980753174598>',
+  money: '<a:an_star:1531155980753174598>',
+  bank: '<a:an_quarantine:1530948395328339998>',
+  gem: '<a:an_star:1531155980753174598>',
+  fire: '<a:an_panic:1530948389548724457>',
+  wallet: '<a:an_whitelist:1530948424273362974>',
+  hourglass: '<a:refresh_sleek_premium:1530937141675294730>',
+  sparkle: '<a:an_sparkles:1531061484170383511>',
+  tools: '<a:an_webhook:1530948419164569721>',
+  arrowUp: '<a:analytics:1530942545893265518>',
+
 
 
 
