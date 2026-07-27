@@ -48,6 +48,7 @@ const { dispatchLog } = require('./utils/logger');
 const { initLavalink } = require('./utils/lavalink');
 
 const PREFIX = process.env.PREFIX || '.';
+const everyonePingViolations = new Map();
 
 const client = new Client({
   makeCache: Options.cacheWithLimits({
@@ -1062,44 +1063,79 @@ client.on('messageDelete', async (message) => {
 
 // Message Listener (DM ModMail, AutoMod, Activity, Autoresponder, Autoreact, Sticky Notes, Commands)
 client.on('messageCreate', async (message) => {
-  // ${emojis.SHIELD} STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION (Applies to ALL Users & Added Bots, even with Top Role / Admin!)
+  // 🛡️ STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION
   if (message.guild && (message.content.includes('@everyone') || message.content.includes('@here'))) {
     const antinukeCmd = client.commands.get('antinuke');
     if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
       const antiConfig = antinukeCmd.getOrCreateAntinuke(message.guild.id);
 
       if (antiConfig.enabled && (antiConfig.filters.antiEveryone || antiConfig.panicmode)) {
-        const isAllowed = antinukeCmd.isUserWhitelistedForFeature(antiConfig, message.author.id, 'antiEveryone') || message.author.id === message.guild.ownerId;
+        const isAllowed = message.author.id === message.guild.ownerId || 
+                          antinukeCmd.isUserWhitelistedForFeature(antiConfig, message.author.id, 'everyone') ||
+                          antinukeCmd.isUserWhitelistedForFeature(antiConfig, message.author.id, 'antiEveryone');
 
         if (!isAllowed) {
           // 1. DELETE MASS PING MESSAGE IMMEDIATELY
           await message.delete().catch(() => {});
 
-          // 2. TIMEOUT / LOCKOUT SENDER (User or Bot)
-          if (message.member) {
-            await message.member.timeout(60000, 'AntiEveryone Protection: Unauthorized mass ping').catch(() => {});
+          const violKey = `${message.guild.id}-${message.author.id}`;
+          const currentCount = (everyonePingViolations.get(violKey) || 0) + 1;
+          everyonePingViolations.set(violKey, currentCount);
 
-            if (message.channel && message.channel.permissionOverwrites) {
-              message.channel.permissionOverwrites.edit(message.author.id, {
-                MentionEveryone: false,
-                SendMessages: false
-              }, { reason: 'AntiEveryone Security Lockout' }).catch(() => {});
+          if (message.member) {
+            if (currentCount === 1) {
+              // 1st Violation: 3.5 Hours Timeout (NO channel permission overwrites!)
+              const timeoutMs = 3.5 * 60 * 60 * 1000; // 3.5 Hours
+              await message.member.timeout(timeoutMs, 'AntiEveryone Protection: 1st unauthorized mass ping (3.5h Timeout)').catch(() => {});
+
+              dispatchLog(message.guild, 'antinuke', {
+                color: 0xE67E22,
+                title: `${emojis.SHIELD || '🛡️'} ANTI-EVERYONE MASS PING — 1ST VIOLATION`,
+                description:
+                  `**Unauthorized Mass Ping Intercepted!**\n\n` +
+                  `• **Sender:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
+                  `• **Channel:** <#${message.channel.id}>\n` +
+                  `• **Violation Count:** \`1st Warning\`\n` +
+                  `• **Action Taken:** Message deleted & **3.5 Hours Timeout** applied!\n\n` +
+                  `*Notice: Repeat violation will result in an immediate KICK/BAN from the server.*`,
+                footer: `AntiNuke Mass Ping Guard`
+              });
+            } else if (currentCount === 2) {
+              // 2nd Violation: Direct KICK from server
+              await message.member.kick('AntiEveryone Protection: 2nd unauthorized mass ping violation (Kick)').catch(async () => {
+                // If Kick fails, attempt Ban
+                await message.guild.members.ban(message.author.id, { reason: 'AntiEveryone Protection: 2nd unauthorized mass ping (Ban)' }).catch(() => {});
+              });
+
+              dispatchLog(message.guild, 'antinuke', {
+                color: 0xED4245,
+                title: `${emojis.SHIELD || '🛡️'} ANTI-EVERYONE MASS PING — REPEAT VIOLATION (KICK)`,
+                description:
+                  `**Repeat Unauthorized Mass Ping Intercepted!**\n\n` +
+                  `• **Sender:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
+                  `• **Channel:** <#${message.channel.id}>\n` +
+                  `• **Violation Count:** \`2nd Violation (Repeat)\`\n` +
+                  `• **Action Taken:** Message deleted & **KICKED FROM SERVER**!\n\n` +
+                  `*Notice: Further attempts will result in an automatic permanent BAN.*`,
+                footer: `AntiNuke Mass Ping Guard`
+              });
+            } else {
+              // 3rd+ Violation: Direct BAN from server
+              await message.guild.members.ban(message.author.id, { reason: 'AntiEveryone Protection: 3rd+ unauthorized mass ping violation (Ban)' }).catch(() => {});
+
+              dispatchLog(message.guild, 'antinuke', {
+                color: 0x992D22,
+                title: `${emojis.SHIELD || '🛡️'} ANTI-EVERYONE MASS PING — PERMANENT BAN`,
+                description:
+                  `**Persistent Unauthorized Mass Ping Intercepted!**\n\n` +
+                  `• **Sender:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
+                  `• **Channel:** <#${message.channel.id}>\n` +
+                  `• **Violation Count:** \`${currentCount}rd Violation\`\n` +
+                  `• **Action Taken:** Message deleted & **PERMANENTLY BANNED**!`,
+                footer: `AntiNuke Mass Ping Guard`
+              });
             }
           }
-
-          // 3. DISPATCH SECURITY LOG
-          dispatchLog(message.guild, 'antinuke', {
-            color: 0xED4245,
-            title: '${emojis.SHIELD} ANTI-EVERYONE MASS PING INTERCEPTED',
-            description:
-              `**Unauthorized Mass Ping Blocked!**\n\n` +
-              `• **Sender:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
-              `• **Is Bot:** \`${message.author.bot ? 'Yes' : 'No'}\`\n` +
-              `• **Channel:** <#${message.channel.id}>\n` +
-              `• **Action Taken:** Message deleted, 1-Hour Timeout & MentionEveryone permission stripped!\n\n` +
-              `*Notice: Having a top role or Administrator permission does NOT bypass AntiEveryone protection.*`,
-            footer: `AntiNuke Security System`
-          });
           return;
         }
       }
