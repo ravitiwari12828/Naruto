@@ -187,21 +187,21 @@ function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
 
   return new EmbedBuilder()
     .setColor(isPrem ? 0x7289DA : 0xFF007F)
-    .setAuthor({ name: '🎶 Added to Queue' })
+    .setTitle(`${emojis.MUSIC || '🎶'} Added to Queue`)
     .setThumbnail(artworkUrl)
     .setDescription(
-      `### ✨ Track Information\n\n` +
-      `• 🎵 **Title:** ${title}\n` +
-      `• 🎤 **Artist:** ${artist}\n` +
-      `• ⏱️ **Duration:** \`${durationStr}\`\n` +
-      `• ⚡ **Status:** Position #${position}\n\n` +
+      `### ${emojis.SPARKLES || '✨'} Track Information\n\n` +
+      `• ${emojis.MUSIC || '🎵'} **Title:** ${title}\n` +
+      `• ${emojis.AN_LYRICS || '🎤'} **Artist:** ${artist}\n` +
+      `• ${emojis.AN_LOOP || '⏱️'} **Duration:** \`${durationStr}\`\n` +
+      `• ${emojis.ANALYTICS_ZAP || '⚡'} **Status:** Position #${position}\n\n` +
       `*Track has been queued successfully*\n\n` +
       `---\n\n` +
-      `### 📊 Queue Information\n\n` +
-      `• 📍 **Position:** #${position}\n` +
-      `• 👑 **Queue Type:** ${queueType}\n` +
-      `• 📈 **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
-      `• 🌟 **Status:** ${statusText}\n\n` +
+      `### ${emojis.STATS || '📊'} Queue Information\n\n` +
+      `• ${emojis.AN_STAR || '📍'} **Position:** #${position}\n` +
+      `• ${emojis.OWNER_CROWN || '👑'} **Queue Type:** ${queueType}\n` +
+      `• ${emojis.ANALYTICS_ZAP || '📈'} **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
+      `• ${emojis.AN_STAR || '🌟'} **Status:** ${statusText}\n\n` +
       `${footerNote}`
     )
     .setTimestamp();
