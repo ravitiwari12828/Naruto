@@ -2568,6 +2568,9 @@ client.on('interactionCreate', async (interaction) => {
   // 11. SERVERINFO TAB BUTTONS
   if (interaction.customId && interaction.customId.startsWith('sinfo_')) {
     try {
+      if (interaction.message?.interaction?.user && interaction.user.id !== interaction.message.interaction.user.id) {
+        return interaction.reply({ content: `${emojis.WARNING} **Access Denied**: Only the user who requested this panel can use these buttons.`, flags: 64 }).catch(() => {});
+      }
       await interaction.deferUpdate().catch(() => {});
       const action = interaction.customId.replace('sinfo_', '');
       const infoCmd = client.commands.get('info');

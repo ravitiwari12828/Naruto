@@ -308,6 +308,10 @@ module.exports = {
 
       const collector = msg.createMessageComponentCollector({ time: 300000 });
       collector.on('collect', async (i) => {
+        if (i.user.id !== author.id) {
+          return i.reply({ content: `${emojis.WARNING} **Access Denied**: Only **${author.username}** (who requested this panel) can interact with these controls.`, flags: 64 });
+        }
+
         if (i.customId === 'sinfo_icon') {
           const icon = guild.iconURL({ dynamic: true, size: 1024 });
           const iconEmbed = createStyledEmbed({

@@ -369,6 +369,10 @@ module.exports = {
 
     const collector = msg.createMessageComponentCollector({ time: 300000 });
     collector.on('collect', async (i) => {
+      if (i.user.id !== author.id) {
+        return i.reply({ content: `${emojis.WARNING} **Access Denied**: Only **${author.username}** (who requested this panel) can interact with these controls.`, flags: 64 });
+      }
+
       if (i.customId === 'mm_setup') {
         if (!i.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
           return i.reply({ content: `${emojis.WARNING} Only Administrators can run ModMail setup.`, ephemeral: true });

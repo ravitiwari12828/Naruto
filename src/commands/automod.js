@@ -492,6 +492,11 @@ module.exports = {
     const collector = msg.createMessageComponentCollector({ time: 300000 });
 
     collector.on('collect', async (interaction) => {
+      // PANEL OWNERSHIP CHECK: Only the user who invoked this panel message can interact with it
+      if (interaction.user.id !== author.id) {
+        return interaction.reply({ content: `${emojis.WARNING} **Access Denied**: Only **${author.username}** (who requested this panel) can interact with these controls.`, flags: 64 });
+      }
+
       // Permission Check for interaction
       if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
         return interaction.reply({ content: `${emojis.WARNING} Only Server Managers can edit AutoMod configuration.`, flags: 64 });
