@@ -1,6 +1,7 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { parseDurationMs, formatExpiryText } = require('./noprefix');
+const { createDynamicBox } = require('../utils/boxBuilder');
 
 // Global Premium Stores (ID -> expiresAt | null for Infinite)
 const premiumGuilds = new Map();
@@ -69,12 +70,18 @@ module.exports = {
 
       const expiryText = formatExpiryText(expiresAt);
 
+      const box = createDynamicBox('PREMIUM ACTIVATED', [
+        { key: 'Server ID', value: targetGuildId },
+        { key: 'Duration ', value: expiryText },
+        { key: 'Status   ', value: 'ACTIVE (PREMIUM TIER)' },
+        { key: 'Perks    ', value: '450% Vol, 2x XP, Priority AI' }
+      ]);
+
       const embed = createStyledEmbed({
-        title: `💎 Premium Activated for Guild`,
+        title: `${emojis.PREMIUM || '💎'} Premium Activated for Guild`,
         description:
-          `Server ID **\`${targetGuildId}\`** is now upgraded to **Premium Tier**! ✨\n\n` +
-          `• **Duration**: \`${expiryText}\`\n` +
-          `• **Perks**: High bitrate audio (450% volume limit), 2x XP boost, priority AI & temp voice channels.`,
+          `Server ID **\`${targetGuildId}\`** is now upgraded to **Premium Tier**!\n\n` +
+          '```\n' + box + '\n```',
         requestedBy: author,
         clientUser
       });
@@ -88,9 +95,14 @@ module.exports = {
       const targetGuildId = args[1] || guild.id;
       premiumGuilds.delete(targetGuildId);
 
+      const box = createDynamicBox('PREMIUM REVOKED', [
+        { key: 'Server ID', value: targetGuildId },
+        { key: 'Status   ', value: 'REVOKED (STANDARD TIER)' }
+      ]);
+
       const embed = createStyledEmbed({
         title: `${emojis.WARNING} Premium Revoked from Guild`,
-        description: `Server ID **\`${targetGuildId}\`** premium tier has been revoked.`,
+        description: '```\n' + box + '\n```',
         requestedBy: author,
         clientUser
       });
@@ -111,7 +123,20 @@ module.exports = {
       premiumUsers.set(user.id, expiresAt);
 
       const expiryText = formatExpiryText(expiresAt);
-      return message.reply(`💎 **${user.tag}** has been granted **Premium VIP Status**!\n• **Duration**: \`${expiryText}\` ✨`);
+
+      const box = createDynamicBox('USER VIP ACTIVATED', [
+        { key: 'Username', value: user.username.slice(0, 14) },
+        { key: 'Duration', value: expiryText },
+        { key: 'Status  ', value: 'ACTIVE (VIP USER)' }
+      ]);
+
+      const embed = createStyledEmbed({
+        title: `${emojis.PREMIUM || '💎'} Premium VIP Granted — ${user.username}`,
+        description: '```\n' + box + '\n```',
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
     }
 
     // 4. PREMIUM REVOKE USER (.premium revokeuser @user)
@@ -122,7 +147,7 @@ module.exports = {
       if (!user) return message.reply(`${emojis.WARNING} Mention a user or provide a User ID e.g. \`.premium revokeuser @user\``);
 
       premiumUsers.delete(user.id);
-      return message.reply(`${emojis.WARNING} **${user.tag}** premium status has been revoked.`);
+      return message.reply(`${emojis.WARNING} **${user.username}** premium status has been revoked.`);
     }
 
     // 5. PREMIUM STATUS / CHECK (.premium status)
@@ -133,14 +158,18 @@ module.exports = {
       const guildExp = premiumGuilds.get(guild.id);
       const userExp = premiumUsers.get(author.id);
 
+      const box = createDynamicBox('PREMIUM STATUS DASHBOARD', [
+        { key: 'Server Status', value: isGuildPrem ? 'PREMIUM (ACTIVE)' : 'STANDARD TIER' },
+        { key: 'Server Expiry', value: formatExpiryText(guildExp) },
+        { key: 'User VIP     ', value: isUserPrem ? 'VIP (ACTIVE)' : 'STANDARD USER' },
+        { key: 'User Expiry  ', value: formatExpiryText(userExp) },
+        { key: 'Total Guilds ', value: String(premiumGuilds.size) + ' servers' },
+        { key: 'Total Users  ', value: String(premiumUsers.size) + ' users' }
+      ]);
+
       const embed = createStyledEmbed({
-        title: `💎 Premium Status Dashboard`,
-        fields: [
-          { name: '🏰 Current Server Status', value: isGuildPrem ? `\`PREMIUM GUILD ${emojis.SUCCESS}\`\n(${formatExpiryText(guildExp)})` : '`STANDARD TIER ⚪`', inline: true },
-          { name: '👤 Your User Status', value: isUserPrem ? `\`PREMIUM VIP ${emojis.SUCCESS}\`\n(${formatExpiryText(userExp)})` : '`STANDARD USER ⚪`', inline: true },
-          { name: '💎 Total Premium Guilds', value: `\`${premiumGuilds.size}\` servers`, inline: true },
-          { name: '👤 Total Premium Users', value: `\`${premiumUsers.size}\` users`, inline: true }
-        ],
+        title: `${emojis.PREMIUM || '💎'} Premium Status Dashboard`,
+        description: '```\n' + box + '\n```',
         requestedBy: author,
         clientUser
       });
@@ -148,14 +177,17 @@ module.exports = {
     }
 
     // Default Help
+    const box = createDynamicBox('PREMIUM COMMANDS GUIDE', [
+      '.premium activate [id] [30d|inf]',
+      '.premium revoke [guildId]',
+      '.premium adduser @user [30d|inf]',
+      '.premium revokeuser @user',
+      '.premium status'
+    ]);
+
     const embed = createStyledEmbed({
-      title: `💎 Premium Commands`,
-      description:
-        `\`.premium activate [guildId] [30d / infinite]\` — Grant server Premium\n` +
-        `\`.premium revoke [guildId]\` — Revoke server Premium\n` +
-        `\`.premium adduser @user [30d / infinite]\` — Grant user VIP Premium\n` +
-        `\`.premium revokeuser @user\` — Revoke user VIP Premium\n` +
-        `\`.premium status\` — View active Premium status`,
+      title: `${emojis.PREMIUM || '💎'} Premium Management Suite`,
+      description: '```\n' + box + '\n```',
       requestedBy: author,
       clientUser
     });
