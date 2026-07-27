@@ -24,6 +24,18 @@ http.createServer((req, res) => {
   console.log(`🌐 Keepalive HTTP server listening on port ${PORT}`);
 });
 
+// Render Keepalive Self-Ping Loop (Pings every 10 minutes to prevent Render Free Tier from going to sleep)
+if (process.env.RENDER_EXTERNAL_URL) {
+  const url = process.env.RENDER_EXTERNAL_URL;
+  setInterval(() => {
+    http.get(url, (res) => {
+      console.log(`📡 Keepalive self-ping sent to ${url} (Status: ${res.statusCode})`);
+    }).on('error', (err) => {
+      console.error('⚠️ Keepalive self-ping error:', err.message);
+    });
+  }, 10 * 60 * 1000); // 10 minutes
+}
+
 
 const fs = require('fs');
 const path = require('path');
