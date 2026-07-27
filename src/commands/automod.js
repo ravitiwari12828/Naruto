@@ -180,58 +180,63 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
   const f = config;
   const m = config.misc || {};
 
-  // 1. Help-Menu Style Interactive Select Menu Dropdown
   const selectMenu = new StringSelectMenuBuilder()
-    .setCustomId('automod_category_select')
-    .setPlaceholder('🏷️ Select AutoMod / Miscellaneous Category...')
+    .setCustomId('automod_select_tab')
+    .setPlaceholder('🛡️ Select an AutoMod category...')
     .addOptions([
       {
-        label: 'AutoMod Filters Suite',
+        label: 'AutoMod Main Panel',
+        value: 'tab_overview',
+        description: 'Global overview & active status',
+        emoji: emojis.OBJ_AN_SHIELD || '🛡️',
+        default: activeTab === 'overview'
+      },
+      {
+        label: 'AutoMod Filters',
         value: 'tab_filters',
-        description: 'AntiSpam, Invite Links, Malicious Links & NSFW Links',
-        emoji: emojis.OBJ_SHIELD || emojis.SHIELD || '🛡️',
+        description: 'AntiSpam, Invites, Links, NSFW & Words',
+        emoji: emojis.OBJ_AN_SPAM || '💬',
         default: activeTab === 'filters'
       },
       {
-        label: 'Word & Link Blacklists',
-        value: 'tab_blacklists',
-        description: 'Profanity filter, custom word & URL domain blacklists',
-        emoji: '🔤',
-        default: activeTab === 'blacklists'
+        label: 'Miscellaneous Options',
+        value: 'tab_misc',
+        description: 'AutoPurge, DM Notify & Staff Privacy',
+        emoji: emojis.OBJ_AN_WEBHOOK || '⚙️',
+        default: activeTab === 'misc'
       },
       {
-        label: 'Miscellaneous Settings',
-        value: 'tab_misc',
-        description: 'Log channels, prefix, timeout duration, DM settings',
-        emoji: emojis.OBJ_GEAR || emojis.GEAR || '🛡️',
-        default: activeTab === 'misc'
+        label: 'Word & Category Manager',
+        value: 'tab_words',
+        description: 'Custom word & link blacklist list',
+        emoji: emojis.OBJ_AN_ROLE || '🔤',
+        default: activeTab === 'words'
       },
       {
         label: 'AntiBot Security',
         value: 'tab_antibot',
         description: 'Whitelisted bots & join protection',
-        emoji: '🤖',
+        emoji: emojis.OBJ_AN_BOT || '🤖',
         default: activeTab === 'antibot'
       }
     ]);
 
   const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
-  // 2. Compact Pure-Emoji Secondary Buttons (Mobile Friendly)
   const buttonRow1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('am_btn_spam').setEmoji('💬').setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_invites').setEmoji('📢').setStyle(f.inviteLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji(emojis.OBJ_SHIELD || emojis.SHIELD || '🛡️').setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_nsfw').setEmoji('🔞').setStyle(f.nsfwLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_words').setEmoji('🔤').setStyle(f.profanity ? ButtonStyle.Success : ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('am_btn_spam').setEmoji(emojis.OBJ_AN_SPAM || '💬').setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_invites').setEmoji(emojis.OBJ_AN_WEBHOOK || '📢').setStyle(f.inviteLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji(emojis.OBJ_AN_SHIELD || '🛡️').setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_nsfw').setEmoji(emojis.OBJ_AN_PANIC || '🔞').setStyle(f.nsfwLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_words').setEmoji(emojis.OBJ_AN_ROLE || '🔤').setStyle(f.profanity ? ButtonStyle.Success : ButtonStyle.Secondary)
   );
 
   const buttonRow2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('am_btn_confirm').setEmoji('📝').setStyle(m.moderatorConfirmation !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_dm').setEmoji('📬').setStyle(m.alwaysDmPunished !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_anon').setEmoji('🎭').setStyle(m.hideStaffIdentity ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_purge').setEmoji('🗑️').setStyle(m.autoPurgeMessages ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_refresh').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('am_btn_confirm').setEmoji(emojis.OBJ_AN_WHITELIST || '📝').setStyle(m.moderatorConfirmation !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_dm').setEmoji(emojis.OBJ_AN_BOT || '📬').setStyle(m.alwaysDmPunished !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_anon').setEmoji(emojis.OBJ_AN_ROLE || '🎭').setStyle(m.hideStaffIdentity ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_purge').setEmoji(emojis.OBJ_AN_BAN || '🗑️').setStyle(m.autoPurgeMessages ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_refresh').setEmoji(emojis.OBJ_REFRESH || '🔄').setStyle(ButtonStyle.Secondary)
   );
 
   return [selectRow, buttonRow1, buttonRow2];
