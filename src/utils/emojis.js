@@ -32,8 +32,8 @@ module.exports = {
   LOADING: '<a:refresh_sleek_premium:1530937141675294730>',
 
   // --- LOWERCASE & CAMELCASE ALIASES FOR ECONOMY & COMMANDS (ANIMATED DISCORD EMOJIS) ---
-  GEAR: '<:emoji_settings_gear:1529377750861742111>',
-  gear: '<:emoji_settings_gear:1529377750861742111>',
+  GEAR: '<a:an_bot:1530948362784870510>',
+  gear: '<a:an_bot:1530948362784870510>',
   error: '<:emoji_red_disabled:1529377739302506516>',
   success: '<:emoji_green_enabled:1529377708012732506>',
   warning: '<:emoji_warning_alert:1529377755735527465>',
@@ -123,7 +123,7 @@ module.exports = {
   OBJ_PREMIUM: { name: 'emoji_premium', id: '1529532998397984790' },
   OBJ_ZAP: { name: 'analytics', id: '1530942545893265518', animated: true },
   OBJ_TOOLS: { name: 'channel_mod', id: '1530942581217689731' },
-  OBJ_GEAR: { name: 'emoji_GEAR', id: '1529377705701933066' },
+  OBJ_GEAR: { name: 'an_bot', id: '1530948362784870510', animated: true },
   OBJ_AUTORESPOND: { name: 'autoresponder', id: '1530942573705822409', animated: true },
   OBJ_SHIELD: { name: 'automod', id: '1530942568970326219', animated: true },
   OBJ_NARUTO: { name: 'orange_white_naruto_swirl', id: '1529377765998989353' },
