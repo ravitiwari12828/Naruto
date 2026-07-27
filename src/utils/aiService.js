@@ -6,7 +6,7 @@ const https = require('https');
  * 1. Google Gemini API (gemini-1.5-flash & gemini-2.0-flash with 12s timeout & key sanitization)
  * 2. Real-Time Weather & Temperature Integration (wttr.in JSON API)
  * 3. Multilingual Code Generator (Python, C++, Java, JS, HTML/CSS, SQL)
- * 4. Parallel DuckDuckGo & Wikipedia Knowledge Search
+ * 4. Deep Wikipedia & Knowledge Search Engine (searchWikipediaDeep)
  */
 async function generateAIAnswer(prompt, mode = 'general') {
   if (!prompt || !prompt.trim()) {
@@ -51,7 +51,7 @@ async function generateAIAnswer(prompt, mode = 'general') {
       }
     }
   } else {
-    console.log('[AI Engine Notice]: GEMINI_API_KEY environment variable is not set. Using DuckDuckGo & Wikipedia knowledge search.');
+    console.log('[AI Engine Notice]: GEMINI_API_KEY environment variable is not set. Using Deep Knowledge Search.');
   }
 
   // 3. Multilingual Code Generation Engine for .code or programming prompts
@@ -59,7 +59,14 @@ async function generateAIAnswer(prompt, mode = 'general') {
     return generateCodeSnippet(cleanPrompt);
   }
 
-  // 4. Knowledge Engine Lookup for general questions ("who is naruto", "what is google", "give info about akbar")
+  // 4. Deep Knowledge Engine Search (Wikipedia & DuckDuckGo)
+  try {
+    const deepKnowledgeRes = await searchWikipediaDeep(cleanPrompt);
+    if (deepKnowledgeRes && deepKnowledgeRes.length > 30) {
+      return deepKnowledgeRes;
+    }
+  } catch (e) {}
+
   const subject = extractSubject(cleanPrompt);
   if (subject) {
     try {
@@ -151,6 +158,30 @@ function fetchRealTimeWeather(location) {
         } catch (e) {
           resolve(null);
         }
+      });
+    }).on('error', () => resolve(null));
+  });
+}
+
+function searchWikipediaDeep(query) {
+  return new Promise((resolve) => {
+    const url = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(query) + '&format=json';
+    https.get(url, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', async () => {
+        try {
+          const parsed = JSON.parse(data);
+          const results = parsed?.query?.search || [];
+          if (!results.length) return resolve(null);
+
+          const best = results.find(r => !r.title.toLowerCase().includes('doctor who')) || results[0];
+          if (best && best.title) {
+            const summary = await fetchWikiSummary(best.title);
+            if (summary) return resolve('**' + best.title + '**\n\n' + summary);
+          }
+          resolve(null);
+        } catch (e) { resolve(null); }
       });
     }).on('error', () => resolve(null));
   });
