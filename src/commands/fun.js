@@ -337,6 +337,8 @@ module.exports = {
   ],
 
   async execute(message, args) {
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     const target = (message.mentions.members && typeof message.mentions.members.first === 'function')
       ? message.mentions.members.first()
       : (message.mentions.users && typeof message.mentions.users.first === 'function' ? message.mentions.users.first() : null) || message.member;

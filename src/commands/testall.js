@@ -1,4 +1,4 @@
-const { EmbedBuilder, Collection } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection } = require('discord.js');
 const emojis = require('../utils/emojis');
 const config = require('../config');
 const { isBotOwner } = require('../utils/owners');
@@ -6,7 +6,7 @@ const { isBotOwner } = require('../utils/owners');
 module.exports = {
   name: 'testall',
   aliases: ['testsuite', 'testcmds', 'diag', 'auditcmds'],
-  description: 'Owner Command: Runs a dry-run diagnostic test on all bot commands and reports any flaws or errors.',
+  description: 'Owner Command: Runs a dry-run diagnostic test on all bot commands and reports working vs flawed commands in detail.',
   usage: '.testall [module_name]',
   cooldown: 5000,
   async execute(message, args) {
@@ -20,7 +20,6 @@ module.exports = {
     const commandsMap = message.client.commands;
     const uniqueCommands = new Map();
 
-    // Deduplicate commands (filter out alias mappings pointing to the same command object)
     for (const [name, cmd] of commandsMap.entries()) {
       if (cmd && cmd.name && !uniqueCommands.has(cmd.name)) {
         uniqueCommands.set(cmd.name, cmd);
@@ -44,14 +43,12 @@ module.exports = {
     const passed = [];
     const flaws = [];
 
-    // Mock message object for safe dry-run execution
     const dummyUser = message.author;
     const dummyMember = message.member;
     const dummyGuild = message.guild;
 
     for (const cmd of testList) {
       try {
-        // Create mock context that intercepts sends/replies without spamming Discord
         const mockMessage = Object.create(message);
         mockMessage.author = dummyUser;
         mockMessage.member = dummyMember;
@@ -64,6 +61,7 @@ module.exports = {
           sendTyping: async () => {}
         };
         mockMessage.reply = async () => ({ edit: async () => {} });
+
         const mockUsers = new Collection([[dummyUser.id, dummyUser]]);
         const mockMembers = new Collection([[dummyUser.id, dummyMember]]);
         const mockChannels = new Collection([[message.channel.id, message.channel]]);
@@ -76,24 +74,23 @@ module.exports = {
           roles: mockRoles
         };
 
-        // Dummy arguments array
         const dummyArgs = [dummyUser.id, '100', 'test', 'red'];
 
-        // Dry run execute call inside try/catch block
         const result = cmd.execute(mockMessage, dummyArgs);
         if (result && typeof result.then === 'function') {
           await Promise.race([
             result,
             new Promise((_, reject) => setTimeout(() => reject(new Error('Async execution timeout (500ms)')), 500))
           ]).catch(asyncErr => {
-            // Ignore normal user input validation errors, record unhandled code crashes
             if (asyncErr && !asyncErr.message.includes('timeout') && !asyncErr.message.includes('Unknown') && !asyncErr.message.includes('Missing Permissions')) {
               flaws.push({ name: cmd.name, error: asyncErr.message || String(asyncErr) });
             }
           });
         }
 
-        passed.push(cmd.name);
+        if (!flaws.some(f => f.name === cmd.name)) {
+          passed.push(cmd.name);
+        }
       } catch (err) {
         flaws.push({ name: cmd.name, error: err.message || String(err) });
       }
@@ -101,25 +98,24 @@ module.exports = {
 
     const totalCount = testList.length;
     const flawCount = flaws.length;
-    const passCount = totalCount - flawCount;
+    const passCount = passed.length;
 
-    const flawLines = flaws.length > 0
-      ? flaws.slice(0, 15).map((f, i) => `**${i + 1}. .${f.name}**\n-# ❌ Flaw: \`${f.error}\``).join('\n\n')
-      : `${emojis.success} **Zero Flaws Detected!** All tested commands executed cleanly without any code crashes.`;
-
-    const reportEmbed = new EmbedBuilder()
+    const renderOverview = () => new EmbedBuilder()
       .setColor(flawCount > 0 ? config.warnColor : config.successColor)
       .setAuthor({ name: 'System Command Diagnostic Suite', iconURL: message.client.user.displayAvatarURL() })
-      .setTitle(`🧪 Command Diagnostic & Flaw Audit Report`)
+      .setTitle(`🧪 Full System Audit & Command Health Report`)
       .setDescription(
         `Tested **${totalCount}** commands${filterModule ? ` in module \`${filterModule}\`` : ''}.\n\n` +
-        `✅ **Passed / Operational:** \`${passCount}\`\n` +
-        `⚠️ **Flaws / Issues Detected:** \`${flawCount}\`\n\n` +
-        `__**Diagnostic Findings:**__\n${flawLines}`
+        `✅ **Passed / Operational (${passCount}/${totalCount}):**\n` +
+        (passed.length > 0 ? passed.map(c => `\`${c}\``).join(', ') : 'None') + `\n\n` +
+        `⚠️ **Flaws / Issues Detected (${flawCount}/${totalCount}):**\n` +
+        (flaws.length > 0
+          ? flaws.map((f, i) => `**${i + 1}. .${f.name}** — \`${f.error}\``).join('\n')
+          : `${emojis.success} All commands passed cleanly with 0 flaws!`)
       )
-      .setFooter({ text: `Audit completed at ${new Date().toLocaleTimeString('en-US')}` })
+      .setFooter({ text: `Audit completed at ${new Date().toLocaleTimeString('en-US')} • Operational rate: ${Math.round((passCount / totalCount) * 100)}%` })
       .setTimestamp();
 
-    return statusMsg.edit({ content: ' ', embeds: [reportEmbed] });
+    return statusMsg.edit({ content: ' ', embeds: [renderOverview()] });
   },
 };
