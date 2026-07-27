@@ -42,6 +42,10 @@ function createStyledEmbed({
     }
   }
 
+  let botIcon = (botUserObj && typeof botUserObj.displayAvatarURL === 'function')
+    ? botUserObj.displayAvatarURL({ dynamic: true, size: 512 })
+    : null;
+
   const embed = new EmbedBuilder().setColor(color);
 
   // Author header: plain text author name + BOT avatar
