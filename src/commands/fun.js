@@ -405,9 +405,8 @@ async function fetchActionAnimeGif(action) {
   const key = ALIASES[action] || action;
 
   const sources = [
-    `https://api.otakugifs.xyz/gif?reaction=${key}`,
-    `https://nekos.life/api/v2/img/${key}`,
-    `https://purrbot.site/api/img/sfw/${key}/gif`
+    `https://purrbot.site/api/img/sfw/${key}/gif`,
+    `https://api.otakugifs.xyz/gif?reaction=${key}`
   ];
 
   for (const url of sources) {
@@ -425,7 +424,7 @@ async function fetchActionAnimeGif(action) {
   }
 
   const ACTION_FALLBACKS = {
-    pat: ['https://cdn.nekos.life/pat/pat_031.gif', 'https://cdn.purrbot.site/sfw/pat/gif/pat_018.gif'],
+    pat: ['https://cdn.purrbot.site/sfw/pat/gif/pat_018.gif'],
     hug: ['https://cdn.otakugifs.xyz/gifs/hug/d6b2dfe0ae69b8d0.gif', 'https://cdn.purrbot.site/sfw/hug/gif/hug_061.gif'],
     kiss: ['https://cdn.otakugifs.xyz/gifs/kiss/1a12a524e75eb82b.gif'],
     slap: ['https://cdn.otakugifs.xyz/gifs/slap/99d7a3247ec4bd51.gif'],
@@ -442,7 +441,7 @@ async function fetchActionAnimeGif(action) {
   };
 
   const fallbacks = ACTION_FALLBACKS[key] || [
-    'https://cdn.nekos.life/pat/pat_031.gif',
+    'https://cdn.purrbot.site/sfw/pat/gif/pat_018.gif',
     'https://cdn.otakugifs.xyz/gifs/hug/d6b2dfe0ae69b8d0.gif'
   ];
   return fallbacks[Math.floor(Math.random() * fallbacks.length)];

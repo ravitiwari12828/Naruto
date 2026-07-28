@@ -2,15 +2,17 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const db = require('../database/db');
 
-// Verified Anime Aesthetic Direct Image Collections (Gender & Category Accurate)
+// Verified Safe & Family-Friendly SFW Anime Collections
 const ANIME_PFP_COLLECTION = {
   animes: [
-    'https://media.kitsu.app/characters/images/221/original.jpg', // Naruto
-    'https://media.kitsu.app/characters/images/388/original.jpg', // Itachi
-    'https://media.kitsu.app/characters/images/91221/original.jpg', // Hinata
-    'https://media.kitsu.app/characters/images/74558/original.jpg', // Nezuko
-    'https://cdn.nekos.life/avatar/avatar_01.png',
-    'https://cdn.nekos.life/avatar/avatar_05.png'
+    'https://media.kitsu.app/characters/images/221/original.jpg', // Naruto Uzumaki
+    'https://media.kitsu.app/characters/images/388/original.jpg', // Itachi Uchiha
+    'https://media.kitsu.app/characters/images/91221/original.jpg', // Hinata Hyuga
+    'https://media.kitsu.app/characters/images/74558/original.jpg', // Nezuko Kamado
+    'https://media.kitsu.app/characters/images/39556/original.jpg', // Levi Ackerman
+    'https://media.kitsu.app/characters/images/28725/original.jpg', // Sasuke Uchiha
+    'https://media.kitsu.app/characters/images/411/original.jpg', // Monkey D. Luffy
+    'https://media.kitsu.app/characters/images/22784/original.jpg' // Kaguya Shinomiya
   ],
   boys: [
     'https://media.kitsu.app/characters/images/221/original.jpg', // Naruto Uzumaki
@@ -30,65 +32,41 @@ const ANIME_PFP_COLLECTION = {
     'https://media.kitsu.app/characters/images/17472/original.jpg', // Emilia
     'https://media.kitsu.app/characters/images/6553/original.jpg', // Saber
     'https://media.kitsu.app/characters/images/408/original.jpg', // Nami
-    'https://media.kitsu.app/characters/images/22784/original.jpg', // Kaguya Shinomiya
-    'https://cdn.nekos.life/neko/neko046.png',
-    'https://cdn.nekos.life/neko/neko202.jpeg'
+    'https://media.kitsu.app/characters/images/22784/original.jpg' // Kaguya Shinomiya
   ],
   couples: [
-    'https://cdn.otakugifs.xyz/gifs/hug/d6b2dfe0ae69b8d0.gif',
     'https://cdn.purrbot.site/sfw/hug/gif/hug_061.gif',
     'https://cdn.purrbot.site/sfw/hug/gif/hug_087.gif',
-    'https://api.kawaii.red/gif/hug/hug18.gif'
+    'https://cdn.purrbot.site/sfw/hug/gif/hug_012.gif',
+    'https://cdn.purrbot.site/sfw/cuddle/gif/cuddle_001.gif'
   ],
   banners: [
-    'https://cdn.nekos.life/wallpaper/sSlML-mWFXA.jpg',
-    'https://cdn.nekos.life/wallpaper/kAw8QHl_wbM.jpg'
+    'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&auto=format&fit=crop&q=80', // Anime Sunset Scenery
+    'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop&q=80', // Anime Night Sky
+    'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80', // Japanese Cherry Blossoms
+    'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200&auto=format&fit=crop&q=80', // Kyoto Pagoda Scenery
+    'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1200&auto=format&fit=crop&q=80', // Tokyo Neon Lights
+    'https://images.unsplash.com/photo-1528164344705-47542687990d?w=1200&auto=format&fit=crop&q=80'  // Mount Fuji Scenery
   ]
 };
 
 async function fetchDynamicAnimeImage(category) {
-  if (category === 'boys') {
-    const list = ANIME_PFP_COLLECTION.boys;
-    return list[Math.floor(Math.random() * list.length)];
+  const list = ANIME_PFP_COLLECTION[category] || ANIME_PFP_COLLECTION['animes'];
+
+  if (category === 'couples') {
+    try {
+      const res = await fetch('https://purrbot.site/api/img/sfw/hug/gif', {
+        headers: { 'User-Agent': 'Mozilla/5.0' },
+        signal: AbortSignal.timeout(3000)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.link) return data.link;
+      }
+    } catch (e) {}
   }
 
-  const apis = {
-    girls: [
-      'https://nekos.life/api/v2/img/neko',
-      'https://nekos.life/api/v2/img/fox_girl',
-      'https://nekos.life/api/v2/img/waifu'
-    ],
-    animes: [
-      'https://nekos.life/api/v2/img/avatar',
-      'https://nekos.life/api/v2/img/fox_girl'
-    ],
-    couples: [
-      'https://api.otakugifs.xyz/gif?reaction=hug',
-      'https://purrbot.site/api/img/sfw/hug/gif',
-      'https://kawaii.red/api/gif/hug/token=anonymous/'
-    ],
-    banners: [
-      'https://nekos.life/api/v2/img/wallpaper'
-    ]
-  };
-
-  const list = apis[category] || apis.animes;
-  const urlToFetch = list[Math.floor(Math.random() * list.length)];
-
-  try {
-    const response = await fetch(urlToFetch, {
-      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-      signal: AbortSignal.timeout(4000)
-    });
-    if (response.ok) {
-      const data = await response.json();
-      const imgUrl = data.url || data.link || data.response || (data.results && data.results[0]?.url) || (data.images && data.images[0]?.url);
-      if (imgUrl && typeof imgUrl === 'string') return imgUrl;
-    }
-  } catch (e) {}
-
-  const fallbacks = ANIME_PFP_COLLECTION[category] || ANIME_PFP_COLLECTION['animes'];
-  return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  return list[Math.floor(Math.random() * list.length)];
 }
 
 module.exports = {
