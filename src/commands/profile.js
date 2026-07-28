@@ -2,7 +2,10 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const db = require('../database/db');
 
-// Verified Safe & Family-Friendly SFW Anime Collections
+// Recent History Tracker to Prevent Back-to-Back Duplicates
+const userImageHistory = new Map();
+
+// Verified Safe & Family-Friendly SFW Anime Collections (Includes Animated GIFs & Static Art)
 const ANIME_PFP_COLLECTION = {
   animes: [
     'https://media.kitsu.app/characters/images/221/original.jpg', // Naruto Uzumaki
@@ -12,7 +15,11 @@ const ANIME_PFP_COLLECTION = {
     'https://media.kitsu.app/characters/images/39556/original.jpg', // Levi Ackerman
     'https://media.kitsu.app/characters/images/28725/original.jpg', // Sasuke Uchiha
     'https://media.kitsu.app/characters/images/411/original.jpg', // Monkey D. Luffy
-    'https://media.kitsu.app/characters/images/22784/original.jpg' // Kaguya Shinomiya
+    'https://media.kitsu.app/characters/images/22784/original.jpg', // Kaguya Shinomiya
+    'https://media.kitsu.app/characters/images/60601/original.jpg', // Osamu Dazai
+    'https://media.kitsu.app/characters/images/2818/original.jpg', // Killua Zoldyck
+    'https://media.kitsu.app/characters/images/15789/original.jpg', // Rem
+    'https://media.kitsu.app/characters/images/17472/original.jpg' // Emilia
   ],
   boys: [
     'https://media.kitsu.app/characters/images/221/original.jpg', // Naruto Uzumaki
@@ -41,16 +48,29 @@ const ANIME_PFP_COLLECTION = {
     'https://cdn.purrbot.site/sfw/cuddle/gif/cuddle_001.gif'
   ],
   banners: [
+    // --- ANIMATED ANIME BANNERS (GIFs) ---
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcjIyeTR1ZXlzbmxnaXZyMGtsYngxdzh4NXRwb2Y1bTRudXRmOTlzMCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/3oKIPnAiaMCws8nOsE/giphy.gif', // Naruto Rasengan Animated GIF
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExeGJ3cmZ4czY2a3Zyd2o1bXQ4YnlraXFmZnZpZTFzOXA5bndxdG80dSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/d13r3p8x0M1Lq/giphy.gif', // Kakashi Lightning Blade Animated GIF
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbnZzaHQwdWJqamMwbWJjZjZkMnhjMHRmdWJqbjcxb3ZtbW95cnlhcyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/t6f2bNA47yp88JP24N/giphy.gif', // Demon Slayer Animated GIF
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMmw0NXEycGl0ZmxldnBhNHFycWN4aXRmdDFyN2s0MnJtbWRxMjU5YSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/13hxeOYjoNJtK0/giphy.gif', // Cyberpunk Rain Anime GIF
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExMnY2NDJtbTNrMGJkMnZ2dzQ5Mm5iZjlscThoNmdyNXN4N3l4cG9idCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/26tn33aiTi1jkl6H6/giphy.gif', // Anime Cherry Blossom Wind GIF
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNXAxeWVmbjJ5bGJicWhraGszNXlycXJxbndvNHVvNmpwOHhha3c0NSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlTy9x899OKhJ8k/giphy.gif', // Anime Pixel City Night GIF
+    'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcDExaXkyYnVraGVpdWZzNGtrOXV4NG5nOHdtNThpNWc5cGk2bTJ0MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/xT1XGvD852Nn1uX7lm/giphy.gif', // Anime Sky Stars GIF
+
+    // --- HIGH-RES AESTHETIC SCENERY & ARTWORK BANNERS ---
     'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&auto=format&fit=crop&q=80', // Anime Sunset Scenery
-    'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop&q=80', // Anime Night Sky
+    'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop&q=80', // Anime Night Sky & Stars
     'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80', // Japanese Cherry Blossoms
     'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200&auto=format&fit=crop&q=80', // Kyoto Pagoda Scenery
-    'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1200&auto=format&fit=crop&q=80', // Tokyo Neon Lights
-    'https://images.unsplash.com/photo-1528164344705-47542687990d?w=1200&auto=format&fit=crop&q=80'  // Mount Fuji Scenery
+    'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1200&auto=format&fit=crop&q=80', // Tokyo Neon City
+    'https://images.unsplash.com/photo-1528164344705-47542687990d?w=1200&auto=format&fit=crop&q=80', // Mount Fuji Sunset
+    'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=1200&auto=format&fit=crop&q=80', // Anime Aesthetic Room
+    'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80', // Abstract Anime Waves
+    'https://images.unsplash.com/photo-1563089145-599997674d42?w=1200&auto=format&fit=crop&q=80'  // Cyberpunk Neon Glow
   ]
 };
 
-async function fetchDynamicAnimeImage(category) {
+async function fetchDynamicAnimeImage(category, userId = 'default') {
   const list = ANIME_PFP_COLLECTION[category] || ANIME_PFP_COLLECTION['animes'];
 
   if (category === 'couples') {
@@ -66,7 +86,16 @@ async function fetchDynamicAnimeImage(category) {
     } catch (e) {}
   }
 
-  return list[Math.floor(Math.random() * list.length)];
+  const historyKey = `${userId}_${category}`;
+  const lastIndex = userImageHistory.get(historyKey);
+
+  let nextIndex = Math.floor(Math.random() * list.length);
+  if (list.length > 1 && nextIndex === lastIndex) {
+    nextIndex = (nextIndex + 1) % list.length;
+  }
+
+  userImageHistory.set(historyKey, nextIndex);
+  return list[nextIndex];
 }
 
 module.exports = {
@@ -138,11 +167,11 @@ module.exports = {
 
     // .animes, .banners, .boys, .couples, .girls
     if (['animes', 'banners', 'boys', 'couples', 'girls'].includes(invoked)) {
-      const imageUrl = await fetchDynamicAnimeImage(invoked);
+      const imageUrl = await fetchDynamicAnimeImage(invoked, author.id);
 
       const titles = {
         animes: '🎌 Dynamic Anime PFP',
-        banners: '🖼️ Dynamic Anime Header Banner',
+        banners: '🖼️ Dynamic Animated Anime Banner',
         boys: '👦 Dynamic Anime Boy PFP',
         girls: '👧 Dynamic Anime Girl PFP',
         couples: '👩‍❤️‍👨 Dynamic Matching Couple PFP'
@@ -179,7 +208,7 @@ module.exports = {
         `**🖼️ Dynamic Avatar Commands**\n` +
         `\`\`\`\n` +
         `.animes   - Random aesthetic anime PFP\n` +
-        `.banners  - Random anime header banner\n` +
+        `.banners  - Random animated anime banner & GIF\n` +
         `.boys     - Random anime boy avatar\n` +
         `.girls    - Random anime girl avatar\n` +
         `.couples  - Random matching couple avatars\n` +
