@@ -6,7 +6,7 @@ const { isBotOwner } = require('../utils/owners');
 const botLockStore = {
   lockdownEnabled: true, // Default: Private Lockdown Mode (Only Owner Authorized Servers)
   whitelistedGuilds: new Set(),
-  allowedOwners: new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237'])
+  allowedOwners: new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237', '1446040693725466687'])
 };
 
 /**

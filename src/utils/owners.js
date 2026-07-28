@@ -14,7 +14,8 @@ const MAIN_BOT_OWNER_IDS = new Set([
 ]);
 
 const EXTRA_BOT_OWNER_IDS = new Set([
-  '1514546738055348237'  // Bot Extra Owner
+  '1514546738055348237', // Bot Extra Owner
+  '1446040693725466687'  // Bot Extra Owner
 ]);
 
 /**

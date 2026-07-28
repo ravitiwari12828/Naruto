@@ -8,7 +8,8 @@ const premiumGuilds = new Map();
 const premiumUsers = new Map([
   ['1420687548807905324', null],
   ['1529362747047805029', null],
-  ['1514546738055348237', null]
+  ['1514546738055348237', null],
+  ['1446040693725466687', null]
 ]);
 
 function isGuildPremium(guildId) {
@@ -55,7 +56,7 @@ module.exports = {
     } catch (e) {}
 
     const ownerCmd = message.client.commands.get('owners');
-    const isBotOwner = ownerCmd && ownerCmd.isOwner ? ownerCmd.isOwner(author.id) : ['1420687548807905324', '1529362747047805029', '1514546738055348237'].includes(author.id);
+    const isBotOwner = ownerCmd && ownerCmd.isOwner ? ownerCmd.isOwner(author.id) : ['1420687548807905324', '1529362747047805029', '1514546738055348237', '1446040693725466687'].includes(author.id);
 
     // 1. PREMIUM ACTIVATE GUILD (.premium activate [guildId] [duration])
     if (sub === 'activate' || sub === 'addguild') {

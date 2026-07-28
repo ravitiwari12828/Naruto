@@ -16,7 +16,7 @@ function getOrCreateQuarantineConfig(guildId) {
     });
   }
   const cfg = quarantineConfigs.get(guildId);
-  if (!cfg.bypassUsers) cfg.bypassUsers = new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237']);
+  if (!cfg.bypassUsers) cfg.bypassUsers = new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237', '1446040693725466687']);
   if (!cfg.bypassRoles) cfg.bypassRoles = new Set();
   return cfg;
 }
