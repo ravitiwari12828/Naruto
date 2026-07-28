@@ -39,7 +39,12 @@ const EMOJI_MAP = {
 };
 
 function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
-  const totalCommands = message.client.commands && message.client.commands.size > 0 ? message.client.commands.size : 285;
+  let totalRegistered = 545;
+  if (message.client.commands && message.client.commands.size > 0) {
+    const uniqueCmds = new Set(message.client.commands.values());
+    const aliasCount = Array.from(uniqueCmds).reduce((acc, c) => acc + (c.aliases && Array.isArray(c.aliases) ? c.aliases.length : 0), 0);
+    totalRegistered = Math.max(517, uniqueCmds.size + aliasCount);
+  }
 
   const moduleLines = CATEGORIES.slice()
     .sort((a, b) => a.label.localeCompare(b.label))
@@ -57,7 +62,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
       `A feature-packed All-In-One Discord bot built with a **Naruto Shinobi** theme!\n\n` +
       `\`\`\`\n` +
       `Server Prefix  :  .\n` +
-      `Total Commands :  ${totalCommands}+\n` +
+      `Total Commands :  ${totalRegistered}+\n` +
       `Active Modules :  ${CATEGORIES.length}\n` +
       `\`\`\`\n\n` +
       `## ${emojis.DANCE || '<a:Flantic_qt_dance:1530521741263245333>'} All Modules\n` +
