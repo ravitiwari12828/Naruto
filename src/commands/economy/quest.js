@@ -32,15 +32,20 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(complete ? config.successColor : config.embedColor)
-      .setTitle(`${emojis.target} Daily Quest`)
-      .setDescription(`**${q.label}**\n\n${bar}  ${Math.min(q.progress, q.target)}/${q.target}\n\nReward: **${fmt(q.reward)}** ${emojis.coin}`)
-      .setFooter({ text: complete ? (q.claimed ? 'Already claimed — check back tomorrow!' : 'Complete! Run .quest claim to collect your reward.') : 'Resets daily.' });
+      .setTitle(`${emojis.target || '🎯'} Shinobi Daily Mission Quest`)
+      .setDescription(
+        `📜 **Mission Goal:**\n` +
+        `**${q.label}**\n\n` +
+        `\`[${bar}]\` **${Math.min(q.progress, q.target)} / ${q.target}** (${Math.round((Math.min(q.progress, q.target) / q.target) * 100)}%)\n\n` +
+        `💰 **Mission Reward:** **${fmt(q.reward)}** ${emojis.coin}`
+      )
+      .setFooter({ text: complete ? (q.claimed ? 'Mission complete & claimed — check back tomorrow!' : 'Mission complete! Type .quest claim to collect your reward.') : 'Missions reset daily.' });
 
     if (complete && !q.claimed && message.content.split(/\s+/)[1]?.toLowerCase() === 'claim') {
       eco.balance += q.reward;
       eco.quest.claimed = true;
       db.setEconomy(message.guild.id, message.author.id, eco);
-      embed.setColor(config.successColor).setFooter({ text: `Claimed +${fmt(q.reward)} coins!` });
+      embed.setColor(config.successColor).setFooter({ text: `Claimed +${fmt(q.reward)} Ryo reward!` });
     }
 
     await message.channel.send({ embeds: [embed] });

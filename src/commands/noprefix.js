@@ -85,14 +85,17 @@ module.exports = {
       return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can manage No-Prefix access.`);
     }
 
-    // 1. .noprefix add @user [time/infinite]
-    if (sub === 'add') {
+    // 1. .noprefix add / permanent / lifetime @user [time]
+    if (['add', 'perm', 'permanent', 'lifetime', 'life'].includes(sub)) {
       const user = message.mentions.users.first() || message.client.users.cache.get(args[1]);
-      if (!user) return message.reply(`${emojis.WARNING} Usage: \`.noprefix add @user [7d / 30d / infinite]\``);
+      if (!user) return message.reply(`${emojis.WARNING} Usage: \`.noprefix add @user [7d / 30d / infinite]\` or \`.noprefix permanent @user\``);
 
-      const timeArg = args[2] || args[1];
+      let timeArg = args[2] || args[1];
+      if (['perm', 'permanent', 'lifetime', 'life'].includes(sub)) {
+        timeArg = 'infinite';
+      }
+
       const durationMs = parseDurationMs(timeArg);
-
       const expiresAt = durationMs ? (Date.now() + durationMs) : null;
       noPrefixStore.set(user.id, expiresAt);
 
@@ -100,7 +103,20 @@ module.exports = {
       return message.reply(`⚡ **${user.tag}** (\`${user.id}\`) has been granted **No-Prefix Access**!\n• **Duration**: \`${expiryText}\``);
     }
 
-    // 2. .noprefix remove @user
+    // 2. .noprefix resettime / cleartime / removetime @user (Removes expiration timer & makes lifetime)
+    if (['resettime', 'cleartime', 'removetime', 'unlim'].includes(sub)) {
+      const user = message.mentions.users.first() || message.client.users.cache.get(args[1]);
+      if (!user) return message.reply(`${emojis.WARNING} Usage: \`.noprefix resettime @user\``);
+
+      if (!noPrefixStore.has(user.id)) {
+        return message.reply(`${emojis.WARNING} **${user.tag}** does not have active No-Prefix access.`);
+      }
+
+      noPrefixStore.set(user.id, null); // Set to permanent / lifetime
+      return message.reply(`${emojis.SUCCESS} **${user.tag}**'s No-Prefix expiration timer has been **removed**! Access is now **Permanent / Lifetime**.`);
+    }
+
+    // 3. .noprefix remove @user
     if (sub === 'remove') {
       const user = message.mentions.users.first() || message.client.users.cache.get(args[1]);
       if (!user) return message.reply(`${emojis.WARNING} Usage: \`.noprefix remove @user\``);

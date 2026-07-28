@@ -193,6 +193,50 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
+    // ℹ️ INFO / BOTINFO / ABOUT / NODE / UPTIME
+    if (['info', 'botinfo', 'about', 'node', 'uptime'].includes(invoked)) {
+      const totalGuilds = message.client.guilds.cache.size;
+      const totalUsers = message.client.users.cache.size;
+      const uptimeSec = Math.floor(message.client.uptime / 1000);
+      const days = Math.floor(uptimeSec / 86400);
+      const hours = Math.floor((uptimeSec % 86400) / 3600);
+      const mins = Math.floor((uptimeSec % 3600) / 60);
+      const uptimeStr = `${days}d ${hours}h ${mins}m`;
+      const memUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
+      const ping = Math.round(message.client.ws.ping);
+
+      const boxText =
+        '```\n' +
+        '╭──────────────────────────╮\n' +
+        '│     BOT & SYSTEM INFO    │\n' +
+        '├──────────────────────────┤\n' +
+        '│ Bot Name : Naruto Shinobi│\n' +
+        '│ Prefix   : .             │\n' +
+        '│ Guilds   : ' + String(totalGuilds).padEnd(13, ' ') + ' │\n' +
+        '│ Users    : ' + String(totalUsers).padEnd(13, ' ') + ' │\n' +
+        '│ Ping     : ' + String(ping + 'ms').padEnd(13, ' ') + ' │\n' +
+        '│ Memory   : ' + String(memUsage + ' MB').padEnd(13, ' ') + ' │\n' +
+        '│ Uptime   : ' + String(uptimeStr).padEnd(13, ' ') + ' │\n' +
+        '│ Node.js  : ' + String(process.version).padEnd(13, ' ') + ' │\n' +
+        '│ Discord.js: ' + String('v' + djsVersion).padEnd(13, ' ') + ' │\n' +
+        '╰──────────────────────────╯\n' +
+        '```';
+
+      const embed = createStyledEmbed({
+        title: `${emojis.STATS_NEW || '📈'} Naruto Bot Information & System Metrics`,
+        subtitle: `Developed with ❤️ by Synn • All-In-One Shinobi Bot`,
+        description:
+          boxText + `\n\n` +
+          `**⚡ Quick Info Links:**\n` +
+          `[Support Server](https://discord.gg/ZPKcPreUMT) • [Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands)\n\n` +
+          `*Type \`.help\` to view all 24 active system modules and 545+ commands!*`,
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.channel.send({ embeds: [embed] });
+    }
+
     // 💤 AFK [reason]
     if (invoked === 'afk') {
       const reason = args.join(' ') || 'I am afk :)';
