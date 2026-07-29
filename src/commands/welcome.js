@@ -165,34 +165,26 @@ function buildWelcomeCard(config, member) {
 }
 
 function buildWelcomeConfigPanel(config, guild, author, clientUser) {
-  const chanName = config.channelId ? `#${guild.channels.cache.get(config.channelId)?.name || config.channelId}` : 'Not set';
-  const imgStr = config.imageUrl ? 'Custom Banner Set' : 'Avatar Only';
-
-  const boxMain = [
-    '╭──────────────────────────╮',
-    '│   WELCOME SYSTEM HUB     │',
-    '├──────────────────────────┤',
-    '│ Status     : ' + (config.enabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '│ Channel    : ' + chanName.slice(0, 12).padEnd(12, ' '),
-    '│ Preset     : ' + (config.style || 'custom').slice(0, 12).padEnd(12, ' '),
-    '│ Color Code : ' + (config.color || '#7E0808').slice(0, 12).padEnd(12, ' '),
-    '│ Banner Img : ' + imgStr.slice(0, 12).padEnd(12, ' '),
-    '│ Join DM    : ' + (config.joinDmEnabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '│ Leave DM   : ' + (config.leaveDmEnabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
-    '╰──────────────────────────╯'
-  ];
+  const chanMention = config.channelId ? `<#${config.channelId}>` : '*Not set (Use `.welcome setup <#channel>`)*';
+  const imgStr = config.imageUrl ? '`High-Res Banner Set`' : '`Avatar Thumbnail Only`';
 
   const description =
-    `Welcome **${author.username}**! Below is your server **Welcome & Greetings Configuration**.\n\n` +
-    '```\n' + boxMain.join('\n') + '\n```\n\n' +
-    `**📝 Editable Markdown Commands**\n` +
-    `• \`.welcome preset <aesthetic/galaxy/cafe/gothic/shinobi/cyberpunk/minimal>\`\n` +
-    `• \`.welcome image <banner_image_URL>\`\n` +
-    `• \`.welcome description <editable markdown text>\`\n` +
-    `• \`.welcome title <editable title>\`\n` +
-    `• \`.welcome color <#hexCode>\`\n` +
-    `• \`.welcome footer <editable footer>\`\n` +
-    `• \`.welcometest\` to preview thumbnail + large banner picture!\n\n` +
+    `Welcome **${author.username}**! Below is your server **Welcome System Hub & Greetings Config**.\n\n` +
+    `**⚙️ System Status & Settings:**\n` +
+    `• **Module Status:** ${config.enabled ? `${emojis.SUCCESS} **ACTIVE**` : `${emojis.DISABLED} **DISABLED**`}\n` +
+    `• **Welcome Channel:** ${chanMention}\n` +
+    `• **Active Preset:** \`${(config.style || 'shinobi').toUpperCase()}\`\n` +
+    `• **Embed Color:** \`${config.color || '#7E0808'}\`\n` +
+    `• **Banner Picture:** ${imgStr}\n` +
+    `• **Join DM Notification:** ${config.joinDmEnabled ? `${emojis.SUCCESS} Enabled` : `${emojis.DISABLED} Disabled`}\n` +
+    `• **Leave DM Notification:** ${config.leaveDmEnabled ? `${emojis.SUCCESS} Enabled` : `${emojis.DISABLED} Disabled`}\n\n` +
+    `**📝 Easy Configuration Commands:**\n` +
+    `• \`.welcome preset <aesthetic/galaxy/cafe/gothic/shinobi/cyberpunk/minimal>\` — Apply preset\n` +
+    `• \`.welcome setup <#channel>\` — Bind welcome channel\n` +
+    `• \`.welcome image <banner_URL>\` — Set custom header banner\n` +
+    `• \`.welcome description <text>\` — Edit description text\n` +
+    `• \`.welcome title <title>\` • \`.welcome color <#hex>\` • \`.welcome footer <text>\`\n` +
+    `• \`.welcometest\` — Preview live card with thumbnail & banner!\n\n` +
     `**💬 Active Description Body:**\n` +
     `>>> ${config.description}`;
 

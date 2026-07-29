@@ -410,18 +410,30 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     const embed = new EmbedBuilder()
       .setColor(0x7E0808)
       .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
-      .setTitle(`${emojis.CELEBRATION || '🍥'} Naruto One Help & Command Center`)
+      .setThumbnail(botAvatarURL)
+      .setTitle(`${emojis.WELCOME || '👋'} Welcome & Greetings System`)
       .setDescription(
-        `Welcome **${message.author.username}**! Below is the executive suite for **Naruto One**.\n` +
-        `Use the dropdown menu below to explore all modules, settings & features.\n\n` +
-        `**📌 Quick Feature Highlights:**\n` +
-        `• **Wick-Grade Security**: AntiNuke, AntiRaid, AntiSpam, AntiBot & Join Gate.\n` +
-        `• **High-Fidelity Audio**: Spotify, YouTube & SoundCloud player with Filters.\n` +
-        `• **Automation Grid**: AutoRole, AutoResponder, AutoReact & VoiceMaster.\n` +
-        `• **Naruto RPG**: Shinobi ranks, Chakra leveling & Jutsu battles!`
+        `Below is the complete list of commands for **${cat.label}**.\n\n` +
+        `**⚙️ Setup & Configuration**\n` +
+        `• \`.welcome setup <#channel>\` — Bind welcome channel & activate greetings\n` +
+        `• \`.welcome preset <aesthetic/galaxy/cafe/gothic/shinobi/cyberpunk/minimal>\` — Apply Mimu theme\n` +
+        `• \`.welcome image <url>\` — Set custom high-res header banner image/GIF\n` +
+        `• \`.welcometest\` — Preview live welcome card with thumbnail & banner\n` +
+        `• \`.welcomereset\` — Reset welcome setup to default\n\n` +
+        `**📝 Editable Markdown Commands**\n` +
+        `• \`.welcome description <text>\` — Edit description text & placeholders\n` +
+        `• \`.welcome title <text>\` — Edit embed title\n` +
+        `• \`.welcome color <#hexCode>\` — Edit embed border color\n` +
+        `• \`.welcome footer <text>\` — Edit embed footer\n` +
+        `• \`.welcome header <text>\` — Edit text outside embed\n\n` +
+        `**📬 DMs & Server Boosts**\n` +
+        `• \`.joindm <enable/disable/text>\` — Configure private welcome DMs\n` +
+        `• \`.leavedm <enable/disable/text>\` — Configure private leave DMs\n` +
+        `• \`.boostmsg <#channel> <text>\` — Configure server boost announcements\n\n` +
+        `**🔤 Placeholders:** \`{user}\`, \`{username}\`, \`{server_name}\`, \`{membercount}\``
       )
       .setFooter({
-        text: `Requested by ${message.author.username} • Type .help <module> for specific commands`,
+        text: `Requested by ${message.author.username} • Type .welcome for setup dashboard`,
         iconURL: message.author.displayAvatarURL({ dynamic: true })
       });
 
