@@ -58,7 +58,7 @@ module.exports = {
       }
 
       // 3. Ensure AntiEveryone filter is active in AntiNuke
-      const antinukeCmd = message.client.commands.get('antinuke');
+      const antinukeCmd = message.client.commands?.get('antinuke');
       if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
         const config = antinukeCmd.getOrCreateAntinuke(guild.id);
         config.enabled = true;

@@ -1,5 +1,6 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const { isBotOwner } = require('../utils/owners');
 
 // Global No-Prefix Authorized Users Store (userId -> expiresAt | null for Infinite)
 const noPrefixStore = new Map([
