@@ -334,16 +334,19 @@ const CATEGORIES = [
     ]
   },
   {
-    label: 'Welcome',
+    label: 'Welcome System',
     value: 'welcome',
-    description: 'welcome setup, welcometest, welcomereset',
+    description: 'Welcome cards, Join DMs, Leave DMs & Server Boost announcements',
     customEmoji: emojis.OBJ_WELCOME,
     unicodeFallback: '👋',
     heading: `${emojis.WELCOME || '👋'} Welcome Commands`,
     commands: [
       'welcome setup <#channel> [avatar/imageURL] [text]',
-      'welcometest',
-      'welcomereset'
+      'welcometest (or .welcomepreview)',
+      'welcomereset',
+      'joindm <enable/disable/text>',
+      'leavedm <enable/disable/text>',
+      'boostmsg <#channel> <text>'
     ]
   },
   {
