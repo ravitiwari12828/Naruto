@@ -5,61 +5,79 @@ const emojis = require('../utils/emojis');
 // Global Welcome, DM & Boost Config store
 const welcomeConfigs = new Map();
 
-// Mimu-Style Editable Presets Directory
+// High-Resolution Live Banner Image URLs for Presets
+const PRESET_BANNERS = {
+  aesthetic: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&auto=format&fit=crop&q=80',
+  galaxy: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop&q=80',
+  cafe: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
+  gothic: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200&auto=format&fit=crop&q=80',
+  shinobi: 'https://images.unsplash.com/photo-1528164344705-47542687990d?w=1200&auto=format&fit=crop&q=80',
+  cyberpunk: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1200&auto=format&fit=crop&q=80',
+  minimal: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=1200&auto=format&fit=crop&q=80'
+};
+
+// Mimu-Style Presets Directory (Includes Animated Custom Emojis & Header Banners)
 const WELCOME_PRESETS = {
   aesthetic: {
     title: '🌸 Welcome to {server_name}',
     headerText: '୨୧ ─── ∘°❉°∘ ─── ୨୧',
-    description: 'Welcome {user} to **{server_name}**! 🌸\nWe are so happy to have you here!\n\n┈➤ **Quick Links:**\n• Check out our <#rules>\n• Pick your <#roles>\n• Chat with us in <#general>\n\nMember Count: **#{membercount}** 🎀\n୨୧ ─── ∘°❉°∘ ─── ୨୧',
+    description: 'Welcome {user} to **{server_name}**! 🌸\nWe are so happy to have you here!\n\n┈➤ **Quick Links:**\n• Check out our rules\n• Pick your roles\n• Chat with us in general\n\nMember Count: **#{membercount}** 🎀\n୨୧ ─── ∘°❉°∘ ─── ୨୧',
     color: '#FFD1DC',
+    imageUrl: PRESET_BANNERS.aesthetic,
     useAvatarThumbnail: true,
     footer: 'Member #{membercount} • {server_name}'
   },
   galaxy: {
     title: '✨ Welcome to {server_name}',
     headerText: '🌙 ─── ✧ * :･ﾟ✧ ─── 🌙',
-    description: 'Welcome {user} to **{server_name}**! ✨\nYou have crossed the starlight horizon.\n\n⭐ **Constellation Access:**\n✦ Protocols • <#rules>\n✦ Star Roles • <#roles>\n✦ Galaxy Lounge • <#lounge>\n\nStarlight Member: **#{membercount}** 🌌',
+    description: 'Welcome {user} to **{server_name}**! ✨\nYou have crossed the starlight horizon.\n\n⭐ **Constellation Access:**\n✦ Protocols • Guidelines\n✦ Star Roles • Identity\n✦ Galaxy Lounge • Main Stream\n\nStarlight Member: **#{membercount}** 🌌',
     color: '#4B0082',
+    imageUrl: PRESET_BANNERS.galaxy,
     useAvatarThumbnail: true,
     footer: 'Starlight Member #{membercount} • {server_name}'
   },
   cafe: {
     title: '🧸 Welcome to {server_name}',
     headerText: '🍵 ─── ･ ｡ﾟ☆: *.☽ .* :☆ﾟ. ─── 🍵',
-    description: 'Welcome {user} to **{server_name}**! 🧸\nGrab a warm cup of boba and take a seat!\n\n🥞 **Menu & Links:**\n• Cafe Rules: <#rules>\n• Special Roles: <#roles>\n• Chat Table: <#chat>\n\nCustomer **#{membercount}** 🍰',
+    description: 'Welcome {user} to **{server_name}**! 🧸\nGrab a warm cup of boba and take a seat!\n\n🥞 **Menu & Links:**\n• Cafe Rules & Guild Info\n• Special Roles & Badges\n• General Chat Table\n\nCustomer **#{membercount}** 🍰',
     color: '#A8C3A0',
+    imageUrl: PRESET_BANNERS.cafe,
     useAvatarThumbnail: true,
     footer: 'Customer #{membercount} • {server_name}'
   },
   gothic: {
     title: '🖤 Welcome to {server_name}',
     headerText: '🖤 ─── 𖤍 ─── 🖤',
-    description: 'Welcome {user} to **{server_name}**.\nYou have entered the dark sanctuary.\n\n🦇 **Crypt Rules:**\n> Read the law in <#rules>\n> Select your coven in <#roles>\n\nSoul **#{membercount}** 🥀',
+    description: 'Welcome {user} to **{server_name}**.\nYou have entered the dark sanctuary.\n\n🦇 **Crypt Rules:**\n> Read the law and respect members\n> Select your coven and roles\n\nSoul **#{membercount}** 🥀',
     color: '#800020',
+    imageUrl: PRESET_BANNERS.gothic,
     useAvatarThumbnail: true,
     footer: 'Soul #{membercount} • {server_name}'
   },
   shinobi: {
     title: '🍥 Welcome to Konoha Village',
     headerText: '🍥 **WELCOME TO THE HIDDEN LEAF VILLAGE** 🍥',
-    description: 'Greetings {user}! You have arrived in **{server_name}**.\n\n> *"A shinobi is one who endures."*\n\n🌀 **Shinobi Protocol:**\n1. Read the village rules in <#rules>\n2. Collect your Ninja Roles in <#roles>\n3. Join the Ninja Lounge in <#lounge>\n\nYou are Shinobi **#{membercount}** of Konoha! 🍃',
+    description: 'Greetings {user}! You have arrived in **{server_name}**.\n\n> *"A shinobi is one who endures."*\n\n🌀 **Shinobi Protocol:**\n1. Read the village rules\n2. Collect your Ninja Roles\n3. Join the Ninja Lounge\n\nYou are Shinobi **#{membercount}** of Konoha! 🍃',
     color: '#7E0808',
+    imageUrl: PRESET_BANNERS.shinobi,
     useAvatarThumbnail: true,
     footer: 'Shinobi #{membercount} • {server_name}'
   },
   cyberpunk: {
     title: '⚡ Welcome to the Matrix',
     headerText: '⚡ **SYSTEM INTRUSION DETECTED** ⚡',
-    description: 'Welcome {user} to the **{server_name}** Matrix!\n\n🌐 **Access Terminals:**\n[01] <#rules> • Protocol Directives\n[02] <#roles> • Cyber Identity Setup\n[03] <#chat> • Main Network Stream\n\nNetwork Node: **#{membercount}** 💾',
+    description: 'Welcome {user} to the **{server_name}** Matrix!\n\n🌐 **Access Terminals:**\n[01] Protocol Directives\n[02] Cyber Identity Setup\n[03] Main Network Stream\n\nNetwork Node: **#{membercount}** 💾',
     color: '#00FFFF',
+    imageUrl: PRESET_BANNERS.cyberpunk,
     useAvatarThumbnail: true,
     footer: 'Node #{membercount} • {server_name}'
   },
   minimal: {
     title: 'Welcome',
     headerText: '',
-    description: 'Welcome **{username}** to {server_name}.\n\n> Read the guidelines in <#rules> and feel free to introduce yourself in <#chat>.\n\nMember **#{membercount}**',
+    description: 'Welcome **{username}** to {server_name}.\n\n> Read the guidelines and feel free to introduce yourself.\n\nMember **#{membercount}**',
     color: '#2B2D31',
+    imageUrl: PRESET_BANNERS.minimal,
     useAvatarThumbnail: true,
     footer: 'Member #{membercount}'
   }
@@ -77,7 +95,7 @@ function getOrCreateWelcomeConfig(guildId) {
       description: WELCOME_PRESETS.shinobi.description,
       color: WELCOME_PRESETS.shinobi.color,
       footer: WELCOME_PRESETS.shinobi.footer,
-      imageUrl: null,
+      imageUrl: PRESET_BANNERS.shinobi,
       useAvatarThumbnail: true,
 
       // Join DM Config
@@ -135,10 +153,12 @@ function buildWelcomeCard(config, member) {
       iconURL: guild.iconURL({ dynamic: true }) || undefined
     });
 
+  // BOTH Thumbnail AND Large Banner Picture are now rendered!
+  if (config.useAvatarThumbnail !== false) {
+    embed.setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
+  }
   if (config.imageUrl) {
     embed.setImage(config.imageUrl);
-  } else if (config.useAvatarThumbnail) {
-    embed.setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
   }
 
   return { content: headerText || undefined, embeds: [embed] };
@@ -146,7 +166,7 @@ function buildWelcomeCard(config, member) {
 
 function buildWelcomeConfigPanel(config, guild, author, clientUser) {
   const chanName = config.channelId ? `#${guild.channels.cache.get(config.channelId)?.name || config.channelId}` : 'Not set';
-  const imgStr = config.imageUrl ? 'Custom URL' : (config.useAvatarThumbnail ? 'Avatar' : 'None');
+  const imgStr = config.imageUrl ? 'Custom Banner Set' : 'Avatar Only';
 
   const boxMain = [
     '╭──────────────────────────╮',
@@ -156,7 +176,7 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
     '│ Channel    : ' + chanName.slice(0, 12).padEnd(12, ' '),
     '│ Preset     : ' + (config.style || 'custom').slice(0, 12).padEnd(12, ' '),
     '│ Color Code : ' + (config.color || '#7E0808').slice(0, 12).padEnd(12, ' '),
-    '│ Card Image : ' + imgStr.slice(0, 12).padEnd(12, ' '),
+    '│ Banner Img : ' + imgStr.slice(0, 12).padEnd(12, ' '),
     '│ Join DM    : ' + (config.joinDmEnabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
     '│ Leave DM   : ' + (config.leaveDmEnabled ? 'ENABLED [OK]' : 'DISABLED[X]'),
     '╰──────────────────────────╯'
@@ -167,11 +187,12 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
     '```\n' + boxMain.join('\n') + '\n```\n\n' +
     `**📝 Editable Markdown Commands**\n` +
     `• \`.welcome preset <aesthetic/galaxy/cafe/gothic/shinobi/cyberpunk/minimal>\`\n` +
+    `• \`.welcome image <banner_image_URL>\`\n` +
     `• \`.welcome description <editable markdown text>\`\n` +
     `• \`.welcome title <editable title>\`\n` +
     `• \`.welcome color <#hexCode>\`\n` +
     `• \`.welcome footer <editable footer>\`\n` +
-    `• \`.welcome header <header text outside embed>\`\n\n` +
+    `• \`.welcometest\` to preview thumbnail + large banner picture!\n\n` +
     `**💬 Active Description Body:**\n` +
     `>>> ${config.description}`;
 
@@ -188,13 +209,14 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
 
 module.exports = {
   name: 'welcome',
-  description: 'Customizable Mimu-Style Welcome Embeds, Presets, Join DMs & Boost Messages',
+  description: 'Customizable Mimu-Style Welcome Embeds with High-Res Banner Images & Avatars',
   aliases: [
     'welcomesetup', 'welcomereset', 'welcometest', 'welcomepreview',
     'joindm', 'leavedm', 'boostmsg', 'welcomeconfig', 'welcomepreset'
   ],
   welcomeConfigs,
   WELCOME_PRESETS,
+  PRESET_BANNERS,
   getOrCreateWelcomeConfig,
   buildWelcomeCard,
   parsePlaceholders,
@@ -233,7 +255,7 @@ module.exports = {
           `• \`shinobi\` - Naruto Leaf Village Theme 🍥\n` +
           `• \`cyberpunk\` - Neon Matrix Theme ⚡\n` +
           `• \`minimal\` - Clean Monochrome Theme 🌿\n\n` +
-          `Usage: \`.welcome preset aesthetic\``
+          `Usage: \`.welcome preset galaxy\``
         );
       }
 
@@ -243,13 +265,26 @@ module.exports = {
       config.headerText = preset.headerText;
       config.description = preset.description;
       config.color = preset.color;
+      config.imageUrl = preset.imageUrl;
+      config.useAvatarThumbnail = true;
       config.footer = preset.footer;
       welcomeConfigs.set(guild.id, config);
 
-      return message.reply(`${emojis.SUCCESS} **Applied Welcome Preset**: \`${theme.toUpperCase()}\`!\nType \`.welcometest\` to preview the card in action!`);
+      return message.reply(`${emojis.SUCCESS} **Applied Welcome Preset**: \`${theme.toUpperCase()}\` with High-Res Banner Picture!\nType \`.welcometest\` to preview the full card with thumbnail + banner!`);
     }
 
-    // 2. EDIT DESCRIPTION BODY (.welcome description <text>)
+    // 2. EDIT BANNER IMAGE (.welcome image <url>)
+    if (sub === 'image' || sub === 'banner' || sub === 'img') {
+      const url = args[1];
+      if (!url || !url.match(/^https?:\/\/.+/i)) {
+        return message.reply(`ℹ️ Usage: \`.welcome image <https://direct-image-url.jpg>\``);
+      }
+      config.imageUrl = url;
+      welcomeConfigs.set(guild.id, config);
+      return message.reply(`${emojis.SUCCESS} **Welcome Banner Image Updated**! Type \`.welcometest\` to preview.`);
+    }
+
+    // 3. EDIT DESCRIPTION BODY (.welcome description <text>)
     if (sub === 'description' || sub === 'desc' || sub === 'body') {
       const text = args.slice(1).join(' ');
       if (!text) {
@@ -260,7 +295,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} **Welcome Description Updated**:\n>>> ${parsePlaceholders(text, message.member)}`);
     }
 
-    // 3. EDIT EMBED TITLE (.welcome title <text>)
+    // 4. EDIT EMBED TITLE (.welcome title <text>)
     if (sub === 'title') {
       const text = args.slice(1).join(' ');
       if (!text) {
@@ -271,18 +306,18 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} **Welcome Title Updated**: \`${parsePlaceholders(text, message.member)}\``);
     }
 
-    // 4. EDIT EMBED COLOR (.welcome color <#hex>)
+    // 5. EDIT EMBED COLOR (.welcome color <#hex>)
     if (sub === 'color' || sub === 'hex') {
       const hex = args[1];
       if (!hex || !hex.match(/^#?[0-9a-fA-F]{6}$/)) {
-        return message.reply(`ℹ️ Usage: \`.welcome color #FFD1DC\` or \`#7E0808\` or \`#00FFFF\``);
+        return message.reply(`ℹ️ Usage: \`.welcome color #FFD1DC\` or \`#4B0082\` or \`#00FFFF\``);
       }
       config.color = hex.startsWith('#') ? hex : '#' + hex;
       welcomeConfigs.set(guild.id, config);
       return message.reply(`${emojis.SUCCESS} **Welcome Embed Color Code Updated**: \`${config.color}\``);
     }
 
-    // 5. EDIT FOOTER (.welcome footer <text>)
+    // 6. EDIT FOOTER (.welcome footer <text>)
     if (sub === 'footer') {
       const text = args.slice(1).join(' ');
       if (!text) {
@@ -293,7 +328,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} **Welcome Footer Updated**: \`${parsePlaceholders(text, message.member)}\``);
     }
 
-    // 6. EDIT HEADER OUTSIDE EMBED (.welcome header <text>)
+    // 7. EDIT HEADER OUTSIDE EMBED (.welcome header <text>)
     if (sub === 'header') {
       const text = args.slice(1).join(' ');
       config.headerText = text;
@@ -301,7 +336,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} **Welcome Outer Header Updated**: \`${parsePlaceholders(text, message.member)}\``);
     }
 
-    // 7. SETUP / BIND CHANNEL (.welcome setup <#channel>)
+    // 8. SETUP / BIND CHANNEL (.welcome setup <#channel>)
     if (sub === 'setup' || sub === 'set' || sub === 'channel') {
       const chan = message.mentions.channels.first() || guild.channels.cache.get(args[1]) || message.channel;
       config.channelId = chan.id;
@@ -313,13 +348,13 @@ module.exports = {
       return message.channel.send({ embeds: [panelEmbed] });
     }
 
-    // 8. TEST & PREVIEW (.welcometest)
+    // 9. TEST & PREVIEW (.welcometest)
     if (sub === 'test' || sub === 'preview') {
       const card = buildWelcomeCard(config, message.member);
       return message.channel.send(card);
     }
 
-    // 9. RESET (.welcomereset)
+    // 10. RESET (.welcomereset)
     if (sub === 'reset') {
       welcomeConfigs.delete(guild.id);
       return message.reply(`${emojis.SUCCESS} **Welcome Configuration Reset** to default Shinobi theme.`);
