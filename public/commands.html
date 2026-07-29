@@ -399,70 +399,927 @@
 
   <script>
     const COMMANDS = [
-      // SECURITY & ANTINUKE
-      { name: '.antinuke', desc: 'Main AntiNuke security status & configuration panel.', args: 'none', perms: ['Administrator', 'Extra Owner'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
-      { name: '.antinuke enable', desc: 'Enable full AntiNuke mass-action protections.', args: 'none', perms: ['Administrator', 'Extra Owner'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
-      { name: '.whitelist add', desc: 'Whitelist a trusted admin from AntiNuke limits.', args: '<@user>', perms: ['Extra Owner'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
-      { name: '.quarantine enable', desc: 'Activate rogue admin 10-day quarantine lockout.', args: 'none', perms: ['Extra Owner'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
-      { name: '.vanityguard enable', desc: 'Protect server vanity URL against stealers.', args: '<vanity>', perms: ['Administrator'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
-      { name: '.disableeveryone', desc: 'Emergency disable dangerous @everyone perms.', args: 'none', perms: ['Administrator'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
-
-      // MODERATION
-      { name: '.ban', desc: 'Permanently ban a member from the server.', args: '<@user> [reason]', perms: ['Ban Members'], cat: 'moderation', catName: '⚔️ Moderation' },
-      { name: '.kick', desc: 'Kick a member out of the server.', args: '<@user> [reason]', perms: ['Kick Members'], cat: 'moderation', catName: '⚔️ Moderation' },
-      { name: '.mute', desc: 'Timeout/Mute a member for specified duration.', args: '<@user> <1m/1h/1d> [reason]', perms: ['Moderate Members'], cat: 'moderation', catName: '⚔️ Moderation' },
-      { name: '.unmute', desc: 'Remove timeout from a muted member.', args: '<@user>', perms: ['Moderate Members'], cat: 'moderation', catName: '⚔️ Moderation' },
-      { name: '.purge', desc: 'Bulk delete up to 100 messages in current channel.', args: '<amount: 1-100>', perms: ['Manage Messages'], cat: 'moderation', catName: '⚔️ Moderation' },
-      { name: '.nuke', desc: 'Clone and replace channel to wipe all messages.', args: 'none', perms: ['Administrator'], cat: 'moderation', catName: '⚔️ Moderation' },
-      { name: '.modlimits set', desc: 'Set maximum daily action limits for staff.', args: '<limit: 5-50>', perms: ['Administrator'], cat: 'moderation', catName: '⚔️ Moderation' },
-
-      // AUTOMATIONS
-      { name: '.autorole config', desc: 'Configure automatic role assignment for new joins.', args: 'none', perms: ['Manage Roles'], cat: 'automations', catName: '⚙️ Automations' },
-      { name: '.autorole add', desc: 'Add auto-role rule for human members or bots.', args: '<@role> [human/bot]', perms: ['Manage Roles'], cat: 'automations', catName: '⚙️ Automations' },
-      { name: '.massrole add', desc: 'Mass assign a role to all server members or bots.', args: '<@role> [humans/bots]', perms: ['Manage Roles', 'Administrator'], cat: 'automations', catName: '⚙️ Automations' },
-
-      // AUTORESPONDER & AUTOREACT
-      { name: '.ar add', desc: 'Add a custom autoresponder trigger & reply.', args: '<trigger> <reply text>', perms: ['Manage Server'], cat: 'autoresponder', catName: '💬 Autoresponder' },
-      { name: '.autoreact add', desc: 'Add automatic emoji reaction to trigger words.', args: '<trigger> <emoji>', perms: ['Manage Server'], cat: 'autoresponder', catName: '💬 Autoresponder' },
-
-      // MUSIC
-      { name: '.play', desc: 'Play high-fidelity audio from YouTube, Spotify or Apple Music.', args: '<song name / URL>', perms: ['none'], cat: 'music', catName: '🎶 Music Suite' },
-      { name: '.skip', desc: 'Skip current playing song in queue.', args: 'none', perms: ['none'], cat: 'music', catName: '🎶 Music Suite' },
-      { name: '.equalizer', desc: 'Apply 10-band audio equalizer presets (bassboost, flat, rock).', args: '<preset>', perms: ['none'], cat: 'music', catName: '🎶 Music Suite' },
-      { name: '.247', desc: 'Toggle 24/7 AFK voice channel mode.', args: 'none', perms: ['Manage Channels'], cat: 'music', catName: '🎶 Music Suite' },
-
-      // ECONOMY & CASINO
-      { name: '.balance', desc: 'Check your wallet & bank balance.', args: '[@user]', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
-      { name: '.blackjack', desc: 'Play OwO-style Blackjack against the dealer.', args: '<amount>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
-      { name: '.plinko', desc: 'Drop balls down the Plinko multiplier board.', args: '<amount>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
-      { name: '.crash', desc: 'Cash out before the multiplier crashes.', args: '<amount>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
-      { name: '.roulette', desc: 'Bet on Red, Black, Green or specific numbers.', args: '<amount> <red/black/green/0-36>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
-      { name: '.stocks buy', desc: 'Buy shares in the Shinobi stock market.', args: '<symbol> <shares>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
-      { name: '.pet adopt', desc: 'Adopt a pet species to boost your power.', args: '<species>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
-
-      // NARUTO RPG
-      { name: '.ninja profile', desc: 'View Shinobi RPG stats, Jutsu, Chakra & Ryo.', args: '[@user]', perms: ['none'], cat: 'rpg', catName: '🍥 Naruto RPG' },
-      { name: '.ninja quest', desc: 'View and claim daily Shinobi RPG missions.', args: '[claim]', perms: ['none'], cat: 'rpg', catName: '🍥 Naruto RPG' },
-
-      // TICKETS & SUPPORT
-      { name: '.ticket setup', desc: 'Deploy automated support ticket panel.', args: '<#channel>', perms: ['Administrator'], cat: 'tickets', catName: '🎟️ Support Tickets' },
-      { name: '.claim', desc: 'Staff claim a support ticket thread.', args: 'none', perms: ['Manage Messages'], cat: 'tickets', catName: '🎟️ Support Tickets' },
-
-      // VOICEMASTER
-      { name: '.vctemp setup', desc: 'Setup join-to-create temporary voice channels.', args: '<#category>', perms: ['Manage Channels'], cat: 'voice', catName: '🔊 VoiceMaster' },
-      { name: '.vckickall', desc: 'Kick all members out of current voice channel.', args: 'none', perms: ['Move Members'], cat: 'voice', catName: '🔊 VoiceMaster' },
-
-      // PROFILE & ANIMES
-      { name: '.bioset', desc: 'Set custom profile bio stored in database.', args: '<text>', perms: ['none'], cat: 'profile', catName: '👤 Profile & Avatars' },
-      { name: '.banners', desc: 'Fetch dynamic animated anime header banner & GIF.', args: 'none', perms: ['none'], cat: 'profile', catName: '👤 Profile & Avatars' },
-      { name: '.animes', desc: 'Fetch random aesthetic anime PFP avatar.', args: 'none', perms: ['none'], cat: 'profile', catName: '👤 Profile & Avatars' },
-
-      // UTILITY & INFO
-      { name: '.info', desc: 'Display bot status, latency, uptime & memory usage.', args: 'none', perms: ['none'], cat: 'info', catName: '📈 Utility & Info' },
-      { name: '.serverinfo', desc: 'Display server information, channels & features.', args: 'none', perms: ['none'], cat: 'info', catName: '📈 Utility & Info' },
-      { name: '.snipe', desc: 'Retrieve last deleted messages in current channel.', args: '[1-10]', perms: ['Manage Messages'], cat: 'info', catName: '📈 Utility & Info' },
-      { name: '.afk', desc: 'Set global AFK status with custom reason.', args: '[reason]', perms: ['none'], cat: 'info', catName: '📈 Utility & Info' }
-    ];
+  {
+    "name": ".activity",
+    "desc": "Track and manage user & server activity stats",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".advlogsetup",
+    "desc": "Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".analytics",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".antinuke",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".automod",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".autoresponder",
+    "desc": "Manage automated message responses and emoji reactions with placeholders",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".autorole",
+    "desc": "Automate role assignment for joining humans/bots and mass role management.",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".backup",
+    "desc": "Full Server Backup & Restore Suite (Roles, Channels, Categories, Settings)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".channel",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".disableeveryone",
+    "desc": "Strips MentionEveryone permission across all server roles & channel overwrites to stop all @everyone/@here pings",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".adventure",
+    "desc": "Send your pet on a 30-minute adventure for a reward — claim it later with .claim.",
+    "args": ".adventure",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".balance",
+    "desc": "Shows a member's wallet and bank balance.",
+    "args": ".balance [@user]",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".battle",
+    "desc": "Send your active pet to battle a wild monster for coins and XP.",
+    "args": ".battle",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".beg",
+    "desc": "Beg for a small handful of coins (short cooldown, low reward).",
+    "args": ".beg",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".blackjack",
+    "desc": "Play an interactive hand of Blackjack against the dealer for coins.",
+    "args": ".blackjack <bet>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".buy",
+    "desc": "Buy a tool or consumable from the shop.",
+    "args": ".buy <item id> [amount]",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".chop",
+    "desc": "Chop wood in the forest to sell.",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".claim",
+    "desc": "Claim your pet's completed adventure reward.",
+    "args": ".claim",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".craft",
+    "desc": "Craft a tier-2 tool from gathered resources instead of buying it.",
+    "args": ".craft <rod|bow|drill|chainsaw|drillrig>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".crash",
+    "desc": "Watch the multiplier rise and cash out before it crashes!",
+    "args": ".crash <bet>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".crime",
+    "desc": "High risk, high reward — commit a (fake) crime for coins, or get caught and pay a fine.",
+    "args": ".crime",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".daily",
+    "desc": "Claim your daily reward — keep your streak alive for bigger payouts.",
+    "args": ".daily",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".deposit",
+    "desc": "Deposit coins into your bank.",
+    "args": ".deposit <amount|all>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".dice",
+    "desc": "Roll a pair of dice against the bot to win coins.",
+    "args": ".dice <bet>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".dig",
+    "desc": "Dig around for buried treasure to sell.",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".divorce",
+    "desc": "Divorce your current spouse.",
+    "args": ".divorce",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".duel",
+    "desc": "Challenge another member to a coin-wager pet duel.",
+    "args": ".duel @user <bet>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".fish",
+    "desc": "Cast a line and fish for resources to sell.",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".gift",
+    "desc": "Gift an item from your inventory to another member.",
+    "args": "!gift @user <item id> [amount]",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".heist",
+    "desc": "Start a group bank heist — others join within 20s, then the vault odds decide who gets paid.",
+    "args": ".heist",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".higherlower",
+    "desc": "Guess if the next card is higher or lower — cash out anytime before you lose it all.",
+    "args": ".higherlower <bet>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".hunt",
+    "desc": "Head into the woods to hunt for animal resources to sell.",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".interest",
+    "desc": "Collect daily interest on the coins sitting in your bank.",
+    "args": "!interest",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".inventory",
+    "desc": "View your inventory items, tools, and gathered resources.",
+    "args": ".inventory",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".job",
+    "desc": "Choose a job — it changes your .work flavor text and pay range.",
+    "args": ".job",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".leaderboard",
+    "desc": "Shows the richest members in this server.",
+    "args": ".leaderboard",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".limbo",
+    "desc": "Pick a target multiplier — if the roll beats it, you win big. Higher target = higher risk.",
+    "args": ".limbo <bet> <target multiplier e.g. 2.5>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".lottery",
+    "desc": "Buy a lottery ticket — pick a number 1-10 and see if it matches the draw.",
+    "args": "!lottery <1-10>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".marry",
+    "desc": "Propose marriage to another member with an interactive ring ceremony!",
+    "args": ".marry <@user>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".mine",
+    "desc": "Head underground to mine for ore and gems to sell.",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".monthly",
+    "desc": "Claim your monthly reward (the biggest recurring payout).",
+    "args": ".monthly",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".mysterybox",
+    "desc": "Buy a mystery box for a random item, coins, or gems with an animated rarity reveal.",
+    "args": ".mysterybox",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".networth",
+    "desc": "Shows your total wealth (wallet + bank).",
+    "args": ".networth [@user]",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".pay",
+    "desc": "Pay coins to another member.",
+    "args": ".pay @user <amount>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".pet",
+    "desc": "Adopt a pet, view your pet stats, or level them up.",
+    "args": ".pet [adopt]",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".plinko",
+    "desc": "Drop a glowing pinball down the Plinko board to multiply your coins.",
+    "args": ".plinko <bet>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".profile",
+    "desc": "View a member's full economy profile card.",
+    "args": "!profile [@user]",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".quest",
+    "desc": "View or start your daily quest for bonus coins.",
+    "args": ".quest",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".roulette",
+    "desc": "Spin the Roulette wheel! Bet on red, black, green, or numbers 0-36.",
+    "args": ".roulette <bet> <red|black|green|0-36>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".scratchcard",
+    "desc": "Buy and scratch an instant-win scratchcard.",
+    "args": ".scratchcard",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".sell",
+    "desc": "Sell items or gathered resources from your inventory for coins.",
+    "args": ".sell <item id> [amount|all]",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".shop",
+    "desc": "Browse the item shop for tools, potions, and resources.",
+    "args": ".shop",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".stocks",
+    "desc": "View the Leaf Village Stock Market and trade company shares.",
+    "args": ".stocks [buy|sell <ticker> <amount>]",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".streak",
+    "desc": "View your daily/weekly claim streaks.",
+    "args": ".streak",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".trade",
+    "desc": "Propose a coin-for-item (or item-for-item) trade with another member.",
+    "args": ".trade @user <your item id> <amount> <their item id> <amount>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".use",
+    "desc": "Use a consumable item from your inventory.",
+    "args": ".use <item id>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".vote",
+    "desc": "Vote for Naruto Bot and claim 10,000 Ryo coins & 1 Gem!",
+    "args": ".vote",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".weekly",
+    "desc": "Claim your weekly reward (bigger than daily).",
+    "args": ".weekly",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".withdraw",
+    "desc": "Withdraw coins from your bank.",
+    "args": ".withdraw <amount|all>",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".work",
+    "desc": "Work your job to earn coins (1 hour cooldown). Use .job to specialize.",
+    "args": ".work",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".fun",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".giveaway",
+    "desc": "Host and manage giveaways. Subcommands: create, end, reroll, list",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".botlock",
+    "desc": "Bot Owner Private Server Whitelist & Invite Lockdown System",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".help",
+    "desc": "Interactive Multi-Module Help Panel with Dropdown Menu & Category Navigator",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".info",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".level",
+    "desc": "Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".logsetup",
+    "desc": "Setup and deploy audit logging channels (Unified single channel or 8 Specialized Pro channels)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".lyrics",
+    "desc": "Fetch real-time lyrics for currently playing song or search by title",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".mod",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".modlimits",
+    "desc": "AntiNuke Action Rate Limits & Audit Protection System",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".modmail",
+    "desc": "Complete ModMail Support Suite (.modmail setup, .r, .close, .modmailtranscript)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".music",
+    "desc": "Synn Lavalink Complete Music Suite",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".ninja",
+    "desc": "Naruto RPG commands: Ninja Profile, Jutsu activation, Chakra meditation, Quests & Leaderboards",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".nukeroles",
+    "desc": "Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".owner",
+    "desc": "Dedicated Bot Owner Panel & Hub: Premium, No-Prefix, Server Lockdown, Extra Owner & PanicMode",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".priority",
+    "desc": "AI-powered assistant for fast text, question answering, and code generation",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".profile",
+    "desc": "Profile Commands: bioset, bioreset, bioshow, animes, banners, boys, couples, girls",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".quarantine",
+    "desc": "15-Day New Joiner Security Probation Grid for Users & Bots",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".reactionrole",
+    "desc": "Reaction Role System: add, remove, list, reset",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".roles",
+    "desc": "Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".securesetup",
+    "desc": "Interactive One-Click Server Security Setup Dashboard for Admins & Server Owners",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".singlereaction",
+    "desc": "Configure single-reaction mode & auto-reactions for a channel",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".stats",
+    "desc": "Display bot global stats overview, shards and developer team details",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".stickynote",
+    "desc": "Sticky Note Commands: stickynote set, stickynote remove, stickynote list, unsticky",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".support",
+    "desc": "Official Support Server invite link and bot help center",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".supportsetup",
+    "desc": "Automated 1-Click Support Server Architecture Builder with Konoha Shinobi Theme",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".testlogs",
+    "desc": "Test all server audit logging channels by sending sample test log embeds",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".ticket",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".vanityguard",
+    "desc": "High-Speed Server Vanity URL Protection & Theft Recovery System",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".voice",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".voicemaster",
+    "desc": "VoiceMaster Setup & Interface: setupvc, vcsetup, vctemp setup, tempvc",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".welcome",
+    "desc": "Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  }
+];
 
     // Compute Category Totals
     const categories = [
