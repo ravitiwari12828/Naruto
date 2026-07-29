@@ -375,7 +375,7 @@
   <main class="main-container">
     <div class="header-section">
       <h1 class="header-title">Command Documentation</h1>
-      <p class="header-subtitle">Explore all 545+ operational commands, subcommands, arguments and permission requirements across 22 active system modules.</p>
+      <p class="header-subtitle">Explore all 520+ operational commands, subcommands, arguments and permission requirements across 22 active system modules.</p>
       
       <div class="search-wrapper">
         <span class="search-icon">🔍</span>
@@ -400,8 +400,421 @@
   <script>
     const COMMANDS = [
   {
+    "name": ".antinuke enable",
+    "desc": "Enable full AntiNuke mass-action protections",
+    "args": "none",
+    "perms": [
+      "Administrator",
+      "Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".antinuke disable",
+    "desc": "Disable AntiNuke security shield",
+    "args": "none",
+    "perms": [
+      "Administrator",
+      "Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".whitelist add",
+    "desc": "Whitelist a trusted admin from AntiNuke limits",
+    "args": "<@user>",
+    "perms": [
+      "Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".whitelist remove",
+    "desc": "Remove user from AntiNuke whitelist",
+    "args": "<@user>",
+    "perms": [
+      "Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".quarantine enable",
+    "desc": "Activate rogue admin 10-day quarantine lockout",
+    "args": "none",
+    "perms": [
+      "Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".vanityguard enable",
+    "desc": "Protect server vanity URL against stealers",
+    "args": "<vanity>",
+    "perms": [
+      "Administrator"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".disableeveryone",
+    "desc": "Emergency disable dangerous @everyone perms",
+    "args": "none",
+    "perms": [
+      "Administrator"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".ban",
+    "desc": "Permanently ban a member from the server",
+    "args": "<@user> [reason]",
+    "perms": [
+      "Ban Members"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".kick",
+    "desc": "Kick a member out of the server",
+    "args": "<@user> [reason]",
+    "perms": [
+      "Kick Members"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".mute",
+    "desc": "Timeout/Mute a member for specified duration",
+    "args": "<@user> <1m/1h/1d> [reason]",
+    "perms": [
+      "Moderate Members"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".unmute",
+    "desc": "Remove timeout from a muted member",
+    "args": "<@user>",
+    "perms": [
+      "Moderate Members"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".purge",
+    "desc": "Bulk delete up to 100 messages in current channel",
+    "args": "<amount: 1-100>",
+    "perms": [
+      "Manage Messages"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".nuke",
+    "desc": "Clone and replace channel to wipe all messages",
+    "args": "none",
+    "perms": [
+      "Administrator"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".modlimits set",
+    "desc": "Set maximum daily action limits for staff",
+    "args": "<limit: 5-50>",
+    "perms": [
+      "Administrator"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".modlogs set",
+    "desc": "Configure channel for moderation logs",
+    "args": "<#channel>",
+    "perms": [
+      "Manage Server"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".autorole config",
+    "desc": "Configure automatic role assignment for new joins",
+    "args": "none",
+    "perms": [
+      "Manage Roles"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
+    "name": ".autorole add",
+    "desc": "Add auto-role rule for human members or bots",
+    "args": "<@role> [human/bot]",
+    "perms": [
+      "Manage Roles"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
+    "name": ".massrole add",
+    "desc": "Mass assign a role to all server members or bots",
+    "args": "<@role> [humans/bots]",
+    "perms": [
+      "Manage Roles",
+      "Administrator"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
+    "name": ".ar add",
+    "desc": "Add a custom autoresponder trigger & reply",
+    "args": "<trigger> <reply text>",
+    "perms": [
+      "Manage Server"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
+    "name": ".ticket setup",
+    "desc": "Deploy automated support ticket panel",
+    "args": "<#channel>",
+    "perms": [
+      "Administrator"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".claim",
+    "desc": "Staff claim a support ticket thread",
+    "args": "none",
+    "perms": [
+      "Manage Messages"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".close",
+    "desc": "Close active ticket thread with HTML transcript",
+    "args": "none",
+    "perms": [
+      "Manage Messages"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".transcript",
+    "desc": "Generate HTML transcript of current ticket",
+    "args": "none",
+    "perms": [
+      "Manage Messages"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".vctemp setup",
+    "desc": "Setup join-to-create temporary voice channels",
+    "args": "<#category>",
+    "perms": [
+      "Manage Channels"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vckickall",
+    "desc": "Kick all members out of current voice channel",
+    "args": "none",
+    "perms": [
+      "Move Members"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vcmuteall",
+    "desc": "Mute all members in current voice channel",
+    "args": "none",
+    "perms": [
+      "Mute Members"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".bioset",
+    "desc": "Save custom profile bio to database",
+    "args": "<text>",
+    "perms": [
+      "None"
+    ],
+    "cat": "profile",
+    "catName": "👤 Profile & Avatars"
+  },
+  {
+    "name": ".bioreset",
+    "desc": "Clear your saved profile bio",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "profile",
+    "catName": "👤 Profile & Avatars"
+  },
+  {
+    "name": ".bioshow",
+    "desc": "Display profile bio of a user",
+    "args": "[@user]",
+    "perms": [
+      "None"
+    ],
+    "cat": "profile",
+    "catName": "👤 Profile & Avatars"
+  },
+  {
+    "name": ".banners",
+    "desc": "Fetch dynamic animated anime header banner & GIF",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "profile",
+    "catName": "👤 Profile & Avatars"
+  },
+  {
+    "name": ".animes",
+    "desc": "Fetch random aesthetic anime avatar",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "profile",
+    "catName": "👤 Profile & Avatars"
+  },
+  {
+    "name": ".girls",
+    "desc": "Fetch random anime girl avatar",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "profile",
+    "catName": "👤 Profile & Avatars"
+  },
+  {
+    "name": ".boys",
+    "desc": "Fetch random anime boy avatar",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "profile",
+    "catName": "👤 Profile & Avatars"
+  },
+  {
+    "name": ".couples",
+    "desc": "Fetch matching anime couple avatars",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "profile",
+    "catName": "👤 Profile & Avatars"
+  },
+  {
+    "name": ".giveaway create",
+    "desc": "Start a new interactive giveaway",
+    "args": "<duration> <winners> <prize>",
+    "perms": [
+      "Manage Messages"
+    ],
+    "cat": "giveaway",
+    "catName": "🎁 Giveaways"
+  },
+  {
+    "name": ".giveaway end",
+    "desc": "End giveaway early and pick winners",
+    "args": "<messageId>",
+    "perms": [
+      "Manage Messages"
+    ],
+    "cat": "giveaway",
+    "catName": "🎁 Giveaways"
+  },
+  {
+    "name": ".giveaway reroll",
+    "desc": "Reroll giveaway winners",
+    "args": "<messageId>",
+    "perms": [
+      "Manage Messages"
+    ],
+    "cat": "giveaway",
+    "catName": "🎁 Giveaways"
+  },
+  {
+    "name": ".backup save",
+    "desc": "Create full server backup snapshot",
+    "args": "none",
+    "perms": [
+      "Administrator"
+    ],
+    "cat": "backup",
+    "catName": "💾 Server Backup"
+  },
+  {
+    "name": ".backup restore",
+    "desc": "Restore server structure from backup",
+    "args": "<backupID>",
+    "perms": [
+      "Administrator"
+    ],
+    "cat": "backup",
+    "catName": "💾 Server Backup"
+  },
+  {
     "name": ".activity",
     "desc": "Track and manage user & server activity stats",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".act",
+    "desc": "Track and manage user & server activity stats (Alias of .activity)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".stats",
+    "desc": "Track and manage user & server activity stats (Alias of .activity)",
     "args": "none",
     "perms": [
       "None"
@@ -414,7 +827,67 @@
     "desc": "Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs)",
     "args": "none",
     "perms": [
-      "Manage Server / Moderate"
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".logmodule",
+    "desc": "Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs) (Alias of .advlogsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".createlogcategory",
+    "desc": "Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs) (Alias of .advlogsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".logssetup",
+    "desc": "Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs) (Alias of .advlogsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".advlogs",
+    "desc": "Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs) (Alias of .advlogsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".logsetupadvlog",
+    "desc": "Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs) (Alias of .advlogsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".advlogsetuplog",
+    "desc": "Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs) (Alias of .advlogsetup)",
+    "args": "none",
+    "perms": [
+      "None"
     ],
     "cat": "moderation",
     "catName": "⚔️ Moderation"
@@ -422,6 +895,576 @@
   {
     "name": ".analytics",
     "desc": "Analytics, Leaderboards, User & Server Metrics Suite",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".lb",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".lbm",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".lbvc",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".lbi",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".leaderboard",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".top",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".st",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".ss",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".tracker",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".userstats",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".useranalytics",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".u",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".usr",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".user",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".profile",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".topmessages",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".msgstats",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".messages",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".chat",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".topmsg",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".msgs",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".msg",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".topm",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".topvoice",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".voicestats",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".vctiming",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".vctimimng",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".voice",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".vc",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".voicetime",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".vctime",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".topvc",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".vctimes",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".vct",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".topinvites",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".invitestats",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".invites",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".topinv",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".invs",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".inv",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".joinsleaves",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".memberflow",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".joinleavestats",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".flow",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".jl",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".joins",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".leaves",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".topcommands",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".commandstats",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".commands",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".cmd",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".cmds",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".ticketstats",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".ticketanalytics",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".tickets",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".tstats",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".tks",
+    "desc": "Analytics, Leaderboards, User & Server Metrics Suite (Alias of .analytics)",
     "args": "none",
     "perms": [
       "None"
@@ -440,8 +1483,278 @@
     "catName": "🛡️ Security & AntiNuke"
   },
   {
+    "name": ".panicmode",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite (Alias of .antinuke)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".whitelist",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite (Alias of .antinuke)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".extraowner",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite (Alias of .antinuke)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".bypassrole",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite (Alias of .antinuke)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".security",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite (Alias of .antinuke)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".protection",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite (Alias of .antinuke)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".joingate",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite (Alias of .antinuke)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".quarantine",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite (Alias of .antinuke)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".ratelimits",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite (Alias of .antinuke)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".limits",
+    "desc": "Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite (Alias of .antinuke)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
     "name": ".automod",
     "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".antibot",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".moderation",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".filter",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".filters",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".misc",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".miscellaneous",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".addword",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".delword",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".removeword",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".addlink",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".dellink",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".removelink",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".addcategory",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".delcategory",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".removecategory",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".badwords",
+    "desc": "Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory (Alias of .automod)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".autoresponder",
+    "desc": "Manage automated message responses and emoji reactions with placeholders",
     "args": "none",
     "perms": [
       "None"
@@ -450,8 +1763,38 @@
     "catName": "⚙️ Automations"
   },
   {
-    "name": ".autoresponder",
-    "desc": "Manage automated message responses and emoji reactions with placeholders",
+    "name": ".ar",
+    "desc": "Manage automated message responses and emoji reactions with placeholders (Alias of .autoresponder)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
+    "name": ".react",
+    "desc": "Manage automated message responses and emoji reactions with placeholders (Alias of .autoresponder)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
+    "name": ".autoreact",
+    "desc": "Manage automated message responses and emoji reactions with placeholders (Alias of .autoresponder)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
+    "name": ".autoresponse",
+    "desc": "Manage automated message responses and emoji reactions with placeholders (Alias of .autoresponder)",
     "args": "none",
     "perms": [
       "None"
@@ -470,8 +1813,58 @@
     "catName": "⚙️ Automations"
   },
   {
+    "name": ".massrole",
+    "desc": "Automate role assignment for joining humans/bots and mass role management. (Alias of .autorole)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
+    "name": ".automation",
+    "desc": "Automate role assignment for joining humans/bots and mass role management. (Alias of .autorole)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
+    "name": ".autoroles",
+    "desc": "Automate role assignment for joining humans/bots and mass role management. (Alias of .autorole)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
     "name": ".backup",
     "desc": "Full Server Backup & Restore Suite (Roles, Channels, Categories, Settings)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "backup",
+    "catName": "💾 Server Backup"
+  },
+  {
+    "name": ".serverbackup",
+    "desc": "Full Server Backup & Restore Suite (Roles, Channels, Categories, Settings) (Alias of .backup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "backup",
+    "catName": "💾 Server Backup"
+  },
+  {
+    "name": ".bk",
+    "desc": "Full Server Backup & Restore Suite (Roles, Channels, Categories, Settings) (Alias of .backup)",
     "args": "none",
     "perms": [
       "None"
@@ -484,14 +1877,154 @@
     "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall",
     "args": "none",
     "perms": [
-      "Manage Server / Moderate"
+      "None"
     ],
     "cat": "moderation",
     "catName": "⚔️ Moderation"
   },
   {
-    "name": ".disableeveryone",
-    "desc": "Strips MentionEveryone permission across all server roles & channel overwrites to stop all @everyone/@here pings",
+    "name": ".disable",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".enable",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".hide",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".unhide",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".hideall",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".unhideall",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".lock",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".unlock",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".lockall",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".unlockall",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".chan",
+    "desc": "Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall (Alias of .channel)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".stripmentions",
+    "desc": "Strips MentionEveryone permission across all server roles & channel overwrites to stop all @everyone/@here pings (Alias of .disableeveryone)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".noeveryone",
+    "desc": "Strips MentionEveryone permission across all server roles & channel overwrites to stop all @everyone/@here pings (Alias of .disableeveryone)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".fixpings",
+    "desc": "Strips MentionEveryone permission across all server roles & channel overwrites to stop all @everyone/@here pings (Alias of .disableeveryone)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".suppresseveryone",
+    "desc": "Strips MentionEveryone permission across all server roles & channel overwrites to stop all @everyone/@here pings (Alias of .disableeveryone)",
     "args": "none",
     "perms": [
       "Administrator / Extra Owner"
@@ -550,6 +2083,16 @@
     "catName": "🪙 Economy & Casino"
   },
   {
+    "name": ".bj",
+    "desc": "Play an interactive hand of Blackjack against the dealer for coins. (Alias of .blackjack)",
+    "args": ".blackjack <bet>",
+    "perms": [
+      "None"
+    ],
+    "cat": "economy",
+    "catName": "🪙 Economy & Casino"
+  },
+  {
     "name": ".buy",
     "desc": "Buy a tool or consumable from the shop.",
     "args": ".buy <item id> [amount]",
@@ -568,16 +2111,6 @@
     ],
     "cat": "economy",
     "catName": "🪙 Economy & Casino"
-  },
-  {
-    "name": ".claim",
-    "desc": "Claim your pet's completed adventure reward.",
-    "args": ".claim",
-    "perms": [
-      "None"
-    ],
-    "cat": "info",
-    "catName": "📈 Utility & Info"
   },
   {
     "name": ".craft",
@@ -750,14 +2283,24 @@
     "catName": "🪙 Economy & Casino"
   },
   {
-    "name": ".leaderboard",
-    "desc": "Shows the richest members in this server.",
+    "name": ".baltop",
+    "desc": "Shows the richest members in this server. (Alias of .leaderboard)",
     "args": ".leaderboard",
     "perms": [
       "None"
     ],
-    "cat": "info",
-    "catName": "📈 Utility & Info"
+    "cat": "automations",
+    "catName": "⚙️ Automations"
+  },
+  {
+    "name": ".toprich",
+    "desc": "Shows the richest members in this server. (Alias of .leaderboard)",
+    "args": ".leaderboard",
+    "perms": [
+      "None"
+    ],
+    "cat": "automations",
+    "catName": "⚙️ Automations"
   },
   {
     "name": ".limbo",
@@ -860,16 +2403,6 @@
     "catName": "🪙 Economy & Casino"
   },
   {
-    "name": ".profile",
-    "desc": "View a member's full economy profile card.",
-    "args": "!profile [@user]",
-    "perms": [
-      "None"
-    ],
-    "cat": "profile",
-    "catName": "👤 Profile & Avatars"
-  },
-  {
     "name": ".quest",
     "desc": "View or start your daily quest for bonus coins.",
     "args": ".quest",
@@ -922,6 +2455,36 @@
   {
     "name": ".stocks",
     "desc": "View the Leaf Village Stock Market and trade company shares.",
+    "args": ".stocks [buy|sell <ticker> <amount>]",
+    "perms": [
+      "None"
+    ],
+    "cat": "economy",
+    "catName": "🪙 Economy & Casino"
+  },
+  {
+    "name": ".stock",
+    "desc": "View the Leaf Village Stock Market and trade company shares. (Alias of .stocks)",
+    "args": ".stocks [buy|sell <ticker> <amount>]",
+    "perms": [
+      "None"
+    ],
+    "cat": "economy",
+    "catName": "🪙 Economy & Casino"
+  },
+  {
+    "name": ".share",
+    "desc": "View the Leaf Village Stock Market and trade company shares. (Alias of .stocks)",
+    "args": ".stocks [buy|sell <ticker> <amount>]",
+    "perms": [
+      "None"
+    ],
+    "cat": "economy",
+    "catName": "🪙 Economy & Casino"
+  },
+  {
+    "name": ".shares",
+    "desc": "View the Leaf Village Stock Market and trade company shares. (Alias of .stocks)",
     "args": ".stocks [buy|sell <ticker> <amount>]",
     "perms": [
       "None"
@@ -1010,8 +2573,718 @@
     "catName": "🎉 Fun & Games"
   },
   {
+    "name": ".8ball",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".eightball",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".truth",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".dare",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".wouldyourather",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".wyr",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".pickup",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".fortune",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".vibecheck",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".mood",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".smartrate",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".rizzmeter",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".shipname",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".wanted",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".wasted",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".powerlevel",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".coolrate",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".spongebobchicken",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".slapcar",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".isthisa",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".drake",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".distractedbf",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".communismcat",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".eject",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".emergencymeeting",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".headpat",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".tradeoffer",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".waddle",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".blush",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".cry",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".dance",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".lewd",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".pout",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".shrug",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".sleepy",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".smile",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".smug",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".thumbsup",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".wag",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".thinking",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".triggered",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".teehee",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".deredere",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".thonking",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".scoff",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".happy",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".thumbs",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".grin",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".cuddle",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".hug",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".kiss",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".lick",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".nom",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".pat",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".poke",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".slap",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".stare",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".highfive",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".bite",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".greet",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".punch",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".handholding",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".tickle",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".kill",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".hold",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".pats",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".wave",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".boop",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".snuggle",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
+    "name": ".bully",
+    "desc": "Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore (Alias of .fun)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "fun",
+    "catName": "🎉 Fun & Games"
+  },
+  {
     "name": ".giveaway",
     "desc": "Host and manage giveaways. Subcommands: create, end, reroll, list",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "giveaway",
+    "catName": "🎁 Giveaways"
+  },
+  {
+    "name": ".gw",
+    "desc": "Host and manage giveaways. Subcommands: create, end, reroll, list (Alias of .giveaway)",
     "args": "none",
     "perms": [
       "None"
@@ -1030,8 +3303,58 @@
     "catName": "🛡️ Security & AntiNuke"
   },
   {
+    "name": ".botlockdown",
+    "desc": "Bot Owner Private Server Whitelist & Invite Lockdown System (Alias of .botlock)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".whitelistguild",
+    "desc": "Bot Owner Private Server Whitelist & Invite Lockdown System (Alias of .botlock)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".privatebot",
+    "desc": "Bot Owner Private Server Whitelist & Invite Lockdown System (Alias of .botlock)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
     "name": ".help",
     "desc": "Interactive Multi-Module Help Panel with Dropdown Menu & Category Navigator",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".h",
+    "desc": "Interactive Multi-Module Help Panel with Dropdown Menu & Category Navigator (Alias of .help)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".menu",
+    "desc": "Interactive Multi-Module Help Panel with Dropdown Menu & Category Navigator (Alias of .help)",
     "args": "none",
     "perms": [
       "None"
@@ -1050,8 +3373,258 @@
     "catName": "📈 Utility & Info"
   },
   {
+    "name": ".ping",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".about",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".invite",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".node",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".serverinfo",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".server",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".si",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".userinfo",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".membercount",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".botinfo",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".uptime",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".support",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".afk",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".avatar",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".av",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".roleinfo",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".serverbanner",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".servericon",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".snipe",
+    "desc": "Utility Commands: activity, afk, avatar, roleinfo, serverbanner, servericon, serverinfo, snipe, userinfo (Alias of .info)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
     "name": ".level",
     "desc": "Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "level",
+    "catName": "⭐ Levels & Ranks"
+  },
+  {
+    "name": ".levels",
+    "desc": "Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status (Alias of .level)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "level",
+    "catName": "⭐ Levels & Ranks"
+  },
+  {
+    "name": ".lvl",
+    "desc": "Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status (Alias of .level)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "level",
+    "catName": "⭐ Levels & Ranks"
+  },
+  {
+    "name": ".xp",
+    "desc": "Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status (Alias of .level)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "level",
+    "catName": "⭐ Levels & Ranks"
+  },
+  {
+    "name": ".rank",
+    "desc": "Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status (Alias of .level)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "level",
+    "catName": "⭐ Levels & Ranks"
+  },
+  {
+    "name": ".perks",
+    "desc": "Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status (Alias of .level)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "level",
+    "catName": "⭐ Levels & Ranks"
+  },
+  {
+    "name": ".rewards",
+    "desc": "Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status (Alias of .level)",
     "args": "none",
     "perms": [
       "None"
@@ -1070,8 +3643,68 @@
     "catName": "📈 Utility & Info"
   },
   {
+    "name": ".logs",
+    "desc": "Setup and deploy audit logging channels (Unified single channel or 8 Specialized Pro channels) (Alias of .logsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".logging",
+    "desc": "Setup and deploy audit logging channels (Unified single channel or 8 Specialized Pro channels) (Alias of .logsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".auditlogs",
+    "desc": "Setup and deploy audit logging channels (Unified single channel or 8 Specialized Pro channels) (Alias of .logsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".setuplogs",
+    "desc": "Setup and deploy audit logging channels (Unified single channel or 8 Specialized Pro channels) (Alias of .logsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
     "name": ".lyrics",
     "desc": "Fetch real-time lyrics for currently playing song or search by title",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".lyric",
+    "desc": "Fetch real-time lyrics for currently playing song or search by title (Alias of .lyrics)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".ly",
+    "desc": "Fetch real-time lyrics for currently playing song or search by title (Alias of .lyrics)",
     "args": "none",
     "perms": [
       "None"
@@ -1090,11 +3723,271 @@
     "catName": "⚔️ Moderation"
   },
   {
+    "name": ".hackban",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".purgebots",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".unban",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".unbanall",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".role",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".rolemenu",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".list",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".warn",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".unwarn",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".rmwarn",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".warnremove",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".warnings",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".clearwarns",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".case",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".cases",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".modlogs",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".caseinfo",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".temprole",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".trole",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".addrole",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".giverole",
+    "desc": "Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs (Alias of .mod)",
+    "args": "none",
+    "perms": [
+      "Manage Server / Moderate"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
     "name": ".modlimits",
     "desc": "AntiNuke Action Rate Limits & Audit Protection System",
     "args": "none",
     "perms": [
-      "Manage Server / Moderate"
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".limit",
+    "desc": "AntiNuke Action Rate Limits & Audit Protection System (Alias of .modlimits)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".actionlimits",
+    "desc": "AntiNuke Action Rate Limits & Audit Protection System (Alias of .modlimits)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".modquota",
+    "desc": "AntiNuke Action Rate Limits & Audit Protection System (Alias of .modlimits)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".limitmod",
+    "desc": "AntiNuke Action Rate Limits & Audit Protection System (Alias of .modlimits)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".rate-limit",
+    "desc": "AntiNuke Action Rate Limits & Audit Protection System (Alias of .modlimits)",
+    "args": "none",
+    "perms": [
+      "None"
     ],
     "cat": "moderation",
     "catName": "⚔️ Moderation"
@@ -1106,12 +3999,452 @@
     "perms": [
       "None"
     ],
-    "cat": "tickets",
-    "catName": "🎟️ Support Tickets"
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".r",
+    "desc": "Complete ModMail Support Suite (.modmail setup, .r, .close, .modmailtranscript) (Alias of .modmail)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".reply",
+    "desc": "Complete ModMail Support Suite (.modmail setup, .r, .close, .modmailtranscript) (Alias of .modmail)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".modmailsetup",
+    "desc": "Complete ModMail Support Suite (.modmail setup, .r, .close, .modmailtranscript) (Alias of .modmail)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".modmailtranscript",
+    "desc": "Complete ModMail Support Suite (.modmail setup, .r, .close, .modmailtranscript) (Alias of .modmail)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
+  },
+  {
+    "name": ".transcripts",
+    "desc": "Complete ModMail Support Suite (.modmail setup, .r, .close, .modmailtranscript) (Alias of .modmail)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "moderation",
+    "catName": "⚔️ Moderation"
   },
   {
     "name": ".music",
     "desc": "Synn Lavalink Complete Music Suite",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".m",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".play",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".p",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".stop",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".pause",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".resume",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".skip",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".s",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".previous",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".prev",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".replay",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".queue",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".q",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".np",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".nowplaying",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".loop",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".repeat",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".shuffle",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".volume",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".vol",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".clear",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".remove",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".move",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".skipto",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".jump",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".join",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".connect",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".dc",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".leave",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".afk247",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".247",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".seek",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".equalizer",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".eq",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".autoplay",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".ap",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".fav",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".favorite",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "music",
+    "catName": "🎶 Music Suite"
+  },
+  {
+    "name": ".favorites",
+    "desc": "Synn Lavalink Complete Music Suite (Alias of .music)",
     "args": "none",
     "perms": [
       "None"
@@ -1130,8 +4463,108 @@
     "catName": "🍥 Naruto RPG"
   },
   {
+    "name": ".naruto",
+    "desc": "Naruto RPG commands: Ninja Profile, Jutsu activation, Chakra meditation, Quests & Leaderboards (Alias of .ninja)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "rpg",
+    "catName": "🍥 Naruto RPG"
+  },
+  {
+    "name": ".jutsu",
+    "desc": "Naruto RPG commands: Ninja Profile, Jutsu activation, Chakra meditation, Quests & Leaderboards (Alias of .ninja)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "rpg",
+    "catName": "🍥 Naruto RPG"
+  },
+  {
+    "name": ".chakra",
+    "desc": "Naruto RPG commands: Ninja Profile, Jutsu activation, Chakra meditation, Quests & Leaderboards (Alias of .ninja)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "rpg",
+    "catName": "🍥 Naruto RPG"
+  },
+  {
     "name": ".nukeroles",
     "desc": "Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".deleteroles",
+    "desc": "Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel (Alias of .nukeroles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".nukeallroles",
+    "desc": "Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel (Alias of .nukeroles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".nukechannels",
+    "desc": "Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel (Alias of .nukeroles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".deletechannels",
+    "desc": "Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel (Alias of .nukeroles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".nukeallchannels",
+    "desc": "Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel (Alias of .nukeroles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".nukeserver",
+    "desc": "Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel (Alias of .nukeroles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".nukeall",
+    "desc": "Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel (Alias of .nukeroles)",
     "args": "none",
     "perms": [
       "None"
@@ -1150,6 +4583,36 @@
     "catName": "📈 Utility & Info"
   },
   {
+    "name": ".ownermenu",
+    "desc": "Dedicated Bot Owner Panel & Hub: Premium, No-Prefix, Server Lockdown, Extra Owner & PanicMode (Alias of .owner)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".ownerhelp",
+    "desc": "Dedicated Bot Owner Panel & Hub: Premium, No-Prefix, Server Lockdown, Extra Owner & PanicMode (Alias of .owner)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".botowner",
+    "desc": "Dedicated Bot Owner Panel & Hub: Premium, No-Prefix, Server Lockdown, Extra Owner & PanicMode (Alias of .owner)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
     "name": ".priority",
     "desc": "AI-powered assistant for fast text, question answering, and code generation",
     "args": "none",
@@ -1160,8 +4623,38 @@
     "catName": "📈 Utility & Info"
   },
   {
-    "name": ".profile",
-    "desc": "Profile Commands: bioset, bioreset, bioshow, animes, banners, boys, couples, girls",
+    "name": ".ai",
+    "desc": "AI-powered assistant for fast text, question answering, and code generation (Alias of .priority)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".ask",
+    "desc": "AI-powered assistant for fast text, question answering, and code generation (Alias of .priority)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".code",
+    "desc": "AI-powered assistant for fast text, question answering, and code generation (Alias of .priority)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".bio",
+    "desc": "Profile Commands: bioset, bioreset, bioshow, animes, banners, boys, couples, girls (Alias of .profile)",
     "args": "none",
     "perms": [
       "None"
@@ -1170,8 +4663,48 @@
     "catName": "👤 Profile & Avatars"
   },
   {
-    "name": ".quarantine",
-    "desc": "15-Day New Joiner Security Probation Grid for Users & Bots",
+    "name": ".probation",
+    "desc": "15-Day New Joiner Security Probation Grid for Users & Bots (Alias of .quarantine)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".quantine",
+    "desc": "15-Day New Joiner Security Probation Grid for Users & Bots (Alias of .quarantine)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".newuserguard",
+    "desc": "15-Day New Joiner Security Probation Grid for Users & Bots (Alias of .quarantine)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".newjoinerguard",
+    "desc": "15-Day New Joiner Security Probation Grid for Users & Bots (Alias of .quarantine)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".15dayguard",
+    "desc": "15-Day New Joiner Security Probation Grid for Users & Bots (Alias of .quarantine)",
     "args": "none",
     "perms": [
       "Administrator / Extra Owner"
@@ -1190,8 +4723,108 @@
     "catName": "🎭 Reaction Roles & Sticky"
   },
   {
+    "name": ".rr",
+    "desc": "Reaction Role System: add, remove, list, reset (Alias of .reactionrole)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
+    "name": ".reactionroles",
+    "desc": "Reaction Role System: add, remove, list, reset (Alias of .reactionrole)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
     "name": ".roles",
     "desc": "Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".rolesetup",
+    "desc": "Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip (Alias of .roles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".friend",
+    "desc": "Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip (Alias of .roles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".girl",
+    "desc": "Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip (Alias of .roles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".guest",
+    "desc": "Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip (Alias of .roles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".invcrole",
+    "desc": "Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip (Alias of .roles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".official",
+    "desc": "Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip (Alias of .roles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".vip",
+    "desc": "Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip (Alias of .roles)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".autonick",
+    "desc": "Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip (Alias of .roles)",
     "args": "none",
     "perms": [
       "None"
@@ -1210,6 +4843,46 @@
     "catName": "🛡️ Security & AntiNuke"
   },
   {
+    "name": ".quicksetup",
+    "desc": "Interactive One-Click Server Security Setup Dashboard for Admins & Server Owners (Alias of .securesetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".securitysetup",
+    "desc": "Interactive One-Click Server Security Setup Dashboard for Admins & Server Owners (Alias of .securesetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".setupwizard",
+    "desc": "Interactive One-Click Server Security Setup Dashboard for Admins & Server Owners (Alias of .securesetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".protectsetup",
+    "desc": "Interactive One-Click Server Security Setup Dashboard for Admins & Server Owners (Alias of .securesetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
     "name": ".singlereaction",
     "desc": "Configure single-reaction mode & auto-reactions for a channel",
     "args": "none",
@@ -1220,8 +4893,58 @@
     "catName": "🎭 Reaction Roles & Sticky"
   },
   {
-    "name": ".stats",
-    "desc": "Display bot global stats overview, shards and developer team details",
+    "name": ".sr",
+    "desc": "Configure single-reaction mode & auto-reactions for a channel (Alias of .singlereaction)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
+    "name": ".reactmode",
+    "desc": "Configure single-reaction mode & auto-reactions for a channel (Alias of .singlereaction)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
+    "name": ".singlereact",
+    "desc": "Configure single-reaction mode & auto-reactions for a channel (Alias of .singlereaction)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
+    "name": ".botstats",
+    "desc": "Display bot global stats overview, shards and developer team details (Alias of .stats)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".systemstats",
+    "desc": "Display bot global stats overview, shards and developer team details (Alias of .stats)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".stat",
+    "desc": "Display bot global stats overview, shards and developer team details (Alias of .stats)",
     "args": "none",
     "perms": [
       "None"
@@ -1240,8 +4963,78 @@
     "catName": "🎭 Reaction Roles & Sticky"
   },
   {
-    "name": ".support",
-    "desc": "Official Support Server invite link and bot help center",
+    "name": ".sticky",
+    "desc": "Sticky Note Commands: stickynote set, stickynote remove, stickynote list, unsticky (Alias of .stickynote)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
+    "name": ".stickynotes",
+    "desc": "Sticky Note Commands: stickynote set, stickynote remove, stickynote list, unsticky (Alias of .stickynote)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
+    "name": ".unsticky",
+    "desc": "Sticky Note Commands: stickynote set, stickynote remove, stickynote list, unsticky (Alias of .stickynote)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
+    "name": ".unstickynote",
+    "desc": "Sticky Note Commands: stickynote set, stickynote remove, stickynote list, unsticky (Alias of .stickynote)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
+    "name": ".removesticky",
+    "desc": "Sticky Note Commands: stickynote set, stickynote remove, stickynote list, unsticky (Alias of .stickynote)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
+    "name": ".delsticky",
+    "desc": "Sticky Note Commands: stickynote set, stickynote remove, stickynote list, unsticky (Alias of .stickynote)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "reactionrole",
+    "catName": "🎭 Reaction Roles & Sticky"
+  },
+  {
+    "name": ".supportserver",
+    "desc": "Official Support Server invite link and bot help center (Alias of .support)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".community",
+    "desc": "Official Support Server invite link and bot help center (Alias of .support)",
     "args": "none",
     "perms": [
       "None"
@@ -1260,8 +5053,68 @@
     "catName": "🎟️ Support Tickets"
   },
   {
+    "name": ".createsupportserver",
+    "desc": "Automated 1-Click Support Server Architecture Builder with Konoha Shinobi Theme (Alias of .supportsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".buildsupportserver",
+    "desc": "Automated 1-Click Support Server Architecture Builder with Konoha Shinobi Theme (Alias of .supportsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".supportserversetup",
+    "desc": "Automated 1-Click Support Server Architecture Builder with Konoha Shinobi Theme (Alias of .supportsetup)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
     "name": ".testlogs",
     "desc": "Test all server audit logging channels by sending sample test log embeds",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".checklogs",
+    "desc": "Test all server audit logging channels by sending sample test log embeds (Alias of .testlogs)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".testlogchannels",
+    "desc": "Test all server audit logging channels by sending sample test log embeds (Alias of .testlogs)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "info",
+    "catName": "📈 Utility & Info"
+  },
+  {
+    "name": ".logcheck",
+    "desc": "Test all server audit logging channels by sending sample test log embeds (Alias of .testlogs)",
     "args": "none",
     "perms": [
       "None"
@@ -1280,6 +5133,166 @@
     "catName": "🎟️ Support Tickets"
   },
   {
+    "name": ".t",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".ticketpanel",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".staffrole",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".panel_deploy",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".ticket_setup",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".add_member",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".remove_member",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".category_add",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".category_edit",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".category_remove",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".category_list",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".categories",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".reopen",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".callstaff",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".ticketinfo",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
+    "name": ".anonymous",
+    "desc": "Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers (Alias of .ticket)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "tickets",
+    "catName": "🎟️ Support Tickets"
+  },
+  {
     "name": ".vanityguard",
     "desc": "High-Speed Server Vanity URL Protection & Theft Recovery System",
     "args": "none",
@@ -1290,8 +5303,148 @@
     "catName": "🛡️ Security & AntiNuke"
   },
   {
-    "name": ".voice",
-    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall",
+    "name": ".vanityprotect",
+    "desc": "High-Speed Server Vanity URL Protection & Theft Recovery System (Alias of .vanityguard)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".vanityshield",
+    "desc": "High-Speed Server Vanity URL Protection & Theft Recovery System (Alias of .vanityguard)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".antivanity",
+    "desc": "High-Speed Server Vanity URL Protection & Theft Recovery System (Alias of .vanityguard)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".vanity",
+    "desc": "High-Speed Server Vanity URL Protection & Theft Recovery System (Alias of .vanityguard)",
+    "args": "none",
+    "perms": [
+      "Administrator / Extra Owner"
+    ],
+    "cat": "security",
+    "catName": "🛡️ Security & AntiNuke"
+  },
+  {
+    "name": ".voicechannel",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vcdeafen",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vcundeafen",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vckick",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vclist",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vcmoveall",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vcmute",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vcpull",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vcpullall",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vcunmute",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vcunmuteall",
+    "desc": "Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall (Alias of .voice)",
     "args": "none",
     "perms": [
       "None"
@@ -1310,8 +5463,138 @@
     "catName": "🔊 VoiceMaster"
   },
   {
+    "name": ".vctemp",
+    "desc": "VoiceMaster Setup & Interface: setupvc, vcsetup, vctemp setup, tempvc (Alias of .voicemaster)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".tempvc",
+    "desc": "VoiceMaster Setup & Interface: setupvc, vcsetup, vctemp setup, tempvc (Alias of .voicemaster)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vm",
+    "desc": "VoiceMaster Setup & Interface: setupvc, vcsetup, vctemp setup, tempvc (Alias of .voicemaster)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".setupvc",
+    "desc": "VoiceMaster Setup & Interface: setupvc, vcsetup, vctemp setup, tempvc (Alias of .voicemaster)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
+    "name": ".vcsetup",
+    "desc": "VoiceMaster Setup & Interface: setupvc, vcsetup, vctemp setup, tempvc (Alias of .voicemaster)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "voice",
+    "catName": "🔊 VoiceMaster"
+  },
+  {
     "name": ".welcome",
     "desc": "Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "welcome",
+    "catName": "👋 Welcome"
+  },
+  {
+    "name": ".welcomesetup",
+    "desc": "Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite (Alias of .welcome)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "welcome",
+    "catName": "👋 Welcome"
+  },
+  {
+    "name": ".welcomereset",
+    "desc": "Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite (Alias of .welcome)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "welcome",
+    "catName": "👋 Welcome"
+  },
+  {
+    "name": ".welcometest",
+    "desc": "Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite (Alias of .welcome)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "welcome",
+    "catName": "👋 Welcome"
+  },
+  {
+    "name": ".welcomepreview",
+    "desc": "Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite (Alias of .welcome)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "welcome",
+    "catName": "👋 Welcome"
+  },
+  {
+    "name": ".joindm",
+    "desc": "Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite (Alias of .welcome)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "welcome",
+    "catName": "👋 Welcome"
+  },
+  {
+    "name": ".leavedm",
+    "desc": "Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite (Alias of .welcome)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "welcome",
+    "catName": "👋 Welcome"
+  },
+  {
+    "name": ".boostmsg",
+    "desc": "Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite (Alias of .welcome)",
+    "args": "none",
+    "perms": [
+      "None"
+    ],
+    "cat": "welcome",
+    "catName": "👋 Welcome"
+  },
+  {
+    "name": ".welcomeconfig",
+    "desc": "Customizable Welcome Cards, Join DM, Leave DM & Server Boost Suite (Alias of .welcome)",
     "args": "none",
     "perms": [
       "None"
