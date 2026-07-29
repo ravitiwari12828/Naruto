@@ -1,4 +1,5 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
+const { createCanvas, loadImage } = require('@napi-rs/canvas');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 
@@ -16,7 +17,7 @@ const PRESET_BANNERS = {
   minimal: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=1200&auto=format&fit=crop&q=80'
 };
 
-// Mimu-Style Presets Directory (Includes Animated Custom Emojis & Header Banners)
+// Mimu-Style Presets Directory
 const WELCOME_PRESETS = {
   aesthetic: {
     title: '🌸 Welcome to {server_name}',
@@ -46,9 +47,9 @@ const WELCOME_PRESETS = {
     footer: 'Customer #{membercount} • {server_name}'
   },
   gothic: {
-    title: '🖤 Welcome to {server_name}',
+    title: '🖤 Welcome to the Castle',
     headerText: '🖤 ─── 𖤍 ─── 🖤',
-    description: 'Welcome {user} to **{server_name}**.\nYou have entered the dark sanctuary.\n\n🦇 **Crypt Rules:**\n> Read the law and respect members\n> Select your coven and roles\n\nSoul **#{membercount}** 🥀',
+    description: 'Greetings, dark traveler {user}. You have entered the hallowed halls of **{server_name}**.\nMay the shadows welcome you.\n\n🦇 **Crypt Rules:**\n> Join us to mingle with the night\'s children.\n> Read the law and select your coven.\n\nSoul **#{membercount}** 🥀',
     color: '#800020',
     imageUrl: PRESET_BANNERS.gothic,
     useAvatarThumbnail: true,
@@ -89,6 +90,7 @@ function getOrCreateWelcomeConfig(guildId) {
       enabled: true,
       channelId: null,
       style: 'shinobi',
+      cardType: 'embed', // 'embed' or 'canvas'
       useEmbed: true,
       headerText: WELCOME_PRESETS.shinobi.headerText,
       title: WELCOME_PRESETS.shinobi.title,
@@ -128,7 +130,88 @@ function parsePlaceholders(text, member) {
     .replace(/{membercount}/g, guild.memberCount.toString());
 }
 
-function buildWelcomeCard(config, member) {
+// Custom Graphic Composite Canvas Card Generator
+async function generateCanvasWelcomeCard(config, member) {
+  const guild = member.guild;
+  const user = member.user;
+
+  const canvas = createCanvas(900, 450);
+  const ctx = canvas.getContext('2d');
+
+  // Background Theme Image or Gradient
+  const bannerUrl = config.imageUrl || PRESET_BANNERS[config.style || 'shinobi'] || PRESET_BANNERS.shinobi;
+  try {
+    const bgImg = await loadImage(bannerUrl);
+    ctx.drawImage(bgImg, 0, 0, 900, 450);
+
+    // Dark overlay for text readability
+    ctx.fillStyle = 'rgba(10, 10, 15, 0.65)';
+    ctx.fillRect(0, 0, 900, 450);
+  } catch(e) {
+    const grad = ctx.createLinearGradient(0, 0, 900, 450);
+    grad.addColorStop(0, '#0d0d12');
+    grad.addColorStop(1, '#1b080d');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 900, 450);
+  }
+
+  // Border Frame
+  const borderColor = config.color || '#7e0808';
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 8;
+  ctx.strokeRect(10, 10, 880, 430);
+
+  // Avatar Image
+  try {
+    const avatarUrl = user.displayAvatarURL({ extension: 'png', size: 512 });
+    const avatar = await loadImage(avatarUrl);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(450, 120, 60, 0, Math.PI * 2, true);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(avatar, 390, 60, 120, 120);
+    ctx.restore();
+
+    // Avatar ring border
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(450, 120, 60, 0, Math.PI * 2, true);
+    ctx.stroke();
+  } catch(e) {}
+
+  // Welcome Title
+  const titleText = parsePlaceholders(config.title || 'Welcome to {server_name}', member);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 32px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText(titleText.slice(0, 35), 450, 230);
+
+  // Member Greeting
+  ctx.fillStyle = '#ff4d6d';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillText(`Greetings @${user.username}!`, 450, 275);
+
+  // Member Count Badge Pill
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+  ctx.beginPath();
+  ctx.roundRect(350, 315, 200, 45, 22);
+  ctx.fill();
+  ctx.strokeStyle = borderColor;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillText(`Member #${guild.memberCount}`, 450, 344);
+
+  const buffer = await canvas.encode('png');
+  return new AttachmentBuilder(buffer, { name: 'welcome-card.png' });
+}
+
+async function buildWelcomeCard(config, member) {
   const guild = member.guild;
   const user = member.user;
 
@@ -136,6 +219,16 @@ function buildWelcomeCard(config, member) {
   const description = parsePlaceholders(config.description, member);
   const title = parsePlaceholders(config.title, member);
   const footer = parsePlaceholders(config.footer, member);
+
+  // Always resolve valid banner image
+  const bannerImage = config.imageUrl || PRESET_BANNERS[config.style || 'shinobi'] || PRESET_BANNERS.shinobi;
+
+  if (config.cardType === 'canvas') {
+    try {
+      const attachment = await generateCanvasWelcomeCard(config, member);
+      return { content: headerText || undefined, files: [attachment] };
+    } catch(e) {}
+  }
 
   if (!config.useEmbed) {
     return { content: `${headerText}\n\n${description}` };
@@ -153,12 +246,14 @@ function buildWelcomeCard(config, member) {
       iconURL: guild.iconURL({ dynamic: true }) || undefined
     });
 
-  // BOTH Thumbnail AND Large Banner Picture are now rendered!
+  // User Avatar Thumbnail
   if (config.useAvatarThumbnail !== false) {
     embed.setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
   }
-  if (config.imageUrl) {
-    embed.setImage(config.imageUrl);
+
+  // Large Header Banner Picture
+  if (bannerImage) {
+    embed.setImage(bannerImage);
   }
 
   return { content: headerText || undefined, embeds: [embed] };
@@ -166,20 +261,23 @@ function buildWelcomeCard(config, member) {
 
 function buildWelcomeConfigPanel(config, guild, author, clientUser) {
   const chanMention = config.channelId ? `<#${config.channelId}>` : '*Not set (Use `.welcome setup <#channel>`)*';
-  const imgStr = config.imageUrl ? '`High-Res Banner Set`' : '`Avatar Thumbnail Only`';
+  const imgStr = config.imageUrl ? '`High-Res Banner Set`' : '`Preset Default Banner`';
+  const cardTypeStr = config.cardType === 'canvas' ? '`Canvas Graphic Card`' : '`Rich Embed Banner`';
 
   const description =
     `Welcome **${author.username}**! Below is your server **Welcome System Hub & Greetings Config**.\n\n` +
     `**⚙️ System Status & Settings:**\n` +
     `• **Module Status:** ${config.enabled ? `${emojis.SUCCESS} **ACTIVE**` : `${emojis.DISABLED} **DISABLED**`}\n` +
     `• **Welcome Channel:** ${chanMention}\n` +
+    `• **Card Render Mode:** ${cardTypeStr}\n` +
     `• **Active Preset:** \`${(config.style || 'shinobi').toUpperCase()}\`\n` +
     `• **Embed Color:** \`${config.color || '#7E0808'}\`\n` +
     `• **Banner Picture:** ${imgStr}\n` +
     `• **Join DM Notification:** ${config.joinDmEnabled ? `${emojis.SUCCESS} Enabled` : `${emojis.DISABLED} Disabled`}\n` +
     `• **Leave DM Notification:** ${config.leaveDmEnabled ? `${emojis.SUCCESS} Enabled` : `${emojis.DISABLED} Disabled`}\n\n` +
-    `**📝 Easy Configuration Commands:**\n` +
+    `**📝 Configuration Commands:**\n` +
     `• \`.welcome preset <aesthetic/galaxy/cafe/gothic/shinobi/cyberpunk/minimal>\` — Apply preset\n` +
+    `• \`.welcome card <canvas/embed>\` — Toggle Graphic Canvas Card vs Rich Embed\n` +
     `• \`.welcome setup <#channel>\` — Bind welcome channel\n` +
     `• \`.welcome image <banner_URL>\` — Set custom header banner\n` +
     `• \`.welcome description <text>\` — Edit description text\n` +
@@ -201,16 +299,17 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
 
 module.exports = {
   name: 'welcome',
-  description: 'Customizable Mimu-Style Welcome Embeds with High-Res Banner Images & Avatars',
+  description: 'Customizable Mimu-Style Welcome Embeds, Canvas Graphic Cards & Banner Images',
   aliases: [
     'welcomesetup', 'welcomereset', 'welcometest', 'welcomepreview',
-    'joindm', 'leavedm', 'boostmsg', 'welcomeconfig', 'welcomepreset'
+    'joindm', 'leavedm', 'boostmsg', 'welcomeconfig', 'welcomepreset', 'welcomecard'
   ],
   welcomeConfigs,
   WELCOME_PRESETS,
   PRESET_BANNERS,
   getOrCreateWelcomeConfig,
   buildWelcomeCard,
+  generateCanvasWelcomeCard,
   parsePlaceholders,
 
   async execute(message, args) {
@@ -221,6 +320,7 @@ module.exports = {
     if (invoked === 'welcomereset') sub = 'reset';
     if (invoked === 'welcometest' || invoked === 'welcomepreview') sub = 'test';
     if (invoked === 'welcomepreset') sub = 'preset';
+    if (invoked === 'welcomecard') sub = 'card';
     if (invoked === 'joindm') sub = 'joindm';
     if (invoked === 'leavedm') sub = 'leavedm';
     if (invoked === 'boostmsg') sub = 'boostmsg';
@@ -247,7 +347,7 @@ module.exports = {
           `• \`shinobi\` - Naruto Leaf Village Theme 🍥\n` +
           `• \`cyberpunk\` - Neon Matrix Theme ⚡\n` +
           `• \`minimal\` - Clean Monochrome Theme 🌿\n\n` +
-          `Usage: \`.welcome preset galaxy\``
+          `Usage: \`.welcome preset gothic\``
         );
       }
 
@@ -257,15 +357,31 @@ module.exports = {
       config.headerText = preset.headerText;
       config.description = preset.description;
       config.color = preset.color;
-      config.imageUrl = preset.imageUrl;
+      config.imageUrl = preset.imageUrl || PRESET_BANNERS[theme];
       config.useAvatarThumbnail = true;
       config.footer = preset.footer;
       welcomeConfigs.set(guild.id, config);
 
-      return message.reply(`${emojis.SUCCESS} **Applied Welcome Preset**: \`${theme.toUpperCase()}\` with High-Res Banner Picture!\nType \`.welcometest\` to preview the full card with thumbnail + banner!`);
+      return message.reply(`${emojis.SUCCESS} **Applied Welcome Preset**: \`${theme.toUpperCase()}\` with High-Res Banner Picture!\nType \`.welcometest\` to preview the card with thumbnail + banner image!`);
     }
 
-    // 2. EDIT BANNER IMAGE (.welcome image <url>)
+    // 2. TOGGLE CARD MODE (.welcome card canvas/embed)
+    if (sub === 'card' || sub === 'mode') {
+      const mode = args[1]?.toLowerCase();
+      if (mode === 'canvas' || mode === 'graphic' || mode === 'image') {
+        config.cardType = 'canvas';
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} **Card Render Mode Set to**: \`Canvas Graphic Card\`! Type \`.welcometest\` to preview.`);
+      }
+      if (mode === 'embed' || mode === 'rich') {
+        config.cardType = 'embed';
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} **Card Render Mode Set to**: \`Rich Embed Banner\`! Type \`.welcometest\` to preview.`);
+      }
+      return message.reply(`ℹ️ Usage: \`.welcome card <canvas / embed>\``);
+    }
+
+    // 3. EDIT BANNER IMAGE (.welcome image <url>)
     if (sub === 'image' || sub === 'banner' || sub === 'img') {
       const url = args[1];
       if (!url || !url.match(/^https?:\/\/.+/i)) {
@@ -276,7 +392,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} **Welcome Banner Image Updated**! Type \`.welcometest\` to preview.`);
     }
 
-    // 3. EDIT DESCRIPTION BODY (.welcome description <text>)
+    // 4. EDIT DESCRIPTION BODY (.welcome description <text>)
     if (sub === 'description' || sub === 'desc' || sub === 'body') {
       const text = args.slice(1).join(' ');
       if (!text) {
@@ -287,7 +403,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} **Welcome Description Updated**:\n>>> ${parsePlaceholders(text, message.member)}`);
     }
 
-    // 4. EDIT EMBED TITLE (.welcome title <text>)
+    // 5. EDIT EMBED TITLE (.welcome title <text>)
     if (sub === 'title') {
       const text = args.slice(1).join(' ');
       if (!text) {
@@ -298,18 +414,18 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} **Welcome Title Updated**: \`${parsePlaceholders(text, message.member)}\``);
     }
 
-    // 5. EDIT EMBED COLOR (.welcome color <#hex>)
+    // 6. EDIT EMBED COLOR (.welcome color <#hex>)
     if (sub === 'color' || sub === 'hex') {
       const hex = args[1];
       if (!hex || !hex.match(/^#?[0-9a-fA-F]{6}$/)) {
-        return message.reply(`ℹ️ Usage: \`.welcome color #FFD1DC\` or \`#4B0082\` or \`#00FFFF\``);
+        return message.reply(`ℹ️ Usage: \`.welcome color #FFD1DC\` or \`#800020\` or \`#00FFFF\``);
       }
       config.color = hex.startsWith('#') ? hex : '#' + hex;
       welcomeConfigs.set(guild.id, config);
       return message.reply(`${emojis.SUCCESS} **Welcome Embed Color Code Updated**: \`${config.color}\``);
     }
 
-    // 6. EDIT FOOTER (.welcome footer <text>)
+    // 7. EDIT FOOTER (.welcome footer <text>)
     if (sub === 'footer') {
       const text = args.slice(1).join(' ');
       if (!text) {
@@ -320,7 +436,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} **Welcome Footer Updated**: \`${parsePlaceholders(text, message.member)}\``);
     }
 
-    // 7. EDIT HEADER OUTSIDE EMBED (.welcome header <text>)
+    // 8. EDIT HEADER OUTSIDE EMBED (.welcome header <text>)
     if (sub === 'header') {
       const text = args.slice(1).join(' ');
       config.headerText = text;
@@ -328,7 +444,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} **Welcome Outer Header Updated**: \`${parsePlaceholders(text, message.member)}\``);
     }
 
-    // 8. SETUP / BIND CHANNEL (.welcome setup <#channel>)
+    // 9. SETUP / BIND CHANNEL (.welcome setup <#channel>)
     if (sub === 'setup' || sub === 'set' || sub === 'channel') {
       const chan = message.mentions.channels.first() || guild.channels.cache.get(args[1]) || message.channel;
       config.channelId = chan.id;
@@ -340,13 +456,13 @@ module.exports = {
       return message.channel.send({ embeds: [panelEmbed] });
     }
 
-    // 9. TEST & PREVIEW (.welcometest)
+    // 10. TEST & PREVIEW (.welcometest)
     if (sub === 'test' || sub === 'preview') {
-      const card = buildWelcomeCard(config, message.member);
+      const card = await buildWelcomeCard(config, message.member);
       return message.channel.send(card);
     }
 
-    // 10. RESET (.welcomereset)
+    // 11. RESET (.welcomereset)
     if (sub === 'reset') {
       welcomeConfigs.delete(guild.id);
       return message.reply(`${emojis.SUCCESS} **Welcome Configuration Reset** to default Shinobi theme.`);
