@@ -14,14 +14,19 @@ process.on('unhandledRejection', (reason) => {
   console.error('${emojis.WARNING} [Unhandled Rejection]:', reason?.message || reason);
 });
 
-// Render / Web Hosting Keepalive HTTP Server
+// Render / Web Hosting Keepalive & Commands Web Dashboard HTTP Server
 const http = require('http');
 const PORT = process.env.PORT || 10000;
 http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  const commandsHtmlPath = path.join(__dirname, '..', 'public', 'commands.html');
+  if (fs.existsSync(commandsHtmlPath)) {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    return fs.createReadStream(commandsHtmlPath).pipe(res);
+  }
+  res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
   res.end('🍥 Naruto Bot is 24/7 Active!\n');
 }).listen(PORT, () => {
-  console.log(`🌐 Keepalive HTTP server listening on port ${PORT}`);
+  console.log(`🌐 Keepalive & Commands Web Server listening on port ${PORT}`);
 });
 
 // Render Keepalive Self-Ping Loop (Pings every 10 minutes to prevent Render Free Tier from going to sleep)

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Naruto Bot — Commands & Capabilities Suite</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a0a0c;
+      --bg-card: #111215;
+      --bg-card-hover: #17181d;
+      --border-color: #22242a;
+      --border-highlight: #ff3b5c;
+      --primary-red: #ff2a4b;
+      --primary-red-glow: rgba(255, 42, 75, 0.35);
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --badge-bg: #1c1e24;
+      --badge-perm-bg: rgba(255, 42, 75, 0.12);
+      --badge-perm-text: #ff4d6d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(255, 42, 75, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(126, 8, 8, 0.12) 0%, transparent 40%);
+      background-attachment: fixed;
+    }
+
+    /* Glassmorphism Navbar */
+    .navbar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      background: rgba(10, 10, 12, 0.85);
+      border-bottom: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-main);
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-icon {
+      font-size: 1.5rem;
+      filter: drop-shadow(0 0 8px var(--primary-red-glow));
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+    }
+
+    .nav-link:hover, .nav-link.active {
+      color: var(--primary-red);
+    }
+
+    .btn-invite {
+      background: linear-gradient(135deg, #ff2a4b 0%, #b80927 100%);
+      color: #fff;
+      padding: 0.5rem 1.25rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      text-decoration: none;
+      box-shadow: 0 4px 15px var(--primary-red-glow);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-invite:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 42, 75, 0.5);
+    }
+
+    /* Container */
+    .main-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem;
+      width: 100%;
+      flex: 1;
+    }
+
+    /* Header & Search */
+    .header-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .header-title {
+      font-size: 2.75rem;
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .header-subtitle {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 650px;
+      margin-bottom: 2rem;
+    }
+
+    .search-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 580px;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 1rem 1.25rem 1rem 3rem;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 1rem;
+      color: var(--text-main);
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .search-input:focus {
+      border-color: var(--primary-red);
+      box-shadow: 0 0 20px var(--primary-red-glow);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 1.1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    /* Category Filter Tabs Carousel */
+    .categories-carousel {
+      display: flex;
+      gap: 0.6rem;
+      overflow-x: auto;
+      padding-bottom: 1rem;
+      margin-bottom: 2rem;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-color) transparent;
+    }
+
+    .cat-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+      padding: 0.55rem 1.1rem;
+      border-radius: 9999px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .cat-btn:hover {
+      border-color: rgba(255, 42, 75, 0.4);
+      color: var(--text-main);
+      background: var(--bg-card-hover);
+    }
+
+    .cat-btn.active {
+      background: var(--primary-red);
+      border-color: var(--primary-red);
+      color: #fff;
+      box-shadow: 0 4px 15px var(--primary-red-glow);
+    }
+
+    .cat-count {
+      background: rgba(0,0,0,0.25);
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    /* Commands Grid */
+    .commands-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* Bleed-Style Command Card */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 1.25rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      position: relative;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 42, 75, 0.4);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+      background: var(--bg-card-hover);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+
+    .cmd-name {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      letter-spacing: -0.3px;
+    }
+
+    .copy-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0.25rem;
+      border-radius: 0.35rem;
+      transition: color 0.2s ease, background 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      color: var(--primary-red);
+      background: rgba(255, 42, 75, 0.1);
+    }
+
+    .cmd-desc {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+      min-height: 2.7em;
+    }
+
+    .meta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .meta-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+    }
+
+    .meta-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-main);
+      background: var(--badge-bg);
+      padding: 0.35rem 0.65rem;
+      border-radius: 0.5rem;
+      display: inline-block;
+      width: fit-content;
+      word-break: break-all;
+    }
+
+    .perm-badge {
+      background: var(--badge-perm-bg);
+      color: var(--badge-perm-text);
+      font-weight: 600;
+      font-size: 0.78rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 0.4rem;
+      display: inline-block;
+      width: fit-content;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: var(--primary-red);
+      color: #fff;
+      padding: 0.85rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      box-shadow: 0 8px 25px var(--primary-red-glow);
+      transform: translateY(150%);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+    }
+
+    /* Empty state */
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 1.5rem;
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="#" class="brand">
+      <span class="brand-icon">🍥</span>
+      <span>Naruto Shinobi Bot</span>
+    </a>
+    <div class="nav-links">
+      <a href="#" class="nav-link active">Commands</a>
+      <a href="https://discord.gg/ZPKcPreUMT" target="_blank" class="nav-link">Support</a>
+      <a href="https://discord.com/api/oauth2/authorize?client_id=1529362747047805029&permissions=8&scope=bot%20applications.commands" target="_blank" class="btn-invite">Invite Bot</a>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="main-container">
+    <div class="header-section">
+      <h1 class="header-title">Command Documentation</h1>
+      <p class="header-subtitle">Explore all 545+ operational commands, subcommands, arguments and permission requirements across 22 active system modules.</p>
+      
+      <div class="search-wrapper">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" class="search-input" placeholder="Search commands, arguments or permissions...">
+      </div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="categories-carousel" id="categoriesTabs">
+      <!-- Generated via JS -->
+    </div>
+
+    <!-- Cards Grid -->
+    <div class="commands-grid" id="commandsGrid">
+      <!-- Generated via JS -->
+    </div>
+  </main>
+
+  <!-- Toast -->
+  <div class="toast" id="toast">📋 Command copied to clipboard!</div>
+
+  <script>
+    const COMMANDS = [
+      // SECURITY & ANTINUKE
+      { name: '.antinuke', desc: 'Main AntiNuke security status & configuration panel.', args: 'none', perms: ['Administrator', 'Extra Owner'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
+      { name: '.antinuke enable', desc: 'Enable full AntiNuke mass-action protections.', args: 'none', perms: ['Administrator', 'Extra Owner'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
+      { name: '.whitelist add', desc: 'Whitelist a trusted admin from AntiNuke limits.', args: '<@user>', perms: ['Extra Owner'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
+      { name: '.quarantine enable', desc: 'Activate rogue admin 10-day quarantine lockout.', args: 'none', perms: ['Extra Owner'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
+      { name: '.vanityguard enable', desc: 'Protect server vanity URL against stealers.', args: '<vanity>', perms: ['Administrator'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
+      { name: '.disableeveryone', desc: 'Emergency disable dangerous @everyone perms.', args: 'none', perms: ['Administrator'], cat: 'security', catName: '🛡️ AntiNuke & Security' },
+
+      // MODERATION
+      { name: '.ban', desc: 'Permanently ban a member from the server.', args: '<@user> [reason]', perms: ['Ban Members'], cat: 'moderation', catName: '⚔️ Moderation' },
+      { name: '.kick', desc: 'Kick a member out of the server.', args: '<@user> [reason]', perms: ['Kick Members'], cat: 'moderation', catName: '⚔️ Moderation' },
+      { name: '.mute', desc: 'Timeout/Mute a member for specified duration.', args: '<@user> <1m/1h/1d> [reason]', perms: ['Moderate Members'], cat: 'moderation', catName: '⚔️ Moderation' },
+      { name: '.unmute', desc: 'Remove timeout from a muted member.', args: '<@user>', perms: ['Moderate Members'], cat: 'moderation', catName: '⚔️ Moderation' },
+      { name: '.purge', desc: 'Bulk delete up to 100 messages in current channel.', args: '<amount: 1-100>', perms: ['Manage Messages'], cat: 'moderation', catName: '⚔️ Moderation' },
+      { name: '.nuke', desc: 'Clone and replace channel to wipe all messages.', args: 'none', perms: ['Administrator'], cat: 'moderation', catName: '⚔️ Moderation' },
+      { name: '.modlimits set', desc: 'Set maximum daily action limits for staff.', args: '<limit: 5-50>', perms: ['Administrator'], cat: 'moderation', catName: '⚔️ Moderation' },
+
+      // AUTOMATIONS
+      { name: '.autorole config', desc: 'Configure automatic role assignment for new joins.', args: 'none', perms: ['Manage Roles'], cat: 'automations', catName: '⚙️ Automations' },
+      { name: '.autorole add', desc: 'Add auto-role rule for human members or bots.', args: '<@role> [human/bot]', perms: ['Manage Roles'], cat: 'automations', catName: '⚙️ Automations' },
+      { name: '.massrole add', desc: 'Mass assign a role to all server members or bots.', args: '<@role> [humans/bots]', perms: ['Manage Roles', 'Administrator'], cat: 'automations', catName: '⚙️ Automations' },
+
+      // AUTORESPONDER & AUTOREACT
+      { name: '.ar add', desc: 'Add a custom autoresponder trigger & reply.', args: '<trigger> <reply text>', perms: ['Manage Server'], cat: 'autoresponder', catName: '💬 Autoresponder' },
+      { name: '.autoreact add', desc: 'Add automatic emoji reaction to trigger words.', args: '<trigger> <emoji>', perms: ['Manage Server'], cat: 'autoresponder', catName: '💬 Autoresponder' },
+
+      // MUSIC
+      { name: '.play', desc: 'Play high-fidelity audio from YouTube, Spotify or Apple Music.', args: '<song name / URL>', perms: ['none'], cat: 'music', catName: '🎶 Music Suite' },
+      { name: '.skip', desc: 'Skip current playing song in queue.', args: 'none', perms: ['none'], cat: 'music', catName: '🎶 Music Suite' },
+      { name: '.equalizer', desc: 'Apply 10-band audio equalizer presets (bassboost, flat, rock).', args: '<preset>', perms: ['none'], cat: 'music', catName: '🎶 Music Suite' },
+      { name: '.247', desc: 'Toggle 24/7 AFK voice channel mode.', args: 'none', perms: ['Manage Channels'], cat: 'music', catName: '🎶 Music Suite' },
+
+      // ECONOMY & CASINO
+      { name: '.balance', desc: 'Check your wallet & bank balance.', args: '[@user]', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
+      { name: '.blackjack', desc: 'Play OwO-style Blackjack against the dealer.', args: '<amount>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
+      { name: '.plinko', desc: 'Drop balls down the Plinko multiplier board.', args: '<amount>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
+      { name: '.crash', desc: 'Cash out before the multiplier crashes.', args: '<amount>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
+      { name: '.roulette', desc: 'Bet on Red, Black, Green or specific numbers.', args: '<amount> <red/black/green/0-36>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
+      { name: '.stocks buy', desc: 'Buy shares in the Shinobi stock market.', args: '<symbol> <shares>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
+      { name: '.pet adopt', desc: 'Adopt a pet species to boost your power.', args: '<species>', perms: ['none'], cat: 'economy', catName: '🪙 Economy & Casino' },
+
+      // NARUTO RPG
+      { name: '.ninja profile', desc: 'View Shinobi RPG stats, Jutsu, Chakra & Ryo.', args: '[@user]', perms: ['none'], cat: 'rpg', catName: '🍥 Naruto RPG' },
+      { name: '.ninja quest', desc: 'View and claim daily Shinobi RPG missions.', args: '[claim]', perms: ['none'], cat: 'rpg', catName: '🍥 Naruto RPG' },
+
+      // TICKETS & SUPPORT
+      { name: '.ticket setup', desc: 'Deploy automated support ticket panel.', args: '<#channel>', perms: ['Administrator'], cat: 'tickets', catName: '🎟️ Support Tickets' },
+      { name: '.claim', desc: 'Staff claim a support ticket thread.', args: 'none', perms: ['Manage Messages'], cat: 'tickets', catName: '🎟️ Support Tickets' },
+
+      // VOICEMASTER
+      { name: '.vctemp setup', desc: 'Setup join-to-create temporary voice channels.', args: '<#category>', perms: ['Manage Channels'], cat: 'voice', catName: '🔊 VoiceMaster' },
+      { name: '.vckickall', desc: 'Kick all members out of current voice channel.', args: 'none', perms: ['Move Members'], cat: 'voice', catName: '🔊 VoiceMaster' },
+
+      // PROFILE & ANIMES
+      { name: '.bioset', desc: 'Set custom profile bio stored in database.', args: '<text>', perms: ['none'], cat: 'profile', catName: '👤 Profile & Avatars' },
+      { name: '.banners', desc: 'Fetch dynamic animated anime header banner & GIF.', args: 'none', perms: ['none'], cat: 'profile', catName: '👤 Profile & Avatars' },
+      { name: '.animes', desc: 'Fetch random aesthetic anime PFP avatar.', args: 'none', perms: ['none'], cat: 'profile', catName: '👤 Profile & Avatars' },
+
+      // UTILITY & INFO
+      { name: '.info', desc: 'Display bot status, latency, uptime & memory usage.', args: 'none', perms: ['none'], cat: 'info', catName: '📈 Utility & Info' },
+      { name: '.serverinfo', desc: 'Display server information, channels & features.', args: 'none', perms: ['none'], cat: 'info', catName: '📈 Utility & Info' },
+      { name: '.snipe', desc: 'Retrieve last deleted messages in current channel.', args: '[1-10]', perms: ['Manage Messages'], cat: 'info', catName: '📈 Utility & Info' },
+      { name: '.afk', desc: 'Set global AFK status with custom reason.', args: '[reason]', perms: ['none'], cat: 'info', catName: '📈 Utility & Info' }
+    ];
+
+    // Compute Category Totals
+    const categories = [
+      { id: 'all', name: '✨ All Commands', count: COMMANDS.length },
+      { id: 'security', name: '🛡️ Security & AntiNuke', count: COMMANDS.filter(c => c.cat === 'security').length },
+      { id: 'moderation', name: '⚔️ Moderation', count: COMMANDS.filter(c => c.cat === 'moderation').length },
+      { id: 'automations', name: '⚙️ Automations', count: COMMANDS.filter(c => c.cat === 'automations').length },
+      { id: 'autoresponder', name: '💬 Autoresponder', count: COMMANDS.filter(c => c.cat === 'autoresponder').length },
+      { id: 'music', name: '🎶 Music Suite', count: COMMANDS.filter(c => c.cat === 'music').length },
+      { id: 'economy', name: '🪙 Economy & Casino', count: COMMANDS.filter(c => c.cat === 'economy').length },
+      { id: 'rpg', name: '🍥 Naruto RPG', count: COMMANDS.filter(c => c.cat === 'rpg').length },
+      { id: 'tickets', name: '🎟️ Support Tickets', count: COMMANDS.filter(c => c.cat === 'tickets').length },
+      { id: 'voice', name: '🔊 VoiceMaster', count: COMMANDS.filter(c => c.cat === 'voice').length },
+      { id: 'profile', name: '👤 Profile & Avatars', count: COMMANDS.filter(c => c.cat === 'profile').length },
+      { id: 'info', name: '📈 Utility & Info', count: COMMANDS.filter(c => c.cat === 'info').length }
+    ];
+
+    let currentCategory = 'all';
+    let searchQuery = '';
+
+    const categoriesTabs = document.getElementById('categoriesTabs');
+    const commandsGrid = document.getElementById('commandsGrid');
+    const searchInput = document.getElementById('searchInput');
+    const toast = document.getElementById('toast');
+
+    function renderCategories() {
+      categoriesTabs.innerHTML = categories.map(cat => `
+        <button class="cat-btn ${cat.id === currentCategory ? 'active' : ''}" onclick="selectCategory('${cat.id}')">
+          <span>${cat.name}</span>
+          <span class="cat-count">${cat.count}</span>
+        </button>
+      `).join('');
+    }
+
+    function selectCategory(catId) {
+      currentCategory = catId;
+      renderCategories();
+      renderCommands();
+    }
+
+    function renderCommands() {
+      const filtered = COMMANDS.filter(cmd => {
+        const matchesCat = currentCategory === 'all' || cmd.cat === currentCategory;
+        const matchesSearch = searchQuery === '' || 
+          cmd.name.toLowerCase().includes(searchQuery) || 
+          cmd.desc.toLowerCase().includes(searchQuery) ||
+          cmd.args.toLowerCase().includes(searchQuery) ||
+          cmd.perms.some(p => p.toLowerCase().includes(searchQuery));
+        return matchesCat && matchesSearch;
+      });
+
+      if (filtered.length === 0) {
+        commandsGrid.innerHTML = `<div class="empty-state">No commands found matching "${searchQuery}".</div>`;
+        return;
+      }
+
+      commandsGrid.innerHTML = filtered.map(cmd => `
+        <div class="card">
+          <div class="card-header">
+            <span class="cmd-name">${cmd.name}</span>
+            <button class="copy-btn" title="Copy command" onclick="copyCommand('${cmd.name}')">📋</button>
+          </div>
+          <p class="cmd-desc">${cmd.desc}</p>
+          
+          <div class="meta-group">
+            <span class="meta-label">arguments</span>
+            <span class="meta-value">${cmd.args}</span>
+          </div>
+
+          <div class="meta-group">
+            <span class="meta-label">permissions</span>
+            <div>
+              ${cmd.perms.map(p => `<span class="perm-badge">${p}</span>`).join(' ')}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function copyCommand(text) {
+      navigator.clipboard.writeText(text);
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    searchInput.addEventListener('input', (e) => {
+      searchQuery = e.target.value.toLowerCase();
+      renderCommands();
+    });
+
+    // Initial render
+    renderCategories();
+    renderCommands();
+  </script>
+</body>
+</html>
