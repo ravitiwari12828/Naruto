@@ -401,22 +401,34 @@ module.exports = {
       }
 
       const isFullyActive = config.boostEnabled && config.boostChannelId;
-      const statusStr = isFullyActive
-        ? `${emojis.SUCCESS} Active`
-        : config.boostEnabled && !config.boostChannelId
-        ? `${emojis.WARNING} Unconfigured (No Channel Set)`
-        : `${emojis.DISABLED} Disabled`;
+      const statusBox = createDynamicBox('BOOST MANAGER STATUS', [
+        `status   : ${isFullyActive ? 'ACTIVE' : config.boostEnabled ? 'UNCONFIGURED' : 'DISABLED'}`,
+        `channel  : ${config.boostChannelId ? '#' + (guild?.channels?.cache?.get(config.boostChannelId)?.name || 'channel') : 'Not Set'}`
+      ]);
 
-      const currentChan = config.boostChannelId ? `<#${config.boostChannelId}>` : 'Not set';
-      return message.reply(
-        `${emojis.BOOST || '🚀'} **Server Boost Announcement Manager**\n` +
-        `• **Status:** ${statusStr}\n` +
-        `• **Boost Channel:** ${currentChan}\n\n` +
-        `**Usage:**\n` +
-        `• \`.boostmsg <#channel>\` — Bind boost announcement channel\n` +
-        `• \`.boostmsg test\` — Send live test booster embed with animated diamond gem!\n` +
-        `• \`.boostmsg enable / disable\` — Toggle boost announcements`
-      );
+      const cmdBox = createDynamicBox('BOOST COMMANDS', [
+        'boostmsg <#chan> : Bind channel',
+        'boostmsg test    : Test preview',
+        'boostmsg enable  : Enable',
+        'boostmsg disable : Disable'
+      ]);
+
+      const boostEmoji = emojis.BOOST || '<a:BOOST:1532470412217159790>';
+      const gearEmoji = emojis.GEAR || '<a:an_bot:1530948362784870510>';
+
+      const embed = createStyledEmbed({
+        title: `${boostEmoji} Server Boost Announcement Manager`,
+        subtitle: `${guild.name} Boost Configuration`,
+        description:
+          `${gearEmoji} **System Status**\n` +
+          '```\n' + statusBox + '\n```\n\n' +
+          `${boostEmoji} **Available Commands**\n` +
+          '```\n' + cmdBox + '\n```',
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.reply({ embeds: [embed] });
     }
 
     // JOINDM COMMAND (.joindm enable/disable/text)
@@ -439,7 +451,24 @@ module.exports = {
         welcomeConfigs.set(guild.id, config);
         return message.reply(`${emojis.SUCCESS} **Join DM Message Saved**: \`${parsePlaceholders(customTxt, message.member)}\``);
       }
-      return message.reply(`ℹ️ Usage: \`.joindm <enable/disable/text>\``);
+
+      const dmBox = createDynamicBox('JOIN DM MANAGER', [
+        `status   : ${config.joinDmEnabled ? 'ENABLED' : 'DISABLED'}`,
+        'joindm enable  : Enable DMs',
+        'joindm disable : Disable DMs',
+        'joindm <text>  : Set DM text'
+      ]);
+
+      const mailEmoji = emojis.MODMAIL_ENVELOPE || '<a:modmail:1530942601497284731>';
+      const embed = createStyledEmbed({
+        title: `${mailEmoji} Join DM Welcome Manager`,
+        subtitle: `${guild.name} Private Welcome DMs`,
+        description: '```\n' + dmBox + '\n```\n\n**Active DM Text:**\n>>> ' + parsePlaceholders(config.joinDmText || 'Welcome!', message.member),
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.reply({ embeds: [embed] });
     }
 
     // LEAVEDM COMMAND (.leavedm enable/disable/text)
@@ -462,7 +491,24 @@ module.exports = {
         welcomeConfigs.set(guild.id, config);
         return message.reply(`${emojis.SUCCESS} **Leave DM Message Saved**: \`${parsePlaceholders(customTxt, message.member)}\``);
       }
-      return message.reply(`ℹ️ Usage: \`.leavedm <enable/disable/text>\``);
+
+      const dmBox = createDynamicBox('LEAVE DM MANAGER', [
+        `status   : ${config.leaveDmEnabled ? 'ENABLED' : 'DISABLED'}`,
+        'leavedm enable  : Enable DMs',
+        'leavedm disable : Disable DMs',
+        'leavedm <text>  : Set DM text'
+      ]);
+
+      const mailEmoji = emojis.MODMAIL_ENVELOPE || '<a:modmail:1530942601497284731>';
+      const embed = createStyledEmbed({
+        title: `${mailEmoji} Leave DM Notification Manager`,
+        subtitle: `${guild.name} Private Leave DMs`,
+        description: '```\n' + dmBox + '\n```\n\n**Active DM Text:**\n>>> ' + parsePlaceholders(config.leaveDmText || 'Goodbye!', message.member),
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.reply({ embeds: [embed] });
     }
 
     // 1. PRESET SELECTOR (.welcome preset <theme>)
