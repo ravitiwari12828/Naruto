@@ -7,7 +7,6 @@ const {
   EmbedBuilder
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
-const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 
 // Global VoiceMaster store
@@ -29,21 +28,76 @@ function getOrCreateVMConfig(guildId) {
 }
 
 /**
+ * Builds a monospaced aligned box with clean indented continuation wrapping.
+ */
+function buildAlignedBox(title, entries, width = 38) {
+  const topBorder = '╭' + '─'.repeat(width + 2) + '╮';
+  const midBorder = '├' + '─'.repeat(width + 2) + '┤';
+  const botBorder = '╰' + '─'.repeat(width + 2) + '╯';
+
+  const titlePad = Math.max(0, width - title.length);
+  const leftPad = Math.floor(titlePad / 2);
+  const rightPad = titlePad - leftPad;
+  const header = '│ ' + ' '.repeat(leftPad) + title + ' '.repeat(rightPad) + ' │';
+
+  const rows = [];
+  for (const entry of entries) {
+    const parts = entry.split(':').map(s => s.trim());
+    const key = parts[0];
+    const val = parts[1] || '';
+    const paddedKey = key.padEnd(8, ' ');
+    const fullLine = paddedKey + ' : ' + val;
+
+    if (fullLine.length <= width) {
+      rows.push('│ ' + fullLine.padEnd(width, ' ') + ' │');
+    } else {
+      const maxValLen = width - 11; // 8 (key) + 3 (' : ')
+      const words = val.split(' ');
+      let currentVal = '';
+      let first = true;
+
+      for (const word of words) {
+        if ((currentVal + (currentVal ? ' ' : '') + word).length <= maxValLen) {
+          currentVal += (currentVal ? ' ' : '') + word;
+        } else {
+          if (first) {
+            rows.push('│ ' + (paddedKey + ' : ' + currentVal).padEnd(width, ' ') + ' │');
+            first = false;
+          } else {
+            rows.push('│ ' + (' '.repeat(11) + currentVal).padEnd(width, ' ') + ' │');
+          }
+          currentVal = word;
+        }
+      }
+      if (currentVal) {
+        if (first) {
+          rows.push('│ ' + (paddedKey + ' : ' + currentVal).padEnd(width, ' ') + ' │');
+        } else {
+          rows.push('│ ' + (' '.repeat(11) + currentVal).padEnd(width, ' ') + ' │');
+        }
+      }
+    }
+  }
+
+  return [topBorder, header, midBorder, ...rows, botBorder].join('\n');
+}
+
+/**
  * Builds the Custom Voice Channels deployment embed packaged inside a monospaced box container.
  */
 function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
   const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`🔊 ✨ 「 Join to Create 」`';
 
-  const perkBox = createDynamicBox('PERKS COMPARISON', [
-    'Member  : Size Max 5',
-    'Member  : Permit Max 5',
-    'Member  : Ban Max 5',
-    'Member  : Lock & Unlock',
-    'Booster : Full Access',
-    'Booster : Unlimited Size',
-    'Booster : Unlimited Permit',
-    'Booster : Rename Channel'
-  ]);
+  const perkBox = buildAlignedBox('PERKS COMPARISON', [
+    'Member  : Size Limit Max 5',
+    'Member  : Permit Users Max 5',
+    'Member  : Ban Users Max 5',
+    'Member  : Lock & Unlock Room',
+    'Booster : Full Access Unlimited',
+    'Booster : Unlimited Member Size',
+    'Booster : Unlimited Permits',
+    'Booster : Custom Rename Channel'
+  ], 36);
 
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
@@ -84,28 +138,28 @@ function buildCustomVoiceChannelButtons(guildId, triggerChanId = null) {
 }
 
 /**
- * Builds the Voice Help embed packaged inside a monospaced box container without thumbnail.
+ * Builds the Voice Help embed with aligned box and indented multi-line wrapping.
  */
 function buildVoiceHelpEmbed(member) {
   const user = member.user;
 
-  const helpBox = createDynamicBox('VOICE COMMANDS', [
-    'info     : View VC settings',
-    'name     : Rename channel',
-    'size     : Set member limit',
-    'lock     : Make VC private',
-    'unlock   : Make VC public',
-    'ghost    : Hide VC in sidebar',
-    'unghost  : Reveal VC in sidebar',
-    'claim    : Claim empty VC',
-    'transfer : Transfer ownership',
-    'permit   : Allow user join',
-    'unpermit : Revoke user join',
-    'kick     : Disconnect member',
-    'ban      : Ban member from VC',
-    'unban    : Unban member',
-    'activity : Start VC activity'
-  ]);
+  const helpBox = buildAlignedBox('VOICE COMMANDS', [
+    'info: View channel settings',
+    'name: Rename voice channel',
+    'size: Set channel size limit',
+    'lock: Make channel private',
+    'unlock: Make channel public',
+    'ghost: Hide channel from sidebar',
+    'unghost: Reveal channel in sidebar',
+    'claim: Claim empty voice channel',
+    'transfer: Transfer channel ownership',
+    'permit: Allow specific user to join',
+    'unpermit: Remove user from allowed list',
+    'kick: Disconnect member from channel',
+    'ban: Ban user from voice channel',
+    'unban: Unban user from channel',
+    'activity: Start Discord voice activity'
+  ], 38);
 
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
