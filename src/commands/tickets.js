@@ -225,7 +225,7 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText = 'Low',
 
   return new EmbedBuilder()
     .setColor(color)
-    .setTitle(`🎫 ${opener.username}'s Ticket — ${categoryName}`)
+    .setTitle(`🎟️ ${opener.username}'s Ticket — ${categoryName}`)
     .setDescription(
       `Welcome <@${opener.id}>! Thanks for reaching out to support.\n` +
       `Our staff team will assist you shortly — please explain your request in full detail below.`
