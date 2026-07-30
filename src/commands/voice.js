@@ -1,10 +1,12 @@
+const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const db = require('../database/db');
+const { buildVoiceHelpEmbed } = require('./voicemaster');
 
 module.exports = {
   name: 'voice',
-  description: 'Voice Management Suite: vcdeafen, vckick, vckickall, vclist, vcmoveall, vcmute, vcmuteall, vcpull, vcpullall, vcundeafen, vcunmute, vcunmuteall',
+  description: 'Custom Voice Channels Suite: .vc help, .vc info, .vc name, .vc size, .vc lock, .vc unlock, .vc permit, .vc unpermit, .vc kick, .vc ban, .vc unban',
   aliases: [
     'vc', 'voicechannel',
     'vcdeafen', 'vcundeafen', 'vckick', 'vckickall',
@@ -16,11 +18,6 @@ module.exports = {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
     const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
-
-    if (sub === 'setup' || sub === 'setupvc' || sub === 'vcsetup') {
-      const vmCmd = message.client.commands.get('voicemaster');
-      if (vmCmd) return vmCmd.execute(message, args);
-    }
 
     if (invoked.startsWith('vc') && invoked !== 'vc' && invoked !== 'voice') {
       sub = invoked;
@@ -35,171 +32,122 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // 1. vcdeafen @user
-    if (sub === 'vcdeafen' || sub === 'deafen') {
-      const target = message.mentions.members?.first();
-      if (!target || !target.voice?.channel) return message.reply(`${emojis.WARNING} Mention a member currently connected to a Voice Channel!`);
-      await target.voice.setDeaf(true);
-      return message.reply(`${emojis.SUCCESS} Server deafened **${target.user.tag}** in VC.`);
+    // 0. VOICE HELP COMMAND (.vc help / !voice help)
+    if (sub === 'help' || !sub) {
+      const helpEmbed = buildVoiceHelpEmbed(message.member);
+      return message.channel.send({ embeds: [helpEmbed] });
     }
 
-    // 2. vcundeafen @user
-    if (sub === 'vcundeafen' || sub === 'undeafen') {
-      const target = message.mentions.members?.first();
-      if (!target || !target.voice?.channel) return message.reply(`${emojis.WARNING} Mention a member currently connected to a Voice Channel!`);
-      await target.voice.setDeaf(false);
-      return message.reply(`${emojis.SUCCESS} Server undeafened **${target.user.tag}**.`);
+    // 1. .vc info / settings
+    if (sub === 'info' || sub === 'settings') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      const chan = voiceState.channel;
+
+      const embed = new EmbedBuilder()
+        .setColor(0x5865F2)
+        .setAuthor({ name: 'Channel Settings', iconURL: author.displayAvatarURL({ dynamic: true }) })
+        .setTitle(`🔊 ${chan.name}`)
+        .setDescription(
+          `• **Channel ID:** \`${chan.id}\`\n` +
+          `• **User Limit:** \`${chan.userLimit || 'Unlimited'}\`\n` +
+          `• **Connected Members:** \`${chan.members.size}\`\n` +
+          `• **Bitrate:** \`${chan.bitrate / 1000} kbps\``
+        )
+        .setFooter({ text: `Requested by ${author.tag}`, iconURL: author.displayAvatarURL({ dynamic: true }) });
+
+      return message.channel.send({ embeds: [embed] });
     }
 
-    // 3. vckick @user
-    if (sub === 'vckick') {
-      const target = message.mentions.members?.first();
-      if (!target || !target.voice?.channel) return message.reply(`${emojis.WARNING} Mention a member currently connected to a Voice Channel!`);
+    // 2. .vc name <new_name>
+    if (sub === 'name' || sub === 'rename') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      const newName = args.slice(1).join(' ');
+      if (!newName) return message.reply(`ℹ️ Usage: \`.vc name <new channel name>\``);
+      await voiceState.channel.setName(newName);
+      return message.reply(`${emojis.SUCCESS} Renamed your Voice Channel to **${newName}**.`);
+    }
+
+    // 3. .vc size <amount/unlimited>
+    if (sub === 'size' || sub === 'limit') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      const amountArg = args[1]?.toLowerCase();
+      if (!amountArg) return message.reply(`ℹ️ Usage: \`.vc size <amount / unlimited>\``);
+
+      let limit = 0;
+      if (amountArg !== 'unlimited' && amountArg !== '0') {
+        limit = parseInt(amountArg);
+        if (isNaN(limit) || limit < 1 || limit > 99) return message.reply(`ℹ️ Enter a valid channel size limit between 1 and 99.`);
+      }
+
+      await voiceState.channel.setUserLimit(limit);
+      return message.reply(`${emojis.SUCCESS} Set Voice Channel size limit to **${limit === 0 ? 'Unlimited' : limit}**.`);
+    }
+
+    // 4. .vc lock / unlock
+    if (sub === 'lock') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      await voiceState.channel.permissionOverwrites.edit(guild.id, { Connect: false });
+      return message.reply(`${emojis.LOCK} Locked **${voiceState.channel.name}** (Private).`);
+    }
+
+    if (sub === 'unlock') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      await voiceState.channel.permissionOverwrites.edit(guild.id, { Connect: null });
+      return message.reply(`${emojis.UNLOCK} Unlocked **${voiceState.channel.name}** (Public).`);
+    }
+
+    // 5. .vc permit / allow @user
+    if (sub === 'permit' || sub === 'allow') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
+      if (!target) return message.reply(`ℹ️ Usage: \`.vc permit @user\``);
+
+      await voiceState.channel.permissionOverwrites.edit(target.id, { Connect: true, ViewChannel: true });
+      return message.reply(`${emojis.SUCCESS} Allowed **${target.user.tag}** to join your Voice Channel.`);
+    }
+
+    // 6. .vc unpermit / revoke @user
+    if (sub === 'unpermit' || sub === 'revoke') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
+      if (!target) return message.reply(`ℹ️ Usage: \`.vc unpermit @user\``);
+
+      await voiceState.channel.permissionOverwrites.edit(target.id, { Connect: false });
+      return message.reply(`${emojis.SUCCESS} Removed **${target.user.tag}** from the allowed list.`);
+    }
+
+    // 7. .vc kick @user
+    if (sub === 'vckick' || sub === 'kick') {
+      const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
+      if (!target || !target.voice?.channel) return message.reply(`${emojis.WARNING} Mention a member currently connected to your Voice Channel!`);
       await target.voice.disconnect();
       return message.reply(`${emojis.SUCCESS} Disconnected **${target.user.tag}** from voice channel.`);
     }
 
-    // 4. vckickall
-    if (sub === 'vckickall') {
-      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel!`);
-      const members = voiceState.channel.members;
-      let count = 0;
-      for (const [_, member] of members) {
-        if (!member.user.bot) {
-          await member.voice.disconnect().catch(() => {});
-          count++;
-        }
+    // 8. .vc ban / unban @user
+    if (sub === 'ban') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
+      if (!target) return message.reply(`ℹ️ Usage: \`.vc ban @user\``);
+
+      await voiceState.channel.permissionOverwrites.edit(target.id, { Connect: false, ViewChannel: false });
+      if (target.voice?.channel?.id === voiceState.channel.id) {
+        await target.voice.disconnect().catch(() => {});
       }
-      return message.reply(`${emojis.SUCCESS} Disconnected **${count}** members from **${voiceState.channel.name}**.`);
+      return message.reply(`${emojis.SUCCESS} Banned **${target.user.tag}** from your Voice Channel.`);
     }
 
-    // 5. vclist
-    if (sub === 'vclist') {
-      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel!`);
-      const members = Array.from(voiceState.channel.members.values());
-      const lines = members.map((m, i) => `\`${i + 1}.\` **${m.user.tag}** ${m.voice.mute ? '🔇' : '🎙️'} ${m.voice.deaf ? '🎧' : ''}`);
+    if (sub === 'unban') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
+      if (!target) return message.reply(`ℹ️ Usage: \`.vc unban @user\``);
 
-      const embed = createStyledEmbed({
-        title: `${emojis.VOICE} Active Members in ${voiceState.channel.name} (${members.length})`,
-        description: lines.join('\n') || '*No members connected.*',
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      await voiceState.channel.permissionOverwrites.edit(target.id, { Connect: null, ViewChannel: null });
+      return message.reply(`${emojis.SUCCESS} Unbanned **${target.user.tag}** from your Voice Channel.`);
     }
 
-    // 6. vcmoveall <#targetChannel>
-    if (sub === 'vcmoveall') {
-      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel!`);
-      const targetChan = message.mentions.channels.first() || guild.channels.cache.get(args[1]);
-      if (!targetChan || !targetChan.isVoiceBased()) return message.reply(`${emojis.WARNING} Mention a valid target Voice Channel!`);
-
-      const members = voiceState.channel.members;
-      let count = 0;
-      for (const [_, member] of members) {
-        await member.voice.setChannel(targetChan).catch(() => {});
-        count++;
-      }
-      return message.reply(`${emojis.SUCCESS} Moved **${count}** members from **${voiceState.channel.name}** to **${targetChan.name}**.`);
-    }
-
-    // 7. vcmute @user
-    if (sub === 'vcmute') {
-      const target = message.mentions.members?.first();
-      if (!target || !target.voice?.channel) return message.reply(`${emojis.WARNING} Mention a member currently connected to a Voice Channel!`);
-      await target.voice.setMute(true);
-      return message.reply(`${emojis.SUCCESS} Server muted **${target.user.tag}** in VC.`);
-    }
-
-    // 8. vcmuteall
-    if (sub === 'vcmuteall') {
-      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel!`);
-      let count = 0;
-      for (const [_, member] of voiceState.channel.members) {
-        if (!member.user.bot) {
-          await member.voice.setMute(true).catch(() => {});
-          count++;
-        }
-      }
-      return message.reply(`${emojis.SUCCESS} Server muted **${count}** members in **${voiceState.channel.name}**.`);
-    }
-
-    // 9. vcunmute @user
-    if (sub === 'vcunmute') {
-      const target = message.mentions.members?.first();
-      if (!target || !target.voice?.channel) return message.reply(`${emojis.WARNING} Mention a member currently connected to a Voice Channel!`);
-      await target.voice.setMute(false);
-      return message.reply(`${emojis.SUCCESS} Server unmuted **${target.user.tag}**.`);
-    }
-
-    // 10. vcunmuteall
-    if (sub === 'vcunmuteall') {
-      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel!`);
-      let count = 0;
-      for (const [_, member] of voiceState.channel.members) {
-        await member.voice.setMute(false).catch(() => {});
-        count++;
-      }
-      return message.reply(`${emojis.SUCCESS} Unmuted **${count}** members in **${voiceState.channel.name}**.`);
-    }
-
-    // 11. vcpull @user
-    if (sub === 'vcpull') {
-      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel to pull someone!`);
-      const target = message.mentions.members?.first();
-      if (!target || !target.voice?.channel) return message.reply(`${emojis.WARNING} Mention a member currently connected to another VC!`);
-
-      await target.voice.setChannel(voiceState.channel);
-      return message.reply(`${emojis.SUCCESS} Pulled **${target.user.tag}** into **${voiceState.channel.name}**.`);
-    }
-
-    // 12. vcpullall
-    if (sub === 'vcpullall') {
-      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel!`);
-      let count = 0;
-      for (const [_, chan] of guild.channels.cache.filter(c => c.isVoiceBased() && c.id !== voiceState.channel.id)) {
-        for (const [_, member] of chan.members) {
-          await member.voice.setChannel(voiceState.channel).catch(() => {});
-          count++;
-        }
-      }
-      return message.reply(`${emojis.SUCCESS} Pulled **${count}** members from all voice channels into **${voiceState.channel.name}**!`);
-    }
-
-    // 13. Voice Stats
-    if (sub === 'stats' || sub === 'profile') {
-      const targetUser = message.mentions.users.first() || author;
-      const userData = db.getUser(targetUser.id);
-      const seconds = userData.voiceSeconds || 0;
-      const hours = Math.floor(seconds / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-
-      const embed = createStyledEmbed({
-        title: `${emojis.VOICE} Voice Activity — ${targetUser.username}`,
-        fields: [
-          { name: `${emojis.ZAP} Total Voice Duration`, value: `\`${hours}h ${minutes}m\` (${seconds} seconds)`, inline: true },
-          { name: `${emojis.VOICE} Connection Status`, value: voiceState?.channel ? `Connected to **${voiceState.channel.name}**` : '*Not connected to VC*', inline: false }
-        ],
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
-    }
-
-    // 14. Lock / Unlock
-    if (sub === 'lock') {
-      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel to lock it!`);
-      await voiceState.channel.permissionOverwrites.edit(guild.id, { Connect: false });
-      return message.reply(`${emojis.LOCK} Locked **${voiceState.channel.name}**.`);
-    }
-
-    if (sub === 'unlock') {
-      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel to unlock it!`);
-      await voiceState.channel.permissionOverwrites.edit(guild.id, { Connect: null });
-      return message.reply(`${emojis.UNLOCK} Unlocked **${voiceState.channel.name}**.`);
-    }
-
-    const { renderModuleHelpPanel } = require('../utils/panelRenderer');
-    return renderModuleHelpPanel(message, 'voice');
+    // Default: Voice Help Embed
+    const helpEmbed = buildVoiceHelpEmbed(message.member);
+    return message.channel.send({ embeds: [helpEmbed] });
   }
 };

@@ -4,10 +4,8 @@ const {
   ButtonStyle,
   ChannelType,
   PermissionsBitField,
-  EmbedBuilder,
-  AttachmentBuilder
+  EmbedBuilder
 } = require('discord.js');
-const { createCanvas, loadImage } = require('@napi-rs/canvas');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 
@@ -21,7 +19,6 @@ function getOrCreateVMConfig(guildId) {
       triggerChanId: null,
       interfaceChanId: null,
       inVcRoleId: null,
-      cardType: 'embed', // 'embed' or 'canvas'
       activeTempVCs: new Map()
     });
   }
@@ -31,305 +28,111 @@ function getOrCreateVMConfig(guildId) {
 }
 
 /**
- * Custom Canvas Graphic Generator: Exact 3-Column Glassmorphic VoiceMaster Executive Control Hub.
+ * Builds the Custom Voice Channels deployment embed matching Screenshot 2.
  */
-async function generateVoiceMasterCanvasCard(member = null, tempVcDetails = null) {
-  const width = 1100;
-  const height = 620;
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext('2d');
-
-  // Dark obsidian gradient background
-  const bgGrad = ctx.createLinearGradient(0, 0, width, height);
-  bgGrad.addColorStop(0, '#0a0a0f');
-  bgGrad.addColorStop(0.5, '#12070a');
-  bgGrad.addColorStop(1, '#0a0a0f');
-  ctx.fillStyle = bgGrad;
-  ctx.fillRect(0, 0, width, height);
-
-  // Geometric red accent lines
-  ctx.strokeStyle = 'rgba(255, 42, 75, 0.25)';
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-  ctx.moveTo(0, 0); ctx.lineTo(150, 0); ctx.lineTo(0, 150); ctx.closePath(); ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(width, height); ctx.lineTo(width - 150, height); ctx.lineTo(width, height - 150); ctx.closePath(); ctx.stroke();
-
-  // Outer glowing red frame
-  ctx.strokeStyle = '#ff2a4b';
-  ctx.lineWidth = 4;
-  ctx.beginPath();
-  ctx.roundRect(15, 15, width - 30, height - 30, 16);
-  ctx.stroke();
-
-  // Header Title
-  ctx.fillStyle = '#ff2a4b';
-  ctx.font = 'bold 32px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText('VoiceMaster Executive', 450, 65);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 32px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('Control Hub', 635, 65);
-
-  // 3 Glassmorphic Columns
-  const cols = [
-    { title: 'ROOM MANAGEMENT', x: 40 },
-    { title: 'OWNERSHIP', x: 385 },
-    { title: 'ACCESS & PRIVACY', x: 730 }
-  ];
-
-  for (const col of cols) {
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.beginPath();
-    ctx.roundRect(col.x, 95, 330, 480, 16);
-    ctx.fill();
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 20px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(col.title, col.x + 165, 132);
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-    ctx.beginPath();
-    ctx.moveTo(col.x + 20, 148);
-    ctx.lineTo(col.x + 310, 148);
-    ctx.stroke();
-  }
-
-  const sessionName = tempVcDetails?.name || 'The Obsidian Lounge 🎙️';
-  const activeCount = (tempVcDetails?.members?.size || '12') + ' Active Users';
-  const ownerName = member ? `@${member.user.username}` : 'Username #0001 ⭐';
-
-  // Column 1 Details (Room Management)
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Current Session', 60, 180);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.font = '14px sans-serif';
-  ctx.fillText(sessionName.slice(0, 30), 60, 202);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Participants', 60, 240);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.font = '14px sans-serif';
-  ctx.fillText(activeCount, 60, 262);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Duration', 60, 300);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.font = '14px sans-serif';
-  ctx.fillText('02:45:18', 60, 322);
-
-  const c1Btns = ['[TRANSFER OWNERSHIP]', '[KICK/BAN USER]', '[ALLOW/DENY ACCESS]'];
-  c1Btns.forEach((label, idx) => {
-    const btnY = 360 + idx * 60;
-    ctx.fillStyle = 'rgba(255, 42, 75, 0.15)';
-    ctx.beginPath();
-    ctx.roundRect(60, btnY, 290, 46, 10);
-    ctx.fill();
-
-    ctx.strokeStyle = '#ff2a4b';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, 205, btnY + 28);
-  });
-
-  // Column 2 Details (Ownership)
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Server Owner', 405, 180);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.font = '14px sans-serif';
-  ctx.fillText(ownerName.slice(0, 28), 405, 202);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Room Admin', 405, 240);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.font = '14px sans-serif';
-  ctx.fillText(ownerName.slice(0, 28), 405, 262);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Role', 405, 300);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.font = '14px sans-serif';
-  ctx.fillText('Administrator', 405, 322);
-
-  const c2Btns = ['[ASSIGN ADMIN]', '[ADJUST BITRATE]', '[SET ROLE PERMISSIONS]'];
-  c2Btns.forEach((label, idx) => {
-    const btnY = 360 + idx * 60;
-    ctx.fillStyle = 'rgba(255, 42, 75, 0.15)';
-    ctx.beginPath();
-    ctx.roundRect(405, btnY, 290, 46, 10);
-    ctx.fill();
-
-    ctx.strokeStyle = '#ff2a4b';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, 550, btnY + 28);
-  });
-
-  // Column 3 Details (Access & Privacy)
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Visibility', 750, 180);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.font = '14px sans-serif';
-  ctx.fillText('Private 🔒', 750, 202);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Access Level', 750, 240);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.font = '14px sans-serif';
-  ctx.fillText('Role-Based', 750, 262);
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Permissions', 750, 300);
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-  ctx.font = '14px sans-serif';
-  ctx.fillText('Managed', 750, 322);
-
-  const c3Btns = ['[MUTE ALL PARTICIPANTS]', '[LOCK ROOM]', '[ROOM LOGS]'];
-  c3Btns.forEach((label, idx) => {
-    const btnY = 360 + idx * 60;
-    ctx.fillStyle = 'rgba(255, 42, 75, 0.15)';
-    ctx.beginPath();
-    ctx.roundRect(750, btnY, 290, 46, 10);
-    ctx.fill();
-
-    ctx.strokeStyle = '#ff2a4b';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(label, 895, btnY + 28);
-  });
-
-  const buffer = await canvas.encode('png');
-  return new AttachmentBuilder(buffer, { name: 'voicemaster-hub.png' });
-}
-
-/**
- * Builds the 3-Column Glassmorphic Executive VoiceMaster Control Hub embed matching user screenshot.
- */
-function buildVoiceMasterInterfaceEmbed(triggerChanId = null, member = null, tempVcDetails = null) {
-  const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`➕ Join to Create`';
-  const ownerName = member ? `@${member.user.username}` : '`Creator / Owner`';
-  const sessionName = tempVcDetails?.name || '`The Obsidian Lounge 🎙️`';
-  const activeCount = tempVcDetails?.members?.size || '`Active Session`';
+function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
+  const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`🔊 ✨ 「 Join to Create 」`';
 
   const embed = new EmbedBuilder()
-    .setColor(0x7E0808)
-    .setAuthor({ name: '👑 NARUTO EXECUTIVE VOICE SUITE • VIP CONTROL HUB' })
-    .setTitle(`🔊 VoiceMaster Executive Control Hub`)
+    .setColor(0x5865F2)
+    .setTitle(`Custom Voice Channels`)
     .setDescription(
-      `Welcome to the **VoiceMaster™ Executive Control Hub**!\n` +
-      `Join ${triggerMention} to generate your temporary voice room and manage settings.\n` +
-      `──────────────────────────────────────────────────`
+      `Looking to escape from the public calls? Create your own private channel and have control over every aspect of it\n\n` +
+      `**ℹ️ How to create a channel**\n` +
+      `**1️⃣ Join** ${triggerMention}\n` +
+      `**2️⃣ Wait** *patiently* for the channel to be created\n` +
+      `**3️⃣ Type** \`.vc help\` in your channel to customize\n\n` +
+      `**Member Perks** ─── **Donor Perks (Full Access)**\n` +
+      `❌ Channel Name ─── ✔️ Channel Name\n` +
+      `✔️ Channel Size **[Max 5]** ─── ✔️ Channel Size **[No Limit]**\n` +
+      `✔️ Permit Users **[Max 5]** ─── ✔️ Permit Users **[No Limit]**\n` +
+      `✔️ Ban Users **[Max 5]** ─── ✔️ Ban Users **[No Limit]**\n` +
+      `✔️ Lock/Unlock Channel ─── ✔️ Lock/Unlock Channel\n` +
+      `✔️ Kick/Disconnect users ─── ✔️ Kick/Disconnect Users`
     )
-    .addFields(
-      {
-        name: `🎛️ ROOM MANAGEMENT`,
-        value:
-          `**Current Session**\n${sessionName}\n\n` +
-          `**Participants**\n${activeCount} Active Users\n\n` +
-          `**Management Commands**\n` +
-          `• \`.vc transfer @user\`\n` +
-          `• \`.vc disconnect @user\`\n` +
-          `• \`.vc limit <1-99>\``,
-        inline: true
-      },
-      {
-        name: `👑 OWNERSHIP`,
-        value:
-          `**Room Admin**\n${ownerName}\n\n` +
-          `**Role & Rank**\nAdministrator / Host\n\n` +
-          `**Access Controls**\n` +
-          `• \`.vc claim\`\n` +
-          `• \`.vc whitelist @user\`\n` +
-          `• \`.vc unwhitelist @user\``,
-        inline: true
-      },
-      {
-        name: `🔒 ACCESS & PRIVACY`,
-        value:
-          `**Visibility**\nPrivate / Managed 🔒\n\n` +
-          `**Permissions**\nRole-Based Protection\n\n` +
-          `**Privacy Commands**\n` +
-          `• \`.vc lock\` • \`.vc unlock\`\n` +
-          `• \`.vc ghost\` • \`.vc unghost\`\n` +
-          `• \`.vc ban @user\``,
-        inline: true
-      }
-    )
-    .setFooter({ text: 'Naruto VoiceMaster Executive Suite • Click interactive buttons below to manage room' });
+    .setThumbnail('https://cdn.discordapp.com/emojis/1530942654530064394.gif')
+    .setImage('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80')
+    .setFooter({ text: `${guild.name} Custom Voice Calls`, iconURL: guild.iconURL({ dynamic: true }) || undefined });
 
   return embed;
 }
 
 /**
- * Builds the 3 rows of interactive Discord buttons matching screenshot.
+ * Builds Link Buttons matching Screenshot 2 (No control buttons, Support Server Link button).
  */
-function buildVoiceMasterActionRows() {
-  const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_transfer').setLabel('Transfer Ownership').setEmoji('👥').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_ban').setLabel('Kick/Ban User').setEmoji('⛔').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_whitelist').setLabel('Allow/Deny Access').setEmoji('✨').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_lock').setLabel('Lock Room').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_info').setLabel('Room Logs').setEmoji('📌').setStyle(ButtonStyle.Secondary)
+function buildCustomVoiceChannelButtons(guildId, triggerChanId = null) {
+  const triggerUrl = triggerChanId ? `https://discord.com/channels/${guildId}/${triggerChanId}` : `https://discord.com/channels/${guildId}`;
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel('Create a Custom Channel')
+      .setEmoji('🖱️')
+      .setURL(triggerUrl),
+    new ButtonBuilder()
+      .setStyle(ButtonStyle.Link)
+      .setLabel('Support Server')
+      .setEmoji('💬')
+      .setURL('https://discord.gg/w7Ryr6v4q8')
   );
 
-  const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_claim').setLabel('Claim Room').setEmoji('✋').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_limit').setLabel('Adjust Bitrate/Limit').setEmoji('🎛️').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_unlock').setLabel('Unlock Room').setEmoji('🔓').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_ghost').setLabel('Ghost Room').setEmoji('👻').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unghost').setLabel('Unghost Room').setEmoji('👁️').setStyle(ButtonStyle.Secondary)
-  );
+  return [row];
+}
 
-  const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_mute').setLabel('Mute Participants').setEmoji('🔇').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_deafen').setLabel('Deafen Participants').setEmoji('🎧').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_disconnect').setLabel('Disconnect Member').setEmoji('❌').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_activity').setLabel('Start Activity').setEmoji('▶️').setStyle(ButtonStyle.Secondary)
-  );
+/**
+ * Builds the Voice Help embed matching Screenshot 1 when .vc help is ran.
+ */
+function buildVoiceHelpEmbed(member) {
+  const user = member.user;
 
-  return [row1, row2, row3];
+  const embed = new EmbedBuilder()
+    .setColor(0x5865F2)
+    .setAuthor({ name: 'Voice Help', iconURL: user.displayAvatarURL({ dynamic: true }) })
+    .setTitle('Commands')
+    .setDescription(
+      `• \`.vc info\` \| View your channel settings\n` +
+      `• \`.vc name <name>\` \| Rename your channel\n` +
+      `• \`.vc size <amount/unlimited>\` \| Set your channel size\n` +
+      `• \`.vc lock\` \| Make your channel private\n` +
+      `• \`.vc unlock\` \| Make your channel public\n` +
+      `• \`.vc permit <user>\` \| Allow a specific user to join\n` +
+      `• \`.vc unpermit <user>\` \| Remove a user from the allowed list\n` +
+      `• \`.vc kick <user>\` \| Disconnect a user from your channel\n` +
+      `• \`.vc ban <user>\` \| Ban a user from your channel\n` +
+      `• \`.vc unban <user>\` \| Unban a user from your channel`
+    )
+    .setThumbnail('https://cdn.discordapp.com/emojis/1530942654530064394.gif')
+    .setFooter({ text: `Requested by ${user.tag}`, iconURL: user.displayAvatarURL({ dynamic: true }) });
+
+  return embed;
+}
+
+/**
+ * Builds the Channel Created notification embed matching Screenshot 1 when member joins Join to Create.
+ */
+function buildChannelCreatedEmbed(member) {
+  const user = member.user;
+
+  const embed = new EmbedBuilder()
+    .setColor(0x5865F2)
+    .setAuthor({ name: 'Channel Created', iconURL: user.displayAvatarURL({ dynamic: true }) })
+    .setTitle('📕 Welcome to your 🔊 Channel')
+    .setDescription('📝 Use **.vc help** to edit your settings ⚙️')
+    .setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
+
+  return embed;
 }
 
 module.exports = {
   name: 'voicemaster',
-  description: 'VoiceMaster Executive 3-Column Control Hub & Temporary VC Suite',
+  description: 'VoiceMaster Setup & Interface: setupvc, vcsetup, vctemp setup, tempvc',
   aliases: ['vctemp', 'tempvc', 'vm', 'setupvc', 'vcsetup', 'invcrole'],
   voicemasterConfigs,
   getOrCreateVMConfig,
-  buildVoiceMasterInterfaceEmbed,
-  generateVoiceMasterCanvasCard,
-  buildVoiceMasterActionRows,
+  buildCustomVoiceChannelsEmbed,
+  buildCustomVoiceChannelButtons,
+  buildVoiceHelpEmbed,
+  buildChannelCreatedEmbed,
 
   async execute(message, args) {
     const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
@@ -347,23 +150,26 @@ module.exports = {
     // 1. SETUP COMMAND (.setupvc / .vcsetup / .voicemaster setup)
     if (invoked === 'setupvc' || invoked === 'vcsetup' || sub === 'setup') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`${emojis.DISABLED} Administrator permission required to deploy VoiceMaster.`);
+        return message.reply(`${emojis.DISABLED} Administrator permission required to deploy Custom Voice Channels.`);
       }
 
-      const statusMsg = await message.channel.send(`⏳ Creating **VoiceMaster Temporary VC Category & Interface**...`);
+      const statusMsg = await message.channel.send(`⏳ Creating **Custom Voice Channels Category & Interface**...`);
 
       try {
+        // Create Category
         const category = await guild.channels.create({
-          name: '🔊 VoiceMaster Hub',
+          name: '🔊 Custom Voice Calls',
           type: ChannelType.GuildCategory
         });
 
+        // Create Trigger VC
         const triggerChan = await guild.channels.create({
-          name: '➕ Join to Create',
+          name: '🔊 ✨ 「 Join to Create 」',
           type: ChannelType.GuildVoice,
           parent: category.id
         });
 
+        // Create Interface Text Channel
         const interfaceChan = await guild.channels.create({
           name: 'interface',
           type: ChannelType.GuildText,
@@ -381,16 +187,15 @@ module.exports = {
         config.interfaceChanId = interfaceChan.id;
         voicemasterConfigs.set(guild.id, config);
 
-        const embed = buildVoiceMasterInterfaceEmbed(triggerChan.id, message.member);
-        const cardAttachment = await generateVoiceMasterCanvasCard(message.member);
-        const rows = buildVoiceMasterActionRows();
+        const embed = buildCustomVoiceChannelsEmbed(guild, triggerChan.id);
+        const rows = buildCustomVoiceChannelButtons(guild.id, triggerChan.id);
 
-        await interfaceChan.send({ files: [cardAttachment], embeds: [embed], components: rows });
+        await interfaceChan.send({ embeds: [embed], components: rows });
 
         await statusMsg.delete().catch(() => {});
 
         const confirmEmbed = createStyledEmbed({
-          title: `🔊 VoiceMaster System Deployed!`,
+          title: `🔊 Custom Voice Channels Deployed!`,
           subtitle: `${guild.name} Temporary Voice Channels Active`,
           fields: [
             { name: `➕ Join Channel`, value: `<#${triggerChan.id}>`, inline: true },
@@ -402,14 +207,13 @@ module.exports = {
 
         return message.channel.send({ embeds: [confirmEmbed] });
       } catch (err) {
-        return statusMsg.edit(`❌ Failed to deploy VoiceMaster: \`${err.message}\``);
+        return statusMsg.edit(`❌ Failed to deploy Custom Voice Channels: \`${err.message}\``);
       }
     }
 
     // Default Dashboard
-    const embed = buildVoiceMasterInterfaceEmbed(config.triggerChanId, message.member);
-    const cardAttachment = await generateVoiceMasterCanvasCard(message.member);
-    const rows = buildVoiceMasterActionRows();
-    return message.channel.send({ files: [cardAttachment], embeds: [embed], components: rows });
+    const embed = buildCustomVoiceChannelsEmbed(guild, config.triggerChanId);
+    const rows = buildCustomVoiceChannelButtons(guild.id, config.triggerChanId);
+    return message.channel.send({ embeds: [embed], components: rows });
   }
 };

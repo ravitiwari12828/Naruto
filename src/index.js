@@ -403,10 +403,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       config.activeTempVCs.set(tempVC.id, { ownerId: member.id, guildId: guild.id });
       await newState.setChannel(tempVC).catch(() => {});
 
-      if (vmCmd) {
-        const embed = vmCmd.buildVoiceMasterInterfaceEmbed();
-        const rows = vmCmd.buildVoiceMasterActionRows();
-        await tempVC.send({ content: `<@${member.id}> Welcome to your private voice channel! Use the control panel below to lock, hide, or manage permissions:`, embeds: [embed], components: rows }).catch(() => {});
+      if (vmCmd && vmCmd.buildChannelCreatedEmbed) {
+        const embed = vmCmd.buildChannelCreatedEmbed(member);
+        await tempVC.send({ content: `<@${member.id}>`, embeds: [embed] }).catch(() => {});
       }
     } catch (e) {
       console.error('Failed to create temp VC:', e.message);
