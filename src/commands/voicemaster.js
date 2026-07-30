@@ -297,7 +297,7 @@ function buildVoiceMasterInterfaceEmbed(triggerChanId = null, member = null, tem
 function buildVoiceMasterActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('vm_transfer').setLabel('Transfer Ownership').setEmoji('👥').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_ban').setLabel('Kick/Ban User').setEmoji('𚷷').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_ban').setLabel('Kick/Ban User').setEmoji('⛔').setStyle(ButtonStyle.Danger),
     new ButtonBuilder().setCustomId('vm_whitelist').setLabel('Allow/Deny Access').setEmoji('✨').setStyle(ButtonStyle.Danger),
     new ButtonBuilder().setCustomId('vm_lock').setLabel('Lock Room').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('vm_info').setLabel('Room Logs').setEmoji('📌').setStyle(ButtonStyle.Secondary)
