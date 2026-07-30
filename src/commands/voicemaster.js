@@ -42,7 +42,7 @@ function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
       `**1️⃣ Join** ${triggerMention}\n` +
       `**2️⃣ Wait** *patiently* for the channel to be created\n` +
       `**3️⃣ Type** \`.vc help\` in your channel to customize\n\n` +
-      `**Member Perks** ─── **Donor Perks (Full Access)**\n` +
+      `**Member Perks** ─── **Booster Perks (Full Access)**\n` +
       `❌ Channel Name ─── ✔️ Channel Name\n` +
       `✔️ Channel Size **[Max 5]** ─── ✔️ Channel Size **[No Limit]**\n` +
       `✔️ Permit Users **[Max 5]** ─── ✔️ Permit Users **[No Limit]**\n` +
