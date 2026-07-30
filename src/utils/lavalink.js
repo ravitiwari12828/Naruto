@@ -12,8 +12,17 @@ function initLavalink(client) {
         port: parseInt(process.env.LAVALINK_PORT) || 9013,
         authorization: process.env.LAVALINK_PASSWORD || '781312113c683e27',
         secure: process.env.LAVALINK_SECURE === 'true',
-        retryAmount: 15,
-        retryDelay: 3000
+        retryAmount: 20,
+        retryDelay: 2000
+      },
+      {
+        id: 'synn-node-backup',
+        host: 'lavalink.serenetia.com',
+        port: 443,
+        authorization: 'youshallnotpass',
+        secure: true,
+        retryAmount: 20,
+        retryDelay: 2000
       }
     ],
     sendToShard: (guildId, payload) => {

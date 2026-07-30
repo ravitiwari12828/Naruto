@@ -377,7 +377,17 @@ module.exports = {
       const key = query.toLowerCase().replace(/\s+/g, '');
       if (NARUTO_OST[key]) query = NARUTO_OST[key];
 
-      let player = lavalink?.getPlayer(guildId);
+      // Auto-wait up to 3 seconds for Lavalink node connection handshake to complete
+      if (lavalink) {
+        let nodeConnected = Array.from(lavalink.nodeManager.nodes.values()).some(n => n.connected);
+        if (!nodeConnected) {
+          for (let attempt = 0; attempt < 6; attempt++) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+            nodeConnected = Array.from(lavalink.nodeManager.nodes.values()).some(n => n.connected);
+            if (nodeConnected) break;
+          }
+        }
+      }
 
       if (lavalink && lavalink.nodeManager.nodes.size > 0) {
         try {
