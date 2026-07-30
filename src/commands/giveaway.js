@@ -67,11 +67,10 @@ function buildActiveEmbed(prizeRaw, winnerCount, endTimestamp, id, hostId, parti
   return embed;
 }
 
-// Builds the ENDED giveaway embed
+// Builds the ENDED giveaway embed + Claim Reward button
 function buildEndedEmbed(gw, winnerMentions, clientUser) {
   const CUP = emojis.GOLD_CUP || '🏆';
-  const PING = emojis.GIVEAWAY_PING || '🎉';
-  const isMultiple = winnerMentions.includes(',');
+  const isMultiple = winnerMentions.includes('\n');
 
   const embed = new EmbedBuilder()
     .setColor(0xFFD700)
@@ -88,7 +87,15 @@ function buildEndedEmbed(gw, winnerMentions, clientUser) {
     })
     .setTimestamp();
 
-  return embed;
+  const claimBtn = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`gw_claim_${gw.id}`)
+      .setLabel('Claim Reward')
+      .setEmoji({ id: '1532508968960786613', name: 'GF_Gold_Cup', animated: true })
+      .setStyle(ButtonStyle.Success)
+  );
+
+  return { embed, claimBtn };
 }
 
 // Builds the REROLLED giveaway embed
@@ -219,10 +226,11 @@ module.exports = {
         const winners = pickWinners(eligible, gw.winnerCount);
         const winnerMentions = winners.map(w => `<@${w.id}>`).join('\n');
 
-        const endEmbed = buildEndedEmbed(gw, winnerMentions, clientUser);
+        const { embed: endEmbed, claimBtn } = buildEndedEmbed(gw, winnerMentions, clientUser);
         chan.send({
           content: `${emojis.GIVEAWAY_PING || '🎉'} **Giveaway ended!** ${winners.map(w => `<@${w.id}>`).join(', ')} won **${gw.prize}**!`,
-          embeds: [endEmbed]
+          embeds: [endEmbed],
+          components: [claimBtn]
         });
       }, duration);
 
@@ -260,10 +268,11 @@ module.exports = {
       const winners = pickWinners(eligible, gw.winnerCount);
       const winnerMentions = winners.map(w => `<@${w.id}>`).join('\n');
 
-      const endEmbed = buildEndedEmbed(gw, winnerMentions, clientUser);
+      const { embed: endEmbed, claimBtn } = buildEndedEmbed(gw, winnerMentions, clientUser);
       return message.channel.send({
         content: `${emojis.GIVEAWAY_PING || '🎉'} **Giveaway ended!** ${winners.map(w => `<@${w.id}>`).join(', ')} won **${gw.prize}**!`,
-        embeds: [endEmbed]
+        embeds: [endEmbed],
+        components: [claimBtn]
       });
     }
 

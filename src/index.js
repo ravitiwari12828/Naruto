@@ -2250,6 +2250,108 @@ client.on('interactionCreate', async (interaction) => {
     return interaction.reply({ content: `🎉 **Entry Confirmed!** Check your DMs for details! 📩`, flags: 64 }).catch(() => {});
   }
 
+  // GIVEAWAY CLAIM REWARD BUTTON → Opens a Reward Ticket
+  if (interaction.customId.startsWith('gw_claim_')) {
+    const gwId = interaction.customId.replace('gw_claim_', '');
+    const giveawayCmd = client.commands.get('giveaway');
+    const gw = giveawayCmd ? giveawayCmd.giveaways.get(gwId) : null;
+
+    if (!gw) {
+      return interaction.reply({ content: `${emojis.WARNING} This giveaway is no longer active in memory. Please contact the host directly.`, flags: 64 }).catch(() => {});
+    }
+
+    const guild = interaction.guild;
+    const user = interaction.user;
+
+    // Check if user is a winner
+    // (winners aren't stored by ID in memory, so we gate by: gw must be ended)
+    if (!gw.ended) {
+      return interaction.reply({ content: `${emojis.WARNING} This giveaway hasn't ended yet!`, flags: 64 }).catch(() => {});
+    }
+
+    await interaction.deferReply({ flags: 64 }).catch(() => {});
+
+    try {
+      const ticketCmd = client.commands.get('ticket');
+      const config = ticketCmd ? ticketCmd.getOrCreateTicketConfig(guild.id) : { ticketCounter: 0, staffRoles: new Set(), categories: [] };
+
+      // Check open ticket limit
+      const existingTicket = guild.channels.cache.find(c =>
+        c.isTextBased() && c.topic && c.topic.includes(`owner:${user.id}`)
+      );
+
+      if (existingTicket) {
+        return interaction.editReply({
+          content: `${emojis.WARNING} You already have an open ticket in ${existingTicket}! Please close it before claiming your reward.`
+        }).catch(() => {});
+      }
+
+      const me = guild.members.me;
+      if (!me.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
+        return interaction.editReply({ content: `${emojis.ERROR} I need **Manage Channels** permission to create a reward ticket!` }).catch(() => {});
+      }
+
+      const { logChan, category } = ticketCmd ? await ticketCmd.ensureTicketLogChannels(guild) : { logChan: null, category: null };
+      config.ticketCounter++;
+      const ticketNum = config.ticketCounter;
+
+      const cleanUsername = user.username.toLowerCase().replace(/[^a-z0-9]/g, '') || 'user';
+      const chanName = `${cleanUsername}-reward-${ticketNum}`;
+
+      const overwrites = [
+        { id: guild.id, deny: [PermissionsBitField.Flags.ViewChannel] },
+        { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.AttachFiles, PermissionsBitField.Flags.ReadMessageHistory] },
+        { id: client.user.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.AttachFiles, PermissionsBitField.Flags.ManageChannels, PermissionsBitField.Flags.ManageRoles] }
+      ];
+
+      config.staffRoles.forEach(roleId => {
+        overwrites.push({ id: roleId, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.SendMessages, PermissionsBitField.Flags.AttachFiles, PermissionsBitField.Flags.ReadMessageHistory] });
+      });
+
+      const ticketChan = await guild.channels.create({
+        name: chanName,
+        type: ChannelType.GuildText,
+        topic: `ticket|owner:${user.id}|type:Reward|priority:High|claim:none`,
+        parent: category ? category.id : undefined,
+        permissionOverwrites: overwrites
+      });
+
+      const rewardEmbed = new EmbedBuilder()
+        .setColor(0xFFD700)
+        .setTitle(`${emojis.GOLD_CUP || '🏆'}  Reward Claim Ticket`)
+        .setDescription(
+          `> **Prize:** ${gw.prize}\n\n` +
+          `<@${user.id}> has claimed their giveaway reward!\n\n` +
+          `${emojis.GIVEAWAY_PING || '🎉'} **Giveaway ID:** \`${gw.id}\`\n` +
+          `${emojis.GOLD_CUP || '🏆'} **Host:** <@${gw.hostId}>\n\n` +
+          `*Please wait — a staff member will assist you shortly.*`
+        )
+        .setFooter({ text: `Ticket #${ticketNum} • Reward Claim`, iconURL: client.user?.displayAvatarURL() || undefined })
+        .setTimestamp();
+
+      const closeRow = ticketCmd ? ticketCmd.buildTicketActionRows() : [];
+
+      const pings = [`<@${user.id}>`, ...Array.from(config.staffRoles).map(id => `<@&${id}>`)].join(' ');
+      await ticketChan.send({ content: pings, embeds: [rewardEmbed], components: closeRow });
+
+      if (logChan) {
+        const logEmbed = createStyledEmbed({
+          title: `🏆 Reward Claim Ticket Opened`,
+          description: `**User:** <@${user.id}> (\`${user.tag}\`)\n**Prize:** ${gw.prize}\n**Giveaway ID:** \`${gw.id}\`\n**Ticket:** ${ticketChan}`,
+          requestedBy: user,
+          clientUser: client.user
+        });
+        await logChan.send({ embeds: [logEmbed] }).catch(() => {});
+      }
+
+      ticketCmd?.ticketConfigs?.set(guild.id, config);
+      return interaction.editReply({ content: `${emojis.SUCCESS} Reward ticket created! Head over to ${ticketChan} 🎁` }).catch(() => {});
+    } catch (e) {
+      console.error('Failed to create reward ticket:', e);
+      return interaction.editReply({ content: `${emojis.ERROR} Failed to create reward ticket: \`${e.message || 'Permission Error'}\`` }).catch(() => {});
+    }
+  }
+
   // 3. CALL STAFF BUTTON
   if (interaction.customId === 'ticket_callstaff_btn') {
     try {
