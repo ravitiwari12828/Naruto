@@ -412,12 +412,29 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     }
   }
 
-  // Left temp VC (delete if empty)
+  // Left temp VC (delete if no human members remain)
   if (oldState.channelId && config.activeTempVCs.has(oldState.channelId)) {
     const oldChan = oldState.channel;
-    if (oldChan && oldChan.members.size === 0) {
-      config.activeTempVCs.delete(oldChan.id);
-      oldChan.delete().catch(() => {});
+    if (oldChan) {
+      const humanCount = oldChan.members.filter(m => !m.user.bot).size;
+      if (humanCount === 0) {
+        config.activeTempVCs.delete(oldChan.id);
+
+        // Destroy Lavalink player if active in this temp VC
+        try {
+          const { getLavalink } = require('./utils/lavalink');
+          const lavalink = getLavalink();
+          const player = lavalink?.getPlayer(guild.id);
+          if (player && player.voiceChannelId === oldChan.id) {
+            player.destroy().catch(() => {});
+          }
+        } catch (e) {}
+
+        // Delete empty temporary voice channel
+        setTimeout(() => {
+          oldChan.delete().catch(() => {});
+        }, 1000);
+      }
     }
   }
 });
