@@ -102,7 +102,7 @@ function buildServerStatsCategoryRow(activeCategory = 'overview') {
     new ButtonBuilder()
       .setCustomId('scat_invites')
       .setLabel('Invites')
-      .setEmoji(emojis.OBJ_MODMAIL)
+      .setEmoji(emojis.OBJ_INVITES || emojis.OBJ_INVITELINK)
       .setStyle(activeCategory === 'invites' ? ButtonStyle.Success : ButtonStyle.Primary)
   );
 }
@@ -128,12 +128,12 @@ function buildUserMetricRow(activeCat) {
     new ButtonBuilder()
       .setCustomId('ucat_invites')
       .setLabel('Invites')
-      .setEmoji(emojis.OBJ_INVITES || '📨')
+      .setEmoji(emojis.OBJ_INVITES || emojis.OBJ_INVITELINK)
       .setStyle(activeCat === 'invites' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_shinobi')
       .setLabel('Rank')
-      .setEmoji(emojis.OBJ_NINJUTSU || '🍥')
+      .setEmoji(emojis.OBJ_RANK || emojis.OBJ_NINJUTSU)
       .setStyle(activeCat === 'shinobi' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 }

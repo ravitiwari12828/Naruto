@@ -139,6 +139,9 @@ module.exports = {
   OBJ_FUN: { name: 'fun', id: '1530942586876068003', animated: true },
   OBJ_GIVEAWAY: { name: 'giveaway', id: '1530942590307012839', animated: true },
   OBJ_LEVEL: { name: 'levels', id: '1530942594404847757', animated: true },
+  OBJ_RANK: { name: 'rank', id: '1532489533952626688' },
+  OBJ_INVITELINK: { name: 'invitelink', id: '1532489591796400228', animated: true },
+  OBJ_INVITES: { name: 'invitelink', id: '1532489591796400228', animated: true },
   OBJ_MOD: { name: 'moderation', id: '1530942596812116058', animated: true },
   OBJ_MODMAIL: { name: 'modmail', id: '1530942601497284731', animated: true },
   OBJ_MUSIC: { name: 'music', id: '1531159640967090227', animated: true },
@@ -180,7 +183,7 @@ module.exports = {
   OBJ_PANIC: { name: 'emoji_KABOOM', id: '1529377716975960075' },
   OBJ_STATS: { name: 'analytics', id: '1530942545893265518', animated: true },
   OBJ_MESSAGES: { name: 'emoji_chat_bubble', id: '1529377690161905775' },
-  OBJ_INVITES: { name: 'emoji_envelope_invites', id: '1529377701507498044' },
+  OBJ_INVITES: { name: 'invitelink', id: '1532489591796400228', animated: true },
 
   // --- ANTINUKE CONTROL PANEL ANIMATED DISCORD EMOJIS ---
   AN_WHITELIST: '<a:an_whitelist:1530948424273362974>',
