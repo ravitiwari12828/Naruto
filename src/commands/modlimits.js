@@ -15,7 +15,7 @@ const modLimitsStore = new Map();
 function getOrCreateModLimits(guildId) {
   if (!modLimitsStore.has(guildId)) {
     modLimitsStore.set(guildId, {
-      enabled: true,
+      enabled: false,
       logChannelId: null,
       timeWindowMin: 10,
       limits: {

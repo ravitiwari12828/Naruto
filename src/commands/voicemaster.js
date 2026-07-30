@@ -15,7 +15,7 @@ const voicemasterConfigs = new Map();
 function getOrCreateVMConfig(guildId) {
   if (!voicemasterConfigs.has(guildId)) {
     voicemasterConfigs.set(guildId, {
-      enabled: true,
+      enabled: false,
       triggerChanId: null,
       interfaceChanId: null,
       inVcRoleId: null,

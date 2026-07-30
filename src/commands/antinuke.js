@@ -14,7 +14,7 @@ const antinukeConfigs = new Map();
 function getOrCreateAntinuke(guildId) {
   if (!antinukeConfigs.has(guildId)) {
     antinukeConfigs.set(guildId, {
-      enabled: true,
+      enabled: false,
       panicmode: false,
       panicLevel: 1, // 1: Low, 2: Medium, 3: High Lockdown
       whitelistedUsers: new Map([
