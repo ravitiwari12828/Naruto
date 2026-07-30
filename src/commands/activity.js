@@ -1,6 +1,7 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const db = require('../database/db');
 const emojis = require('../utils/emojis');
+const { createDynamicBox } = require('../utils/boxBuilder');
 
 module.exports = {
   name: 'activity',
@@ -24,15 +25,13 @@ module.exports = {
 
       const boxText =
         '```\n' +
-        '╭──────────────────────────────────╮\n' +
-        '│     SERVER ACTIVITY OVERVIEW     │\n' +
-        '├──────────────────────────────────┤\n' +
-        '│ Guild Name : ' + String(message.guild.name).slice(0, 18).padEnd(18, ' ') + ' │\n' +
-        '│ Members    : ' + String(message.guild.memberCount).padEnd(18, ' ') + ' │\n' +
-        '│ Messages   : ' + String(totalMsgs).padEnd(18, ' ') + ' │\n' +
-        '│ Shinobi    : ' + String(totalShinobi).padEnd(18, ' ') + ' │\n' +
-        '╰──────────────────────────────────╯\n' +
-        '```';
+        createDynamicBox('SERVER OVERVIEW', [
+          'Guild    : ' + String(message.guild.name).slice(0, 12),
+          'Members  : ' + String(message.guild.memberCount),
+          'Messages : ' + String(totalMsgs),
+          'Shinobi  : ' + String(totalShinobi)
+        ]) +
+        '\n```';
 
       const embed = createStyledEmbed({
         title: `${emojis.ANALYTICS_ZAP} Server Activity Overview`,
@@ -45,15 +44,13 @@ module.exports = {
     if (sub === 'chat') {
       const boxText =
         '```\n' +
-        '╭──────────────────────────────────╮\n' +
-        '│       CHAT ACTIVITY STATS        │\n' +
-        '├──────────────────────────────────┤\n' +
-        '│ Username   : ' + String(targetUser.username).slice(0, 18).padEnd(18, ' ') + ' │\n' +
-        '│ Messages   : ' + String(userData.messages).padEnd(18, ' ') + ' │\n' +
-        '│ Level      : ' + String('Level ' + userData.level).padEnd(18, ' ') + ' │\n' +
-        '│ Total XP   : ' + String(userData.xp + ' XP').padEnd(18, ' ') + ' │\n' +
-        '╰──────────────────────────────────╯\n' +
-        '```';
+        createDynamicBox('CHAT STATS', [
+          'Username : ' + String(targetUser.username).slice(0, 12),
+          'Messages : ' + String(userData.messages),
+          'Level    : Level ' + String(userData.level),
+          'Total XP : ' + String(userData.xp) + ' XP'
+        ]) +
+        '\n```';
 
       const embed = createStyledEmbed({
         title: `${emojis.MESSAGES} Chat Activity Stats — ${targetUser.username}`,
@@ -66,13 +63,11 @@ module.exports = {
     if (sub === 'invites') {
       const boxText =
         '```\n' +
-        '╭──────────────────────────────────╮\n' +
-        '│      INVITE ACTIVITY STATS       │\n' +
-        '├──────────────────────────────────┤\n' +
-        '│ Username   : ' + String(targetUser.username).slice(0, 18).padEnd(18, ' ') + ' │\n' +
-        '│ Invites    : ' + String(userData.invites).padEnd(18, ' ') + ' │\n' +
-        '╰──────────────────────────────────╯\n' +
-        '```';
+        createDynamicBox('INVITE STATS', [
+          'Username : ' + String(targetUser.username).slice(0, 12),
+          'Invites  : ' + String(userData.invites)
+        ]) +
+        '\n```';
 
       const embed = createStyledEmbed({
         title: `${emojis.INVITES} Invite Activity Stats — ${targetUser.username}`,
@@ -104,19 +99,17 @@ module.exports = {
       }
     }
 
-    // Default stats embed
+    // Default stats embed with 28-char device-proof box
     const boxText =
       '```\n' +
-      '╭──────────────────────────────────╮\n' +
-      '│     SHINOBI ACTIVITY PROFILE     │\n' +
-      '├──────────────────────────────────┤\n' +
-      '│ Username   : ' + String(targetUser.username).slice(0, 18).padEnd(18, ' ') + ' │\n' +
-      '│ Rank       : ' + String(userData.rank).slice(0, 18).padEnd(18, ' ') + ' │\n' +
-      '│ Messages   : ' + String(userData.messages).padEnd(18, ' ') + ' │\n' +
-      '│ Invites    : ' + String(userData.invites).padEnd(18, ' ') + ' │\n' +
-      '│ Level      : ' + String('Level ' + userData.level + ' (' + userData.xp + ' XP)').slice(0, 18).padEnd(18, ' ') + ' │\n' +
-      '╰──────────────────────────────────╯\n' +
-      '```';
+      createDynamicBox('SHINOBI PROFILE', [
+        'Username : ' + String(targetUser.username).slice(0, 12),
+        'Rank     : ' + String(userData.rank).slice(0, 12),
+        'Messages : ' + String(userData.messages),
+        'Invites  : ' + String(userData.invites),
+        'Level    : Level ' + String(userData.level) + ' (' + String(userData.xp) + ' XP)'
+      ]) +
+      '\n```';
 
     const embed = createStyledEmbed({
       title: `${emojis.ANALYTICS_ZAP} ${targetUser.username}'s Activity Card`,
