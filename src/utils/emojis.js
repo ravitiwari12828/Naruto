@@ -57,8 +57,10 @@ module.exports = {
   error: '<:emoji_red_disabled:1529377739302506516>',
   success: '<:emoji_green_enabled:1529377708012732506>',
   warning: '<:emoji_warning_alert:1529377755735527465>',
-  coin: '<a:an_star:1531155980753174598>',
-  money: '<a:an_star:1531155980753174598>',
+  coin: '<a:money:1532492249286312048>',
+  money: '<a:money:1532492249286312048>',
+  cash: '<a:money:1532492249286312048>',
+  MONEY: '<a:money:1532492249286312048>',
   bank: '<a:an_quarantine:1530948395328339998>',
   gem: '<a:an_star:1531155980753174598>',
   fire: '<a:an_panic:1530948389548724457>',
@@ -67,6 +69,24 @@ module.exports = {
   sparkle: '<a:an_sparkles:1531061484170383511>',
   tools: '<a:an_webhook:1530948419164569721>',
   arrowUp: '<a:analytics:1530942545893265518>',
+
+  // --- NEW CUSTOM EMOJIS ---
+  SHOP: '<:shop:1532492727126593668>',
+  shop: '<:shop:1532492727126593668>',
+  BUY: '<a:buy_gif:1532492678430855332>',
+  buy: '<a:buy_gif:1532492678430855332>',
+  SELL: '<:sell:1532492613427663009>',
+  sell: '<:sell:1532492613427663009>',
+  BITCOIN: '<a:apex_bitcoin:1532492214167539723>',
+  bitcoin: '<a:apex_bitcoin:1532492214167539723>',
+  crypto: '<a:apex_bitcoin:1532492214167539723>',
+  PICKAXE: '<a:Pickaxe:1532492395860725922>',
+  pickaxe: '<a:Pickaxe:1532492395860725922>',
+  mine: '<a:Pickaxe:1532492395860725922>',
+  RULERS_CARD: '<a:rulers_card:1532492294056448093>',
+  rulers_card: '<a:rulers_card:1532492294056448093>',
+  card: '<a:rulers_card:1532492294056448093>',
+  networth: '<a:rulers_card:1532492294056448093>',
 
 
 

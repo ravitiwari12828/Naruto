@@ -76,7 +76,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(config.embedColor)
-      .setTitle(`📈 Leaf Village Stock Market`)
+      .setTitle(`${emojis.BITCOIN || '📈'} Leaf Village Stock Market`)
       .setThumbnail(message.guild.iconURL({ dynamic: true }) || message.client.user.displayAvatarURL())
       .setDescription(lines.join('\n\n'))
       .setFooter({ text: 'Use .stocks buy <ticker> <amount> or .stocks sell <ticker> <amount>' })

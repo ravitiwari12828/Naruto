@@ -19,7 +19,7 @@ function buildShopEmbed(catKey) {
 
   return new EmbedBuilder()
     .setColor(config.embedColor)
-    .setTitle(`🛒 Shinobi Emporium Shop — ${cat.label}`)
+    .setTitle(`${emojis.SHOP || '🛒'} Shinobi Emporium Shop — ${cat.label}`)
     .setDescription(lines.join('\n\n'))
     .setFooter({ text: 'Use .buy <item id> [amount] to purchase items.' })
     .setTimestamp();

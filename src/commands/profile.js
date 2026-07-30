@@ -188,7 +188,7 @@ module.exports = {
       const bio = userObj.bio || '*No bio set yet. Use `.bioset <text>` to add one!*';
 
       const embed = createStyledEmbed({
-        title: `👤 Profile Bio — ${targetUser.username}`,
+        title: `${emojis.RULERS_CARD || '👤'} Profile Bio — ${targetUser.username}`,
         description: `> ${bio}`,
         requestedBy: author,
         clientUser,
@@ -227,7 +227,7 @@ module.exports = {
     const currentBio = userObj.bio ? `\n\n> *"${userObj.bio}"*` : '';
 
     const embed = createStyledEmbed({
-      title: `👤 Profile Suite`,
+      title: `${emojis.RULERS_CARD || '👤'} Profile Suite`,
       description:
         `Welcome **${author.username}**! Configure your custom bio or fetch dynamic anime avatars.\n\n` +
         `**👤 Bio Commands**\n` +
