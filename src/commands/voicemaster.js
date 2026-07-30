@@ -105,9 +105,9 @@ function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
     .setDescription(
       `Looking to escape from public calls? Create your own private channel and have control over every aspect of it.\n\n` +
       `**ℹ️ How to Create a Channel:**\n` +
-      `**1️⃣ Join** ${triggerMention}\n` +
-      `**2️⃣ Wait** *patiently* for channel to be created\n` +
-      `**3️⃣ Type** \`.vc help\` in your channel to edit settings\n\n` +
+      `${emojis.PRIZE_1} **Join** ${triggerMention}\n` +
+      `${emojis.PRIZE_2} **Wait** *patiently* for channel to be created\n` +
+      `${emojis.PRIZE_3} **Type** \`.vc help\` in your channel to edit settings\n\n` +
       '```\n' + perkBox + '\n```'
     )
     .setFooter({ text: `${guild.name} Custom Voice Calls`, iconURL: guild.iconURL({ dynamic: true }) || undefined });
