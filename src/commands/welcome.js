@@ -124,7 +124,7 @@ function getOrCreateWelcomeConfig(guildId) {
       title: '{gothic:Welcome to the Castle}',
       description: '🖤 Greetings {user}! You have entered {gothic:{server_name}}.\n\n🕯️ Member Count: #{membercount}\n⚜️ Please read rules and enjoy your stay!',
       footer: 'Welcome to our Server',
-      headerText: '🛡️ MEMBER COUNT: #{membercount}',
+      headerText: `${emojis.COUNT || '<a:Count:1532478957591466164>'} MEMBER COUNT: #{membercount}`,
       imageUrl: PRESET_BANNERS.gothic,
       joinDmText: '🌸 Welcome to **{server_name}**, {user}! Enjoy your stay!',
       leaveDmText: '📤 Goodbye {user}, we hope to see you back in **{server_name}** soon!',
