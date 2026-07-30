@@ -336,6 +336,24 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
   return embed;
 }
 
+/**
+ * Builds Server Boost Announcement Embed matching requested UI spec with BIG animated booster emoji thumbnail on right side.
+ */
+function buildBoosterEmbed(member) {
+  const user = member.user;
+  const guild = member.guild;
+  const boostCount = guild.premiumSubscriptionCount || 1;
+
+  const embed = new EmbedBuilder()
+    .setColor(0xF47FFF) // Official Discord Server Boost Pink Color
+    .setTitle(`${user.username} boosted!`)
+    .setDescription(`Thanks for boosting the server, <@${user.id}>!`)
+    .setThumbnail('https://cdn.discordapp.com/emojis/1532470412217159790.gif')
+    .setFooter({ text: `We're now at ${boostCount} boost${boostCount === 1 ? '' : 's'}!` });
+
+  return embed;
+}
+
 module.exports = {
   name: 'welcome',
   description: 'Customizable Mimu-Style Welcome Embeds with Gothic Fonts, Stylish Bullets & Canvas Cards',
@@ -350,6 +368,7 @@ module.exports = {
   getOrCreateWelcomeConfig,
   buildWelcomeCard,
   generateCanvasWelcomeCard,
+  buildBoosterEmbed,
   parsePlaceholders,
 
   async execute(message, args) {

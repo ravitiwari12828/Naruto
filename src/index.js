@@ -503,16 +503,14 @@ client.on('guildMemberUpdate', async (oldMember, newMember) => {
     const welcomeCmd = client.commands.get('welcome');
     if (welcomeCmd && welcomeCmd.getOrCreateWelcomeConfig) {
       const config = welcomeCmd.getOrCreateWelcomeConfig(newMember.guild.id);
-      if (config.boostEnabled) {
+      if (config.boostEnabled !== false) {
         const targetChanId = config.boostChannelId || config.channelId;
         if (targetChanId) {
           const chan = newMember.guild.channels.cache.get(targetChanId);
           if (chan && chan.isTextBased()) {
-            const boostText = welcomeCmd.parsePlaceholders(config.boostText, newMember);
-            const boostEmbed = createStyledEmbed({
-              title: `🚀 SERVER BOOST!`,
-              description: boostText,
-              requestedBy: newMember.user,
+            const boostEmbed = welcomeCmd.buildBoosterEmbed ? welcomeCmd.buildBoosterEmbed(newMember) : createStyledEmbed({
+              title: `${newMember.user.username} boosted!`,
+              description: `Thanks for boosting the server, <@${newMember.id}>!`,
               clientUser: client.user
             });
             await chan.send({ content: `<@${newMember.id}>`, embeds: [boostEmbed] }).catch(() => {});
