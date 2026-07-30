@@ -1,4 +1,4 @@
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 
@@ -39,6 +39,81 @@ async function collectEligibleUsers(client, gw) {
   return eligibleUsers;
 }
 
+// Builds the rich ACTIVE giveaway embed
+function buildActiveEmbed(prizeRaw, winnerCount, endTimestamp, id, hostId, participantCount, clientUser) {
+  const PING = emojis.GIVEAWAY_PING || '🎉';
+  const CUP = emojis.GOLD_CUP || '🏆';
+  const GIFT = emojis.GIVEAWAY || '🎁';
+  const DOT = emojis.DOT || '•';
+
+  const embed = new EmbedBuilder()
+    .setColor(0xFF6B35)
+    .setTitle(`${PING}  G I V E A W A Y`)
+    .setDescription(
+      `> **${prizeRaw}**\n\n` +
+      `${DOT} **Host:** <@${hostId}>\n` +
+      `${DOT} **Winners:** \`${winnerCount}\`\n` +
+      `${DOT} **Entries:** \`${participantCount}\`\n` +
+      `${DOT} **Ends:** <t:${endTimestamp}:R> (<t:${endTimestamp}:f>)\n` +
+      `${DOT} **ID:** \`${id}\`\n\n` +
+      `*Click **${PING} Enter Giveaway** below to join!*`
+    )
+    .setFooter({
+      text: `Giveaway ID: ${id} • Click button to enter`,
+      iconURL: clientUser?.displayAvatarURL?.() || undefined
+    })
+    .setTimestamp();
+
+  return embed;
+}
+
+// Builds the ENDED giveaway embed
+function buildEndedEmbed(gw, winnerMentions, clientUser) {
+  const CUP = emojis.GOLD_CUP || '🏆';
+  const PING = emojis.GIVEAWAY_PING || '🎉';
+  const isMultiple = winnerMentions.includes(',');
+
+  const embed = new EmbedBuilder()
+    .setColor(0xFFD700)
+    .setTitle(`${CUP}  GIVEAWAY ENDED`)
+    .setDescription(
+      `> **${gw.prize}**\n\n` +
+      `🎊 **${isMultiple ? 'Winners' : 'Winner'}:**\n${winnerMentions}\n\n` +
+      `Congratulations! Please claim your prize from <@${gw.hostId}>.\n\n` +
+      `*Use \`.greroll ${gw.id}\` to reroll winners.*`
+    )
+    .setFooter({
+      text: `Giveaway ID: ${gw.id} • Ended`,
+      iconURL: clientUser?.displayAvatarURL?.() || undefined
+    })
+    .setTimestamp();
+
+  return embed;
+}
+
+// Builds the REROLLED giveaway embed
+function buildRerolledEmbed(gw, winnerMentions, clientUser) {
+  const DICE = emojis.DICE || '🎲';
+  const CUP = emojis.GOLD_CUP || '🏆';
+  const isMultiple = winnerMentions.includes(',');
+
+  const embed = new EmbedBuilder()
+    .setColor(0x9B59B6)
+    .setTitle(`${DICE}  GIVEAWAY REROLLED`)
+    .setDescription(
+      `> **${gw.prize}**\n\n` +
+      `✨ **New ${isMultiple ? 'Winners' : 'Winner'}:**\n${winnerMentions}\n\n` +
+      `Congratulations on the reroll! Claim your prize from <@${gw.hostId}>.`
+    )
+    .setFooter({
+      text: `Giveaway ID: ${gw.id} • Rerolled`,
+      iconURL: clientUser?.displayAvatarURL?.() || undefined
+    })
+    .setTimestamp();
+
+  return embed;
+}
+
 module.exports = {
   name: 'giveaway',
   description: 'Host and manage giveaways. Short syntax: .gstart, .gend, .greroll',
@@ -73,40 +148,40 @@ module.exports = {
       const prizeRaw = isDirect ? args.slice(2).join(' ') : args.slice(3).join(' ');
 
       if (!timeRaw || !winnersRaw || !prizeRaw) {
-        return message.channel.send(`${emojis.WARNING} Usage: \`.gstart <time: 1m/1h/1d> <winners: 1> <prize>\`\nExample: \`.gstart 1h 1 Lifetime Nitro\``).then(m => setTimeout(() => m.delete().catch(() => {}), 6000)).catch(() => {});
+        return message.channel.send(
+          `${emojis.WARNING} Usage: \`.gstart <time: 1m/1h/1d> <winners: 1> <prize>\`\n` +
+          `Example: \`.gstart 1h 1 Lifetime Nitro\``
+        ).then(m => {
+          if (m && typeof m.delete === 'function') setTimeout(() => m.delete().catch(() => {}), 6000);
+        }).catch(() => {});
       }
 
       const duration = parseTime(timeRaw);
-      if (!duration) return message.channel.send(`${emojis.WARNING} Invalid time format. Use: \`10s\`, \`5m\`, \`2h\`, \`1d\``).then(m => setTimeout(() => m.delete().catch(() => {}), 5000)).catch(() => {});
+      if (!duration) {
+        return message.channel.send(`${emojis.WARNING} Invalid time format. Use: \`10s\`, \`5m\`, \`2h\`, \`1d\``)
+          .then(m => { if (m && typeof m.delete === 'function') setTimeout(() => m.delete().catch(() => {}), 5000); })
+          .catch(() => {});
+      }
 
       const winnerCount = parseInt(winnersRaw, 10);
-      if (isNaN(winnerCount) || winnerCount < 1) return message.channel.send(`${emojis.WARNING} Winners must be a valid number >= 1.`).then(m => setTimeout(() => m.delete().catch(() => {}), 5000)).catch(() => {});
+      if (isNaN(winnerCount) || winnerCount < 1) {
+        return message.channel.send(`${emojis.WARNING} Winners must be a valid number >= 1.`)
+          .then(m => { if (m && typeof m.delete === 'function') setTimeout(() => m.delete().catch(() => {}), 5000); })
+          .catch(() => {});
+      }
 
       const endTime = Date.now() + duration;
       const id = generateId();
       const endTimestamp = Math.floor(endTime / 1000);
 
-      const embed = createStyledEmbed({
-        title: `🎉 GIVEAWAY — ${prizeRaw}`,
-        subtitle: `Hosted by ${message.author.username}`,
-        description:
-          `Click the **🎉 Enter Giveaway** button below to participate!\n\n` +
-          `• **Host:** <@${message.author.id}>\n` +
-          `• **Prize:** \`${prizeRaw}\`\n` +
-          `• **Winners:** \`${winnerCount}\`\n` +
-          `• **Participants:** \`0\`\n` +
-          `• **Ends:** <t:${endTimestamp}:F> (<t:${endTimestamp}:R>)\n` +
-          `• **Giveaway ID:** \`${id}\``,
-        requestedBy: message.author,
-        clientUser,
-        footerText: `Giveaway ID: ${id}`
-      });
+      const embed = buildActiveEmbed(prizeRaw, winnerCount, endTimestamp, id, message.author.id, 0, clientUser);
 
       const enterBtn = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId(`gw_enter_${id}`)
-          .setLabel('🎉 Enter Giveaway')
-          .setStyle(ButtonStyle.Primary)
+          .setLabel('Enter Giveaway')
+          .setEmoji({ id: '1532508786307104878', name: 'Radha_Giveaway_ping', animated: true })
+          .setStyle(ButtonStyle.Success)
       );
 
       const msg = await message.channel.send({ embeds: [embed], components: [enterBtn] });
@@ -142,18 +217,18 @@ module.exports = {
         }
 
         const winners = pickWinners(eligible, gw.winnerCount);
-        const winnerMentions = winners.map(w => `<@${w.id}>`).join(', ');
+        const winnerMentions = winners.map(w => `<@${w.id}>`).join('\n');
 
-        const endEmbed = createStyledEmbed({
-          title: `🎊 GIVEAWAY ENDED — ${gw.prize}`,
-          description: `🏆 **Winner(s):** ${winnerMentions}\n\nCongratulations! Claim your prize from <@${gw.hostId}>.`,
-          requestedBy: message.author,
-          clientUser
+        const endEmbed = buildEndedEmbed(gw, winnerMentions, clientUser);
+        chan.send({
+          content: `${emojis.GIVEAWAY_PING || '🎉'} **Giveaway ended!** ${winners.map(w => `<@${w.id}>`).join(', ')} won **${gw.prize}**!`,
+          embeds: [endEmbed]
         });
-        chan.send({ embeds: [endEmbed] });
       }, duration);
 
-      const confirmMsg = await message.channel.send(`${emojis.CELEBRATION || '🎉'} Giveaway **\`${id}\`** created! Ends in **${timeRaw}**!`);
+      const confirmMsg = await message.channel.send(
+        `${emojis.GIVEAWAY_PING || '🎉'} Giveaway **\`${id}\`** created! Ends in **${timeRaw}**!`
+      );
       if (confirmMsg && typeof confirmMsg.delete === 'function') {
         setTimeout(() => confirmMsg.delete().catch(() => {}), 4000);
       }
@@ -183,15 +258,13 @@ module.exports = {
       }
 
       const winners = pickWinners(eligible, gw.winnerCount);
-      const winnerMentions = winners.map(w => `<@${w.id}>`).join(', ');
+      const winnerMentions = winners.map(w => `<@${w.id}>`).join('\n');
 
-      const endEmbed = createStyledEmbed({
-        title: `🎊 GIVEAWAY ENDED — ${gw.prize}`,
-        description: `🏆 **Winner(s):** ${winnerMentions}\n\nCongratulations! Claim from <@${gw.hostId}>.`,
-        requestedBy: message.author,
-        clientUser
+      const endEmbed = buildEndedEmbed(gw, winnerMentions, clientUser);
+      return message.channel.send({
+        content: `${emojis.GIVEAWAY_PING || '🎉'} **Giveaway ended!** ${winners.map(w => `<@${w.id}>`).join(', ')} won **${gw.prize}**!`,
+        embeds: [endEmbed]
       });
-      return message.channel.send({ embeds: [endEmbed] });
     }
 
     // .greroll <id> / .giveaway reroll <id>
@@ -214,15 +287,13 @@ module.exports = {
       }
 
       const winners = pickWinners(eligible, gw.winnerCount);
-      const winnerMentions = winners.map(w => `<@${w.id}>`).join(', ');
+      const winnerMentions = winners.map(w => `<@${w.id}>`).join('\n');
 
-      const rerollEmbed = createStyledEmbed({
-        title: `🎲 GIVEAWAY REROLLED — ${gw.prize}`,
-        description: `🏆 **New Winner(s):** ${winnerMentions}\n\nCongratulations on the reroll! Claim from <@${gw.hostId}>.`,
-        requestedBy: message.author,
-        clientUser
+      const rerollEmbed = buildRerolledEmbed(gw, winnerMentions, clientUser);
+      return message.channel.send({
+        content: `${emojis.DICE || '🎲'} **Rerolled!** ${winners.map(w => `<@${w.id}>`).join(', ')} is the new winner of **${gw.prize}**!`,
+        embeds: [rerollEmbed]
       });
-      return message.channel.send({ embeds: [rerollEmbed] });
     }
 
     // .giveaway list
@@ -233,16 +304,16 @@ module.exports = {
       }
 
       const lines = all.map(gw =>
-        `• **ID:** \`${gw.id}\` | **Prize:** ${gw.prize} | **Status:** ${gw.ended ? `${emojis.SUCCESS} Ended` : '🟢 Active'}`
+        `${gw.ended ? emojis.GOLD_CUP || '🏆' : emojis.GIVEAWAY_PING || '🎉'} **${gw.prize}** — \`${gw.id}\` — ${gw.ended ? 'Ended' : `<t:${Math.floor(gw.endTime / 1000)}:R>`}`
       );
 
-      const embed = createStyledEmbed({
-        title: `🎉 All Giveaways`,
-        description: lines.join('\n'),
-        requestedBy: message.author,
-        clientUser,
-        footerText: `Total: ${all.length} giveaway(s)`
-      });
+      const embed = new EmbedBuilder()
+        .setColor(0xFF6B35)
+        .setTitle(`${emojis.GIVEAWAY_PING || '🎉'}  All Giveaways`)
+        .setDescription(lines.join('\n'))
+        .setFooter({ text: `Total: ${all.length} giveaway(s)`, iconURL: clientUser?.displayAvatarURL?.() || undefined })
+        .setTimestamp();
+
       return message.channel.send({ embeds: [embed] });
     }
 

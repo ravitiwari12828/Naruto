@@ -74,6 +74,10 @@ module.exports = {
   arrowUp: '<a:analytics:1530942545893265518>',
 
   // --- NEW CUSTOM EMOJIS ---
+  GIVEAWAY_PING: '<a:Radha_Giveaway_ping:1532508786307104878>',
+  giveaway_ping: '<a:Radha_Giveaway_ping:1532508786307104878>',
+  GOLD_CUP: '<a:GF_Gold_Cup:1532508968960786613>',
+  gold_cup: '<a:GF_Gold_Cup:1532508968960786613>',
   SHOP: '<:shop:1532492727126593668>',
   shop: '<:shop:1532492727126593668>',
   BUY: '<a:buy_gif:1532492678430855332>',
