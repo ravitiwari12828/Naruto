@@ -93,7 +93,8 @@ module.exports = {
   checkAndIncrementModAction,
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
     // Shift sub if 'modlimits' or 'limit' was used as sub

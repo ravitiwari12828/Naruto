@@ -353,7 +353,8 @@ module.exports = {
   parsePlaceholders,
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
     if (invoked === 'welcomesetup') sub = 'setup';

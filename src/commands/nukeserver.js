@@ -37,7 +37,8 @@ module.exports = {
       return message.reply(`${emojis.WARNING} **Access Denied**: Only **Bot Owners** or **Server Owner** can execute mass role/channel deletion.`);
     }
 
-    const cmd = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const cmd = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
     if (cmd === 'nukeroles' || cmd === 'deleteroles' || cmd === 'nukeallroles') sub = 'roles';

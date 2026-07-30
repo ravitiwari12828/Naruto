@@ -10,9 +10,8 @@ module.exports = {
   aliases: ['massrole', 'automation', 'autoroles'],
 
   async execute(message, args) {
-    const invokedName = message.content.startsWith('.')
-      ? message.content.slice(1).split(/ +/)[0].toLowerCase()
-      : message.content.trim().split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invokedName = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
 
     let clientUser = message.client.user;
     try {

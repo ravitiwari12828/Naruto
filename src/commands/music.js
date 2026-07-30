@@ -324,7 +324,8 @@ module.exports = {
   sendMusicCard,
 
   async execute(message, args) {
-    const invoked = message.content.slice(1).split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     const voiceState = message.member?.voice;
     const author = message.author;
     const guildId = message.guild.id;

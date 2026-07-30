@@ -468,10 +468,10 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     const embed = new EmbedBuilder()
       .setColor(catColor)
       .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
-      .setTitle(`🎶 Music Player Suite & Control Panel`)
+      .setTitle(`${emojis.MUSIC || '🎶'} Music Player Suite & Control Panel`)
       .setDescription(
         `Welcome **${message.author.username}**! Below is the executive suite for **Music**.\n\n` +
-        `**🎵 Playback Controls**\n` +
+        `${emojis.MUSIC || '🎵'} **Playback Controls**\n` +
         `\`\`\`\n` +
         `.play <song>  - Play a track or resume queue\n` +
         `.pause        - Pause current track\n` +
@@ -480,7 +480,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
         `.prev         - Go back to previous track\n` +
         `.stop         - Stop music and clear queue\n` +
         `\`\`\`\n\n` +
-        `**📋 Queue & Playlist**\n` +
+        `${emojis.ALL_MODULES || '📋'} **Queue & Playlist**\n` +
         `\`\`\`\n` +
         `.queue        - View current queue\n` +
         `.np           - Show now playing\n` +
@@ -489,7 +489,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
         `.seek <secs>  - Seek to specific timestamp\n` +
         `.clear        - Clear the entire queue\n` +
         `\`\`\`\n\n` +
-        `**✨ Advanced Features**\n` +
+        `${emojis.ANALYTICS_ZAP || emojis.ZAP || '✨'} **Advanced Features**\n` +
         `\`\`\`\n` +
         `.volume <0-200>  - Set playback volume\n` +
         `.247             - Toggle 24/7 voice stay\n` +
