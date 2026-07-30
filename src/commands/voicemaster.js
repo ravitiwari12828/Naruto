@@ -28,7 +28,7 @@ function getOrCreateVMConfig(guildId) {
 }
 
 /**
- * Builds the ultra-aesthetic 2-column VoiceMaster Control Center embed matching screenshot.
+ * Builds the VoiceMaster Control Interface embed with 2-column box layout containing all temporary VC commands.
  */
 function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
   const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`➕ Join to Create`';
@@ -37,48 +37,56 @@ function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
     .setColor(0x7E0808)
     .setTitle(`🔊 VoiceMaster Control Interface`)
     .setDescription(
-      `Join ${triggerMention} to create and manage your private Voice Channel!\n` +
-      `Use the interactive buttons below to control permissions, locks, and limits.\n\n` +
-      `>>> **🚷 Ban member** ─── **👤 Unban member**\n` +
-      `**👤+ Whitelist member** ─── **👤- Unwhitelist member**\n` +
-      `**🔒 Lock VC** ─── **🔓 Unlock VC**\n` +
-      `**🚫 Ghost VC** ─── **👁️ Unghost VC**\n` +
-      `**🤝 Claim VC** ─── **⇄ Transfer VC**\n` +
-      `**🎛️ Set Limit** ─── **▶️ Start Activity**\n` +
-      `**ℹ️ VC Information** ─── **🔗 Disconnect member**`
+      `Manage your temporary voice channel using the controls below.\n` +
+      `Join ${triggerMention} to create and customize your private voice room.\n\n` +
+      `╭─────────────────────────────┬─────────────────────────────╮\n` +
+      `│  🔒 Lock VC                 │  🔓 Unlock VC               │\n` +
+      `│  👻 Ghost VC                │  👁️ Unghost VC              │\n` +
+      `│  ✋ Claim VC                │  👥 Transfer VC             │\n` +
+      `│  🎛️ Set Limit               │  ❌ Disconnect Member       │\n` +
+      `│  𚷷 Ban Member               │  👤 Unban Member            │\n` +
+      `│  ✨ Whitelist Member        │  🛡️ Unwhitelist Member      │\n` +
+      `│  📌 VC Info                 │  ▶️ Start Activity           │\n` +
+      `╰─────────────────────────────┴─────────────────────────────╯\n\n` +
+      `**💬 Voice Commands Reference:**\n` +
+      `• \`.vc lock\` • \`.vc unlock\` • \`.vc ghost\` • \`.vc unghost\` • \`.vc claim\` • \`.vc transfer @user\`\n` +
+      `• \`.vc limit <1-99>\` • \`.vc disconnect @user\` • \`.vc ban @user\` • \`.vc unban @user\`\n` +
+      `• \`.vcmute @user\` • \`.vcunmute @user\` • \`.vcdeafen @user\` • \`.vcundeafen @user\``
     )
-    .setFooter({ text: 'Naruto VoiceMaster • Click buttons below to manage your room' });
+    .setFooter({ text: 'Naruto VoiceMaster • Click interactive buttons below' });
 
   return embed;
 }
 
 /**
- * Builds the 3-row interactive VoiceMaster Discord ActionRow buttons matching screenshot.
+ * Builds 3 ActionRows of interactive Discord buttons (5 per row max).
  */
 function buildVoiceMasterActionRows() {
-  // Row 1: Claim, Transfer, Set Limit, VC Info, Disconnect
+  // Row 1: Lock, Unlock, Ghost, Unghost, Claim
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_claim').setLabel('Claim').setEmoji('🤝').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_transfer').setLabel('Transfer').setEmoji('⇄').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_limit').setLabel('Limit').setEmoji('🎛️').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_info').setLabel('Info').setEmoji('ℹ️').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_disconnect').setLabel('Disconnect').setEmoji('🔗').setStyle(ButtonStyle.Danger)
-  );
-
-  // Row 2: Ban, Unban, Whitelist, Unwhitelist
-  const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_ban').setLabel('Ban').setEmoji('🚷').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unban').setLabel('Unban').setEmoji('👤').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_whitelist').setLabel('Whitelist').setEmoji('👤').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unwhitelist').setLabel('Unwhitelist').setEmoji('👤').setStyle(ButtonStyle.Secondary)
-  );
-
-  // Row 3: Lock, Unlock, Ghost, Unghost
-  const row3 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('vm_lock').setLabel('Lock').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unlock').setLabel('Unlock').setEmoji('🔓').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_ghost').setLabel('Ghost').setEmoji('🚫').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unghost').setLabel('Unghost').setEmoji('👁️').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('vm_unlock').setLabel('Unlock').setEmoji('🔓').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_ghost').setLabel('Ghost').setEmoji('👻').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unghost').setLabel('Unghost').setEmoji('👁️').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_claim').setLabel('Claim').setEmoji('✋').setStyle(ButtonStyle.Danger)
+  );
+
+  // Row 2: Transfer, Limit, Disconnect, Ban, Unban
+  const row2 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('vm_transfer').setLabel('Transfer').setEmoji('👥').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_limit').setLabel('Limit').setEmoji('🎛️').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_disconnect').setLabel('Disconnect').setEmoji('❌').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_ban').setLabel('Ban').setEmoji('𚷷').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unban').setLabel('Unban').setEmoji('👤').setStyle(ButtonStyle.Secondary)
+  );
+
+  // Row 3: Whitelist, VC Info, Mute, Deafen, Activity
+  const row3 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('vm_whitelist').setLabel('Whitelist').setEmoji('✨').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_info').setLabel('VC Info').setEmoji('📌').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_mute').setLabel('Mute').setEmoji('🔇').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_deafen').setLabel('Deafen').setEmoji('🎧').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_activity').setLabel('Activity').setEmoji('▶️').setStyle(ButtonStyle.Secondary)
   );
 
   return [row1, row2, row3];
