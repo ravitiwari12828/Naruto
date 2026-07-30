@@ -35,25 +35,28 @@ function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
 
   const embed = new EmbedBuilder()
     .setColor(0x7E0808)
-    .setTitle(`🔊 VoiceMaster Control Interface`)
+    .setAuthor({ name: '👑 NARUTO EXECUTIVE VOICE SUITE • VIP CONTROL CENTER' })
+    .setTitle(`🔊 VoiceMaster™ Executive Control Interface`)
     .setDescription(
-      `Manage your temporary voice channel using the controls below.\n` +
-      `Join ${triggerMention} to create and customize your private voice room.\n\n` +
-      `╭─────────────────────────────┬─────────────────────────────╮\n` +
-      `│  🔒 Lock VC                 │  🔓 Unlock VC               │\n` +
-      `│  👻 Ghost VC                │  👁️ Unghost VC              │\n` +
-      `│  ✋ Claim VC                │  👥 Transfer VC             │\n` +
-      `│  🎛️ Set Limit               │  ❌ Disconnect Member       │\n` +
-      `│  𚷷 Ban Member               │  👤 Unban Member            │\n` +
-      `│  ✨ Whitelist Member        │  🛡️ Unwhitelist Member      │\n` +
-      `│  📌 VC Info                 │  ▶️ Start Activity           │\n` +
-      `╰─────────────────────────────┴─────────────────────────────╯\n\n` +
-      `**💬 Voice Commands Reference:**\n` +
-      `• \`.vc lock\` • \`.vc unlock\` • \`.vc ghost\` • \`.vc unghost\` • \`.vc claim\` • \`.vc transfer @user\`\n` +
-      `• \`.vc limit <1-99>\` • \`.vc disconnect @user\` • \`.vc ban @user\` • \`.vc unban @user\`\n` +
-      `• \`.vcmute @user\` • \`.vcunmute @user\` • \`.vcdeafen @user\` • \`.vcundeafen @user\``
+      `Welcome to the **VoiceMaster Executive Suite**! Join ${triggerMention} to generate your private voice room.\n` +
+      `Use the interactive control panel below to customize room privacy, locks, and permissions.\n\n` +
+      `⚡ **ROOM PRIVACY & ACCESS**\n` +
+      `╰➤ \`🔒\` **Lock VC** ─── Block new members from joining room\n` +
+      `╰➤ \`🔓\` **Unlock VC** ─── Open room to all server members\n` +
+      `╰➤ \`👻\` **Ghost VC** ─── Hide channel from server sidebar\n` +
+      `╰➤ \`👁️\` **Unghost VC** ─── Reveal hidden channel to all\n\n` +
+      `👑 **OWNERSHIP & CONTROLS**\n` +
+      `╰➤ \`✋\` **Claim VC** ─── Take ownership of an unowned room\n` +
+      `╰➤ \`👥\` **Transfer VC** ─── Transfer ownership to a friend\n` +
+      `╰➤ \`🎛️\` **User Limit** ─── Set dynamic capacity cap (1-99)\n` +
+      `╰➤ \`❌\` **Disconnect Member** ─── Disconnect member from voice\n\n` +
+      `🛡️ **SECURITY & MODERATION**\n` +
+      `╰➤ \`𚷷\` **Ban Member** ─── Ban member from entering room\n` +
+      `╰➤ \`👤\` **Unban Member** ─── Lift ban for a member\n` +
+      `╰➤ \`✨\` **Whitelist** ─── Grant exclusive entry pass\n` +
+      `╰➤ \`📌\` **VC Information** ─── View live room metadata & stats`
     )
-    .setFooter({ text: 'Naruto VoiceMaster • Click interactive buttons below' });
+    .setFooter({ text: 'Naruto Executive Voice Suite • Click interactive buttons below' });
 
   return embed;
 }
