@@ -92,7 +92,7 @@ const CATEGORIES = [
       'vctemp setup', 'vctemp disable', 'vctemp status',
       'vcmute', 'vcunmute', 'vcmuteall', 'vcunmuteall',
       'vcdeafen', 'vcundeafen', 'vckick', 'vckickall',
-      'vcpull', 'vcpullall', 'vcmoveall', 'vclist'
+      'vcpull', 'vcpullall', 'vcmoveall'
     ]
   },
   {
