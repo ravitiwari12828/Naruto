@@ -46,7 +46,7 @@ module.exports = {
       }
 
       const embed = createStyledEmbed({
-        title: `📌 Sticky Note`,
+        title: `${emojis.STICKY || '📌'} Sticky Note`,
         description: content,
         requestedBy: author,
         clientUser,

@@ -1582,7 +1582,7 @@ client.on('messageCreate', async (message) => {
         message.channel.messages.fetch(stickyData.lastMsgId).then(m => m.delete().catch(() => {})).catch(() => {});
       }
       const stickyEmbed = createStyledEmbed({
-        title: `📌 Sticky Note`,
+        title: `${emojis.STICKY || '📌'} Sticky Note`,
         description: stickyData.text,
         clientUser: client.user,
         footerText: `Sticky Message • Stays at the bottom of this channel`
