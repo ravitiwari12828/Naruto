@@ -68,15 +68,18 @@ class ResilientDatabase {
     const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
     if (mongoUri && mongoose) {
       this.initMongo(mongoUri);
-    } else if (sqlite3) {
-      try {
-        this.sqliteDb = new sqlite3.Database(dbPath, (err) => {
-          if (!err) {
-            this.useSqlite = true;
-            this.initTables();
-          }
-        });
-      } catch (e) {}
+    } else {
+      console.log('⚠️ [Database Warning] MONGODB_URI is missing in environment variables! Data will reset on Render deploys until MONGODB_URI is added in Render Dashboard.');
+      if (sqlite3) {
+        try {
+          this.sqliteDb = new sqlite3.Database(dbPath, (err) => {
+            if (!err) {
+              this.useSqlite = true;
+              this.initTables();
+            }
+          });
+        } catch (e) {}
+      }
     }
   }
 
