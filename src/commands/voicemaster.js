@@ -28,68 +28,91 @@ function getOrCreateVMConfig(guildId) {
 }
 
 /**
- * Builds the VoiceMaster Control Interface embed with 2-column box layout containing all temporary VC commands.
+ * Builds the 3-Column Glassmorphic Executive VoiceMaster Control Hub embed matching user screenshot.
  */
-function buildVoiceMasterInterfaceEmbed(triggerChanId = null) {
+function buildVoiceMasterInterfaceEmbed(triggerChanId = null, member = null, tempVcDetails = null) {
   const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`➕ Join to Create`';
+  const ownerName = member ? `@${member.user.username}` : '`Creator / Owner`';
+  const sessionName = tempVcDetails?.name || '`The Obsidian Lounge 🎙️`';
+  const activeCount = tempVcDetails?.members?.size || '`Active Session`';
 
   const embed = new EmbedBuilder()
     .setColor(0x7E0808)
-    .setAuthor({ name: '👑 NARUTO EXECUTIVE VOICE SUITE • VIP CONTROL CENTER' })
-    .setTitle(`🔊 VoiceMaster™ Executive Control Interface`)
+    .setAuthor({ name: '👑 NARUTO EXECUTIVE VOICE SUITE • VIP CONTROL HUB' })
+    .setTitle(`🔊 VoiceMaster Executive Control Hub`)
     .setDescription(
-      `Welcome to the **VoiceMaster Executive Suite**! Join ${triggerMention} to generate your private voice room.\n` +
-      `Use the interactive control panel below to customize room privacy, locks, and permissions.\n\n` +
-      `⚡ **ROOM PRIVACY & ACCESS**\n` +
-      `╰➤ \`🔒\` **Lock VC** ─── Block new members from joining room\n` +
-      `╰➤ \`🔓\` **Unlock VC** ─── Open room to all server members\n` +
-      `╰➤ \`👻\` **Ghost VC** ─── Hide channel from server sidebar\n` +
-      `╰➤ \`👁️\` **Unghost VC** ─── Reveal hidden channel to all\n\n` +
-      `👑 **OWNERSHIP & CONTROLS**\n` +
-      `╰➤ \`✋\` **Claim VC** ─── Take ownership of an unowned room\n` +
-      `╰➤ \`👥\` **Transfer VC** ─── Transfer ownership to a friend\n` +
-      `╰➤ \`🎛️\` **User Limit** ─── Set dynamic capacity cap (1-99)\n` +
-      `╰➤ \`❌\` **Disconnect Member** ─── Disconnect member from voice\n\n` +
-      `🛡️ **SECURITY & MODERATION**\n` +
-      `╰➤ \`𚷷\` **Ban Member** ─── Ban member from entering room\n` +
-      `╰➤ \`👤\` **Unban Member** ─── Lift ban for a member\n` +
-      `╰➤ \`✨\` **Whitelist** ─── Grant exclusive entry pass\n` +
-      `╰➤ \`📌\` **VC Information** ─── View live room metadata & stats`
+      `Welcome to the **VoiceMaster™ Executive Control Hub**!\n` +
+      `Join ${triggerMention} to generate your temporary voice room and manage settings.\n` +
+      `──────────────────────────────────────────────────`
     )
-    .setFooter({ text: 'Naruto Executive Voice Suite • Click interactive buttons below' });
+    .addFields(
+      {
+        name: `🎛️ ROOM MANAGEMENT`,
+        value:
+          `**Current Session**\n${sessionName}\n\n` +
+          `**Participants**\n${activeCount} Active Users\n\n` +
+          `**Management Commands**\n` +
+          `• \`.vc transfer @user\`\n` +
+          `• \`.vc disconnect @user\`\n` +
+          `• \`.vc limit <1-99>\``,
+        inline: true
+      },
+      {
+        name: `👑 OWNERSHIP`,
+        value:
+          `**Room Admin**\n${ownerName}\n\n` +
+          `**Role & Rank**\nAdministrator / Host\n\n` +
+          `**Access Controls**\n` +
+          `• \`.vc claim\`\n` +
+          `• \`.vc whitelist @user\`\n` +
+          `• \`.vc unwhitelist @user\``,
+        inline: true
+      },
+      {
+        name: `🔒 ACCESS & PRIVACY`,
+        value:
+          `**Visibility**\nPrivate / Managed 🔒\n\n` +
+          `**Permissions**\nRole-Based Protection\n\n` +
+          `**Privacy Commands**\n` +
+          `• \`.vc lock\` • \`.vc unlock\`\n` +
+          `• \`.vc ghost\` • \`.vc unghost\`\n` +
+          `• \`.vc ban @user\``,
+        inline: true
+      }
+    )
+    .setFooter({ text: 'Naruto VoiceMaster Executive Suite • Click interactive buttons below to manage room' });
 
   return embed;
 }
 
 /**
- * Builds 3 ActionRows of interactive Discord buttons (5 per row max).
+ * Builds the 3 rows of interactive Discord buttons matching screenshot.
  */
 function buildVoiceMasterActionRows() {
-  // Row 1: Lock, Unlock, Ghost, Unghost, Claim
+  // Row 1: Transfer, Kick/Ban, Allow/Deny, Lock Room, VC Info
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_lock').setLabel('Lock').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unlock').setLabel('Unlock').setEmoji('🔓').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_ghost').setLabel('Ghost').setEmoji('👻').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unghost').setLabel('Unghost').setEmoji('👁️').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_claim').setLabel('Claim').setEmoji('✋').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('vm_transfer').setLabel('Transfer Ownership').setEmoji('👥').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_ban').setLabel('Kick/Ban User').setEmoji('𚷷').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_whitelist').setLabel('Allow/Deny Access').setEmoji('✨').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_lock').setLabel('Lock Room').setEmoji('🔒').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_info').setLabel('Room Logs').setEmoji('📌').setStyle(ButtonStyle.Secondary)
   );
 
-  // Row 2: Transfer, Limit, Disconnect, Ban, Unban
+  // Row 2: Claim, Set Limit, Unlock, Ghost, Unghost
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_transfer').setLabel('Transfer').setEmoji('👥').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_limit').setLabel('Limit').setEmoji('🎛️').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_disconnect').setLabel('Disconnect').setEmoji('❌').setStyle(ButtonStyle.Danger),
-    new ButtonBuilder().setCustomId('vm_ban').setLabel('Ban').setEmoji('𚷷').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_unban').setLabel('Unban').setEmoji('👤').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('vm_claim').setLabel('Claim Room').setEmoji('✋').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_limit').setLabel('Adjust Bitrate/Limit').setEmoji('🎛️').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_unlock').setLabel('Unlock Room').setEmoji('🔓').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_ghost').setLabel('Ghost Room').setEmoji('👻').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_unghost').setLabel('Unghost Room').setEmoji('👁️').setStyle(ButtonStyle.Secondary)
   );
 
-  // Row 3: Whitelist, VC Info, Mute, Deafen, Activity
+  // Row 3: Mute All, Deafen All, Disconnect, Start Activity
   const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('vm_whitelist').setLabel('Whitelist').setEmoji('✨').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_info').setLabel('VC Info').setEmoji('📌').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_mute').setLabel('Mute').setEmoji('🔇').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_deafen').setLabel('Deafen').setEmoji('🎧').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('vm_activity').setLabel('Activity').setEmoji('▶️').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('vm_mute').setLabel('Mute Participants').setEmoji('🔇').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_deafen').setLabel('Deafen Participants').setEmoji('🎧').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('vm_disconnect').setLabel('Disconnect Member').setEmoji('❌').setStyle(ButtonStyle.Danger),
+    new ButtonBuilder().setCustomId('vm_activity').setLabel('Start Activity').setEmoji('▶️').setStyle(ButtonStyle.Secondary)
   );
 
   return [row1, row2, row3];
@@ -97,7 +120,7 @@ function buildVoiceMasterActionRows() {
 
 module.exports = {
   name: 'voicemaster',
-  description: 'VoiceMaster Setup & Interface: setupvc, vcsetup, vctemp setup, tempvc',
+  description: 'VoiceMaster Executive 3-Column Control Hub & Temporary VC Suite',
   aliases: ['vctemp', 'tempvc', 'vm', 'setupvc', 'vcsetup', 'invcrole'],
   voicemasterConfigs,
   getOrCreateVMConfig,
@@ -157,7 +180,7 @@ module.exports = {
         config.interfaceChanId = interfaceChan.id;
         voicemasterConfigs.set(guild.id, config);
 
-        const embed = buildVoiceMasterInterfaceEmbed(triggerChan.id);
+        const embed = buildVoiceMasterInterfaceEmbed(triggerChan.id, message.member);
         const rows = buildVoiceMasterActionRows();
 
         await interfaceChan.send({ embeds: [embed], components: rows });
@@ -182,7 +205,7 @@ module.exports = {
     }
 
     // Default Dashboard
-    const embed = buildVoiceMasterInterfaceEmbed(config.triggerChanId);
+    const embed = buildVoiceMasterInterfaceEmbed(config.triggerChanId, message.member);
     const rows = buildVoiceMasterActionRows();
     return message.channel.send({ embeds: [embed], components: rows });
   }
