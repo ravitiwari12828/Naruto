@@ -115,7 +115,7 @@ function getOrCreateWelcomeConfig(guildId) {
       enabled: false,
       channelId: null,
       boostChannelId: null,
-      boostEnabled: true,
+      boostEnabled: false,
       joinDmEnabled: true,
       leaveDmEnabled: true,
       cardType: 'embed', // 'embed' or 'canvas'
@@ -284,7 +284,7 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
     `color    : ${config.color || '#800020'}`,
     `joindm   : ${config.joinDmEnabled ? 'Enabled' : 'Disabled'}`,
     `leavedm  : ${config.leaveDmEnabled ? 'Enabled' : 'Disabled'}`,
-    `boost    : ${config.boostEnabled !== false ? 'Enabled' : 'Disabled'}`
+    `boost    : ${config.boostEnabled && config.boostChannelId ? 'Enabled' : 'Disabled'}`
   ]);
 
   const cmdBox = createDynamicBox('CONFIG COMMANDS', [
@@ -400,10 +400,17 @@ module.exports = {
         return message.reply(`${emojis.SUCCESS} Server Boost announcements bound to <#${chan.id}>!`);
       }
 
+      const isFullyActive = config.boostEnabled && config.boostChannelId;
+      const statusStr = isFullyActive
+        ? `${emojis.SUCCESS} Active`
+        : config.boostEnabled && !config.boostChannelId
+        ? `${emojis.WARNING} Unconfigured (No Channel Set)`
+        : `${emojis.DISABLED} Disabled`;
+
       const currentChan = config.boostChannelId ? `<#${config.boostChannelId}>` : 'Not set';
       return message.reply(
         `${emojis.BOOST || '🚀'} **Server Boost Announcement Manager**\n` +
-        `• **Status:** ${config.boostEnabled !== false ? `${emojis.SUCCESS} Active` : `${emojis.DISABLED} Disabled`}\n` +
+        `• **Status:** ${statusStr}\n` +
         `• **Boost Channel:** ${currentChan}\n\n` +
         `**Usage:**\n` +
         `• \`.boostmsg <#channel>\` — Bind boost announcement channel\n` +
