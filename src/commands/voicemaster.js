@@ -7,6 +7,7 @@ const {
   EmbedBuilder
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
+const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 
 // Global VoiceMaster store
@@ -28,27 +29,32 @@ function getOrCreateVMConfig(guildId) {
 }
 
 /**
- * Builds the clean Custom Voice Channels deployment embed without broken thumbnails or bottom images.
+ * Builds the Custom Voice Channels deployment embed packaged inside a monospaced box container.
  */
 function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
   const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`🔊 ✨ 「 Join to Create 」`';
+
+  const perkBox = createDynamicBox('PERKS COMPARISON', [
+    'Member  : Size Max 5',
+    'Member  : Permit Max 5',
+    'Member  : Ban Max 5',
+    'Member  : Lock & Unlock',
+    'Booster : Full Access',
+    'Booster : Unlimited Size',
+    'Booster : Unlimited Permit',
+    'Booster : Rename Channel'
+  ]);
 
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
     .setTitle(`Custom Voice Channels`)
     .setDescription(
-      `Looking to escape from the public calls? Create your own private channel and have control over every aspect of it\n\n` +
-      `ℹ️ **How to create a channel**\n` +
+      `Looking to escape from public calls? Create your own private channel and have control over every aspect of it.\n\n` +
+      `**ℹ️ How to Create a Channel:**\n` +
       `**1️⃣ Join** ${triggerMention}\n` +
-      `**2️⃣ Wait** *patiently* for the channel to be created\n` +
-      `**3️⃣ Type** \`.vc help\` in your channel to customize\n\n` +
-      `**Member Perks** ─── **Booster Perks (Full Access)**\n` +
-      `❌ Channel Name ─── ✅ Channel Name\n` +
-      `✅ Channel Size **[Max 5]** ─── ✅ Channel Size **[No Limit]**\n` +
-      `✅ Permit Users **[Max 5]** ─── ✅ Permit Users **[No Limit]**\n` +
-      `✅ Ban Users **[Max 5]** ─── ✅ Ban Users **[No Limit]**\n` +
-      `✅ Lock/Unlock Channel ─── ✅ Lock/Unlock Channel\n` +
-      `✅ Kick/Disconnect users ─── ✅ Kick/Disconnect Users`
+      `**2️⃣ Wait** *patiently* for channel to be created\n` +
+      `**3️⃣ Type** \`.vc help\` in your channel to edit settings\n\n` +
+      '```\n' + perkBox + '\n```'
     )
     .setFooter({ text: `${guild.name} Custom Voice Calls`, iconURL: guild.iconURL({ dynamic: true }) || undefined });
 
@@ -78,31 +84,36 @@ function buildCustomVoiceChannelButtons(guildId, triggerChanId = null) {
 }
 
 /**
- * Builds the Voice Help embed with all 15 commands.
+ * Builds the Voice Help embed packaged inside a monospaced box container without thumbnail.
  */
 function buildVoiceHelpEmbed(member) {
   const user = member.user;
 
+  const helpBox = createDynamicBox('VOICE COMMANDS', [
+    'info     : View VC settings',
+    'name     : Rename channel',
+    'size     : Set member limit',
+    'lock     : Make VC private',
+    'unlock   : Make VC public',
+    'ghost    : Hide VC in sidebar',
+    'unghost  : Reveal VC in sidebar',
+    'claim    : Claim empty VC',
+    'transfer : Transfer ownership',
+    'permit   : Allow user join',
+    'unpermit : Revoke user join',
+    'kick     : Disconnect member',
+    'ban      : Ban member from VC',
+    'unban    : Unban member',
+    'activity : Start VC activity'
+  ]);
+
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
     .setAuthor({ name: 'Voice Help', iconURL: user.displayAvatarURL({ dynamic: true }) })
-    .setTitle('Commands')
+    .setTitle('Commands Directory')
     .setDescription(
-      `• \`.vc info\` \| View your channel settings\n` +
-      `• \`.vc name <name>\` \| Rename your channel\n` +
-      `• \`.vc size <amount/unlimited>\` \| Set your channel size\n` +
-      `• \`.vc lock\` \| Make your channel private\n` +
-      `• \`.vc unlock\` \| Make your channel public\n` +
-      `• \`.vc ghost\` \| Hide your channel from sidebar\n` +
-      `• \`.vc unghost\` \| Reveal your channel in sidebar\n` +
-      `• \`.vc claim\` \| Claim ownership of an empty room\n` +
-      `• \`.vc transfer <user>\` \| Transfer channel ownership\n` +
-      `• \`.vc permit <user>\` \| Allow a specific user to join\n` +
-      `• \`.vc unpermit <user>\` \| Remove a user from allowed list\n` +
-      `• \`.vc kick <user>\` \| Disconnect a user from channel\n` +
-      `• \`.vc ban <user>\` \| Ban a user from your channel\n` +
-      `• \`.vc unban <user>\` \| Unban a user from your channel\n` +
-      `• \`.vc activity\` \| Start a Discord voice activity`
+      '```\n' + helpBox + '\n```\n' +
+      '• Use `.vc <command> [args]` to execute any command!'
     )
     .setFooter({ text: `Requested by ${user.tag}`, iconURL: user.displayAvatarURL({ dynamic: true }) });
 
