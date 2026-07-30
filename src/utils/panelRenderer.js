@@ -168,7 +168,7 @@ const CATEGORIES = [
     description: 'Create & manage server giveaways',
     customEmoji: emojis.OBJ_GIVEAWAY,
     unicodeFallback: '🎉',
-    heading: `${emojis.GIVEAWAY || '🎉'} Giveaway Commands`,
+    heading: `${emojis.GIVEAWAY || '🎉'} Giveaways Commands`,
     commands: [
       'gstart', 'gend', 'reroll'
     ]
