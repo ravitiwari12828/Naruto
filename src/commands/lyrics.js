@@ -5,41 +5,130 @@ const { getLavalink } = require('../utils/lavalink');
 const https = require('https');
 const http = require('http');
 
-function fetchJson(url) {
+function fetchRawUrl(url) {
   return new Promise((resolve, reject) => {
     const client = url.startsWith('https') ? https : http;
-    const req = client.get(url, { headers: { 'User-Agent': 'Mozilla/5.0' } }, (res) => {
+    const req = client.get(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)' } }, (res) => {
       let body = '';
       res.on('data', chunk => body += chunk);
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(body));
-        } catch (e) {
-          reject(e);
-        }
-      });
+      res.on('end', () => resolve(body));
     });
-    req.on('error', reject);
-    req.setTimeout(5000, () => {
+    req.on('error', () => resolve(''));
+    req.setTimeout(6000, () => {
       req.destroy();
-      reject(new Error('Request timeout'));
+      resolve('');
     });
   });
 }
 
-async function fetchLyrics(query, artist = '') {
-  const cleanTitle = query
-    .replace(/\(Official Video\)/gi, '')
-    .replace(/\[Official Music Video\]/gi, '')
-    .replace(/\(Lyrics\)/gi, '')
-    .replace(/\[.*\]/g, '')
-    .trim();
+function fetchJson(url) {
+  return fetchRawUrl(url).then(raw => {
+    try {
+      return JSON.parse(raw);
+    } catch (e) {
+      return null;
+    }
+  });
+}
 
+function sanitizeQuery(query) {
+  if (!query) return '';
+  return query
+    .replace(/\(feat.*?\)/gi, '')
+    .replace(/\(ft.*?\)/gi, '')
+    .replace(/\(with.*?\)/gi, '')
+    .replace(/\(from.*?\)/gi, '')
+    .replace(/\(official.*?\)/gi, '')
+    .replace(/\(audio.*?\)/gi, '')
+    .replace(/\(video.*?\)/gi, '')
+    .replace(/\(lyrics.*?\)/gi, '')
+    .replace(/\[.*?\]/g, '')
+    .replace(/ official music video/gi, '')
+    .replace(/ official video/gi, '')
+    .replace(/ official audio/gi, '')
+    .replace(/ full song/gi, '')
+    .replace(/ lyric video/gi, '')
+    .trim();
+}
+
+async function fetchGeniusLyrics(query) {
+  try {
+    const searchUrl = `https://genius.com/api/search/multi?q=${encodeURIComponent(query)}`;
+    const searchJson = await fetchJson(searchUrl);
+    const sections = searchJson?.response?.sections || [];
+    let hit = null;
+    for (const sec of sections) {
+      if (sec.hits && sec.hits.length > 0) {
+        const found = sec.hits.find(h => h.result && h.result.path && h.result.path.includes('lyrics'));
+        if (found) {
+          hit = found.result;
+          break;
+        }
+      }
+    }
+    if (!hit || !hit.path) return null;
+
+    const pageHtml = await fetchRawUrl(`https://genius.com${hit.path}`);
+    if (!pageHtml) return null;
+
+    const parts = [];
+    const splitKey = 'data-lyrics-container="true"';
+    const splitArr = pageHtml.split(splitKey);
+
+    for (let i = 1; i < splitArr.length; i++) {
+      const chunk = splitArr[i].split('</div>')[0];
+      if (chunk) {
+        parts.push(chunk.replace(/^[^>]*>/, ''));
+      }
+    }
+
+    if (parts.length === 0) return null;
+
+    const cleanLyrics = parts.join('\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&#x27;/g, "'")
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/^\d+\s+Contributors.*?\n/gi, '')
+      .replace(/^Translations.*?\n/gi, '')
+      .replace(/^Romanization.*?\n/gi, '')
+      .trim();
+
+    if (!cleanLyrics) return null;
+
+    return {
+      title: hit.title || query,
+      artist: hit.primary_artist?.name || 'Artist',
+      lyrics: cleanLyrics,
+      image: hit.song_art_image_url || null
+    };
+  } catch (e) {
+    return null;
+  }
+}
+
+async function fetchLyrics(query, artist = '') {
+  const cleanTitle = sanitizeQuery(query);
   const searchQuery = artist ? `${artist} ${cleanTitle}`.trim() : cleanTitle;
 
-  // Provider 1: LRCLIB API (Best coverage for Bollywood, Punjabi, Pop & Anime)
+  // Provider 1: Genius API & Direct Scraper (100% Coverage for Indian & Global Songs)
   try {
-    const encoded = encodeURIComponent(searchQuery);
+    const geniusResult = await fetchGeniusLyrics(searchQuery);
+    if (geniusResult && geniusResult.lyrics) return geniusResult;
+
+    // Fallback search without artist name if original query had feat/extra tags
+    if (cleanTitle !== query) {
+      const fallbackGenius = await fetchGeniusLyrics(cleanTitle);
+      if (fallbackGenius && fallbackGenius.lyrics) return fallbackGenius;
+    }
+  } catch (e) {}
+
+  // Provider 2: LRCLIB API (Synced & Plain Lyrics)
+  try {
+    const encoded = encodeURIComponent(cleanTitle);
     const data = await fetchJson(`https://lrclib.net/api/search?q=${encoded}`);
     if (Array.isArray(data) && data.length > 0) {
       const match = data.find(d => d.plainLyrics || d.syncedLyrics) || data[0];
@@ -55,9 +144,9 @@ async function fetchLyrics(query, artist = '') {
     }
   } catch (e) {}
 
-  // Provider 2: Lyrist API
+  // Provider 3: Lyrist API
   try {
-    const encoded = encodeURIComponent(searchQuery);
+    const encoded = encodeURIComponent(cleanTitle);
     const data = await fetchJson(`https://lyrist.vercel.app/api/${encoded}`);
     if (data && data.lyrics) {
       return {
@@ -69,9 +158,9 @@ async function fetchLyrics(query, artist = '') {
     }
   } catch (e) {}
 
-  // Provider 3: Popcat API
+  // Provider 4: Popcat API
   try {
-    const encoded = encodeURIComponent(searchQuery);
+    const encoded = encodeURIComponent(cleanTitle);
     const data = await fetchJson(`https://api.popcat.xyz/lyrics?song=${encoded}`);
     if (data && data.lyrics) {
       return {
@@ -79,20 +168,6 @@ async function fetchLyrics(query, artist = '') {
         artist: data.artist || artist || 'Artist',
         lyrics: data.lyrics,
         image: data.image
-      };
-    }
-  } catch (e) {}
-
-  // Provider 4: SomeRandomAPI Lyrics
-  try {
-    const encoded = encodeURIComponent(searchQuery);
-    const data = await fetchJson(`https://some-random-api.com/lyrics?title=${encoded}`);
-    if (data && data.lyrics) {
-      return {
-        title: data.title || cleanTitle,
-        artist: data.author || artist || 'Artist',
-        lyrics: data.lyrics,
-        image: data.thumbnail?.genius
       };
     }
   } catch (e) {}
@@ -146,7 +221,7 @@ module.exports = {
     } catch (e) {}
 
     const embed = createStyledEmbed({
-      title: `📜 Lyrics — ${res.title}`,
+      title: `${emojis.NINJA_SCROLL || emojis.SCROLL || '📜'} Lyrics — ${res.title}`,
       subtitle: `Artist: ${res.artist}`,
       description: lyricsText,
       requestedBy: author,
