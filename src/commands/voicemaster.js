@@ -28,83 +28,53 @@ function getOrCreateVMConfig(guildId) {
 }
 
 /**
- * Builds a monospaced aligned box with clean indented continuation wrapping.
+ * Device-Proof Monospaced Box Builder for PC, Android, and iOS.
+ * Strictly capped at 28 total characters width (24 inner characters) to guarantee ZERO line wrapping.
  */
-function buildAlignedBox(title, entries, width = 38) {
-  const topBorder = '╭' + '─'.repeat(width + 2) + '╮';
-  const midBorder = '├' + '─'.repeat(width + 2) + '┤';
-  const botBorder = '╰' + '─'.repeat(width + 2) + '╯';
+function buildDeviceProofBox(title, items) {
+  const INNER_WIDTH = 24;
+  const topBorder = '╭' + '─'.repeat(INNER_WIDTH + 2) + '╮';
+  const midBorder = '├' + '─'.repeat(INNER_WIDTH + 2) + '┤';
+  const botBorder = '╰' + '─'.repeat(INNER_WIDTH + 2) + '╯';
 
-  const titlePad = Math.max(0, width - title.length);
+  const titlePad = Math.max(0, INNER_WIDTH - title.length);
   const leftPad = Math.floor(titlePad / 2);
   const rightPad = titlePad - leftPad;
   const header = '│ ' + ' '.repeat(leftPad) + title + ' '.repeat(rightPad) + ' │';
 
-  const rows = [];
-  for (const entry of entries) {
-    const parts = entry.split(':').map(s => s.trim());
-    const key = parts[0];
-    const val = parts[1] || '';
+  const rows = items.map(item => {
+    const [key, val] = item.split(':').map(s => s.trim());
     const paddedKey = key.padEnd(8, ' ');
-    const fullLine = paddedKey + ' : ' + val;
-
-    if (fullLine.length <= width) {
-      rows.push('│ ' + fullLine.padEnd(width, ' ') + ' │');
-    } else {
-      const maxValLen = width - 11; // 8 (key) + 3 (' : ')
-      const words = val.split(' ');
-      let currentVal = '';
-      let first = true;
-
-      for (const word of words) {
-        if ((currentVal + (currentVal ? ' ' : '') + word).length <= maxValLen) {
-          currentVal += (currentVal ? ' ' : '') + word;
-        } else {
-          if (first) {
-            rows.push('│ ' + (paddedKey + ' : ' + currentVal).padEnd(width, ' ') + ' │');
-            first = false;
-          } else {
-            rows.push('│ ' + (' '.repeat(11) + currentVal).padEnd(width, ' ') + ' │');
-          }
-          currentVal = word;
-        }
-      }
-      if (currentVal) {
-        if (first) {
-          rows.push('│ ' + (paddedKey + ' : ' + currentVal).padEnd(width, ' ') + ' │');
-        } else {
-          rows.push('│ ' + (' '.repeat(11) + currentVal).padEnd(width, ' ') + ' │');
-        }
-      }
-    }
-  }
+    const fullLine = paddedKey + ': ' + val;
+    return '│ ' + fullLine.padEnd(INNER_WIDTH, ' ').slice(0, INNER_WIDTH) + ' │';
+  });
 
   return [topBorder, header, midBorder, ...rows, botBorder].join('\n');
 }
 
 /**
- * Builds the Custom Voice Channels deployment embed packaged inside a monospaced box container.
+ * Builds the Custom Voice Channels deployment embed with device-proof 28-char box.
  */
 function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
   const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`🔊 ✨ 「 Join to Create 」`';
 
-  const perkBox = buildAlignedBox('PERKS COMPARISON', [
-    'Member  : Size Limit Max 5',
-    'Member  : Permit Users Max 5',
-    'Member  : Ban Users Max 5',
-    'Member  : Lock & Unlock Room',
-    'Booster : Full Access Unlimited',
-    'Booster : Unlimited Member Size',
-    'Booster : Unlimited Permits',
-    'Booster : Custom Rename Channel'
-  ], 36);
+  const perkBox = buildDeviceProofBox('PERKS COMPARISON', [
+    'Member  : Size Max 5',
+    'Member  : Permit Max 5',
+    'Member  : Ban Max 5',
+    'Member  : Lock & Unlock',
+    'Booster : Full Access',
+    'Booster : Unlimited Size',
+    'Booster : No Limit Permit',
+    'Booster : Custom Rename'
+  ]);
 
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
     .setTitle(`Custom Voice Channels`)
     .setDescription(
       `Looking to escape from public calls? Create your own private channel and have control over every aspect of it.\n\n` +
-      `${emojis.CUSTOM_INFO} **How to Create a Channel:**\n` +
+      `${emojis.CUSTOM_INFO || '<:info:1532355672488935484>'} **How to Create a Channel:**\n` +
       `${emojis.PRIZE_1} **Join** ${triggerMention}\n` +
       `${emojis.PRIZE_2} **Wait** *patiently* for channel to be created\n` +
       `${emojis.PRIZE_3} **Type** \`.vc help\` in your channel to edit settings\n\n` +
@@ -138,28 +108,28 @@ function buildCustomVoiceChannelButtons(guildId, triggerChanId = null) {
 }
 
 /**
- * Builds the Voice Help embed with aligned box and indented multi-line wrapping.
+ * Builds the Voice Help embed with device-proof 28-char box for PC, Android & iOS.
  */
 function buildVoiceHelpEmbed(member) {
   const user = member.user;
 
-  const helpBox = buildAlignedBox('VOICE COMMANDS', [
-    'info: View channel settings',
-    'name: Rename voice channel',
-    'size: Set channel size limit',
-    'lock: Make channel private',
-    'unlock: Make channel public',
-    'ghost: Hide channel from sidebar',
-    'unghost: Reveal channel in sidebar',
-    'claim: Claim empty voice channel',
-    'transfer: Transfer channel ownership',
-    'permit: Allow specific user to join',
-    'unpermit: Remove user from allowed list',
-    'kick: Disconnect member from channel',
-    'ban: Ban user from voice channel',
-    'unban: Unban user from channel',
-    'activity: Start Discord voice activity'
-  ], 38);
+  const helpBox = buildDeviceProofBox('VOICE COMMANDS', [
+    'info    : VC settings',
+    'name    : Rename channel',
+    'size    : Set VC limit',
+    'lock    : Lock channel',
+    'unlock  : Unlock channel',
+    'ghost   : Hide channel',
+    'unghost : Reveal channel',
+    'claim   : Claim empty VC',
+    'transfer: Transfer VC',
+    'permit  : Allow user',
+    'unpermit: Revoke user',
+    'kick    : Kick user',
+    'ban     : Ban user',
+    'unban   : Unban user',
+    'activity: Start activity'
+  ]);
 
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
