@@ -1,4 +1,5 @@
-const { createStyledEmbed, formatCodePills } = require('../utils/embedBuilder');
+const { createStyledEmbed } = require('../utils/embedBuilder');
+const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 const { ChannelType, PermissionsBitField } = require('discord.js');
 
@@ -79,19 +80,18 @@ module.exports = {
     }
 
     if (!sub || sub === 'help') {
-      const commandsList = [
-        'disable', 'enable', 'hide', 'unhide',
-        'lock', 'lockall', 'unlockall',
+      const box = createDynamicBox('CHANNEL COMMANDS', [
+        'lock', 'unlock',
+        'hide', 'unhide',
+        'lockall', 'unlockall',
         'hideall', 'unhideall'
-      ];
+      ]);
 
       const embed = createStyledEmbed({
-        title: 'Naruto Help Menu',
-        subtitle: `${emojis.TOOLS} Channel Commands`,
-        description: formatCodePills(commandsList),
+        title: `${emojis.CHANNEL_MOD} Channel Commands`,
+        description: `\`\`\`\n${box}\`\`\``,
         requestedBy: message.author,
-        clientUser,
-        footerText: `Total ${commandsList.length} commands`
+        clientUser
       });
 
       return message.channel.send({ embeds: [embed] });
@@ -130,7 +130,7 @@ module.exports = {
       try {
         await unlockChannelCompletely(targetChannel, everyoneRole);
         const embed = createStyledEmbed({
-          title: `${emojis.UNLOCK} Channel Enabled`,
+          title: `${emojis.UNLOCK} Channel Unlocked`,
           subtitle: `Channel: ${targetChannel}`,
           description: `Successfully unlocked and re-enabled messaging permissions for **@everyone**.`,
           requestedBy: message.author,
@@ -164,7 +164,7 @@ module.exports = {
       try {
         await unhideChannelCompletely(targetChannel, everyoneRole);
         const embed = createStyledEmbed({
-          title: `${emojis.SUCCESS} Channel Unhidden`,
+          title: `${emojis.UNHIDE} Channel Unhidden`,
           subtitle: `Channel: ${targetChannel}`,
           description: `Successfully made channel visible for **@everyone**.`,
           requestedBy: message.author,
