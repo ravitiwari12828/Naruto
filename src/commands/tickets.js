@@ -223,18 +223,24 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText = 'Low',
 
   const color = priorityColorMap[priorityText] || 0x57F287;
 
+  const ticketEmoji = emojis.TICKETS || '🎟️';
+  const profileEmoji = emojis.PROFILE || '👤';
+  const zapEmoji = emojis.ANALYTICS_ZAP || emojis.ZAP || '⚡';
+  const crownEmoji = emojis.SPECIAL_ROLES || '👑';
+  const anonEmoji = emojis.PROFILE || '🎭';
+
   return new EmbedBuilder()
     .setColor(color)
-    .setTitle(`🎟️ ${opener.username}'s Ticket — ${categoryName}`)
+    .setTitle(`${ticketEmoji} ${opener.username}'s Ticket — ${categoryName}`)
     .setDescription(
       `Welcome <@${opener.id}>! Thanks for reaching out to support.\n` +
       `Our staff team will assist you shortly — please explain your request in full detail below.`
     )
     .addFields(
-      { name: `👤 Opened By`, value: `<@${opener.id}> (\`${opener.tag}\`)`, inline: true },
-      { name: `⚡ Priority Level`, value: `\`${priorityText}\``, inline: true },
-      { name: `👑 Claimed By`, value: claimedByText, inline: true },
-      { name: `🎭 Anonymous Mode`, value: `\`${anonMode}\``, inline: true }
+      { name: `${profileEmoji} Opened By`, value: `<@${opener.id}> (\`${opener.tag || opener.username}\`)`, inline: true },
+      { name: `${zapEmoji} Priority Level`, value: `\`${priorityText}\``, inline: true },
+      { name: `${crownEmoji} Claimed By`, value: claimedByText, inline: true },
+      { name: `${anonEmoji} Anonymous Mode`, value: `\`${anonMode}\``, inline: true }
     )
     .setFooter({
       text: `Ticket ID #${ticketNum} • Support Desk`,
