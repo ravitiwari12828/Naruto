@@ -52,7 +52,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
     .join('\n'); // Discord H3 headers naturally add clean vertical spacing & larger font size
 
   const embed = new EmbedBuilder()
-    .setColor(0x7E0808)
+    .setColor(0x5865F2)
     .setAuthor({ name: 'Naruto Help Panel', iconURL: botAvatar })
     .setThumbnail(botAvatar)
     .setDescription(

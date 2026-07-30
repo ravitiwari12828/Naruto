@@ -7,6 +7,34 @@ const {
 } = require('discord.js');
 const emojis = require('./emojis');
 
+// Distinct Vibrant Color Palette per Module Panel
+const CATEGORY_COLORS = {
+  analytics: 0x00F0FF,     // Neon Cyan / Electric Blue
+  modmail: 0x57F287,       // Emerald Mint Green
+  ticket: 0xFF0055,        // Vibrant Magenta / Crimson Pink
+  voice: 0x5865F2,         // Discord Blurple
+  music: 0x9B59B6,         // Violet Purple
+  antinuke: 0xED4245,      // Security Red
+  level: 0xF1C40F,         // Vivid Gold
+  fun: 0xFF7A00,           // Sunburst Orange
+  giveaway: 0xE91E63,      // Hot Pink
+  info: 0x00B8D9,          // Deep Teal / Cyan
+  mod: 0xE67E22,           // Amber Orange
+  ninja: 0xFF3366,         // Shinobi Pink / Rose Red
+  economy: 0x2ECC71,       // Casino Green
+  channel: 0x3498DB,       // Sky Blue
+  autorole: 0x1ABC9C,      // Turquoise
+  autoresponder: 0xA569BD, // Lavender Purple
+  automod: 0xC0392B,       // Dark Crimson
+  priority: 0xF39C12,      // Electric Gold
+  reactionrole: 0x8E44AD,  // Deep Royal Purple
+  stickynote: 0x16A085,    // Dark Teal
+  profile: 0x34495E,       // Executive Slate
+  roles: 0xE84393,         // Bright Magenta
+  welcome: 0xFF9F43,       // Bright Sunset Orange
+  backup: 0x74B9FF        // Soft Ice Blue
+};
+
 // Shared Categories definition matching help.js exactly
 const CATEGORIES = [
   {
@@ -118,83 +146,75 @@ const CATEGORIES = [
     unicodeFallback: '🎉',
     heading: `${emojis.FUN || '🎉'} Fun Commands`,
     commands: [
-      '8ball', 'truth', 'dare', 'wyr',
-      'pickup', 'fortune', 'vibecheck', 'mood',
-      'smartrate', 'rizzmeter', 'shipname',
-      'poke', 'bonk', 'cuddle',
-      'highfive', 'wave',
-      'wanted', 'wasted',
-      'powerlevel', 'coolrate'
+      '8ball', 'truth', 'dare', 'wyr', 'pickup',
+      'fortune', 'vibecheck', 'mood', 'smartrate', 'rizzmeter',
+      'shipname', 'wanted', 'wasted', 'powerlevel', 'coolrate',
+      'bonk', 'spongebobchicken', 'slapcar', 'isthisa', 'drake',
+      'distractedbf', 'communismcat', 'eject', 'emergencymeeting', 'headpat',
+      'tradeoffer', 'waddle', 'blush', 'cry', 'dance',
+      'lewd', 'pout', 'shrug', 'sleepy', 'smile',
+      'smug', 'thumbsup', 'wag', 'thinking', 'triggered',
+      'teehee', 'deredere', 'thonking', 'scoff', 'happy',
+      'thumbs', 'grin', 'cuddle', 'hug', 'kiss',
+      'lick', 'nom', 'pat', 'poke', 'slap',
+      'stare', 'highfive', 'bite', 'greet', 'punch',
+      'handholding', 'tickle', 'kill', 'hold', 'pats',
+      'wave', 'boop', 'snuggle', 'bully'
     ]
   },
   {
-    label: 'Giveaway',
+    label: 'Giveaways',
     value: 'giveaway',
-    description: 'Host and manage server giveaways',
+    description: 'Create & manage server giveaways',
     customEmoji: emojis.OBJ_GIVEAWAY,
-    unicodeFallback: '🎁',
-    heading: `${emojis.GIVEAWAY || '🎁'} Giveaway Commands`,
+    unicodeFallback: '🎉',
+    heading: `${emojis.GIVEAWAY || '🎉'} Giveaway Commands`,
     commands: [
-      'giveaway create',
-      'giveaway end',
-      'giveaway reroll',
-      'giveaway list'
+      'gstart', 'gend', 'reroll'
     ]
   },
   {
-    label: 'Utility & Logs',
+    label: 'Information & Bot Stats',
     value: 'info',
-    description: 'activity, afk, advlogsetup, logsetup, serverbanner, snipe, userinfo',
-    customEmoji: emojis.OBJ_ZAP,
-    unicodeFallback: '📈',
-    heading: `${emojis.STATS_NEW || '📈'} Utility & Info Commands`,
+    description: 'Bot stats, ping, serverinfo, userinfo, avatar, banner, uptime & invite',
+    customEmoji: emojis.OBJ_ANALYTICS,
+    unicodeFallback: 'ℹ️',
+    heading: `${emojis.STATS || 'ℹ️'} Information Commands`,
     commands: [
-      'activity', 'afk', 'avatar',
-      'advlogsetup', 'logsetup',
-      'roleinfo', 'serverbanner', 'servericon', 'serverinfo',
-      'snipe', 'snipe <1-10>', 'userinfo'
+      'help', 'info', 'ping', 'uptime', 'invite',
+      'support', 'botinfo', 'serverinfo', 'userinfo',
+      'avatar', 'banner', 'roles', 'channels', 'emojis', 'stats'
     ]
   },
   {
     label: 'Moderation',
     value: 'mod',
-    description: 'Ban, kick, mute, purge, nuke, roles & more',
+    description: 'Kick, ban, unban, timeout, purge, warn & channel management',
     customEmoji: emojis.OBJ_MOD,
-    unicodeFallback: emojis.MOD,
-    heading: `${emojis.MOD || emojis.MOD} Moderation Commands`,
+    unicodeFallback: '🔨',
+    heading: `${emojis.MOD || '🔨'} Moderation Commands`,
     commands: [
-      'ban', 'hackban', 'kick',
-      'mute', 'unmute',
-      'unban', 'unbanall',
-      'purge', 'purgebots',
-      'nuke', 'role', 'rolemenu',
-      'list', 'warn',
-      'modlimits set', 'modlimits reset', 'modlimits status',
-      'modlimits bypass add @user', 'modlimits disable', 'modlimits enable',
-      'disableeveryone'
+      'ban', 'unban', 'kick', 'timeout', 'untimeout',
+      'mute', 'unmute', 'purge', 'warn', 'warnings',
+      'clearwarns', 'nuke'
     ]
   },
   {
-    label: 'Naruto RPG',
+    label: 'Shinobi Ninja RPG',
     value: 'ninja',
-    description: 'Jutsu, Chakra, Quests, Leaderboards & Shinobi Profile',
+    description: 'Naruto jutsu battles, chakra training, missions, clan & scrolls',
     customEmoji: emojis.OBJ_NINJUTSU,
     unicodeFallback: '🍥',
-    heading: `${emojis.NINJUTSU || '🍥'} Naruto RPG Commands`,
+    heading: `${emojis.NINJUTSU || '🍥'} Shinobi Ninja RPG Commands`,
     commands: [
-      'ninja profile',
-      'ninja jutsu',
-      'ninja chakra',
-      'ninja quest',
-      'ninja lb level',
-      'ninja lb ryo',
-      'ninja lb xp'
+      'profile', 'train', 'jutsu', 'battle',
+      'mission', 'clan', 'rankup', 'inventory'
     ]
   },
   {
     label: 'Economy & Casino',
     value: 'economy',
-    description: 'Banking, Casino Games, Jobs, Pets, Stocks & Shop',
+    description: 'Virtual currency, gambling, jobs, shop, inventory & marriage',
     customEmoji: emojis.OBJ_PRIORITY,
     unicodeFallback: '🪙',
     heading: `${emojis.PRIORITY || '🪙'} Economy & Casino Suite`,
@@ -283,45 +303,46 @@ const CATEGORIES = [
   {
     label: 'Reaction Roles',
     value: 'reactionrole',
-    description: 'Reaction role binding: add, remove, list, reset',
+    description: 'Self-assignable roles via emoji reactions',
     customEmoji: emojis.OBJ_REACTIONROLES,
     unicodeFallback: '🎭',
-    heading: `${emojis.REACTIONROLES || '🎭'} Reaction Role Commands`,
+    heading: `${emojis.REACTIONROLES || '🎭'} Reaction Roles Commands`,
     commands: [
-      'reactionrole add',
-      'reactionrole remove',
-      'reactionrole list',
-      'reactionrole reset'
+      'rr setup',
+      'rr add <messageId> <emoji> <@role>',
+      'rr remove <messageId> <emoji>'
     ]
   },
   {
     label: 'Sticky Notes',
     value: 'stickynote',
-    description: 'Auto-reposting sticky notes in channels',
+    description: 'Sticky messages automatically kept at the bottom of channels',
     customEmoji: emojis.OBJ_STICKY,
     unicodeFallback: '📌',
-    heading: `${emojis.STICKY || '📌'} Sticky Commands`,
+    heading: `${emojis.STICKY || '📌'} Sticky Notes Commands`,
     commands: [
-      'stickynote set',
-      'stickynote remove',
+      'stickynote add <#channel> <text>',
+      'stickynote remove <#channel>',
       'stickynote list'
     ]
   },
   {
-    label: 'Profile & Avatars',
+    label: 'Profile & Customization',
     value: 'profile',
-    description: 'Custom bio, anime PFPs, banners & matching couples',
+    description: 'Customize your global user profile & card background',
     customEmoji: emojis.OBJ_PROFILE,
-    unicodeFallback: '🖼️',
-    heading: `${emojis.PROFILE || '🖼️'} Profile Commands`,
+    unicodeFallback: '👤',
+    heading: `${emojis.PROFILE || '👤'} Profile Commands`,
     commands: [
-      'animes', 'banners', 'bioreset',
-      'bioset', 'bioshow', 'boys',
-      'couples', 'girls'
+      'profile',
+      'profile bio <text>',
+      'profile title <text>',
+      'profile color <#hex>',
+      'profile bg <imageURL>'
     ]
   },
   {
-    label: 'Special Roles',
+    label: 'Special Server Roles',
     value: 'roles',
     description: 'Friend, girl, guest, official, vip, invcrole & autonick',
     customEmoji: emojis.OBJ_ROLES,
@@ -367,10 +388,11 @@ const CATEGORIES = [
 
 function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   const botAvatarURL = botAvatar || botUser.displayAvatarURL({ dynamic: true, size: 512 });
+  const catColor = CATEGORY_COLORS[cat.value] || 0x5865F2;
 
   if (cat.value === 'fun') {
     const embed = new EmbedBuilder()
-      .setColor(0x7E0808)
+      .setColor(catColor)
       .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
       .setThumbnail(botAvatarURL)
       .setTitle(`${emojis.FUN || '🎉'} Shinobi Fun & Entertainment Suite`)
@@ -408,7 +430,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
 
   if (cat.value === 'welcome') {
     const embed = new EmbedBuilder()
-      .setColor(0x7E0808)
+      .setColor(catColor)
       .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
       .setThumbnail(botAvatarURL)
       .setTitle(`${emojis.WELCOME || '👋'} Welcome & Greetings System`)
@@ -444,7 +466,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   // Keep Music suite with codeblock box layout
   if (cat.value === 'music') {
     const embed = new EmbedBuilder()
-      .setColor(0x7E0808)
+      .setColor(catColor)
       .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
       .setTitle(`🎶 Music Player Suite & Control Panel`)
       .setDescription(
@@ -493,7 +515,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   const boxStr = createDynamicBox(rawTitle, displayCmds);
 
   const embed = new EmbedBuilder()
-    .setColor(0x7E0808)
+    .setColor(catColor)
     .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
     .setTitle(`${cat.heading}`)
     .setDescription(
@@ -554,61 +576,19 @@ async function renderModuleHelpPanel(message, categoryValue) {
   const botAvatar = botUser.displayAvatarURL({ dynamic: true, size: 512 });
   const devPortalBanner = message.client.botBannerURL || null;
 
-  const cat = CATEGORIES.find(c => c.value === categoryValue || c.label.toLowerCase() === categoryValue.toLowerCase()) || CATEGORIES.find(c => c.value === 'welcome');
+  const cat = CATEGORIES.find(c => c.value === categoryValue);
+  if (!cat) return null;
 
-  const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
+  const embed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
   const dropdownRow = buildDropdownMenu();
   const navRow = buildNavigationButtons();
 
-  const msg = await message.channel.send({
-    embeds: [catEmbed],
-    components: [dropdownRow, navRow]
-  });
-
-  const collector = msg.createMessageComponentCollector({
-    time: 300000
-  });
-
-  collector.on('collect', async (interaction) => {
-    if (interaction.user.id !== author.id) {
-      return interaction.reply({
-        content: `${emojis.DISABLED || emojis.ERROR} Only the user who executed the command can interact with this panel.`,
-        flags: 64
-      });
-    }
-
-    await interaction.deferUpdate();
-
-    if (interaction.customId === 'help_home') {
-      const helpCmd = message.client.commands.get('help');
-      if (helpCmd) return helpCmd.execute(message, []);
-    }
-
-    if (interaction.customId === 'help_delete') {
-      return msg.delete().catch(() => {});
-    }
-
-    if (interaction.isStringSelectMenu() && interaction.customId === 'help_category_select') {
-      const selectedValue = interaction.values[0];
-      const selectedCat = CATEGORIES.find(c => c.value === selectedValue);
-
-      if (selectedCat) {
-        const newEmbed = buildCategoryEmbed(message, selectedCat, botUser, botAvatar, devPortalBanner);
-        return msg.edit({
-          embeds: [newEmbed],
-          components: [buildDropdownMenu(), buildNavigationButtons()]
-        });
-      }
-    }
-  });
-
-  collector.on('end', () => {
-    msg.edit({ components: [] }).catch(() => {});
-  });
+  return { embeds: [embed], components: [dropdownRow, navRow] };
 }
 
 module.exports = {
   CATEGORIES,
+  CATEGORY_COLORS,
   buildCategoryEmbed,
   buildDropdownMenu,
   buildNavigationButtons,
