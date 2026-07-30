@@ -90,6 +90,10 @@ module.exports = {
   rulers_card: '<a:rulers_card:1532492294056448093>',
   card: '<a:rulers_card:1532492294056448093>',
   networth: '<a:rulers_card:1532492294056448093>',
+  CROSS: '<:emoji_REMOVE:1529377741252595802>',
+  cross: '<:emoji_REMOVE:1529377741252595802>',
+  HOME: '<:orange_leaf_emoji:1529377760693456956>',
+  home: '<:orange_leaf_emoji:1529377760693456956>',
 
 
 
@@ -177,6 +181,7 @@ module.exports = {
   OBJ_MODMAIL: { name: 'modmail', id: '1530942601497284731', animated: true },
   OBJ_HOME: { name: 'orange_leaf_emoji', id: '1529377760693456956' },
   OBJ_REMOVE: { name: 'emoji_REMOVE', id: '1529377741252595802' },
+  OBJ_CROSS: { name: 'emoji_REMOVE', id: '1529377741252595802' },
   OBJ_ENABLED: { name: 'emoji_green_enabled', id: '1529377708012732506' },
   OBJ_DISABLED: { name: 'emoji_red_disabled', id: '1529377739302506516' },
   OBJ_WARNING: { name: 'emoji_warning_alert', id: '1529377755735527465' },
