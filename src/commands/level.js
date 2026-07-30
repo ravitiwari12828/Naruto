@@ -258,7 +258,7 @@ module.exports = {
       const box = createDynamicBox('SHINOBI LEADERBOARD TOP 10', items.length ? items : ['No data available']);
 
       const embed = createStyledEmbed({
-        title: `${emojis.AN_STAR || emojis.LEVEL || '⭐'} Shinobi Level Leaderboard — Top Chatters`,
+        title: `${emojis.RANK || emojis.LEVEL || '⭐'} Shinobi Level Leaderboard — Top Chatters`,
         description: '```\n' + box + '\n```',
         requestedBy: author,
         clientUser
@@ -316,7 +316,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL || '📈'} Shinobi Rank Card — ${targetUser.username}`,
+        title: `${emojis.RANK || emojis.LEVEL || '📈'} Shinobi Rank Card — ${targetUser.username}`,
         subtitle: `${userData.rank}`,
         description: '```\n' + box + '\n```',
         requestedBy: author,

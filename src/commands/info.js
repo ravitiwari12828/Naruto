@@ -580,5 +580,46 @@ module.exports = {
       });
       return message.channel.send({ embeds: [embed] });
     }
+
+    // ✉️ INVITE / INVITEBOT / BOTINVITE
+    if (['invite', 'invitebot', 'botinvite'].includes(invoked)) {
+      const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands`;
+      const supportUrl = 'https://discord.gg/ZPKcPreUMT';
+
+      const box = createDynamicBox('BOT INVITE & LINKS', [
+        'Invite Bot    : Click Link',
+        'Support Server: Click Link',
+        'Permissions   : Administrator'
+      ]);
+
+      const inviteEmoji = emojis.INVITELINK || emojis.INVITES || '<a:invitelink:1532489591796400228>';
+
+      const embed = createStyledEmbed({
+        title: `${inviteEmoji} Invite ${clientUser.username} to Your Server`,
+        subtitle: `All-In-One Shinobi Discord Bot`,
+        description:
+          '```\n' + box + '\n```\n\n' +
+          `${inviteEmoji} **[Click Here to Invite ${clientUser.username}](${inviteUrl})**\n` +
+          `💬 **[Click Here to Join Support Server](${supportUrl})**`,
+        requestedBy: author,
+        clientUser
+      });
+
+      const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder()
+          .setLabel('Invite Naruto Bot')
+          .setStyle(ButtonStyle.Link)
+          .setURL(inviteUrl)
+          .setEmoji(emojis.OBJ_INVITE || '🔗'),
+        new ButtonBuilder()
+          .setLabel('Support Server')
+          .setStyle(ButtonStyle.Link)
+          .setURL(supportUrl)
+          .setEmoji(emojis.OBJ_MODMAIL || '💬')
+      );
+
+      return message.channel.send({ embeds: [embed], components: [row] });
+    }
   }
 };
