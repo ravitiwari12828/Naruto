@@ -80,7 +80,7 @@ function buildCustomVoiceChannelButtons(guildId, triggerChanId = null) {
 }
 
 /**
- * Builds the Voice Help embed matching Screenshot 1 when .vc help is ran.
+ * Builds the Voice Help embed with all 15 commands matching Screenshot 1.
  */
 function buildVoiceHelpEmbed(member) {
   const user = member.user;
@@ -95,11 +95,16 @@ function buildVoiceHelpEmbed(member) {
       `• \`.vc size <amount/unlimited>\` \| Set your channel size\n` +
       `• \`.vc lock\` \| Make your channel private\n` +
       `• \`.vc unlock\` \| Make your channel public\n` +
+      `• \`.vc ghost\` \| Hide your channel from sidebar\n` +
+      `• \`.vc unghost\` \| Reveal your channel in sidebar\n` +
+      `• \`.vc claim\` \| Claim ownership of an empty room\n` +
+      `• \`.vc transfer <user>\` \| Transfer channel ownership\n` +
       `• \`.vc permit <user>\` \| Allow a specific user to join\n` +
-      `• \`.vc unpermit <user>\` \| Remove a user from the allowed list\n` +
-      `• \`.vc kick <user>\` \| Disconnect a user from your channel\n` +
+      `• \`.vc unpermit <user>\` \| Remove a user from allowed list\n` +
+      `• \`.vc kick <user>\` \| Disconnect a user from channel\n` +
       `• \`.vc ban <user>\` \| Ban a user from your channel\n` +
-      `• \`.vc unban <user>\` \| Unban a user from your channel`
+      `• \`.vc unban <user>\` \| Unban a user from your channel\n` +
+      `• \`.vc activity\` \| Start a Discord voice activity`
     )
     .setThumbnail('https://cdn.discordapp.com/emojis/1530942654530064394.gif')
     .setFooter({ text: `Requested by ${user.tag}`, iconURL: user.displayAvatarURL({ dynamic: true }) });

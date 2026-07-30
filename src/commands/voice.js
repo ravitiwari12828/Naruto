@@ -6,7 +6,7 @@ const { buildVoiceHelpEmbed } = require('./voicemaster');
 
 module.exports = {
   name: 'voice',
-  description: 'Custom Voice Channels Suite: .vc help, .vc info, .vc name, .vc size, .vc lock, .vc unlock, .vc permit, .vc unpermit, .vc kick, .vc ban, .vc unban',
+  description: 'Custom Voice Channels Suite: .vc help, .vc info, .vc name, .vc size, .vc lock, .vc unlock, .vc ghost, .vc unghost, .vc claim, .vc transfer, .vc permit, .vc unpermit, .vc kick, .vc ban, .vc unban, .vc activity',
   aliases: [
     'vc', 'voicechannel',
     'vcdeafen', 'vcundeafen', 'vckick', 'vckickall',
@@ -96,7 +96,58 @@ module.exports = {
       return message.reply(`${emojis.UNLOCK} Unlocked **${voiceState.channel.name}** (Public).`);
     }
 
-    // 5. .vc permit / allow @user
+    // 5. .vc ghost / unghost
+    if (sub === 'ghost' || sub === 'hide') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      await voiceState.channel.permissionOverwrites.edit(guild.id, { ViewChannel: false });
+      return message.reply(`${emojis.SUCCESS} Hidden **${voiceState.channel.name}** from the channel sidebar.`);
+    }
+
+    if (sub === 'unghost' || sub === 'unhide' || sub === 'reveal') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      await voiceState.channel.permissionOverwrites.edit(guild.id, { ViewChannel: null });
+      return message.reply(`${emojis.SUCCESS} Revealed **${voiceState.channel.name}** in the channel sidebar.`);
+    }
+
+    // 6. .vc claim
+    if (sub === 'claim') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to the Voice Channel you want to claim!`);
+      const vmCmd = message.client.commands.get('voicemaster');
+      const cfg = vmCmd ? vmCmd.getOrCreateVMConfig(guild.id) : null;
+      const vcData = cfg?.activeTempVCs?.get(voiceState.channel.id);
+
+      if (!vcData) return message.reply(`${emojis.WARNING} This is not a temporary Voice Channel!`);
+
+      const currentOwner = guild.members.cache.get(vcData.ownerId);
+      if (currentOwner && currentOwner.voice?.channel?.id === voiceState.channel.id && currentOwner.id !== author.id) {
+        return message.reply(`${emojis.WARNING} The channel owner **${currentOwner.user.tag}** is currently connected to this VC!`);
+      }
+
+      vcData.ownerId = author.id;
+      await voiceState.channel.permissionOverwrites.edit(author.id, {
+        ManageChannels: true, MoveMembers: true, MuteMembers: true, DeafenMembers: true
+      });
+      return message.reply(`${emojis.SUCCESS} Claimed ownership of **${voiceState.channel.name}**!`);
+    }
+
+    // 7. .vc transfer @user
+    if (sub === 'transfer') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
+      const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
+      if (!target || !target.voice?.channel) return message.reply(`ℹ️ Mention a member connected to your VC to transfer ownership!`);
+
+      const vmCmd = message.client.commands.get('voicemaster');
+      const cfg = vmCmd ? vmCmd.getOrCreateVMConfig(guild.id) : null;
+      const vcData = cfg?.activeTempVCs?.get(voiceState.channel.id);
+
+      if (vcData) vcData.ownerId = target.id;
+      await voiceState.channel.permissionOverwrites.edit(target.id, {
+        ManageChannels: true, MoveMembers: true, MuteMembers: true, DeafenMembers: true
+      });
+      return message.reply(`${emojis.SUCCESS} Transferred channel ownership to **${target.user.tag}**.`);
+    }
+
+    // 8. .vc permit / allow @user
     if (sub === 'permit' || sub === 'allow') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
       const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
@@ -106,7 +157,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} Allowed **${target.user.tag}** to join your Voice Channel.`);
     }
 
-    // 6. .vc unpermit / revoke @user
+    // 9. .vc unpermit / revoke @user
     if (sub === 'unpermit' || sub === 'revoke') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
       const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
@@ -116,7 +167,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} Removed **${target.user.tag}** from the allowed list.`);
     }
 
-    // 7. .vc kick @user
+    // 10. .vc kick @user
     if (sub === 'vckick' || sub === 'kick') {
       const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
       if (!target || !target.voice?.channel) return message.reply(`${emojis.WARNING} Mention a member currently connected to your Voice Channel!`);
@@ -124,7 +175,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} Disconnected **${target.user.tag}** from voice channel.`);
     }
 
-    // 8. .vc ban / unban @user
+    // 11. .vc ban / unban @user
     if (sub === 'ban') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
       const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
@@ -144,6 +195,12 @@ module.exports = {
 
       await voiceState.channel.permissionOverwrites.edit(target.id, { Connect: null, ViewChannel: null });
       return message.reply(`${emojis.SUCCESS} Unbanned **${target.user.tag}** from your Voice Channel.`);
+    }
+
+    // 12. .vc activity
+    if (sub === 'activity') {
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel!`);
+      return message.reply(`🎮 Open Discord Voice Controls to launch YouTube Watch Together, Poker, or Chess in **${voiceState.channel.name}**!`);
     }
 
     // Default: Voice Help Embed
