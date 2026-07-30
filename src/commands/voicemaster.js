@@ -104,7 +104,7 @@ function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
     .setTitle(`Custom Voice Channels`)
     .setDescription(
       `Looking to escape from public calls? Create your own private channel and have control over every aspect of it.\n\n` +
-      `**ℹ️ How to Create a Channel:**\n` +
+      `${emojis.CUSTOM_INFO} **How to Create a Channel:**\n` +
       `${emojis.PRIZE_1} **Join** ${triggerMention}\n` +
       `${emojis.PRIZE_2} **Wait** *patiently* for channel to be created\n` +
       `${emojis.PRIZE_3} **Type** \`.vc help\` in your channel to edit settings\n\n` +
