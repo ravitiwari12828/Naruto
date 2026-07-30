@@ -90,10 +90,9 @@ const CATEGORIES = [
     heading: `${emojis.VOICE || '🔊'} Voice Commands`,
     commands: [
       'vctemp setup', 'vctemp disable', 'vctemp status',
-      'setupvc', 'vcsetup', 'vm',
-      'vcdeafen', 'vckick', 'vckickall', 'vclist',
-      'vcmoveall', 'vcmute', 'vcmuteall', 'vcpull',
-      'vcpullall', 'vcundeafen', 'vcunmute', 'vcunmuteall'
+      'vcmute', 'vcunmute', 'vcmuteall', 'vcunmuteall',
+      'vcdeafen', 'vcundeafen', 'vckick', 'vckickall',
+      'vcpull', 'vcpullall', 'vcmoveall', 'vclist'
     ]
   },
   {
