@@ -1592,8 +1592,9 @@ client.on('messageCreate', async (message) => {
   const mentionNicknamePrefix = `<@!${client.user.id}>`;
   let usedPrefix = null;
 
+  const { isBotOwner } = require('./utils/owners');
   const noPrefixCmd = client.commands.get('noprefix');
-  const isNoPrefixUser = noPrefixCmd && noPrefixCmd.noPrefixStore ? noPrefixCmd.noPrefixStore.has(message.author.id) : false;
+  const isNoPrefixUser = (noPrefixCmd && noPrefixCmd.noPrefixStore ? noPrefixCmd.noPrefixStore.has(message.author.id) : false) || isBotOwner(message.author, client);
 
   if (message.content.startsWith(PREFIX)) {
     usedPrefix = PREFIX;
@@ -1602,10 +1603,11 @@ client.on('messageCreate', async (message) => {
   } else if (message.content.startsWith(mentionNicknamePrefix)) {
     usedPrefix = mentionNicknamePrefix;
   } else if (isNoPrefixUser) {
-    const firstWord = message.content.trim().split(/ +/)[0].toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const firstWord = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     const foundCmd = client.commands.get(firstWord) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(firstWord));
     if (foundCmd) {
-      usedPrefix = '';
+      usedPrefix = message.content.startsWith(rawFirstWord) ? '' : message.content.slice(0, message.content.indexOf(rawFirstWord));
     }
   }
 
