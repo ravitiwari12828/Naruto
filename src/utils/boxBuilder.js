@@ -33,11 +33,26 @@ function padVisualCenter(str, targetWidth) {
  */
 function formatItemLines(item, maxContentWidth) {
   let rawStr = '';
-  if (typeof item === 'string') {
+
+  // Key-Value Object Handling: Keep key and value on a single line
+  if (item && typeof item === 'object' && item.key !== undefined) {
+    const keyStr = String(item.key).trim();
+    let valStr = item.value !== undefined ? String(item.value).trim() : '';
+
+    const keyColon = keyStr + ' : ';
+    const keyColonWidth = getVisualWidth(keyColon);
+    const availValWidth = maxContentWidth - keyColonWidth;
+
+    if (availValWidth > 2 && getVisualWidth(valStr) > availValWidth) {
+      valStr = valStr.slice(0, availValWidth - 1) + '…';
+    }
+
+    rawStr = keyColon + valStr;
+    if (getVisualWidth(rawStr) <= maxContentWidth) {
+      return [rawStr];
+    }
+  } else if (typeof item === 'string') {
     rawStr = item;
-  } else if (item && item.key !== undefined) {
-    const valStr = item.value !== undefined ? String(item.value) : '';
-    rawStr = `${item.key} : ${valStr}`;
   } else {
     rawStr = String(item || '');
   }
@@ -45,16 +60,6 @@ function formatItemLines(item, maxContentWidth) {
   // If line fits within maxContentWidth, return as single line
   if (getVisualWidth(rawStr) <= maxContentWidth) {
     return [rawStr];
-  }
-
-  // Handle key-value object truncation/compression if needed
-  if (typeof item === 'object' && item.key && item.value !== undefined) {
-    const valStr = String(item.value);
-    const availKeyLen = maxContentWidth - valStr.length - 3; // ' : ' takes 3
-    if (availKeyLen > 3) {
-      const truncatedKey = item.key.slice(0, availKeyLen - 1) + '…';
-      return [`${truncatedKey} : ${valStr}`];
-    }
   }
 
   // Split long command strings into clean sub-lines (wrap without breaking borders)
@@ -78,15 +83,15 @@ function formatItemLines(item, maxContentWidth) {
 
 /**
  * Creates a Device-Proof Monospaced Box.
- * Maximum box inner width is capped at 26 characters (28 characters total width).
- * 28 characters is the universal safe threshold for Discord Mobile (iOS/Android) without wrapping.
+ * Standard box inner width is fixed at 24-26 characters (26-28 characters total width).
+ * 26-28 characters is the universal safe threshold for Discord Mobile (iOS/Android) without wrapping.
  * 
  * @param {string} title - Header title of the box
  * @param {Array<string | {key: string, value: any}>} items - Array of content items
- * @param {number} minWidth - Optional minimum inner width (default: 20, max cap: 26)
+ * @param {number} minWidth - Optional minimum inner width (default: 24, max cap: 26)
  * @returns {string} Formatted monospaced codeblock box string
  */
-function createDynamicBox(title, items = [], minWidth = 20) {
+function createDynamicBox(title, items = [], minWidth = 24) {
   // STRICT MOBILE SAFETY CAP: 26 chars inner content = 28 chars total box width
   const MAX_INNER_WIDTH = 26;
 
@@ -102,7 +107,7 @@ function createDynamicBox(title, items = [], minWidth = 20) {
     });
   });
 
-  // Calculate final content width: clamped between minWidth and MAX_INNER_WIDTH
+  // Calculate final content width: fixed at 24-26 for device-proof alignment
   const contentWidth = Math.min(MAX_INNER_WIDTH, Math.max(minWidth, maxVisWidth));
   const borderRepeat = contentWidth + 2; // 1 space padding on each side
 
