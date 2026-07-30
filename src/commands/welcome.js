@@ -1,339 +1,156 @@
-const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
-const { createCanvas, loadImage } = require('@napi-rs/canvas');
+const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  StringSelectMenuBuilder,
+  ChannelType,
+  PermissionsBitField,
+  EmbedBuilder
+} = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const { createDynamicBox } = require('../utils/boxBuilder');
 
-// Global Welcome, DM & Boost Config store
+// Global Stores
 const welcomeConfigs = new Map();
 
-// Fancy Unicode Font Engines
-const FANCY_FONTS = {
-  gothic: (str) => {
-    const frakturCaps = [0x1D504, 0x1D505, 0x212D, 0x1D507, 0x1D508, 0x1D509, 0x1D50A, 0x210C, 0x2111, 0x1D50D, 0x1D50E, 0x1D50F, 0x1D510, 0x1D511, 0x1D512, 0x1D513, 0x1D514, 0x211C, 0x1D516, 0x1D517, 0x1D518, 0x1D519, 0x1D51A, 0x1D51B, 0x1D51C, 0x2128];
-    const frakturLower = [0x1D51E, 0x1D51F, 0x1D520, 0x1D521, 0x1D522, 0x1D523, 0x1D524, 0x1D525, 0x1D526, 0x1D527, 0x1D528, 0x1D529, 0x1D52A, 0x1D52B, 0x1D52C, 0x1D52D, 0x1D52E, 0x1D52F, 0x1D530, 0x1D531, 0x1D532, 0x1D533, 0x1D534, 0x1D535, 0x1D536, 0x1D537];
-    return str.split('').map(char => {
-      const code = char.charCodeAt(0);
-      if (code >= 65 && code <= 90) return String.fromCodePoint(frakturCaps[code - 65]);
-      if (code >= 97 && code <= 122) return String.fromCodePoint(frakturLower[code - 97]);
-      return char;
-    }).join('');
-  },
-  smallcaps: (str) => {
-    const normal = 'abcdefghijklmnopqrstuvwxyz';
-    const sc = 'ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘǫʀsᴛᴜᴠᴡxʏᴢ';
-    return str.split('').map(c => {
-      const idx = normal.indexOf(c.toLowerCase());
-      return idx !== -1 ? sc[idx] : c;
-    }).join('');
-  },
-  script: (str) => {
-    const caps = [0x1D49C, 0x212C, 0x1D49E, 0x1D49F, 0x2130, 0x2131, 0x1D4A2, 0x210B, 0x2110, 0x1D4A5, 0x1D4A6, 0x1D4A7, 0x1D4A8, 0x1D4A9, 0x1D4AA, 0x1D4AB, 0x1D4AC, 0x211B, 0x1D4AE, 0x1D4AF, 0x1D4B0, 0x1D4B1, 0x1D4B2, 0x1D4B3, 0x1D4B4, 0x1D4B5];
-    const lower = [0x1D4B6, 0x1D4B7, 0x1D4B8, 0x1D4B9, 0x2146, 0x1D4BB, 0x1D4BC, 0x1D4BD, 0x1D4BE, 0x1D4BF, 0x1D4C0, 0x1D4C1, 0x1D4C2, 0x1D4C3, 0x1D4C4, 0x1D4C5, 0x1D4C6, 0x1D4C7, 0x1D4C8, 0x1D4C9, 0x1D4CA, 0x1D4CB, 0x1D4CC, 0x1D4CD, 0x1D4CE, 0x1D4CF];
-    return str.split('').map(char => {
-      const code = char.charCodeAt(0);
-      if (code >= 65 && code <= 90) return String.fromCodePoint(caps[code - 65]);
-      if (code >= 97 && code <= 122) return String.fromCodePoint(lower[code - 97]);
-      return char;
-    }).join('');
-  }
-};
-
-// High-Resolution Live Banner Image URLs for Presets
-const PRESET_BANNERS = {
-  gothic: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1200&auto=format&fit=crop&q=80',
-  aesthetic: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?w=1200&auto=format&fit=crop&q=80',
-  galaxy: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=1200&auto=format&fit=crop&q=80',
-  cafe: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=1200&auto=format&fit=crop&q=80',
-  shinobi: 'https://images.unsplash.com/photo-1528164344705-47542687990d?w=1200&auto=format&fit=crop&q=80',
-  cyberpunk: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1200&auto=format&fit=crop&q=80',
-  minimal: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=1200&auto=format&fit=crop&q=80'
-};
-
-// Mimu-Style Presets Directory (With Gothic Fonts, Stylish Bullet Points & Emojis)
 const WELCOME_PRESETS = {
   gothic: {
-    title: '𝔚𝔢𝔩𝔠𝔬𝔪𝔢 𝔱𝔬 𝔱𝔥𝔢 ℭ𝔞𝔰𝔱𝔩𝔢',
-    headerText: '🦇 ─── 𖤍 ─── 🦇',
-    description: '🛡️ **ᴍᴇᴍʙᴇʀ ᴄᴏᴜɴᴛ: #{membercount}**\n\nGreetings, dark traveler {user}. You have entered the hallowed halls of **{server_name}**.\nMay the shadows welcome you.\n\n🦇 Join us in <#lore> and <#general> to mingle with the night\'s children.\n🦇 Please read <#rules>.\n\nSoul **#{membercount}** 🥀',
+    name: 'Gothic Dark Sanctuary',
+    style: 'gothic',
     color: '#800020',
-    imageUrl: PRESET_BANNERS.gothic,
-    useAvatarThumbnail: true,
-    footer: 'Soul #{membercount} • {server_name}'
+    title: '{gothic:Welcome to the Castle}',
+    description: '🖤 Greetings {user}! You have entered {gothic:{server_name}}.\n\n🕯️ Member Count: #{membercount}\n⚜️ Please read rules and enjoy your stay!',
+    font: 'gothic',
+    banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/gothic_banner.gif'
   },
   aesthetic: {
-    title: '🌸 𝒲ℯ𝓁𝒸⯀𝓂ℯ 𝓉⯀ {server_name}',
-    headerText: '୨୧ ─── ∘°❉°∘ ─── ୨୧',
-    description: '🌸 **ᴍᴇᴍʙᴇʀ ᴄᴏᴜɴᴛ: #{membercount}**\n\nWelcome {user} to **{server_name}**! 🎀\nWe are so happy to have you here!\n\n┈➤ **ǫᴜɪᴄᴋ ʟɪɴᴋs:**\n• Check out our <#rules>\n• Pick your <#roles>\n• Chat with us in <#general>\n\nMember Count: **#{membercount}** 🌸\n୨୧ ─── ∘°❉°∘ ─── ୨୧',
+    name: 'Soft Aesthetic Pink',
+    style: 'aesthetic',
     color: '#FFD1DC',
-    imageUrl: PRESET_BANNERS.aesthetic,
-    useAvatarThumbnail: true,
-    footer: 'Member #{membercount} • {server_name}'
+    title: '{script:Welcome to {server_name}}',
+    description: '🌸 Welcome {user} ♡\n\n✨ We are so happy to have you here!\n🍰 Total Sweethearts: #{membercount}',
+    font: 'script',
+    banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/aesthetic_banner.gif'
   },
   galaxy: {
-    title: '✨ 𝔚𝔢𝔩𝔠𝔬𝔪𝔢 𝔱𝔬 {server_name}',
-    headerText: '🌙 ─── ✧ * :･ﾟ✧ ─── 🌙',
-    description: '🌌 **sᴛᴀʀʟɪɢʜᴛ ɴᴏᴅᴇ: #{membercount}**\n\nWelcome {user} to **{server_name}**! ✨\nYou have crossed the starlight horizon.\n\n⭐ **ᴄᴏɴsᴛᴇʟʟᴀᴛɪᴏɴ ᴀᴄᴄᴇss:**\n✦ Protocols • <#rules>\n✦ Star Roles • <#roles>\n✦ Galaxy Lounge • <#lounge>\n\nStarlight Member: **#{membercount}** 🌌',
-    color: '#4B0082',
-    imageUrl: PRESET_BANNERS.galaxy,
-    useAvatarThumbnail: true,
-    footer: 'Starlight Member #{membercount} • {server_name}'
+    name: 'Cosmic Galaxy Horizon',
+    style: 'galaxy',
+    color: '#00FFFF',
+    title: '✨ {smallcaps:WELCOME TO THE COSMOS}',
+    description: '🌌 Welcome space traveler {user}!\n\n🛸 Starship: {server_name}\n🪐 Crew Members: #{membercount}',
+    font: 'smallcaps',
+    banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/galaxy_banner.gif'
   },
   cafe: {
-    title: '🧸 𝒲ℯ𝓁𝒸⯀𝓂ℯ 𝓉⯀ {server_name}',
-    headerText: '🍵 ─── ･ ｡ﾟ☆: *.☽ .* :☆ﾟ. ─── 🍵',
-    description: '🍵 **ᴄᴜsᴛᴏᴍᴇʀ ɴᴜᴍʙᴇʀ: #{membercount}**\n\nWelcome {user} to **{server_name}**! 🧸\nGrab a warm cup of boba and take a seat!\n\n🥞 **ᴍᴇɴᴜ & ʟɪɴᴋs:**\n• Cafe Rules: <#rules>\n• Special Roles: <#roles>\n• Chat Table: <#chat>\n\nCustomer **#{membercount}** 🍰',
-    color: '#A8C3A0',
-    imageUrl: PRESET_BANNERS.cafe,
-    useAvatarThumbnail: true,
-    footer: 'Customer #{membercount} • {server_name}'
+    name: 'Cozy Boba Cafe',
+    style: 'cafe',
+    color: '#D2B48C',
+    title: '☕ {script:Cozy Boba Cafe}',
+    description: '🧸 Warm welcome {user}!\n\n🧋 Take a seat in {server_name}\n🍩 Total Customers: #{membercount}',
+    font: 'script',
+    banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/cafe_banner.gif'
   },
   shinobi: {
-    title: '🍥 𝔚𝔢𝔩𝔠𝔬𝔪𝔢 𝔱𝔬 𝔎𝔬𝔫𝔬𝔥𝔞 𝔙𝔦𝔩𝔩𝔞𝔤𝔢',
-    headerText: '🍥 **WELCOME TO THE HIDDEN LEAF VILLAGE** 🍥',
-    description: '🍃 **sʜɪɴᴏʙɪ ʀᴀɴᴋ: #{membercount}**\n\nGreetings {user}! You have arrived in **{server_name}**.\n\n> *"A shinobi is one who endures."*\n\n🌀 **sʜɪɴᴏʙɪ ᴘʀᴏᴛᴏᴄᴏʟ:**\n1. Read the village rules in <#rules>\n2. Collect your Ninja Roles in <#roles>\n3. Join the Ninja Lounge in <#lounge>\n\nYou are Shinobi **#{membercount}** of Konoha! 🍃',
-    color: '#7E0808',
-    imageUrl: PRESET_BANNERS.shinobi,
-    useAvatarThumbnail: true,
-    footer: 'Shinobi #{membercount} • {server_name}'
+    name: 'Naruto Hidden Leaf Village',
+    style: 'shinobi',
+    color: '#FF7A00',
+    title: '🍥 {gothic:Welcome Shinobi}',
+    description: '🍃 Believe it! Welcome {user} to {gothic:{server_name}}!\n\n⚔️ Village Ninja Count: #{membercount}',
+    font: 'gothic',
+    banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/shinobi_banner.gif'
   },
   cyberpunk: {
-    title: '⚡ 𝔚𝔢𝔩𝔠𝔬𝔪𝔢 𝔱𝔬 𝔱𝔥𝔢 𝔍𝔞𝔱𝔯𝔦𝔡',
-    headerText: '⚡ **SYSTEM INTRUSION DETECTED** ⚡',
-    description: '💾 **ɴᴇᴛᴡᴏʀᴋ ɴᴏᴅᴇ: #{membercount}**\n\nWelcome {user} to the **{server_name}** Matrix!\n\n🌐 **ᴀᴄᴄᴇss ᴛᴇʀᴍɪɴᴀʟs:**\n[01] <#rules> • Protocol Directives\n[02] <#roles> • Cyber Identity Setup\n[03] <#chat> • Main Network Stream\n\nNetwork Node: **#{membercount}** 💾',
-    color: '#00FFFF',
-    imageUrl: PRESET_BANNERS.cyberpunk,
-    useAvatarThumbnail: true,
-    footer: 'Node #{membercount} • {server_name}'
+    name: 'Cyberpunk Neon Matrix',
+    style: 'cyberpunk',
+    color: '#00FFBB',
+    title: '⚡ {smallcaps:CYBERNETIC ACCESS GRANTED}',
+    description: '👾 User connected: {user}\n\n🌐 Net Grid: {server_name}\n💾 Node Connections: #{membercount}',
+    font: 'smallcaps',
+    banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/cyberpunk_banner.gif'
   },
   minimal: {
-    title: 'ᴡᴇʟᴄᴏᴍᴇ',
-    headerText: '',
-    description: 'Welcome **{username}** to {server_name}.\n\n> Read the guidelines in <#rules> and feel free to introduce yourself in <#chat>.\n\nMember **#{membercount}**',
-    color: '#2B2D31',
-    imageUrl: PRESET_BANNERS.minimal,
-    useAvatarThumbnail: true,
-    footer: 'Member #{membercount}'
+    name: 'Clean Minimalist Monochrome',
+    style: 'minimal',
+    color: '#FFFFFF',
+    title: 'Welcome',
+    description: 'Welcome {user} to {server_name}.\n\nMember count: #{membercount}',
+    font: 'plain',
+    banner: null
   }
+};
+
+const PRESET_BANNERS = {
+  gothic: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=1000&auto=format&fit=crop',
+  aesthetic: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop',
+  galaxy: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1000&auto=format&fit=crop',
+  cafe: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1000&auto=format&fit=crop',
+  shinobi: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1000&auto=format&fit=crop',
+  cyberpunk: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000&auto=format&fit=crop',
+  minimal: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'
+};
+
+const FANCY_FONTS = {
+  gothic: (str) => str.replace(/[a-zA-Z]/g, c => {
+    const code = c.charCodeAt(0);
+    if (code >= 65 && code <= 90) return String.fromCodePoint(0x1D504 + code - 65);
+    if (code >= 97 && code <= 122) return String.fromCodePoint(0x1D51E + code - 97);
+    return c;
+  }),
+  smallcaps: (str) => {
+    const scMap = { a:'ᴀ',b:'ʙ',c:'ᴄ',d:'ᴅ',e:'ᴇ',f:'ғ',g:'ɢ',h:'ʜ',i:'ɪ',j:'ᴊ',k:'ᴋ',l:'ʟ',m:'ᴍ',n:'ɴ',o:'ᴏ',p:'ᴘ',q:'ǫ',r:'ʀ',s:'s',t:'ᴛ',u:'ᴜ',v:'ᴠ',w:'ᴡ',x:'x',y:'ʏ',z:'ᴢ' };
+    return str.toLowerCase().split('').map(c => scMap[c] || c).join('');
+  },
+  script: (str) => str.replace(/[a-zA-Z]/g, c => {
+    const code = c.charCodeAt(0);
+    if (code >= 65 && code <= 90) return String.fromCodePoint(0x1D4D0 + code - 65);
+    if (code >= 97 && code <= 122) return String.fromCodePoint(0x1D4EA + code - 97);
+    return c;
+  })
 };
 
 function getOrCreateWelcomeConfig(guildId) {
   if (!welcomeConfigs.has(guildId)) {
     welcomeConfigs.set(guildId, {
-      enabled: true,
+      enabled: false,
       channelId: null,
-      style: 'gothic',
-      cardType: 'embed',
-      useEmbed: true,
-      headerText: WELCOME_PRESETS.gothic.headerText,
-      title: WELCOME_PRESETS.gothic.title,
-      description: WELCOME_PRESETS.gothic.description,
-      color: WELCOME_PRESETS.gothic.color,
-      footer: WELCOME_PRESETS.gothic.footer,
-      imageUrl: PRESET_BANNERS.gothic,
-      useAvatarThumbnail: true,
-
-      // Join DM Config
-      joinDmEnabled: true,
-      joinDmText: 'Welcome to **{server_name}**, {user}! 🍥 Make sure to check out our rules and enjoy your stay!',
-
-      // Leave DM Config
-      leaveDmEnabled: true,
-      leaveDmText: 'Goodbye {user}! We hope to see you back in **{server_name}** soon.',
-
-      // Boost Msg Config
-      boostEnabled: true,
       boostChannelId: null,
-      boostText: '🚀 **SERVER BOOST!** {user} just boosted **{server_name}**! Thank you for supporting the village! ✨'
+      boostEnabled: true,
+      joinDmEnabled: true,
+      leaveDmEnabled: true,
+      cardType: 'embed', // 'embed' or 'canvas'
+      style: 'gothic',
+      color: '#800020',
+      title: '{gothic:Welcome to the Castle}',
+      description: '🖤 Greetings {user}! You have entered {gothic:{server_name}}.\n\n🕯️ Member Count: #{membercount}\n⚜️ Please read rules and enjoy your stay!',
+      footer: 'Welcome to our Server',
+      headerText: '🛡️ MEMBER COUNT: #{membercount}',
+      imageUrl: PRESET_BANNERS.gothic,
+      joinDmText: '🌸 Welcome to **{server_name}**, {user}! Enjoy your stay!',
+      leaveDmText: '📤 Goodbye {user}, we hope to see you back in **{server_name}** soon!',
+      boostText: '🚀 **{user}** boosted **{server_name}**!'
     });
   }
   return welcomeConfigs.get(guildId);
 }
 
-function parsePlaceholders(text, member) {
-  if (!text) return '';
-  const guild = member.guild;
-  const user = member.user;
+function parsePlaceholders(str, member) {
+  if (!str) return '';
+  const user = member?.user || member;
+  const guild = member?.guild || { name: 'Server', memberCount: 1 };
 
-  let result = text
-    .replace(/{user}/g, `<@${user.id}>`)
-    .replace(/{username}/g, user.username)
-    .replace(/{server}/g, guild.name)
-    .replace(/{server_name}/g, guild.name)
-    .replace(/{membercount}/g, guild.memberCount.toString());
+  let out = str
+    .replace(/{user}/g, `<@${user.id || '0'}>`)
+    .replace(/{username}/g, user.username || 'User')
+    .replace(/{server_name}/g, guild.name || 'Server')
+    .replace(/{membercount}/g, (guild.memberCount || 1).toString());
 
-  // Dynamic Font Transform Tags: {gothic:text}, {smallcaps:text}, {script:text}
-  result = result.replace(/{gothic:([^}]+)}/g, (_, str) => FANCY_FONTS.gothic(str));
-  result = result.replace(/{smallcaps:([^}]+)}/g, (_, str) => FANCY_FONTS.smallcaps(str));
-  result = result.replace(/{script:([^}]+)}/g, (_, str) => FANCY_FONTS.script(str));
+  // Parse inline font tags
+  out = out.replace(/{gothic:(.*?)}/gi, (_, txt) => FANCY_FONTS.gothic(txt));
+  out = out.replace(/{smallcaps:(.*?)}/gi, (_, txt) => FANCY_FONTS.smallcaps(txt));
+  out = out.replace(/{script:(.*?)}/gi, (_, txt) => FANCY_FONTS.script(txt));
 
-  return result;
-}
-
-// Custom Graphic Composite Canvas Card Generator
-async function generateCanvasWelcomeCard(config, member) {
-  const guild = member.guild;
-  const user = member.user;
-
-  const canvas = createCanvas(900, 450);
-  const ctx = canvas.getContext('2d');
-
-  // Background Theme Image or Gradient
-  const bannerUrl = config.imageUrl || PRESET_BANNERS[config.style || 'gothic'] || PRESET_BANNERS.gothic;
-  try {
-    const bgImg = await loadImage(bannerUrl);
-    ctx.drawImage(bgImg, 0, 0, 900, 450);
-
-    // Dark overlay for text readability
-    ctx.fillStyle = 'rgba(10, 10, 15, 0.70)';
-    ctx.fillRect(0, 0, 900, 450);
-  } catch(e) {
-    const grad = ctx.createLinearGradient(0, 0, 900, 450);
-    grad.addColorStop(0, '#0d0d12');
-    grad.addColorStop(1, '#1b080d');
-    ctx.fillStyle = grad;
-    ctx.fillRect(0, 0, 900, 450);
-  }
-
-  // Border Frame
-  const borderColor = config.color || '#800020';
-  ctx.strokeStyle = borderColor;
-  ctx.lineWidth = 8;
-  ctx.strokeRect(10, 10, 880, 430);
-
-  // Avatar Image
-  try {
-    const avatarUrl = user.displayAvatarURL({ extension: 'png', size: 512 });
-    const avatar = await loadImage(avatarUrl);
-
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(450, 120, 60, 0, Math.PI * 2, true);
-    ctx.closePath();
-    ctx.clip();
-    ctx.drawImage(avatar, 390, 60, 120, 120);
-    ctx.restore();
-
-    // Avatar ring border
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(450, 120, 60, 0, Math.PI * 2, true);
-    ctx.stroke();
-  } catch(e) {}
-
-  // Welcome Title in Gothic Fancy Font
-  const titleText = FANCY_FONTS.gothic('Welcome to the Castle');
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 34px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(titleText, 450, 230);
-
-  // Member Greeting
-  ctx.fillStyle = '#ff4d6d';
-  ctx.font = 'bold 22px sans-serif';
-  ctx.fillText(`Greetings, dark traveler @${user.username}`, 450, 275);
-
-  // Member Count Badge Pill
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
-  ctx.beginPath();
-  ctx.roundRect(330, 315, 240, 45, 22);
-  ctx.fill();
-  ctx.strokeStyle = borderColor;
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 18px sans-serif';
-  ctx.fillText(`🛡️ Member Count: ${guild.memberCount}`, 450, 344);
-
-  const buffer = await canvas.encode('png');
-  return new AttachmentBuilder(buffer, { name: 'welcome-card.png' });
-}
-
-async function buildWelcomeCard(config, member) {
-  const guild = member.guild;
-  const user = member.user;
-
-  const headerText = parsePlaceholders(config.headerText, member);
-  const description = parsePlaceholders(config.description, member);
-  const title = parsePlaceholders(config.title, member);
-  const footer = parsePlaceholders(config.footer, member);
-
-  // Always resolve valid banner image
-  const bannerImage = config.imageUrl || PRESET_BANNERS[config.style || 'gothic'] || PRESET_BANNERS.gothic;
-
-  if (config.cardType === 'canvas') {
-    try {
-      const attachment = await generateCanvasWelcomeCard(config, member);
-      return { content: headerText || undefined, files: [attachment] };
-    } catch(e) {}
-  }
-
-  if (!config.useEmbed) {
-    return { content: `${headerText}\n\n${description}` };
-  }
-
-  const embedColor = parseInt(config.color?.replace('#', '') || '800020', 16);
-
-  const embed = new EmbedBuilder()
-    .setColor(isNaN(embedColor) ? 0x800020 : embedColor)
-    .setAuthor({ name: user.tag, iconURL: user.displayAvatarURL({ dynamic: true }) })
-    .setTitle(title || `Welcome to ${guild.name}`)
-    .setDescription(description)
-    .setFooter({
-      text: `${footer} • ${new Date().toLocaleDateString()}`,
-      iconURL: guild.iconURL({ dynamic: true }) || undefined
-    });
-
-  // User Avatar Thumbnail
-  if (config.useAvatarThumbnail !== false) {
-    embed.setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
-  }
-
-  // Large Header Banner Picture
-  if (bannerImage) {
-    embed.setImage(bannerImage);
-  }
-
-  return { content: headerText || undefined, embeds: [embed] };
-}
-
-function buildWelcomeConfigPanel(config, guild, author, clientUser) {
-  const chanMention = config.channelId ? `<#${config.channelId}>` : '*Not set (Use `.welcome setup <#channel>`)*';
-  const imgStr = config.imageUrl ? '`High-Res Banner Set`' : '`Preset Default Banner`';
-  const cardTypeStr = config.cardType === 'canvas' ? '`Canvas Graphic Card`' : '`Rich Embed Banner`';
-
-  const description =
-    `Welcome **${author.username}**! Below is your server **Welcome System Hub & Greetings Config**.\n\n` +
-    `**⚙️ System Status & Settings:**\n` +
-    `• **Module Status:** ${config.enabled ? `${emojis.SUCCESS} **ACTIVE**` : `${emojis.DISABLED} **DISABLED**`}\n` +
-    `• **Welcome Channel:** ${chanMention}\n` +
-    `• **Card Render Mode:** ${cardTypeStr}\n` +
-    `• **Active Preset:** \`${(config.style || 'gothic').toUpperCase()}\`\n` +
-    `• **Embed Color:** \`${config.color || '#800020'}\`\n` +
-    `• **Banner Picture:** ${imgStr}\n` +
-    `• **Join DM Notification:** ${config.joinDmEnabled ? `${emojis.SUCCESS} Enabled` : `${emojis.DISABLED} Disabled`}\n` +
-    `• **Leave DM Notification:** ${config.leaveDmEnabled ? `${emojis.SUCCESS} Enabled` : `${emojis.DISABLED} Disabled`}\n\n` +
-    `**📝 Configuration & Font Commands:**\n` +
-    `• \`.welcome preset <gothic/aesthetic/galaxy/cafe/shinobi/cyberpunk/minimal>\` — Apply preset\n` +
-    `• \`.welcome card <canvas/embed>\` — Toggle Graphic Canvas Card vs Rich Embed\n` +
-    `• \`.welcome font <gothic/smallcaps/script> <text>\` — Convert text to fancy fonts\n` +
-    `• \`.welcome setup <#channel>\` — Bind welcome channel\n` +
-    `• \`.welcome description <text>\` — Edit description text\n` +
-    `• \`.welcometest\` — Preview live card with thumbnail & banner!\n\n` +
-    `**🔤 Font Tags Supported:** \`{gothic:Text}\`, \`{smallcaps:Text}\`, \`{script:Text}\`\n\n` +
-    `**💬 Active Description Body:**\n` +
-    `>>> ${config.description}`;
-
-  const embed = createStyledEmbed({
-    title: `👋 Welcome System Dashboard`,
-    subtitle: `${guild.name} Greetings Configuration`,
-    description,
-    requestedBy: author,
-    clientUser
-  });
-
-  return embed;
+  return out;
 }
 
 /**
@@ -354,6 +171,158 @@ function buildBoosterEmbed(member) {
   return embed;
 }
 
+async function generateCanvasWelcomeCard(config, member) {
+  try {
+    const { createCanvas, loadImage } = require('@napi-rs/canvas');
+    const canvas = createCanvas(1024, 450);
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = config.color || '#111214';
+    ctx.fillRect(0, 0, 1024, 450);
+
+    // Banner image if configured
+    const bgUrl = config.imageUrl || PRESET_BANNERS[config.style] || PRESET_BANNERS.gothic;
+    if (bgUrl) {
+      try {
+        const bgImg = await loadImage(bgUrl);
+        ctx.globalAlpha = 0.45;
+        ctx.drawImage(bgImg, 0, 0, 1024, 450);
+        ctx.globalAlpha = 1.0;
+      } catch (e) {}
+    }
+
+    // Avatar Circle
+    const avatarUrl = member.user.displayAvatarURL({ extension: 'png', size: 256 });
+    try {
+      const avatarImg = await loadImage(avatarUrl);
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(512, 160, 90, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(avatarImg, 422, 70, 180, 180);
+      ctx.restore();
+
+      // Avatar Border
+      ctx.beginPath();
+      ctx.arc(512, 160, 92, 0, Math.PI * 2, true);
+      ctx.lineWidth = 6;
+      ctx.strokeStyle = config.color || '#00FFBB';
+      ctx.stroke();
+    } catch (e) {}
+
+    // Text Overlay
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = 'bold 44px sans-serif';
+    ctx.fillText(`WELCOME ${member.user.username.toUpperCase()}`, 512, 320);
+
+    ctx.fillStyle = '#00FFBB';
+    ctx.font = 'bold 28px sans-serif';
+    ctx.fillText(`MEMBER #${member.guild?.memberCount || 1}`, 512, 370);
+
+    return canvas.toBuffer('image/png');
+  } catch (err) {
+    return null;
+  }
+}
+
+async function buildWelcomeCard(config, member) {
+  const user = member.user;
+  const guild = member.guild;
+
+  const headerText = parsePlaceholders(config.headerText, member);
+  const title = parsePlaceholders(config.title, member);
+  const description = parsePlaceholders(config.description, member);
+  const footer = parsePlaceholders(config.footer, member);
+  const bannerImage = config.imageUrl || PRESET_BANNERS[config.style] || null;
+
+  // Try Canvas Render Mode if set
+  if (config.cardType === 'canvas') {
+    const buffer = await generateCanvasWelcomeCard(config, member);
+    if (buffer) {
+      const { AttachmentBuilder } = require('discord.js');
+      const attachment = new AttachmentBuilder(buffer, { name: 'welcome-card.png' });
+      return { content: headerText || undefined, files: [attachment] };
+    }
+  }
+
+  // Fallback to Rich Embed Banner
+  const hexColor = (config.color && config.color.match(/^#?[0-9a-fA-F]{6}$/)) ? parseInt(config.color.replace('#', ''), 16) : 0x800020;
+
+  const embed = new EmbedBuilder()
+    .setColor(hexColor)
+    .setAuthor({ name: user.tag, iconURL: user.displayAvatarURL({ dynamic: true }) })
+    .setTitle(title || `Welcome to ${guild.name}`)
+    .setDescription(description)
+    .setFooter({
+      text: `${footer} • ${new Date().toLocaleDateString()}`,
+      iconURL: guild.iconURL({ dynamic: true }) || undefined
+    });
+
+  if (config.useAvatarThumbnail !== false) {
+    embed.setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
+  }
+
+  if (bannerImage) {
+    embed.setImage(bannerImage);
+  }
+
+  return { content: headerText || undefined, embeds: [embed] };
+}
+
+function buildWelcomeConfigPanel(config, guild, author, clientUser) {
+  const chanMention = config.channelId ? `<#${config.channelId}>` : 'Not Set';
+  const boostChanMention = config.boostChannelId ? `<#${config.boostChannelId}>` : 'Not Set';
+
+  const statusBox = createDynamicBox('SYSTEM STATUS', [
+    `status   : ${config.enabled ? 'ACTIVE' : 'DISABLED'}`,
+    `channel  : ${config.channelId ? '#' + (guild?.channels?.cache?.get(config.channelId)?.name || 'channel') : 'Not Set'}`,
+    `render   : ${config.cardType === 'canvas' ? 'Graphic Canvas' : 'Rich Embed'}`,
+    `preset   : ${(config.style || 'gothic').toUpperCase()}`,
+    `color    : ${config.color || '#800020'}`,
+    `joindm   : ${config.joinDmEnabled ? 'Enabled' : 'Disabled'}`,
+    `leavedm  : ${config.leaveDmEnabled ? 'Enabled' : 'Disabled'}`,
+    `boost    : ${config.boostEnabled !== false ? 'Enabled' : 'Disabled'}`
+  ]);
+
+  const cmdBox = createDynamicBox('CONFIG COMMANDS', [
+    'welcome setup <#chan> : Bind welcome',
+    'welcome preset <theme>: Apply theme',
+    'welcome card <mode>   : Toggle mode',
+    'welcome description   : Edit text',
+    'welcometest           : Preview card',
+    'boostmsg <#chan>      : Boost config',
+    'joindm <on/off/text>  : Join DM config',
+    'leavedm <on/off/text> : Leave DM config'
+  ]);
+
+  const gearEmoji = emojis.GEAR || '<a:an_bot:1530948362784870510>';
+  const configEmoji = emojis.AUTORESPOND || '<a:autoresponder:1530942573705822409>';
+  const boostEmoji = emojis.BOOST || '<a:BOOST:1532470412217159790>';
+
+  const description =
+    `Welcome **${author.username}**! Below is your server **Welcome System Hub & Greetings Config**.\n\n` +
+    `${gearEmoji} **System Status & Settings**\n` +
+    '```\n' + statusBox + '\n```\n\n' +
+    `${configEmoji} **Configuration & Font Commands**\n` +
+    '```\n' + cmdBox + '\n```\n\n' +
+    `${boostEmoji} **Server Boost Announcement:** Bound to ${boostChanMention} (Use \`.boostmsg test\` to preview)\n\n` +
+    `**💬 Active Description Body:**\n` +
+    `>>> ${config.description}`;
+
+  const embed = createStyledEmbed({
+    title: `👋 Welcome System Dashboard`,
+    subtitle: `${guild.name} Greetings Configuration`,
+    description,
+    requestedBy: author,
+    clientUser
+  });
+
+  return embed;
+}
+
 module.exports = {
   name: 'welcome',
   description: 'Customizable Mimu-Style Welcome Embeds with Gothic Fonts, Stylish Bullets & Canvas Cards',
@@ -368,6 +337,7 @@ module.exports = {
   getOrCreateWelcomeConfig,
   buildWelcomeCard,
   generateCanvasWelcomeCard,
+  buildWelcomeConfigPanel,
   buildBoosterEmbed,
   parsePlaceholders,
 
@@ -395,57 +365,138 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
+    // BOOSTMSG COMMAND (.boostmsg <#channel> [custom text] / .boostmsg enable/disable / .boostmsg test)
+    if (sub === 'boostmsg') {
+      const firstArg = args[1]?.toLowerCase();
+
+      if (firstArg === 'enable' || firstArg === 'on') {
+        config.boostEnabled = true;
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} **Server Boost Announcements Enabled**!`);
+      }
+
+      if (firstArg === 'disable' || firstArg === 'off') {
+        config.boostEnabled = false;
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.DISABLED} **Server Boost Announcements Disabled**.`);
+      }
+
+      if (firstArg === 'test' || firstArg === 'preview') {
+        const boostEmbed = buildBoosterEmbed(message.member);
+        return message.channel.send({ content: `<@${author.id}>`, embeds: [boostEmbed] });
+      }
+
+      const chan = message.mentions.channels.first() || guild.channels.cache.get(args[1]);
+      if (chan) {
+        config.boostChannelId = chan.id;
+        config.boostEnabled = true;
+        const customTxt = args.slice(2).join(' ');
+        if (customTxt) config.boostText = customTxt;
+
+        welcomeConfigs.set(guild.id, config);
+
+        const boostEmbed = buildBoosterEmbed(message.member);
+        await chan.send({ content: `${emojis.SUCCESS} **Boost Announcements Bound to <#${chan.id}>**! Preview below:`, embeds: [boostEmbed] }).catch(() => {});
+        return message.reply(`${emojis.SUCCESS} Server Boost announcements bound to <#${chan.id}>!`);
+      }
+
+      const currentChan = config.boostChannelId ? `<#${config.boostChannelId}>` : 'Not set';
+      return message.reply(
+        `${emojis.BOOST || '🚀'} **Server Boost Announcement Manager**\n` +
+        `• **Status:** ${config.boostEnabled !== false ? `${emojis.SUCCESS} Active` : `${emojis.DISABLED} Disabled`}\n` +
+        `• **Boost Channel:** ${currentChan}\n\n` +
+        `**Usage:**\n` +
+        `• \`.boostmsg <#channel>\` — Bind boost announcement channel\n` +
+        `• \`.boostmsg test\` — Send live test booster embed with animated diamond gem!\n` +
+        `• \`.boostmsg enable / disable\` — Toggle boost announcements`
+      );
+    }
+
+    // JOINDM COMMAND (.joindm enable/disable/text)
+    if (sub === 'joindm') {
+      const firstArg = args[1]?.toLowerCase();
+      if (firstArg === 'enable' || firstArg === 'on') {
+        config.joinDmEnabled = true;
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} **Join DM Notifications Enabled**!`);
+      }
+      if (firstArg === 'disable' || firstArg === 'off') {
+        config.joinDmEnabled = false;
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.DISABLED} **Join DM Notifications Disabled**.`);
+      }
+      const customTxt = args.slice(1).join(' ');
+      if (customTxt) {
+        config.joinDmText = customTxt;
+        config.joinDmEnabled = true;
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} **Join DM Message Saved**: \`${parsePlaceholders(customTxt, message.member)}\``);
+      }
+      return message.reply(`ℹ️ Usage: \`.joindm <enable/disable/text>\``);
+    }
+
+    // LEAVEDM COMMAND (.leavedm enable/disable/text)
+    if (sub === 'leavedm') {
+      const firstArg = args[1]?.toLowerCase();
+      if (firstArg === 'enable' || firstArg === 'on') {
+        config.leaveDmEnabled = true;
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} **Leave DM Notifications Enabled**!`);
+      }
+      if (firstArg === 'disable' || firstArg === 'off') {
+        config.leaveDmEnabled = false;
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.DISABLED} **Leave DM Notifications Disabled**.`);
+      }
+      const customTxt = args.slice(1).join(' ');
+      if (customTxt) {
+        config.leaveDmText = customTxt;
+        config.leaveDmEnabled = true;
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} **Leave DM Message Saved**: \`${parsePlaceholders(customTxt, message.member)}\``);
+      }
+      return message.reply(`ℹ️ Usage: \`.leavedm <enable/disable/text>\``);
+    }
+
     // 1. PRESET SELECTOR (.welcome preset <theme>)
     if (sub === 'preset') {
       const theme = args[1]?.toLowerCase();
-      if (!theme || !WELCOME_PRESETS[theme]) {
-        return message.reply(
-          `🎨 **Available Welcome Presets**:\n` +
-          `• \`gothic\` - Dark Sanctuary Theme 🖤 (Gothic Font: 𝔚𝔢𝔩𝔠𝔬𝔪𝔢 𝔱𝔬 𝔱𝔥𝔢 ℭ𝔞𝔰𝔱𝔩𝔢)\n` +
-          `• \`aesthetic\` - Soft Pink & Pastel Theme 🌸 (Script Font: 𝒲ℯ𝓁𝒸⯀𝓂ℯ)\n` +
-          `• \`galaxy\` - Cosmic Starry Horizon Theme ✨\n` +
-          `• \`cafe\` - Cozy Boba & Matcha Theme 🧸\n` +
-          `• \`shinobi\` - Naruto Leaf Village Theme 🍥\n` +
-          `• \`cyberpunk\` - Neon Matrix Theme ⚡\n` +
-          `• \`minimal\` - Clean Monochrome Theme 🌿\n\n` +
-          `Usage: \`.welcome preset gothic\``
-        );
+      if (theme && WELCOME_PRESETS[theme]) {
+        const p = WELCOME_PRESETS[theme];
+        config.style = p.style;
+        config.color = p.color;
+        config.title = p.title;
+        config.description = p.description;
+        config.imageUrl = p.banner || PRESET_BANNERS[p.style] || null;
+
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} **Applied Welcome Theme Preset**: \`${p.name}\`! Type \`.welcometest\` to preview.`);
       }
 
-      const preset = WELCOME_PRESETS[theme];
-      config.style = theme;
-      config.title = preset.title;
-      config.headerText = preset.headerText;
-      config.description = preset.description;
-      config.color = preset.color;
-      config.imageUrl = preset.imageUrl || PRESET_BANNERS[theme];
-      config.useAvatarThumbnail = true;
-      config.footer = preset.footer;
-      welcomeConfigs.set(guild.id, config);
+      const presetBox = createDynamicBox('WELCOME PRESETS', [
+        'gothic   : Dark Sanctuary',
+        'aesthetic: Soft Pink Pastel',
+        'galaxy   : Cosmic Starry',
+        'cafe     : Cozy Boba Matcha',
+        'shinobi  : Leaf Village',
+        'cyberpunk: Neon Matrix',
+        'minimal  : Clean Monochrome'
+      ]);
 
-      return message.reply(`${emojis.SUCCESS} **Applied Welcome Preset**: \`${theme.toUpperCase()}\` with Fancy Gothic Font & Emojis!\nType \`.welcometest\` to preview the card!`);
+      return message.reply(
+        `🎨 **Available Welcome Theme Presets:**\n` +
+        '```\n' + presetBox + '\n```\n' +
+        `Usage: \`.welcome preset gothic\` or \`.welcome preset shinobi\``
+      );
     }
 
-    // 2. FANCY FONT CONVERTER TOOL (.welcome font <gothic/smallcaps/script> <text>)
-    if (sub === 'font') {
-      const style = args[1]?.toLowerCase();
-      const text = args.slice(2).join(' ');
-
-      if (!style || !FANCY_FONTS[style] || !text) {
-        return message.reply(`ℹ️ Usage: \`.welcome font <gothic / smallcaps / script> <your text>\`\nExample: \`.welcome font gothic Welcome to the Castle\``);
-      }
-
-      const converted = FANCY_FONTS[style](text);
-      return message.reply(`✨ **Converted Text**: \`${converted}\`\n\nCopy & paste this into your \`.welcome title\` or \`.welcome description\`!`);
-    }
-
-    // 3. TOGGLE CARD MODE (.welcome card canvas/embed)
+    // 2. TOGGLE CARD MODE (.welcome card <canvas/embed>)
     if (sub === 'card' || sub === 'mode') {
       const mode = args[1]?.toLowerCase();
-      if (mode === 'canvas' || mode === 'graphic' || mode === 'image') {
+      if (mode === 'canvas' || mode === 'graphic') {
         config.cardType = 'canvas';
         welcomeConfigs.set(guild.id, config);
-        return message.reply(`${emojis.SUCCESS} **Card Render Mode Set to**: \`Canvas Graphic Card\`! Type \`.welcometest\` to preview.`);
+        return message.reply(`${emojis.SUCCESS} **Card Render Mode Set to**: \`Graphic Canvas Card\`! Type \`.welcometest\` to preview.`);
       }
       if (mode === 'embed' || mode === 'rich') {
         config.cardType = 'embed';
