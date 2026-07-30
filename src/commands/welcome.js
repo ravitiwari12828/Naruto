@@ -367,7 +367,8 @@ module.exports = {
 
     // BOOSTMSG COMMAND (.boostmsg <#channel> [custom text] / .boostmsg enable/disable / .boostmsg test)
     if (sub === 'boostmsg') {
-      const firstArg = args[1]?.toLowerCase();
+      let firstArg = args[0]?.toLowerCase();
+      if (firstArg === 'boostmsg') firstArg = args[1]?.toLowerCase();
 
       if (firstArg === 'enable' || firstArg === 'on') {
         config.boostEnabled = true;
@@ -386,11 +387,13 @@ module.exports = {
         return message.channel.send({ content: `<@${author.id}>`, embeds: [boostEmbed] });
       }
 
-      const chan = message.mentions.channels.first() || guild.channels.cache.get(args[1]);
+      const chanArg = args[0]?.toLowerCase() === 'boostmsg' ? args[1] : args[0];
+      const chan = message.mentions.channels.first() || (chanArg ? guild.channels.cache.get(chanArg) : null);
       if (chan) {
         config.boostChannelId = chan.id;
         config.boostEnabled = true;
-        const customTxt = args.slice(2).join(' ');
+        const textSliceIdx = args[0]?.toLowerCase() === 'boostmsg' ? 2 : 1;
+        const customTxt = args.slice(textSliceIdx).join(' ');
         if (customTxt) config.boostText = customTxt;
 
         welcomeConfigs.set(guild.id, config);
@@ -433,7 +436,9 @@ module.exports = {
 
     // JOINDM COMMAND (.joindm enable/disable/text)
     if (sub === 'joindm') {
-      const firstArg = args[1]?.toLowerCase();
+      let firstArg = args[0]?.toLowerCase();
+      if (firstArg === 'joindm') firstArg = args[1]?.toLowerCase();
+
       if (firstArg === 'enable' || firstArg === 'on') {
         config.joinDmEnabled = true;
         welcomeConfigs.set(guild.id, config);
@@ -444,8 +449,9 @@ module.exports = {
         welcomeConfigs.set(guild.id, config);
         return message.reply(`${emojis.DISABLED} **Join DM Notifications Disabled**.`);
       }
-      const customTxt = args.slice(1).join(' ');
-      if (customTxt) {
+      const textSliceIdx = args[0]?.toLowerCase() === 'joindm' ? 1 : 0;
+      const customTxt = args.slice(textSliceIdx).join(' ');
+      if (customTxt && !['enable', 'disable', 'on', 'off'].includes(firstArg)) {
         config.joinDmText = customTxt;
         config.joinDmEnabled = true;
         welcomeConfigs.set(guild.id, config);
@@ -473,7 +479,9 @@ module.exports = {
 
     // LEAVEDM COMMAND (.leavedm enable/disable/text)
     if (sub === 'leavedm') {
-      const firstArg = args[1]?.toLowerCase();
+      let firstArg = args[0]?.toLowerCase();
+      if (firstArg === 'leavedm') firstArg = args[1]?.toLowerCase();
+
       if (firstArg === 'enable' || firstArg === 'on') {
         config.leaveDmEnabled = true;
         welcomeConfigs.set(guild.id, config);
@@ -484,8 +492,9 @@ module.exports = {
         welcomeConfigs.set(guild.id, config);
         return message.reply(`${emojis.DISABLED} **Leave DM Notifications Disabled**.`);
       }
-      const customTxt = args.slice(1).join(' ');
-      if (customTxt) {
+      const textSliceIdx = args[0]?.toLowerCase() === 'leavedm' ? 1 : 0;
+      const customTxt = args.slice(textSliceIdx).join(' ');
+      if (customTxt && !['enable', 'disable', 'on', 'off'].includes(firstArg)) {
         config.leaveDmText = customTxt;
         config.leaveDmEnabled = true;
         welcomeConfigs.set(guild.id, config);
