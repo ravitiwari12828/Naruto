@@ -62,7 +62,7 @@ module.exports = {
     if (sub === 'name' || sub === 'rename') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
       const newName = args.slice(1).join(' ');
-      if (!newName) return message.reply(`ℹ️ Usage: \`.vc name <new channel name>\``);
+      if (!newName) return message.reply(`${emojis.INFO} Usage: \`.vc name <new channel name>\``);
       await voiceState.channel.setName(newName);
       return message.reply(`${emojis.SUCCESS} Renamed your Voice Channel to **${newName}**.`);
     }
@@ -71,12 +71,12 @@ module.exports = {
     if (sub === 'size' || sub === 'limit') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
       const amountArg = args[1]?.toLowerCase();
-      if (!amountArg) return message.reply(`ℹ️ Usage: \`.vc size <amount / unlimited>\``);
+      if (!amountArg) return message.reply(`${emojis.INFO} Usage: \`.vc size <amount / unlimited>\``);
 
       let limit = 0;
       if (amountArg !== 'unlimited' && amountArg !== '0') {
         limit = parseInt(amountArg);
-        if (isNaN(limit) || limit < 1 || limit > 99) return message.reply(`ℹ️ Enter a valid channel size limit between 1 and 99.`);
+        if (isNaN(limit) || limit < 1 || limit > 99) return message.reply(`${emojis.INFO} Enter a valid channel size limit between 1 and 99.`);
       }
 
       await voiceState.channel.setUserLimit(limit);
@@ -134,7 +134,7 @@ module.exports = {
     if (sub === 'transfer') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
       const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
-      if (!target || !target.voice?.channel) return message.reply(`ℹ️ Mention a member connected to your VC to transfer ownership!`);
+      if (!target || !target.voice?.channel) return message.reply(`${emojis.INFO} Mention a member connected to your VC to transfer ownership!`);
 
       const vmCmd = message.client.commands.get('voicemaster');
       const cfg = vmCmd ? vmCmd.getOrCreateVMConfig(guild.id) : null;
@@ -151,7 +151,7 @@ module.exports = {
     if (sub === 'permit' || sub === 'allow') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
       const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
-      if (!target) return message.reply(`ℹ️ Usage: \`.vc permit @user\``);
+      if (!target) return message.reply(`${emojis.INFO} Usage: \`.vc permit @user\``);
 
       await voiceState.channel.permissionOverwrites.edit(target.id, { Connect: true, ViewChannel: true });
       return message.reply(`${emojis.SUCCESS} Allowed **${target.user.tag}** to join your Voice Channel.`);
@@ -161,7 +161,7 @@ module.exports = {
     if (sub === 'unpermit' || sub === 'revoke') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
       const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
-      if (!target) return message.reply(`ℹ️ Usage: \`.vc unpermit @user\``);
+      if (!target) return message.reply(`${emojis.INFO} Usage: \`.vc unpermit @user\``);
 
       await voiceState.channel.permissionOverwrites.edit(target.id, { Connect: false });
       return message.reply(`${emojis.SUCCESS} Removed **${target.user.tag}** from the allowed list.`);
@@ -179,7 +179,7 @@ module.exports = {
     if (sub === 'ban') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
       const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
-      if (!target) return message.reply(`ℹ️ Usage: \`.vc ban @user\``);
+      if (!target) return message.reply(`${emojis.INFO} Usage: \`.vc ban @user\``);
 
       await voiceState.channel.permissionOverwrites.edit(target.id, { Connect: false, ViewChannel: false });
       if (target.voice?.channel?.id === voiceState.channel.id) {
@@ -191,7 +191,7 @@ module.exports = {
     if (sub === 'unban') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to your Voice Channel!`);
       const target = message.mentions.members?.first() || guild.members.cache.get(args[1]);
-      if (!target) return message.reply(`ℹ️ Usage: \`.vc unban @user\``);
+      if (!target) return message.reply(`${emojis.INFO} Usage: \`.vc unban @user\``);
 
       await voiceState.channel.permissionOverwrites.edit(target.id, { Connect: null, ViewChannel: null });
       return message.reply(`${emojis.SUCCESS} Unbanned **${target.user.tag}** from your Voice Channel.`);
