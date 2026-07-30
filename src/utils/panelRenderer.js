@@ -170,7 +170,7 @@ const CATEGORIES = [
     unicodeFallback: '🎉',
     heading: `${emojis.GIVEAWAY || '🎉'} Giveaways Commands`,
     commands: [
-      'gstart', 'gend', 'reroll'
+      'gstart', 'gend <id>', 'greroll <id>'
     ]
   },
   {

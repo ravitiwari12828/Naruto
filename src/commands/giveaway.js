@@ -40,12 +40,21 @@ async function collectEligibleUsers(client, gw) {
 
 module.exports = {
   name: 'giveaway',
-  description: 'Host and manage giveaways. Subcommands: create, end, reroll, list',
-  aliases: ['gw'],
+  aliases: ['gw', 'gstart', 'gcreate', 'gend', 'greroll', 'reroll'],
   giveaways,
 
   async execute(message, args) {
-    const sub = args[0]?.toLowerCase();
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
+    let sub = args[0]?.toLowerCase();
+
+    if (invoked === 'gstart' || invoked === 'gcreate') {
+      sub = 'create';
+    } else if (invoked === 'gend') {
+      sub = 'end';
+    } else if (invoked === 'greroll' || invoked === 'reroll') {
+      sub = 'reroll';
+    }
 
     let clientUser = message.client.user;
     try {
