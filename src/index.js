@@ -627,11 +627,13 @@ client.on('guildBanAdd', async (ban) => {
           // 2. Punish rogue admin (timeout, strip roles, channel lockout)
           await punishRogueAdmin(guild, executor.id, 'Unauthorized Member Ban');
 
-          dispatchLog(guild, 'antinuke', {
-            color: 0xED4245,
-            title: '${emojis.SHIELD} ANTIBAN PROTECTION TRIGGERED',
-            description: `**Unauthorized Ban Reverted & Admin Locked Out!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Banned Member:** ${ban.user.tag}\n• **Action:** Member unbanned, Admin roles stripped & channel locked out!`,
-            footer: 'AntiNuke Security System'
+          const { dispatchAntiNukeLog } = require('./utils/logger');
+          dispatchAntiNukeLog(guild, {
+            title: 'Anti Nuke',
+            rogueUser: executor,
+            targetUser: ban.user,
+            actionReason: 'Unauthorized Ban',
+            banStatusText: 'Successfully Banned'
           });
         }
       }
@@ -668,11 +670,12 @@ client.on('channelCreate', async (channel) => {
             await channel.delete('AntiNuke: Unauthorized Channel Creation').catch(() => {});
             await punishRogueAdmin(guild, executor.id, 'Unauthorized Channel Creation');
 
-            dispatchLog(guild, 'antinuke', {
-              color: 0xED4245,
-              title: '${emojis.SHIELD} ANTICHANNEL PROTECTION TRIGGERED',
-              description: `**Unauthorized Channel Creation Blocked!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Channel Deleted:** \`${channel.name}\`\n• **Action:** Channel deleted & Admin locked out!`,
-              footer: 'AntiNuke Security System'
+            const { dispatchAntiNukeLog } = require('./utils/logger');
+            dispatchAntiNukeLog(guild, {
+              title: 'Anti Nuke',
+              rogueUser: executor,
+              actionReason: `suspicious activity (Creating channel: ${channel.name})`,
+              banStatusText: 'Successfully Banned'
             });
             return;
           }
@@ -724,11 +727,12 @@ client.on('channelDelete', async (channel) => {
 
             await punishRogueAdmin(guild, executor.id, 'Unauthorized Channel Deletion');
 
-            dispatchLog(guild, 'antinuke', {
-              color: 0xED4245,
-              title: '${emojis.SHIELD} ANTICHANNEL DELETION RESTORED',
-              description: `**Unauthorized Channel Deletion Reverted!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Restored Channel:** \`${channel.name}\`\n• **Action:** Channel recreated & Admin locked out!`,
-              footer: 'AntiNuke Security System'
+            const { dispatchAntiNukeLog } = require('./utils/logger');
+            dispatchAntiNukeLog(guild, {
+              title: 'Anti Nuke',
+              rogueUser: executor,
+              actionReason: `suspicious activity (Deleting channel: ${channel.name})`,
+              banStatusText: 'Successfully Banned'
             });
             return;
           }
@@ -772,11 +776,12 @@ client.on('roleCreate', async (role) => {
             await role.delete('AntiNuke: Unauthorized Role Creation').catch(() => {});
             await punishRogueAdmin(guild, executor.id, 'Unauthorized Role Creation');
 
-            dispatchLog(guild, 'antinuke', {
-              color: 0xED4245,
-              title: '${emojis.SHIELD} ANTIROLE PROTECTION TRIGGERED',
-              description: `**Unauthorized Role Creation Blocked!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Role Deleted:** \`${role.name}\`\n• **Action:** Role deleted & Admin locked out!`,
-              footer: 'AntiNuke Security System'
+            const { dispatchAntiNukeLog } = require('./utils/logger');
+            dispatchAntiNukeLog(guild, {
+              title: 'Anti Nuke',
+              rogueUser: executor,
+              actionReason: `suspicious activity (Creating role: ${role.name})`,
+              banStatusText: 'Successfully Banned'
             });
             return;
           }
@@ -818,11 +823,12 @@ client.on('roleDelete', async (role) => {
           if (!isWhitelisted) {
             await punishRogueAdmin(guild, executor.id, 'Unauthorized Role Deletion');
 
-            dispatchLog(guild, 'antinuke', {
-              color: 0xED4245,
-              title: '${emojis.SHIELD} ANTIROLE DELETION INTERCEPTED',
-              description: `**Unauthorized Role Deletion Intercepted!**\n\n• **Rogue Admin:** <@${executor.id}>\n• **Role Deleted:** \`${role.name}\`\n• **Action:** Admin roles stripped & total channel lockout applied!`,
-              footer: 'AntiNuke Security System'
+            const { dispatchAntiNukeLog } = require('./utils/logger');
+            dispatchAntiNukeLog(guild, {
+              title: 'Anti Nuke',
+              rogueUser: executor,
+              actionReason: `suspicious activity (Deleting role: ${role.name})`,
+              banStatusText: 'Successfully Banned'
             });
             return;
           }

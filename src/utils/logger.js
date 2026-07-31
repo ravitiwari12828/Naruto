@@ -1,7 +1,7 @@
 const { EmbedBuilder } = require('discord.js');
-const db = require('../database/db');
+const emojis = require('../utils/emojis');
 
-// Global Advanced Log Configuration Store (guildId -> { enabled, channels: Map(type -> channelId) })
+// Global Advanced Logging Store (guildId -> { channels: Map<type, channelId>, enabled: boolean })
 const advLogStore = new Map();
 
 function getOrCreateAdvLogStore(guildId) {
@@ -14,32 +14,20 @@ function getOrCreateAdvLogStore(guildId) {
   return advLogStore.get(guildId);
 }
 
-/**
- * Routes and dispatches a structured log embed to the dedicated channel for that event type.
- */
 async function dispatchLog(guild, logType, embedData) {
   if (!guild) return;
+
   const store = getOrCreateAdvLogStore(guild.id);
   if (!store.enabled) return;
 
-  // Find target channel ID for this log type
   let channelId = store.channels.get(logType);
 
-  if (!channelId) {
-    const dbChannels = db.getLogChannels(guild.id);
-    if (dbChannels && dbChannels[logType]) {
-      channelId = dbChannels[logType];
-      store.channels.set(logType, channelId);
-    }
-  }
-
-  // Fallback search by channel name in guild cache if not mapped explicitly
   if (!channelId) {
     const channelNameMap = {
       narutologs: ['naruto-logs', 'all-logs'],
       modlogs: ['mod-logs', 'modlogs'],
-      antinuke: ['antinuke-logs', 'bot-antinuke-logs'],
-      automod: ['automod-logs', 'olympus-automod'],
+      antinuke: ['naruto-security-logs', 'security-logs', 'antinuke-logs', 'bot-antinuke-logs'],
+      automod: ['automod-logs', 'olympus-automod', 'naruto-automod-logs'],
       messages: ['message-logs', 'msgs-log', 'message-log'],
       invites: ['invite-logs', 'invites-log'],
       channels: ['channel-logs', 'channel-log'],
@@ -84,7 +72,7 @@ async function dispatchLog(guild, logType, embedData) {
       embed = embedData;
     } else {
       embed = new EmbedBuilder()
-        .setColor(embedData.color || 0x7E0808)
+        .setColor(embedData.color || 0xED4245)
         .setTitle(embedData.title || `📜 ${logType.toUpperCase()} Log`)
         .setDescription(embedData.description || '')
         .setTimestamp();
@@ -103,8 +91,65 @@ async function dispatchLog(guild, logType, embedData) {
   }
 }
 
+function dispatchAntiNukeLog(guild, { rogueUser, targetUser, actionReason, banStatusText, roles, extraDetails, title }) {
+  const descLines = [];
+
+  if (rogueUser) {
+    descLines.push(`• **Banned** <@${rogueUser.id || rogueUser}> from your server for **${actionReason || 'suspicious activity'}**.`);
+  } else {
+    descLines.push(`• **AntiNuke Defense Triggered:** ${actionReason || 'Suspicious Activity Blocked'}.`);
+  }
+
+  descLines.push(`• *If they are a trusted member, you can whitelist them for the future.*`);
+
+  if (roles && roles.length > 0) {
+    descLines.push(`• **Roles:** ${roles.map(r => `<@&${r.id || r}>`).join(' ')}`);
+  }
+
+  if (extraDetails) {
+    descLines.push(`• **Details:** ${extraDetails}`);
+  }
+
+  const clientUser = guild.client.user;
+
+  const embed = new EmbedBuilder()
+    .setColor(0xED4245)
+    .setAuthor({
+      name: guild.name,
+      iconURL: guild.iconURL({ dynamic: true }) || undefined
+    })
+    .setTitle(`${emojis.SHIELD || '🛡️'} ${title || 'Anti Nuke'}`)
+    .setDescription(descLines.join('\n\n'))
+    .addFields(
+      {
+        name: 'Action',
+        value: `**Ban Status :** ✅ | <@${rogueUser?.id || rogueUser || targetUser?.id || targetUser}> ${banStatusText || 'Successfully Banned'}`
+      },
+      {
+        name: 'Moderator',
+        value: `<@${clientUser.id}>\n\`(ID: ${clientUser.id})\``,
+        inline: true
+      },
+      {
+        name: 'Target',
+        value: rogueUser
+          ? `<@${rogueUser.id || rogueUser}>\n\`(ID: ${rogueUser.id || rogueUser})\``
+          : (targetUser ? `<@${targetUser.id || targetUser}>\n\`(ID: ${targetUser.id || targetUser})\`` : '`N/A`'),
+        inline: true
+      }
+    )
+    .setThumbnail(guild.iconURL({ dynamic: true, size: 256 }) || undefined)
+    .setFooter({
+      text: `${guild.name} • ${guild.id}`
+    })
+    .setTimestamp();
+
+  dispatchLog(guild, 'antinuke', embed);
+}
+
 module.exports = {
   advLogStore,
   getOrCreateAdvLogStore,
-  dispatchLog
+  dispatchLog,
+  dispatchAntiNukeLog
 };
