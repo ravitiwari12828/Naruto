@@ -112,7 +112,7 @@ module.exports = {
       return waitingMsg.edit({ content: ' ', embeds: [embed] });
     } catch (err) {
       console.error('[Priority AI Error]', err.message);
-      return waitingMsg.edit(`${emojis.WARNING} An error occurred while generating AI response. Please try again!`);
+      return waitingMsg.edit(`${emojis.WARNING} Could not generate AI response: \`${err.message || 'API Error'}\``);
     }
   }
 };

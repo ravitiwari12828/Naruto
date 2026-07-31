@@ -1674,7 +1674,8 @@ client.on('messageCreate', async (message) => {
     await command.execute(message, args);
   } catch (error) {
     console.error(`Error executing command ${commandName}:`, error);
-    message.reply(`${emojis.DISABLED} An error occurred while executing that command.`).catch(() => {});
+    const errMsg = error?.message || 'Execution Error';
+    message.reply(`${emojis.WARNING} Command \`.${commandName}\` error: \`${errMsg}\``).catch(() => {});
   }
 });
 

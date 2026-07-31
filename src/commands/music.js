@@ -487,15 +487,33 @@ module.exports = {
 
     // 2. PAUSE / RESUME
     if (['pause', 'resume'].includes(invoked)) {
+      const lavalink = getLavalink();
       const player = lavalink?.getPlayer(guildId);
-      if (!player) return message.reply(`${emojis.WARNING} No active music player.`);
+      if (!player) return message.reply(`${emojis.WARNING} No active music player in this server.`);
 
-      if (invoked === 'pause' || !player.paused) {
-        await player.pause();
-        return message.reply('⏸️ **Paused** music playback.');
-      } else {
-        await player.resume();
-        return message.reply('▶️ **Resumed** music playback.');
+      try {
+        if (invoked === 'pause' || !player.paused) {
+          if (typeof player.pause === 'function') {
+            await player.pause();
+          } else if (typeof player.setPaused === 'function') {
+            await player.setPaused(true);
+          } else {
+            player.paused = true;
+          }
+          return message.reply('⏸️ **Paused** music playback.');
+        } else {
+          if (typeof player.resume === 'function') {
+            await player.resume();
+          } else if (typeof player.setPaused === 'function') {
+            await player.setPaused(false);
+          } else {
+            player.paused = false;
+          }
+          return message.reply('▶️ **Resumed** music playback.');
+        }
+      } catch (err) {
+        console.error('[Music Pause/Resume Error]', err);
+        return message.reply(`${emojis.WARNING} Could not toggle pause state: \`${err.message || 'Player Error'}\``);
       }
     }
 
