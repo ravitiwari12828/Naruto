@@ -88,7 +88,7 @@ function checkAndIncrementModAction(guildId, moderatorId, actionType) {
 module.exports = {
   name: 'modlimits',
   description: 'AntiNuke Action Rate Limits & Audit Protection System',
-  aliases: ['limit', 'limits', 'actionlimits', 'modquota', 'limitmod', 'rate-limit'],
+  aliases: ['limit', 'limits', 'limitlog', 'limitlogs', 'actionlimits', 'modquota', 'limitmod', 'rate-limit'],
   modLimitsStore,
   checkAndIncrementModAction,
 
@@ -98,7 +98,7 @@ module.exports = {
     let sub = args[0]?.toLowerCase();
 
     // Shift sub if 'modlimits' or 'limit' was used as sub
-    if (['modlimits', 'limit', 'limits'].includes(sub)) {
+    if (['modlimits', 'limit', 'limits', 'limitlog', 'limitlogs'].includes(sub)) {
       sub = args[1]?.toLowerCase();
       args = args.slice(1);
     }
