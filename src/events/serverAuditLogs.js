@@ -1,5 +1,6 @@
 const { AuditLogEvent, EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { dispatchLog } = require('../utils/logger');
+const emojis = require('../utils/emojis');
 
 // Deduplication Cache (30 sec)
 const processedEvents = new Map();
@@ -73,7 +74,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x5865F2)
-      .setTitle('⚙️ Server Settings Updated')
+      .setTitle(`${emojis.GEAR || '⚙️'} Server Settings Updated`)
       .setDescription(
         `**Changes Made in Server Settings:**\n${changes.join('\n')}\n\n` +
         `• **Updated By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown / Audit Log Expired`'}`
@@ -93,7 +94,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle('🎭 Role Created in Server Settings')
+      .setTitle(`${emojis.SUCCESS || '🎭'} Role Created in Server Settings`)
       .setDescription(
         `• **Role:** <@&${role.id}> (\`${role.name}\`)\n` +
         `• **Role ID:** \`${role.id}\`\n` +
@@ -138,7 +139,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle('🎭 Role Modified in Server Settings')
+      .setTitle(`${emojis.GEAR || '⚙️'} Role Modified in Server Settings`)
       .setDescription(
         `• **Role:** <@&${newRole.id}>\n\n` +
         `**Changes:**\n${changes.join('\n')}\n\n` +
@@ -157,7 +158,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle('🗑️ Role Deleted in Server Settings')
+      .setTitle(`${emojis.REMOVE || '🗑️'} Role Deleted in Server Settings`)
       .setDescription(
         `• **Role Name:** \`${role.name}\`\n` +
         `• **Role ID:** \`${role.id}\`\n` +
@@ -178,11 +179,11 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle('📁 Channel Created in Server Settings')
+      .setTitle(`${emojis.SUCCESS || '📁'} Channel Created in Server Settings`)
       .setDescription(
         `• **Channel:** <#${channel.id}> (\`${channel.name}\`)\n` +
+        `• **Channel ID:** \`${channel.id}\`\n` +
         `• **Type:** \`${channel.type}\`\n` +
-        `• **Category:** ${channel.parent ? channel.parent.name : 'None'}\n` +
         `• **Created By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}`
       )
       .setTimestamp();
@@ -200,10 +201,13 @@ module.exports = (client) => {
       changes.push(`• **Name:** \`${oldChannel.name}\` ➔ **\`${newChannel.name}\`**`);
     }
     if (oldChannel.topic !== newChannel.topic) {
-      changes.push(`• **Topic:** \`${oldChannel.topic || 'None'}\` ➔ \`${newChannel.topic || 'None'}\``);
+      changes.push(`• **Topic Changed**`);
     }
     if (oldChannel.rateLimitPerUser !== newChannel.rateLimitPerUser) {
       changes.push(`• **Slowmode:** \`${oldChannel.rateLimitPerUser}s\` ➔ \`${newChannel.rateLimitPerUser}s\``);
+    }
+    if (oldChannel.nsfw !== newChannel.nsfw) {
+      changes.push(`• **NSFW:** \`${oldChannel.nsfw}\` ➔ \`${newChannel.nsfw}\``);
     }
 
     if (changes.length === 0) return;
@@ -212,7 +216,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle('📁 Channel Modified in Server Settings')
+      .setTitle(`${emojis.GEAR || '⚙️'} Channel Modified in Server Settings`)
       .setDescription(
         `• **Channel:** <#${newChannel.id}>\n\n` +
         `**Changes:**\n${changes.join('\n')}\n\n` +
@@ -232,11 +236,10 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle('🗑️ Channel Deleted in Server Settings')
+      .setTitle(`${emojis.REMOVE || '🗑️'} Channel Deleted in Server Settings`)
       .setDescription(
         `• **Channel Name:** \`${channel.name}\`\n` +
         `• **Channel ID:** \`${channel.id}\`\n` +
-        `• **Type:** \`${channel.type}\`\n` +
         `• **Deleted By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}`
       )
       .setTimestamp();
@@ -244,7 +247,7 @@ module.exports = (client) => {
     dispatchLog(channel.guild, 'channels', embed);
   });
 
-  // 4. 👥 MEMBERS / PEOPLE (guildMemberUpdate)
+  // 4. 👥 MEMBERS (guildMemberUpdate)
   client.on('guildMemberUpdate', async (oldMember, newMember) => {
     const key = `guildMemberUpdate:${newMember.guild.id}:${newMember.id}:${Date.now().toString().slice(0, -3)}`;
     if (isDuplicateEvent(key)) return;
@@ -284,7 +287,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x3498DB)
-      .setTitle('👥 Member Roles / Nickname Changed in Server Settings')
+      .setTitle(`${emojis.SHIELD || '👥'} Member Roles / Nickname Changed in Server Settings`)
       .setDescription(
         `• **Member:** <@${newMember.id}> (\`${newMember.user.tag}\`)\n\n` +
         `**Changes:**\n${changes.join('\n')}\n\n` +
@@ -304,7 +307,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle('🔨 Member Banned in Server Settings')
+      .setTitle(`${emojis.REMOVE || '🔨'} Member Banned in Server Settings`)
       .setDescription(
         `• **Banned User:** <@${ban.user.id}> (\`${ban.user.tag}\`)\n` +
         `• **User ID:** \`${ban.user.id}\`\n` +
@@ -324,7 +327,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle('🔓 Member Unbanned in Server Settings')
+      .setTitle(`${emojis.UNLOCK || '🔓'} Member Unbanned in Server Settings`)
       .setDescription(
         `• **Unbanned User:** <@${ban.user.id}> (\`${ban.user.tag}\`)\n` +
         `• **User ID:** \`${ban.user.id}\`\n` +
@@ -343,7 +346,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle('✉️ Server Invite Created in Server Settings')
+      .setTitle(`${emojis.INVITELINK || '✉️'} Server Invite Created in Server Settings`)
       .setDescription(
         `• **Invite Code:** \`discord.gg/${invite.code}\`\n` +
         `• **Channel:** ${invite.channel ? '<#' + invite.channel.id + '>' : 'Unknown'}\n` +
@@ -364,7 +367,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle('🗑️ Server Invite Deleted in Server Settings')
+      .setTitle(`${emojis.REMOVE || '🗑️'} Server Invite Deleted in Server Settings`)
       .setDescription(
         `• **Invite Code:** \`discord.gg/${invite.code}\`\n` +
         `• **Channel:** ${invite.channel ? '<#' + invite.channel.id + '>' : 'Unknown'}\n` +
