@@ -2,28 +2,50 @@ const { EmbedBuilder, AttachmentBuilder } = require('discord.js');
 const https = require('https');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const { isUserPremium, isGuildPremium } = require('./premium');
+const { isBotOwner } = require('../utils/owners');
 
-// Global 24-Hour Image Generation Rate Limits Store (userId -> resetAt timestamp)
+// Global 24-Hour Rolling Timestamps Store: userId -> Array of timestamps (in ms)
 const imageLimitsStore = new Map();
 
-function checkImageLimit(userId) {
-  const now = Date.now();
-  const resetAt = imageLimitsStore.get(userId);
+function checkImageLimit(userId, guildId, client, user) {
+  const isPrem = isUserPremium(userId) || (guildId ? isGuildPremium(guildId) : false) || (user && client ? isBotOwner(user, client) : false);
+  const maxAllowed = isPrem ? 3 : 1;
 
-  if (resetAt && now < resetAt) {
+  const now = Date.now();
+  const windowMs = 24 * 60 * 60 * 1000; // 24 Hours
+
+  let timestamps = imageLimitsStore.get(userId) || [];
+  timestamps = timestamps.filter(ts => now - ts < windowMs);
+  imageLimitsStore.set(userId, timestamps);
+
+  if (timestamps.length >= maxAllowed) {
+    const oldestTs = timestamps[0];
+    const resetAt = oldestTs + windowMs;
     return {
       allowed: false,
-      resetAt
+      maxAllowed,
+      used: timestamps.length,
+      resetAt,
+      isPremium: isPrem
     };
   }
 
-  return { allowed: true };
+  return {
+    allowed: true,
+    maxAllowed,
+    used: timestamps.length,
+    isPremium: isPrem
+  };
 }
 
 function recordImageUse(userId) {
   const now = Date.now();
-  const resetAt = now + (24 * 60 * 60 * 1000); // 24 Hours
-  imageLimitsStore.set(userId, resetAt);
+  const windowMs = 24 * 60 * 60 * 1000;
+  let timestamps = imageLimitsStore.get(userId) || [];
+  timestamps = timestamps.filter(ts => now - ts < windowMs);
+  timestamps.push(now);
+  imageLimitsStore.set(userId, timestamps);
 }
 
 function fetchImageBuffer(imageUrl) {
@@ -43,7 +65,7 @@ function fetchImageBuffer(imageUrl) {
 
 module.exports = {
   name: 'imagine',
-  description: 'Generate high-quality AI art & realistic anime scenes from a text prompt (1 image per 24 hours per user)',
+  description: 'Generate high-quality AI art & realistic anime scenes from a text prompt (Free: 1 image/24h, Premium: 3 images/24h)',
   aliases: [],
   imageLimitsStore,
   checkImageLimit,
@@ -51,13 +73,19 @@ module.exports = {
 
   async execute(message, args) {
     const author = message.author;
+    const guild = message.guild;
+    const client = message.client;
 
-    let clientUser = message.client.user;
+    let clientUser = client.user;
     try {
-      clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
+      clientUser = await client.users.fetch(client.user.id, { force: true });
     } catch (e) {}
 
     const promptText = args.join(' ').trim();
+
+    // Check limit before prompt check to inform user of their tier & quota
+    const limitCheck = checkImageLimit(author.id, guild?.id, client, author);
+
     if (!promptText) {
       const embed = createStyledEmbed({
         title: `${emojis.PRIORITY || '🎨'} AI Image Generation Engine`,
@@ -65,21 +93,27 @@ module.exports = {
           `Generate high-quality AI artwork & realistic scenes directly from a text prompt!\n\n` +
           `**Usage:** \`.imagine <your detailed prompt>\`\n` +
           `**Example:** \`.imagine A desaturated anime screencap of a woman sitting by a window holding a cup with a cat on her lap\`\n\n` +
-          `*⏰ Limit: **1 Image per user every 24 Hours**.*`,
+          `**⏰ Generation Quotas (24-Hour Window):**\n` +
+          `• **Free Tier:** \`1 Image / 24 Hours\`\n` +
+          `• **Premium Tier:** \`3 Images / 24 Hours\` ${emojis.AN_STAR || '⭐'}\n\n` +
+          `*Your Current Status: **${limitCheck.isPremium ? '💎 Premium User (3 Max)' : 'Free User (1 Max)'}** (${limitCheck.used}/${limitCheck.maxAllowed} used)*`,
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Check 24-Hour Limit per user
-    const limitCheck = checkImageLimit(author.id);
+    // Enforce 24-Hour Limit
     if (!limitCheck.allowed) {
       const resetUnix = Math.floor(limitCheck.resetAt / 1000);
+      const tierText = limitCheck.isPremium ? '💎 **Premium Tier (3 Images Max)**' : '⭐ **Free Tier (1 Image Max)**';
+      const upgradeNotice = !limitCheck.isPremium ? '\n\n💡 *Tip: Upgrade to **Premium** to unlock **3 Image Generations per 24 hours**!*' : '';
+
       return message.reply(
-        `${emojis.WARNING || '⏳'} **24-Hour Limit Reached!**\n` +
-        `You have already generated an AI image in the last 24 hours.\n` +
-        `• **Next Available Generation:** <t:${resetUnix}:R> (<t:${resetUnix}:f>)`
+        `${emojis.WARNING || '⏳'} **24-Hour Limit Reached!** (${limitCheck.used}/${limitCheck.maxAllowed} used)\n` +
+        `You have reached your 24-hour AI image generation limit.\n\n` +
+        `• **Tier:** ${tierText}\n` +
+        `• **Next Available Generation:** <t:${resetUnix}:R> (<t:${resetUnix}:f>)${upgradeNotice}`
       );
     }
 
@@ -95,8 +129,9 @@ module.exports = {
       const imageBuffer = await fetchImageBuffer(imageUrl);
       const attachment = new AttachmentBuilder(imageBuffer, { name: 'ai_artwork.png' });
 
-      // Record rate limit after successful generation
+      // Record rate limit timestamp AFTER successful generation
       recordImageUse(author.id);
+      const newUsed = limitCheck.used + 1;
 
       const embed = new EmbedBuilder()
         .setColor(0x5865F2)
@@ -105,7 +140,7 @@ module.exports = {
           `**Prompt:**\n\`\`\`\n${promptText}\n\`\`\`\n` +
           `• **Generated For:** <@${author.id}>\n` +
           `• **Model / Seed:** \`Pollinations AI • #${seed}\`\n` +
-          `• **Quota:** \`1 / 1 used (Resets in 24 Hours)\``
+          `• **Quota:** \`${newUsed} / ${limitCheck.maxAllowed} used in 24 Hours\` ${limitCheck.isPremium ? '💎 (Premium)' : ''}`
         )
         .setImage('attachment://ai_artwork.png')
         .setFooter({
