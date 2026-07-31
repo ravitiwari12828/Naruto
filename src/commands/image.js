@@ -162,12 +162,10 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(0x5865F2)
-        .setTitle(`${emojis.SPARKLES || '🎨'} Ultra-HD AI Image Generation`)
+        .setTitle(`${emojis.SPARKLES || '🎨'} AI Image Generation`)
         .setDescription(
           `**Prompt:**\n\`\`\`\n${promptText}\n\`\`\`\n` +
           `• **Generated For:** <@${author.id}>\n` +
-          `• **Engine / Model:** \`FLUX Pro Engine (${selectedModel})\` • \`Seed #${seed}\`\n` +
-          `• **Enhancement:** \`Vibrant Color & Volumetric Lighting Active\` ✨\n` +
           `• **Quota:** \`${newUsed} / ${limitCheck.maxAllowed} used in 24 Hours\` ${limitCheck.isPremium ? '💎 (Premium)' : ''}`
         )
         .setImage('attachment://ai_artwork.png')
