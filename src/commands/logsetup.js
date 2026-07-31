@@ -167,22 +167,14 @@ module.exports = {
       time: 180000
     });
 
-    async function getOrCreateLogCategory(guild) {
-      let category = guild.channels.cache.find(
-        c => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes('audit logs') || c.name.toLowerCase().includes('server logs'))
-      );
-      if (!category) {
-        try {
-          category = await guild.channels.create({
-            name: '📜 AUDIT LOGS 📜',
-            type: ChannelType.GuildCategory,
-            permissionOverwrites: [
-              { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
-            ]
-          });
-        } catch (e) {}
-      }
-      return category;
+    function findExistingLogCategory(guild) {
+      return guild.channels.cache.find(
+        c => c.type === ChannelType.GuildCategory && (
+          c.name.toLowerCase().includes('log') ||
+          c.name.toLowerCase().includes('audit') ||
+          c.name.toLowerCase().includes('security')
+        )
+      ) || null;
     }
 
     collector.on('collect', async (interaction) => {
@@ -195,10 +187,10 @@ module.exports = {
       let actionStatus = '';
 
       if (interaction.customId === 'log_setup_single') {
-        const category = await getOrCreateLogCategory(guild);
         let chan = findExistingLogChannel(guild, 'narutologs', 'naruto-logs');
 
         if (!chan) {
+          const category = findExistingLogCategory(guild);
           try {
             chan = await guild.channels.create({
               name: 'naruto-logs',
@@ -210,8 +202,6 @@ module.exports = {
               ]
             });
           } catch (e) {}
-        } else if (category && !chan.parentId) {
-          await chan.setParent(category.id).catch(() => {});
         }
 
         config.enabled = true;
