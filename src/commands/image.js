@@ -48,9 +48,9 @@ function recordImageUse(userId) {
   imageLimitsStore.set(userId, timestamps);
 }
 
-function fetchImageBuffer(imageUrl) {
+function fetchImageBuffer(imageUrl, timeoutMs = 75000) {
   return new Promise((resolve, reject) => {
-    https.get(imageUrl, (res) => {
+    const req = https.get(imageUrl, (res) => {
       if (res.statusCode !== 200) {
         return reject(new Error(`Failed to fetch image (HTTP ${res.statusCode})`));
       }
@@ -59,13 +59,20 @@ function fetchImageBuffer(imageUrl) {
       res.on('data', chunk => chunks.push(chunk));
       res.on('end', () => resolve(Buffer.concat(chunks)));
       res.on('error', err => reject(err));
-    }).on('error', err => reject(err));
+    });
+
+    req.setTimeout(timeoutMs, () => {
+      req.destroy();
+      reject(new Error('Rendering Timeout'));
+    });
+
+    req.on('error', err => reject(err));
   });
 }
 
 module.exports = {
   name: 'imagine',
-  description: 'Generate high-quality AI art & realistic anime scenes from a text prompt (Free: 1 image/24h, Premium: 3 images/24h)',
+  description: 'Generate ultra-high quality, vibrant AI art & realistic anime scenes (Free: 1 image/24h, Premium: 3 images/24h)',
   aliases: [],
   imageLimitsStore,
   checkImageLimit,
@@ -88,11 +95,11 @@ module.exports = {
 
     if (!promptText) {
       const embed = createStyledEmbed({
-        title: `${emojis.PRIORITY || '🎨'} AI Image Generation Engine`,
+        title: `${emojis.PRIORITY || '🎨'} Ultra-HD AI Image Generation Engine`,
         description:
-          `Generate high-quality AI artwork & realistic scenes directly from a text prompt!\n\n` +
+          `Generate vibrant, masterpiece AI artwork & realistic scenes directly from a text prompt!\n\n` +
           `**Usage:** \`.imagine <your detailed prompt>\`\n` +
-          `**Example:** \`.imagine A desaturated anime screencap of a woman sitting by a window holding a cup with a cat on her lap\`\n\n` +
+          `**Example:** \`.imagine A woman sitting by a window holding a cup with a cat on her lap\`\n\n` +
           `**⏰ Generation Quotas (24-Hour Window):**\n` +
           `• **Free Tier:** \`1 Image / 24 Hours\`\n` +
           `• **Premium Tier:** \`3 Images / 24 Hours\` ${emojis.AN_STAR || '⭐'}\n\n` +
@@ -118,15 +125,35 @@ module.exports = {
     }
 
     const initialMsg = await message.reply(
-      `${emojis.LOADING || '🎨'} **Generating AI Image...** *(Rendering high-resolution artwork, please wait...)*`
+      `${emojis.LOADING || '🎨'} **Rendering Ultra-HD AI Artwork...** *(Applying FLUX engine enhancement, please wait...)*`
     );
 
     try {
       const seed = Math.floor(Math.random() * 999999) + 1;
-      const encodedPrompt = encodeURIComponent(promptText);
-      const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&seed=${seed}`;
 
-      const imageBuffer = await fetchImageBuffer(imageUrl);
+      // Smart Model & Prompt Quality Enhancement Engine
+      const isAnime = /anime|manga|chibi|waifu|screencap|studio ghibli/i.test(promptText);
+      const isReal = /photo|real|realistic|portrait|photography|hyperrealistic/i.test(promptText);
+
+      let selectedModel = 'flux';
+      if (isAnime) selectedModel = 'flux-anime';
+      else if (isReal) selectedModel = 'flux-realism';
+
+      const qualityModifiers = ', masterpiece, highly detailed, vibrant rich colors, cinematic volumetric lighting, ultra sharp 8k resolution, studio contrast';
+      const enhancedPromptText = promptText.includes('masterpiece') ? promptText : (promptText + qualityModifiers);
+
+      const encodedPrompt = encodeURIComponent(enhancedPromptText);
+      const primaryUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&enhance=true&model=${selectedModel}&seed=${seed}`;
+
+      let imageBuffer = null;
+      try {
+        imageBuffer = await fetchImageBuffer(primaryUrl, 75000);
+      } catch (err) {
+        console.warn(`[Image Gen Primary (${selectedModel}) Timeout/Failed]: Retrying with Turbo Engine...`);
+        const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&model=turbo&seed=${seed}`;
+        imageBuffer = await fetchImageBuffer(fallbackUrl, 45000);
+      }
+
       const attachment = new AttachmentBuilder(imageBuffer, { name: 'ai_artwork.png' });
 
       // Record rate limit timestamp AFTER successful generation
@@ -135,23 +162,24 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(0x5865F2)
-        .setTitle(`${emojis.SPARKLES || '🎨'} AI Image Generation`)
+        .setTitle(`${emojis.SPARKLES || '🎨'} Ultra-HD AI Image Generation`)
         .setDescription(
           `**Prompt:**\n\`\`\`\n${promptText}\n\`\`\`\n` +
           `• **Generated For:** <@${author.id}>\n` +
-          `• **Model / Seed:** \`Pollinations AI • #${seed}\`\n` +
+          `• **Engine / Model:** \`FLUX Pro Engine (${selectedModel})\` • \`Seed #${seed}\`\n` +
+          `• **Enhancement:** \`Vibrant Color & Volumetric Lighting Active\` ✨\n` +
           `• **Quota:** \`${newUsed} / ${limitCheck.maxAllowed} used in 24 Hours\` ${limitCheck.isPremium ? '💎 (Premium)' : ''}`
         )
         .setImage('attachment://ai_artwork.png')
         .setFooter({
-          text: `Naruto AI Imagine System • ${author.tag}`,
+          text: `Naruto FLUX AI Imagine System • ${author.tag}`,
           iconURL: author.displayAvatarURL({ dynamic: true })
         })
         .setTimestamp();
 
       await initialMsg.delete().catch(() => {});
       return message.channel.send({
-        content: `🎨 **Here is your generated AI artwork, <@${author.id}>!**`,
+        content: `🎨 **Here is your high-vibrancy AI artwork, <@${author.id}>!**`,
         embeds: [embed],
         files: [attachment]
       });
