@@ -78,11 +78,13 @@ module.exports = {
         new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId('advlog_deploy_all')
-            .setLabel('🚀 1-Click Deploy & Map All Categories')
+            .setLabel('1-Click Deploy & Map All Categories')
+            .setEmoji(emojis.OBJ_ANALYTICS)
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId('advlog_toggle')
-            .setLabel(store.enabled ? '🔒 Disable Logging' : '🔓 Enable Logging')
+            .setLabel(store.enabled ? 'Disable Logging' : 'Enable Logging')
+            .setEmoji(store.enabled ? emojis.OBJ_LOCK : emojis.OBJ_UNLOCK)
             .setStyle(store.enabled ? ButtonStyle.Danger : ButtonStyle.Primary)
         )
       ];

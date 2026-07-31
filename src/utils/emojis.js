@@ -325,7 +325,19 @@ module.exports = {
   OBJ_UNLOCK: { name: 'an_joingate', id: '1530948378823888937', animated: true },
   OBJ_HIDE: { name: 'an_webhook', id: '1530948419164569721', animated: true },
   OBJ_HUMAN: { name: 'an_whitelist', id: '1530948424273362974', animated: true },
-  OBJ_SCROLL: { name: 'an_whitelist', id: '1530948424273362974', animated: true }
+  OBJ_SCROLL: { name: 'an_whitelist', id: '1530948424273362974', animated: true },
+  OBJ_SUCCESS: { name: 'emoji_green_enabled', id: '1529377708012732506' },
+  OBJ_ENABLED: { name: 'emoji_green_enabled', id: '1529377708012732506' },
+  OBJ_DISABLED: { name: 'emoji_red_disabled', id: '1529377739302506516' },
+  OBJ_WARNING: { name: 'emoji_warning_alert', id: '1529377755735527465' },
+  OBJ_ERROR: { name: 'emoji_red_disabled', id: '1529377739302506516' },
+  OBJ_REMOVE: { name: 'emoji_REMOVE', id: '1529377741252595802' },
+  OBJ_ANALYTICS: { name: 'analytics', id: '1530942545893265518', animated: true },
+  OBJ_ZAP: { name: 'emoji_analytics_zap', id: '1529910228345163978' },
+  OBJ_CROWN: { name: 'emoji_owner_crown', id: '1529910236062810142' },
+  OBJ_GEAR: { name: 'an_bot', id: '1530948362784870510', animated: true },
+  OBJ_BOT: { name: 'an_bot', id: '1530948362784870510', animated: true },
+  OBJ_ROCKET: { name: 'analytics', id: '1530942545893265518', animated: true }
 };
 
 function resolveEmojiForReaction(client, guild, rawEmoji) {

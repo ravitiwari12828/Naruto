@@ -140,15 +140,18 @@ module.exports = {
         new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId('log_setup_single')
-            .setLabel('⚡ 1-Click Unified Channel (#naruto-logs)')
+            .setLabel('1-Click Unified Channel (#naruto-logs)')
+            .setEmoji(emojis.OBJ_ZAP)
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId('log_setup_multi')
-            .setLabel('🛡️ 1-Click Pro Setup (Re-uses Existing Channels)')
+            .setLabel('1-Click Pro Setup (Re-uses Existing Channels)')
+            .setEmoji(emojis.OBJ_AN_SHIELD)
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
             .setCustomId('log_setup_disable')
-            .setLabel('❌ Disable Logging')
+            .setLabel('Disable Logging')
+            .setEmoji(emojis.OBJ_DISABLED)
             .setStyle(ButtonStyle.Danger)
         )
       ];
