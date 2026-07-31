@@ -2996,6 +2996,7 @@ client.on('messageReactionRemove', async (reaction, user) => {
 
 // Load custom event handlers
 require('./events/emojisStickers')(client);
+require('./events/serverAuditLogs')(client);
 
 if (process.env.DISCORD_TOKEN && process.env.DISCORD_TOKEN !== 'your_discord_bot_token_here') {
   client.login(process.env.DISCORD_TOKEN).catch(err => {
