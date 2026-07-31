@@ -6,7 +6,38 @@ const emojis = require('../utils/emojis');
 // In-memory Reaction Role storage (persisted per guild/message)
 const reactionRoles = new Map();
 
-function parsePairs(args) {
+function resolveEmoji(rawEmoji, client) {
+  if (!rawEmoji) return rawEmoji;
+
+  // 1. If it's already a full Discord custom emoji <a:name:id> or <:name:id>, return as is
+  if (/<a?:[a-zA-Z0-9_]+:\d+>/.test(rawEmoji)) {
+    return rawEmoji;
+  }
+
+  // 2. Clean up colon wrappers e.g. ":Radha_CROWN:" -> "Radha_CROWN"
+  const cleanName = rawEmoji.replace(/^:|:$/g, '').trim();
+
+  // 3. Search bot's global emoji cache across all servers the bot is in!
+  if (client && client.emojis && client.emojis.cache) {
+    const found = client.emojis.cache.find(e =>
+      e.name.toLowerCase() === cleanName.toLowerCase() ||
+      e.id === cleanName
+    );
+    if (found) {
+      return found.toString(); // Returns <a:name:id> or <:name:id>
+    }
+  }
+
+  // 4. Check emojis.js dictionary
+  const dictKey = cleanName.toLowerCase();
+  if (emojis[dictKey]) {
+    return typeof emojis[dictKey] === 'string' ? emojis[dictKey] : rawEmoji;
+  }
+
+  return rawEmoji;
+}
+
+function parsePairs(args, client) {
   const pairs = [];
   let title = 'React to this message to assign yourself roles';
 
@@ -23,13 +54,14 @@ function parsePairs(args) {
   const tokens = rawStr.split(/\s+/).filter(Boolean);
 
   for (let i = 0; i < tokens.length; i += 2) {
-    const emoji = tokens[i];
+    const rawEmojiToken = tokens[i];
     const roleToken = tokens[i + 1];
-    if (emoji && roleToken) {
+    if (rawEmojiToken && roleToken) {
       const roleIdMatch = roleToken.match(/\d+/);
       if (roleIdMatch) {
+        const resolved = resolveEmoji(rawEmojiToken, client);
         pairs.push({
-          emoji,
+          emoji: resolved,
           roleId: roleIdMatch[0]
         });
       }
@@ -44,6 +76,7 @@ module.exports = {
   description: 'Reaction Role System: create, add, remove, list, reset',
   aliases: ['rr', 'reactionroles', 'reactionrole'],
   reactionRoles,
+  resolveEmoji,
 
   async execute(message, args) {
     const sub = args[0]?.toLowerCase();
@@ -67,12 +100,12 @@ module.exports = {
       if (restArgs.length < 2) {
         return message.reply(
           `${emojis.WARNING} **Usage:** \`.rr create <emoji1> <@role1> [emoji2] [@role2] ...\`\n` +
-          `**Example:** \`.rr create 🐱 @Male 🐷 @Female\`\n` +
-          `**With Custom Title:** \`.rr create "Gender Roles" 🐱 @Male 🐷 @Female\``
+          `**Example:** \`.rr create :Radha_CROWN: @ANBU Staff\`\n` +
+          `**With Custom Title:** \`.rr create "BOOSTER ROLE" :Radha_CROWN: @ANBU Staff\``
         );
       }
 
-      const { title, pairs } = parsePairs(restArgs);
+      const { title, pairs } = parsePairs(restArgs, message.client);
 
       if (pairs.length === 0) {
         return message.reply(`${emojis.WARNING} No valid emoji + role pairs found! Please mention valid roles.`);
@@ -116,24 +149,26 @@ module.exports = {
       }
 
       let msgId = null;
-      let emoji = null;
+      let rawEmoji = null;
       let role = message.mentions.roles.first();
 
       if (/^\d{17,20}$/.test(args[1])) {
         msgId = args[1];
-        emoji = args[2];
+        rawEmoji = args[2];
         role = role || message.guild.roles.cache.get(args[3]);
       } else {
-        emoji = args[1];
+        rawEmoji = args[1];
         role = role || message.guild.roles.cache.get(args[2]);
         // Auto-detect last reaction role message in current channel or guild
         const lastRR = [...guildRR].reverse().find(r => r.channelId === message.channel.id) || guildRR[guildRR.length - 1];
         if (lastRR) msgId = lastRR.messageId;
       }
 
-      if (!msgId || !emoji || !role) {
+      if (!msgId || !rawEmoji || !role) {
         return message.reply(`${emojis.WARNING} **Usage:** \`.rr add <emoji> <@role>\` or \`.rr add <messageId> <emoji> <@role>\``);
       }
+
+      const emoji = resolveEmoji(rawEmoji, message.client);
 
       try {
         const targetChanId = guildRR.find(r => r.messageId === msgId)?.channelId || message.channel.id;
@@ -163,7 +198,7 @@ module.exports = {
         setTimeout(() => confirmMsg.delete().catch(() => {}), 4000);
         return;
       } catch (err) {
-        return message.reply(`${emojis.WARNING} Could not find message with ID \`${msgId}\` or add emoji reaction.`);
+        return message.reply(`${emojis.WARNING} Could not find message with ID \`${msgId}\` or add emoji reaction: ${err.message}`);
       }
     }
 
@@ -174,32 +209,33 @@ module.exports = {
       }
 
       let msgId = null;
-      let targetInput = null;
+      let rawTargetInput = null;
 
       if (/^\d{17,20}$/.test(args[1])) {
         msgId = args[1];
-        targetInput = args[2];
+        rawTargetInput = args[2];
       } else {
-        targetInput = args[1];
+        rawTargetInput = args[1];
         // Auto-detect last reaction role message in current channel or guild
         const lastRR = [...guildRR].reverse().find(r => r.channelId === message.channel.id) || guildRR[guildRR.length - 1];
         if (lastRR) msgId = lastRR.messageId;
       }
 
-      if (!targetInput) {
+      if (!rawTargetInput) {
         return message.reply(`${emojis.WARNING} **Usage:** \`.rr remove <emoji/@role>\` or \`.rr remove <messageId> <emoji/@role>\``);
       }
 
-      const roleMatch = targetInput.match(/\d+/);
+      const resolvedTarget = resolveEmoji(rawTargetInput, message.client);
+      const roleMatch = rawTargetInput.match(/\d+/);
       const roleId = roleMatch ? roleMatch[0] : null;
 
       const toRemove = guildRR.filter(r => {
         if (msgId && r.messageId !== msgId) return false;
-        return r.emoji === targetInput || (roleId && r.roleId === roleId);
+        return r.emoji === resolvedTarget || r.emoji === rawTargetInput || (roleId && r.roleId === roleId);
       });
 
       if (toRemove.length === 0) {
-        return message.reply(`${emojis.WARNING} No matching reaction role found for \`${targetInput}\`.`);
+        return message.reply(`${emojis.WARNING} No matching reaction role found for \`${rawTargetInput}\`.`);
       }
 
       // Filter out removed bindings
@@ -213,7 +249,7 @@ module.exports = {
           if (targetChan) {
             const targetMsg = await targetChan.messages.fetch(item.messageId).catch(() => null);
             if (targetMsg) {
-              const reaction = targetMsg.reactions.cache.find(r => r.emoji.name === item.emoji || r.emoji.toString() === item.emoji);
+              const reaction = targetMsg.reactions.cache.find(r => r.emoji.name === item.emoji || r.emoji.toString() === item.emoji || (r.emoji.id && item.emoji.includes(r.emoji.id)));
               if (reaction) await reaction.remove().catch(() => {});
 
               if (targetMsg.author.id === message.client.user.id && targetMsg.embeds.length > 0) {
@@ -280,9 +316,9 @@ module.exports = {
       description:
         `\`\`\`\n${box}\`\`\`\n` +
         `**Quick Usage:**\n` +
-        `• \`.rr create 🐱 @Male 🐷 @Female\` — Create panel\n` +
-        `• \`.rr add 🐶 @Dog\` — Add role to active panel\n` +
-        `• \`.rr remove 🐱\` — Remove role from panel`,
+        `• \`.rr create :Radha_CROWN: @ANBU Staff\` — Create panel (supports external/custom emojis!)\n` +
+        `• \`.rr add :custom_emoji: @Role\` — Add custom emoji role to panel\n` +
+        `• \`.rr remove :custom_emoji:\` — Remove role from panel`,
       requestedBy: author,
       clientUser
     });
