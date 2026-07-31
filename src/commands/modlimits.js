@@ -10,7 +10,7 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { createDynamicBox } = require('../utils/boxBuilder');
 
-// Global Daily / 10-Min Mod Limits Store
+// Global Daily / 24-Hour Mod Limits Store
 const modLimitsStore = new Map();
 
 function getOrCreateModLimits(guildId) {
@@ -18,7 +18,7 @@ function getOrCreateModLimits(guildId) {
     modLimitsStore.set(guildId, {
       enabled: true,
       logChannelId: null,
-      timeWindowMin: 10,
+      timeWindowMin: 1440, // 24 Hours
       limits: {
         memberUpdate: 3,
         channelCreate: 3,
@@ -124,7 +124,7 @@ function dispatchLimitLog(guild, { actionTitle, executor, target, details, remai
 
 module.exports = {
   name: 'modlimits',
-  description: 'AntiNuke Action Rate Limits & Audit Protection System',
+  description: 'AntiNuke Action Rate Limits & Audit Protection System (24-Hour Reset Window)',
   aliases: ['limit', 'limits', 'limitlog', 'limitlogs', 'actionlimits', 'modquota', 'limitmod', 'rate-limit'],
   modLimitsStore,
   checkAndIncrementModAction,
@@ -159,7 +159,7 @@ module.exports = {
     if (sub === 'enable' || sub === 'on') {
       config.enabled = true;
       modLimitsStore.set(guild.id, config);
-      return message.reply(`${emojis.SHIELD} AntiNuke Action Rate Limits are now **ENABLED**!`);
+      return message.reply(`${emojis.SHIELD} AntiNuke Action Rate Limits are now **ENABLED**! (24-Hour Window)`);
     }
 
     if (sub === 'disable' || sub === 'off') {
@@ -182,7 +182,7 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} AntiNuke Limit Logging channel set to ${chan}.`);
     }
 
-    // .limit set <action> <limit> (e.g. .limit set ban 3)
+    // .limit set <action> <limit> (e.g. .limit set ban 5)
     if (sub === 'set') {
       const action = args[1]?.toLowerCase();
       const newLimit = parseInt(args[2]);
@@ -209,11 +209,11 @@ module.exports = {
       if (newLimit > maxAllowed) {
         if (!isOwner) {
           return message.reply(
-            `${emojis.WARNING} Non-owner Administrators can set action limits up to **3** max.\n` +
-            `👑 Only the **Server Owner** can set limits up to **5**!`
+            `${emojis.WARNING} Non-owner Administrators can set action limits up to **3 per 24 Hours** max.\n` +
+            `👑 Only the **Server Owner** can set limits up to **5 per 24 Hours**!`
           );
         } else {
-          return message.reply(`${emojis.WARNING} Server Owner can set action limits up to **5** max.`);
+          return message.reply(`${emojis.WARNING} Server Owner can set action limits up to **5 per 24 Hours** max.`);
         }
       }
 
@@ -224,13 +224,13 @@ module.exports = {
       dispatchLimitLog(guild, {
         actionTitle: '⚙️ Action Limit Configured',
         executor: author,
-        details: `Set **${matchedKey}** limit to **\`${newLimit} actions / 10 Minutes\`**`,
+        details: `Set **${matchedKey}** limit to **\`${newLimit} actions / 24 Hours\`**`,
         remaining: newLimit
       });
 
       const embed = createStyledEmbed({
         title: `${emojis.GEAR} AntiNuke Limit Updated`,
-        description: `Set **${matchedKey}** limit to **\`${newLimit} actions / 10 Minutes\`**.`,
+        description: `Set **${matchedKey}** limit to **\`${newLimit} actions / 24 Hours\`**.`,
         requestedBy: author,
         clientUser
       });
@@ -254,7 +254,7 @@ module.exports = {
     // Default: Executive Monospaced Limits Panel
     const logChan = config.logChannelId ? `<#${config.logChannelId}>` : '`Not Set`';
 
-    const limitsBox = createDynamicBox('CURRENT ANTINUKE LIMITS', [
+    const limitsBox = createDynamicBox('24-HOUR ANTINUKE LIMITS', [
       { key: 'Member Update', value: config.limits.memberUpdate },
       { key: 'Channel Create', value: config.limits.channelCreate },
       { key: 'Channel Delete', value: config.limits.channelDelete },
@@ -285,8 +285,8 @@ module.exports = {
       '```\n' + cmdBox + '\n```\n\n' +
       `**📜 Configuration Mappings:**\n` +
       `• **Logging Channel**: ${logChan}\n` +
-      `• **Time Window**: \`${config.timeWindowMin} Minutes\` *(Fixed Security Window)*\n` +
-      `• **Max Configurable**: Admin = \`3\` | Server Owner = \`5\`\n\n` +
+      `• **Time Window**: \`24 Hours\` *(24-Hour Rolling Reset Window)*\n` +
+      `• **Max Configurable**: Admin = \`3 per 24h\` | Server Owner = \`5 per 24h\`\n\n` +
       `*💡 You can customize these limits using the \`.limit set <action> <count>\` command!*`;
 
     const embed = createStyledEmbed({
