@@ -58,6 +58,7 @@ module.exports = {
       const usageBox = createDynamicBox('EXACT COMMAND USAGES', [
         '.ask <question>',
         '.ai <prompt>',
+        '.imagine <prompt>',
         '.code <task>',
         '.priority <query>'
       ]);

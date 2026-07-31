@@ -296,6 +296,7 @@ const CATEGORIES = [
     commands: [
       'ask <question>',
       'ai <prompt>',
+      'imagine <prompt>',
       'code <task>',
       'priority <query>'
     ]
