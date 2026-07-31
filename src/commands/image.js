@@ -72,7 +72,7 @@ function fetchImageBuffer(imageUrl, timeoutMs = 75000) {
 
 module.exports = {
   name: 'imagine',
-  description: 'Generate ultra-high quality, vibrant AI art & realistic anime scenes (Free: 1 image/24h, Premium: 3 images/24h)',
+  description: 'Generate high-definition AI art & realistic anime scenes (Free: 1 image/24h, Premium: 3 images/24h)',
   aliases: [],
   imageLimitsStore,
   checkImageLimit,
@@ -95,9 +95,9 @@ module.exports = {
 
     if (!promptText) {
       const embed = createStyledEmbed({
-        title: `${emojis.PRIORITY || '🎨'} Ultra-HD AI Image Generation Engine`,
+        title: `${emojis.PRIORITY || '🎨'} AI Image Generation Engine`,
         description:
-          `Generate vibrant, masterpiece AI artwork & realistic scenes directly from a text prompt!\n\n` +
+          `Generate high-definition AI artwork & realistic scenes directly from a text prompt!\n\n` +
           `**Usage:** \`.imagine <your detailed prompt>\`\n` +
           `**Example:** \`.imagine A woman sitting by a window holding a cup with a cat on her lap\`\n\n` +
           `**⏰ Generation Quotas (24-Hour Window):**\n` +
@@ -125,33 +125,32 @@ module.exports = {
     }
 
     const initialMsg = await message.reply(
-      `${emojis.LOADING || '🎨'} **Rendering Ultra-HD AI Artwork...** *(Applying FLUX engine enhancement, please wait...)*`
+      `${emojis.LOADING || '🎨'} **Rendering High-Definition AI Artwork...** *(Please wait...)*`
     );
 
     try {
       const seed = Math.floor(Math.random() * 999999) + 1;
 
-      // Smart Model & Prompt Quality Enhancement Engine
-      const isAnime = /anime|manga|chibi|waifu|screencap|studio ghibli/i.test(promptText);
-      const isReal = /photo|real|realistic|portrait|photography|hyperrealistic/i.test(promptText);
-
-      let selectedModel = 'flux';
-      if (isAnime) selectedModel = 'flux-anime';
-      else if (isReal) selectedModel = 'flux-realism';
-
-      const qualityModifiers = ', masterpiece, highly detailed, vibrant rich colors, cinematic volumetric lighting, ultra sharp 8k resolution, studio contrast';
+      // Anatomical Precision & High-Detail Quality Modifiers
+      const qualityModifiers = ', masterpiece, best quality, highly detailed, perfect anatomy, correct hands and feet, 5 fingers per hand, natural limbs, ultra-sharp focus, cinematic lighting, vivid colors, 8k resolution';
       const enhancedPromptText = promptText.includes('masterpiece') ? promptText : (promptText + qualityModifiers);
 
       const encodedPrompt = encodeURIComponent(enhancedPromptText);
-      const primaryUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&enhance=true&model=${selectedModel}&seed=${seed}`;
 
+      // Model pipeline: flux-realism -> flux -> turbo
+      const modelsToTry = ['flux-realism', 'flux', 'turbo'];
       let imageBuffer = null;
-      try {
-        imageBuffer = await fetchImageBuffer(primaryUrl, 75000);
-      } catch (err) {
-        console.warn(`[Image Gen Primary (${selectedModel}) Timeout/Failed]: Retrying with Turbo Engine...`);
-        const fallbackUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&model=turbo&seed=${seed}`;
-        imageBuffer = await fetchImageBuffer(fallbackUrl, 45000);
+
+      for (const model of modelsToTry) {
+        try {
+          const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&enhance=true&model=${model}&seed=${seed}`;
+          imageBuffer = await fetchImageBuffer(url, 45000);
+          if (imageBuffer && imageBuffer.length > 5000) break;
+        } catch (e) {}
+      }
+
+      if (!imageBuffer) {
+        throw new Error('All image rendering models timed out.');
       }
 
       const attachment = new AttachmentBuilder(imageBuffer, { name: 'ai_artwork.png' });
@@ -170,14 +169,14 @@ module.exports = {
         )
         .setImage('attachment://ai_artwork.png')
         .setFooter({
-          text: `Naruto FLUX AI Imagine System • ${author.tag}`,
+          text: `Naruto Imagine System • ${author.tag}`,
           iconURL: author.displayAvatarURL({ dynamic: true })
         })
         .setTimestamp();
 
       await initialMsg.delete().catch(() => {});
       return message.channel.send({
-        content: `🎨 **Here is your high-vibrancy AI artwork, <@${author.id}>!**`,
+        content: `🎨 **Here is your AI artwork, <@${author.id}>!**`,
         embeds: [embed],
         files: [attachment]
       });
