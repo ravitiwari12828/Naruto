@@ -1,5 +1,6 @@
 const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
+const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 
 // In-memory Reaction Role storage (persisted per guild/message)
@@ -57,8 +58,7 @@ module.exports = {
     let guildRR = reactionRoles.get(guildId) || [];
 
     // .rr create [title: "Title"] <emoji1> <@role1> [emoji2] [@role2] ...
-    // .rr setup ...
-    if (['create', 'setup', 'embed', 'panel'].includes(sub)) {
+    if (['create', 'panel'].includes(sub)) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.ManageRoles) && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
         return message.reply(`${emojis.WARNING} You need **Manage Roles** permission to setup reaction roles!`);
       }
@@ -109,67 +109,130 @@ module.exports = {
       return;
     }
 
-    // .rr add <messageId> <emoji> <@role>
+    // .rr add [messageId] <emoji> <@role>  OR  .rr add <emoji> <@role>
     if (sub === 'add') {
-      const msgId = args[1];
-      const emoji = args[2];
-      const role = message.mentions.roles.first() || message.guild.roles.cache.get(args[3]);
+      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageRoles) && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} You need **Manage Roles** permission to add reaction roles!`);
+      }
+
+      let msgId = null;
+      let emoji = null;
+      let role = message.mentions.roles.first();
+
+      if (/^\d{17,20}$/.test(args[1])) {
+        msgId = args[1];
+        emoji = args[2];
+        role = role || message.guild.roles.cache.get(args[3]);
+      } else {
+        emoji = args[1];
+        role = role || message.guild.roles.cache.get(args[2]);
+        // Auto-detect last reaction role message in current channel or guild
+        const lastRR = [...guildRR].reverse().find(r => r.channelId === message.channel.id) || guildRR[guildRR.length - 1];
+        if (lastRR) msgId = lastRR.messageId;
+      }
 
       if (!msgId || !emoji || !role) {
-        return message.reply({ content: `${emojis.WARNING} Usage: \`.rr add <messageId> <emoji> <@role>\``, allowedMentions: { parse: [], repliedUser: false } });
+        return message.reply(`${emojis.WARNING} **Usage:** \`.rr add <emoji> <@role>\` or \`.rr add <messageId> <emoji> <@role>\``);
       }
 
       try {
-        const targetMsg = await message.channel.messages.fetch(msgId);
+        const targetChanId = guildRR.find(r => r.messageId === msgId)?.channelId || message.channel.id;
+        const targetChan = message.guild.channels.cache.get(targetChanId) || message.channel;
+        const targetMsg = await targetChan.messages.fetch(msgId);
         await targetMsg.react(emoji);
 
         guildRR.push({
           messageId: msgId,
-          channelId: message.channel.id,
+          channelId: targetChan.id,
           emoji: emoji,
           roleId: role.id
         });
         reactionRoles.set(guildId, guildRR);
 
-        const embed = createStyledEmbed({
-          title: `🎭 Reaction Role Added`,
-          description: `Successfully set up reaction role!\n\n` +
-            `**Message ID:** \`${msgId}\`\n` +
-            `**Emoji:** ${emoji}\n` +
-            `**Role:** <@&${role.id}>`,
-          requestedBy: author,
-          clientUser
-        });
-        return message.channel.send({ embeds: [embed] });
+        // If target message has embed, update description cleanly
+        if (targetMsg.author.id === message.client.user.id && targetMsg.embeds.length > 0) {
+          const oldEmbed = targetMsg.embeds[0];
+          const newEmbed = EmbedBuilder.from(oldEmbed);
+          const currentDesc = oldEmbed.description || '';
+          newEmbed.setDescription(currentDesc + (currentDesc ? '\n' : '') + `${emoji} - <@&${role.id}>`);
+          await targetMsg.edit({ embeds: [newEmbed] }).catch(() => {});
+        }
+
+        message.delete().catch(() => {});
+        const confirmMsg = await message.channel.send(`${emojis.SUCCESS} Added **${emoji}** ➔ <@&${role.id}> to panel!`);
+        setTimeout(() => confirmMsg.delete().catch(() => {}), 4000);
+        return;
       } catch (err) {
-        return message.reply(`${emojis.WARNING} Could not find message with ID \`${msgId}\` in this channel or add emoji reaction.`);
+        return message.reply(`${emojis.WARNING} Could not find message with ID \`${msgId}\` or add emoji reaction.`);
       }
     }
 
-    // .rr remove <messageId> <emoji>
+    // .rr remove [messageId] <emoji/@role>  OR  .rr remove <emoji/@role>
     if (sub === 'remove') {
-      const msgId = args[1];
-      const emoji = args[2];
-
-      if (!msgId || !emoji) {
-        return message.reply(`${emojis.WARNING} Usage: \`.rr remove <messageId> <emoji>\``);
+      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageRoles) && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} You need **Manage Roles** permission to remove reaction roles!`);
       }
 
-      const initialLen = guildRR.length;
-      guildRR = guildRR.filter(r => !(r.messageId === msgId && r.emoji === emoji));
+      let msgId = null;
+      let targetInput = null;
+
+      if (/^\d{17,20}$/.test(args[1])) {
+        msgId = args[1];
+        targetInput = args[2];
+      } else {
+        targetInput = args[1];
+        // Auto-detect last reaction role message in current channel or guild
+        const lastRR = [...guildRR].reverse().find(r => r.channelId === message.channel.id) || guildRR[guildRR.length - 1];
+        if (lastRR) msgId = lastRR.messageId;
+      }
+
+      if (!targetInput) {
+        return message.reply(`${emojis.WARNING} **Usage:** \`.rr remove <emoji/@role>\` or \`.rr remove <messageId> <emoji/@role>\``);
+      }
+
+      const roleMatch = targetInput.match(/\d+/);
+      const roleId = roleMatch ? roleMatch[0] : null;
+
+      const toRemove = guildRR.filter(r => {
+        if (msgId && r.messageId !== msgId) return false;
+        return r.emoji === targetInput || (roleId && r.roleId === roleId);
+      });
+
+      if (toRemove.length === 0) {
+        return message.reply(`${emojis.WARNING} No matching reaction role found for \`${targetInput}\`.`);
+      }
+
+      // Filter out removed bindings
+      guildRR = guildRR.filter(r => !toRemove.includes(r));
       reactionRoles.set(guildId, guildRR);
 
-      if (guildRR.length === initialLen) {
-        return message.reply(`${emojis.WARNING} No reaction role found for Message ID \`${msgId}\` with emoji ${emoji}.`);
+      // Clean up reactions & embed descriptions on target messages
+      for (const item of toRemove) {
+        try {
+          const targetChan = message.guild.channels.cache.get(item.channelId);
+          if (targetChan) {
+            const targetMsg = await targetChan.messages.fetch(item.messageId).catch(() => null);
+            if (targetMsg) {
+              const reaction = targetMsg.reactions.cache.find(r => r.emoji.name === item.emoji || r.emoji.toString() === item.emoji);
+              if (reaction) await reaction.remove().catch(() => {});
+
+              if (targetMsg.author.id === message.client.user.id && targetMsg.embeds.length > 0) {
+                const oldEmbed = targetMsg.embeds[0];
+                const lines = (oldEmbed.description || '')
+                  .split('\n')
+                  .filter(line => !line.includes(item.emoji) && (!item.roleId || !line.includes(item.roleId)));
+                const newEmbed = EmbedBuilder.from(oldEmbed).setDescription(lines.join('\n'));
+                await targetMsg.edit({ embeds: [newEmbed] }).catch(() => {});
+              }
+            }
+          }
+        } catch (e) {}
       }
 
-      const embed = createStyledEmbed({
-        title: `🎭 Reaction Role Removed`,
-        description: `Removed reaction role binding for emoji ${emoji} on message \`${msgId}\`.`,
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+      message.delete().catch(() => {});
+      const confirmMsg = await message.channel.send(`${emojis.SUCCESS} Successfully removed **${toRemove.length}** reaction role(s)!`);
+      setTimeout(() => confirmMsg.delete().catch(() => {}), 4000);
+      return;
     }
 
     // .rr list
@@ -203,16 +266,23 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Default RR Help
+    // Default RR Panel & Setup Help with 28-char device-aligned Box UI
+    const box = createDynamicBox('REACTION ROLE COMMANDS', [
+      'create',
+      'add',
+      'remove',
+      'list',
+      'reset'
+    ]);
+
     const embed = createStyledEmbed({
-      title: `🎭 Reaction Role Commands`,
+      title: `${emojis.REACTIONROLES || '🎭'} Reaction Role Commands`,
       description:
-        `\`.rr create <emoji1> <@role1> <emoji2> <@role2>\` — Create clean reaction role panel\n` +
-        `\`.rr create "Title" <emoji1> <@role1>\` — Create panel with custom title\n` +
-        `\`.rr add <msgID> <emoji> <@role>\` — Add reaction role to existing message\n` +
-        `\`.rr remove <msgID> <emoji>\` — Remove reaction role from message\n` +
-        `\`.rr list\` — View all active reaction roles\n` +
-        `\`.rr reset\` — Clear all reaction roles on server`,
+        `\`\`\`\n${box}\`\`\`\n` +
+        `**Quick Usage:**\n` +
+        `• \`.rr create 🐱 @Male 🐷 @Female\` — Create panel\n` +
+        `• \`.rr add 🐶 @Dog\` — Add role to active panel\n` +
+        `• \`.rr remove 🐱\` — Remove role from panel`,
       requestedBy: author,
       clientUser
     });
