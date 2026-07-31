@@ -8,6 +8,7 @@ const {
   PermissionsBitField
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
+const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 const { getLavalink } = require('../utils/lavalink');
 
@@ -733,15 +734,36 @@ module.exports = {
     if (['equalizer', 'eq', 'filter', 'filters'].includes(invoked)) {
       const inputFilters = args.map(a => a.toLowerCase());
       if (!inputFilters.length || inputFilters.includes('list')) {
-        return message.reply(
-          `🎛️ **Available Audio Filters:**\n` +
-          `• \`bassboost\` — Deep bass amplification\n` +
-          `• \`8d\` — Immersive spatial panning\n` +
-          `• \`nightcore\` — High pitch & upbeat tempo\n` +
-          `• \`vaporwave\` — Slowed retro synthwave\n` +
-          `• \`reset\` — Clear all active filters\n\n` +
-          `**Usage:** \`.eq bassboost 8d\``
-        );
+        let clientUser = message.client.user;
+        try {
+          clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
+        } catch (e) {}
+
+        const filtersBox = createDynamicBox('AVAILABLE AUDIO FILTERS', [
+          'bassboost : Deep bass amplification',
+          '8d        : Immersive spatial panning',
+          'nightcore : High pitch & upbeat tempo',
+          'vaporwave : Slowed retro synthwave',
+          'reset     : Clear all active filters'
+        ]);
+
+        const usageBox = createDynamicBox('EXACT COMMAND USAGES', [
+          '.eq bassboost',
+          '.eq 8d nightcore',
+          '.filter reset'
+        ]);
+
+        const embed = createStyledEmbed({
+          title: 'Audio Equalizer & Sound Filters',
+          subtitle: `${emojis.MUSIC || '🎛️'} High-Fidelity Audio DSP Suite`,
+          description:
+            '```\n' + filtersBox + '\n```\n' +
+            '```\n' + usageBox + '\n```',
+          requestedBy: author,
+          clientUser
+        });
+
+        return message.channel.send({ embeds: [embed] });
       }
       const player = lavalink?.getPlayer(guildId);
       if (!player) return message.reply(`${emojis.WARNING} No active music player.`);
