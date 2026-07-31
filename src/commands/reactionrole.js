@@ -1,11 +1,11 @@
-const { EmbedBuilder, PermissionsBitField } = require('discord.js');
+const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, StringSelectMenuBuilder, PermissionsBitField } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 
 // In-memory Reaction Role storage (persisted per guild/message)
 const reactionRoles = new Map();
 
-function parsePairs(args) {
+function parsePairs(args, guild) {
   const pairs = [];
   let title = 'React to this message to assign yourself roles';
 
@@ -27,7 +27,12 @@ function parsePairs(args) {
     if (emoji && roleToken) {
       const roleIdMatch = roleToken.match(/\d+/);
       if (roleIdMatch) {
-        pairs.push({ emoji, roleId: roleIdMatch[0] });
+        const roleObj = guild.roles.cache.get(roleIdMatch[0]);
+        pairs.push({
+          emoji,
+          roleId: roleIdMatch[0],
+          roleName: roleObj ? roleObj.name : `Role ${roleIdMatch[0]}`
+        });
       }
     }
   }
@@ -37,7 +42,7 @@ function parsePairs(args) {
 
 module.exports = {
   name: 'reactionrole',
-  description: 'Reaction Role System: create, add, remove, list, reset',
+  description: 'Reaction Role System: create, buttons, dropdown, add, remove, list, reset',
   aliases: ['rr', 'reactionroles', 'reactionrole'],
   reactionRoles,
 
@@ -52,6 +57,8 @@ module.exports = {
     } catch (e) {}
 
     let guildRR = reactionRoles.get(guildId) || [];
+    const RR_ICON = emojis.REACTIONROLES || '<a:reaction_roles:1530942623303335966>';
+    const DOT = emojis.DOT || '•';
 
     // .rr create [title: "Title"] <emoji1> <@role1> [emoji2] [@role2] ...
     // .rr setup ...
@@ -69,19 +76,28 @@ module.exports = {
         );
       }
 
-      const { title, pairs } = parsePairs(restArgs);
+      const { title, pairs } = parsePairs(restArgs, message.guild);
 
       if (pairs.length === 0) {
         return message.reply(`${emojis.WARNING} No valid emoji + role pairs found! Please mention valid roles.`);
       }
 
-      // Build Sapphire-style reaction role embed
-      const descriptionLines = pairs.map(p => `${p.emoji} - <@&${p.roleId}>`);
+      // Build Premium Aesthetic Reaction Role Embed
+      const descriptionLines = pairs.map(p => `> ${p.emoji}  ${DOT}  <@&${p.roleId}>`);
 
       const panelEmbed = new EmbedBuilder()
-        .setColor(0x2F3136) // Sleek dark Sapphire aesthetic
-        .setTitle(title)
-        .setDescription(descriptionLines.join('\n'))
+        .setColor(0x5865F2) // Vibrant Discord Blurple / Premium theme
+        .setTitle(`${RR_ICON}  ${title}`)
+        .setDescription(
+          `*React to this message to assign yourself roles!*\n\n` +
+          descriptionLines.join('\n') +
+          `\n\n*Click a reaction emoji below to toggle your roles on or off.*`
+        )
+        .setThumbnail(message.guild.iconURL({ dynamic: true, size: 256 }) || clientUser?.displayAvatarURL?.() || undefined)
+        .setFooter({
+          text: `${message.guild.name} • Self-Assignable Roles`,
+          iconURL: message.guild.iconURL() || undefined
+        })
         .setTimestamp();
 
       message.delete().catch(() => {});
@@ -108,6 +124,116 @@ module.exports = {
       const confirmMsg = await message.channel.send(`${emojis.SUCCESS} **Reaction Role Panel Created!** (${pairs.length} roles linked)`);
       setTimeout(() => confirmMsg.delete().catch(() => {}), 4000);
       return;
+    }
+
+    // .rr buttons [title: "Title"] <emoji1> <@role1> [emoji2] [@role2] ...
+    if (['buttons', 'btn', 'button'].includes(sub)) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageRoles) && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} You need **Manage Roles** permission to setup button reaction roles!`);
+      }
+
+      const restArgs = args.slice(1);
+      if (restArgs.length < 2) {
+        return message.reply(`${emojis.WARNING} **Usage:** \`.rr buttons "Title" 🐱 @Male 🐷 @Female\``);
+      }
+
+      const { title, pairs } = parsePairs(restArgs, message.guild);
+      if (pairs.length === 0) return message.reply(`${emojis.WARNING} No valid emoji + role pairs found!`);
+
+      const descriptionLines = pairs.map(p => `> ${p.emoji}  ${DOT}  **${p.roleName}**`);
+
+      const embed = new EmbedBuilder()
+        .setColor(0x3498DB)
+        .setTitle(`${RR_ICON}  ${title}`)
+        .setDescription(
+          `*Click the buttons below to assign or remove roles!*\n\n` +
+          descriptionLines.join('\n')
+        )
+        .setThumbnail(message.guild.iconURL({ dynamic: true, size: 256 }) || undefined)
+        .setFooter({ text: `${message.guild.name} • Button Roles`, iconURL: message.guild.iconURL() || undefined })
+        .setTimestamp();
+
+      const actionRows = [];
+      let currentRow = new ActionRowBuilder();
+
+      pairs.forEach((p, idx) => {
+        if (currentRow.components.length >= 5) {
+          actionRows.push(currentRow);
+          currentRow = new ActionRowBuilder();
+        }
+
+        const btn = new ButtonBuilder()
+          .setCustomId(`rr_btn_${p.roleId}`)
+          .setLabel(p.roleName)
+          .setStyle(ButtonStyle.Primary);
+
+        if (p.emoji) {
+          const match = p.emoji.match(/<a?:([a-zA-Z0-9_]+):(\d+)>/);
+          if (match) {
+            btn.setEmoji({ name: match[1], id: match[2], animated: p.emoji.startsWith('<a:') });
+          } else {
+            btn.setEmoji(p.emoji);
+          }
+        }
+
+        currentRow.addComponents(btn);
+      });
+
+      if (currentRow.components.length > 0) actionRows.push(currentRow);
+
+      message.delete().catch(() => {});
+      return message.channel.send({ embeds: [embed], components: actionRows });
+    }
+
+    // .rr dropdown [title: "Title"] <emoji1> <@role1> [emoji2] [@role2] ...
+    if (['dropdown', 'select', 'menu'].includes(sub)) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageRoles) && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} You need **Manage Roles** permission to setup dropdown reaction roles!`);
+      }
+
+      const restArgs = args.slice(1);
+      if (restArgs.length < 2) {
+        return message.reply(`${emojis.WARNING} **Usage:** \`.rr dropdown "Title" 🐱 @Male 🐷 @Female\``);
+      }
+
+      const { title, pairs } = parsePairs(restArgs, message.guild);
+      if (pairs.length === 0) return message.reply(`${emojis.WARNING} No valid emoji + role pairs found!`);
+
+      const embed = new EmbedBuilder()
+        .setColor(0x9B59B6)
+        .setTitle(`${RR_ICON}  ${title}`)
+        .setDescription(`*Select an option from the menu below to pick up or remove your role!*`)
+        .setThumbnail(message.guild.iconURL({ dynamic: true, size: 256 }) || undefined)
+        .setFooter({ text: `${message.guild.name} • Dropdown Roles`, iconURL: message.guild.iconURL() || undefined })
+        .setTimestamp();
+
+      const options = pairs.map(p => {
+        const opt = {
+          label: p.roleName,
+          value: `rr_sel_${p.roleId}`,
+          description: `Toggle ${p.roleName} role`
+        };
+
+        if (p.emoji) {
+          const match = p.emoji.match(/<a?:([a-zA-Z0-9_]+):(\d+)>/);
+          if (match) {
+            opt.emoji = { name: match[1], id: match[2], animated: p.emoji.startsWith('<a:') };
+          } else {
+            opt.emoji = p.emoji;
+          }
+        }
+        return opt;
+      });
+
+      const selectMenu = new StringSelectMenuBuilder()
+        .setCustomId('rr_select_menu')
+        .setPlaceholder('🎭 Select a role to toggle...')
+        .addOptions(options);
+
+      const row = new ActionRowBuilder().addComponents(selectMenu);
+
+      message.delete().catch(() => {});
+      return message.channel.send({ embeds: [embed], components: [row] });
     }
 
     // .rr add <messageId> <emoji> <@role>
@@ -208,8 +334,9 @@ module.exports = {
     const embed = createStyledEmbed({
       title: `🎭 Reaction Role Commands`,
       description:
-        `\`.rr create <emoji1> <@role1> <emoji2> <@role2>\` — Create Sapphire-style reaction role panel\n` +
-        `\`.rr create "Title" <emoji1> <@role1>\` — Create panel with custom title\n` +
+        `\`.rr create "Title" <emoji1> <@role1>\` — Create reaction role panel\n` +
+        `\`.rr buttons "Title" <emoji1> <@role1>\` — Create button role panel\n` +
+        `\`.rr dropdown "Title" <emoji1> <@role1>\` — Create dropdown role panel\n` +
         `\`.rr add <msgID> <emoji> <@role>\` — Add reaction role to an existing message\n` +
         `\`.rr remove <msgID> <emoji>\` — Remove reaction role from message\n` +
         `\`.rr list\` — View all active reaction roles\n` +

@@ -2523,7 +2523,44 @@ client.on('interactionCreate', async (interaction) => {
     }
   }
 
-  // 8. CLOSE TICKET BUTTON
+  // REACTION ROLE BUTTON HANDLER
+  if (interaction.customId && interaction.customId.startsWith('rr_btn_')) {
+    const roleId = interaction.customId.replace('rr_btn_', '');
+    const role = interaction.guild.roles.cache.get(roleId);
+    if (!role) {
+      return interaction.reply({ content: `${emojis.ERROR} Role not found on this server!`, flags: 64 }).catch(() => {});
+    }
+
+    const member = interaction.member;
+    if (member.roles.cache.has(roleId)) {
+      await member.roles.remove(roleId).catch(() => null);
+      return interaction.reply({ content: `❌ Removed role **${role.name}**!`, flags: 64 }).catch(() => {});
+    } else {
+      await member.roles.add(roleId).catch(() => null);
+      return interaction.reply({ content: `✅ Added role **${role.name}**!`, flags: 64 }).catch(() => {});
+    }
+  }
+
+  // REACTION ROLE DROPDOWN SELECT MENU HANDLER
+  if (interaction.isStringSelectMenu() && interaction.customId === 'rr_select_menu') {
+    const selectedVal = interaction.values[0];
+    if (selectedVal && selectedVal.startsWith('rr_sel_')) {
+      const roleId = selectedVal.replace('rr_sel_', '');
+      const role = interaction.guild.roles.cache.get(roleId);
+      if (!role) {
+        return interaction.reply({ content: `${emojis.ERROR} Role not found on this server!`, flags: 64 }).catch(() => {});
+      }
+
+      const member = interaction.member;
+      if (member.roles.cache.has(roleId)) {
+        await member.roles.remove(roleId).catch(() => null);
+        return interaction.reply({ content: `❌ Removed role **${role.name}**!`, flags: 64 }).catch(() => {});
+      } else {
+        await member.roles.add(roleId).catch(() => null);
+        return interaction.reply({ content: `✅ Added role **${role.name}**!`, flags: 64 }).catch(() => {});
+      }
+    }
+  }
   if (interaction.customId === 'ticket_close_btn') {
     const user = interaction.user;
     const channel = interaction.channel;
