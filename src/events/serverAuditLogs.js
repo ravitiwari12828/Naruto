@@ -262,10 +262,10 @@ module.exports = (client) => {
     const removedRoles = oldMember.roles.cache.filter(r => !newMember.roles.cache.has(r.id));
 
     if (addedRoles.size > 0) {
-      changes.push(`• **Role Added:** ${addedRoles.map(r => `<@&${r.id}>`).join(', ')}`);
+      changes.push(`• **Role Added:** ${addedRoles.map(r => `<@&${r.id}> (**${r.name}**)`).join(', ')}`);
     }
     if (removedRoles.size > 0) {
-      changes.push(`• **Role Removed:** ${removedRoles.map(r => `<@&${r.id}>`).join(', ')}`);
+      changes.push(`• **Role Removed:** ${removedRoles.map(r => `<@&${r.id}> (**${r.name}**)`).join(', ')}`);
     }
 
     if (changes.length === 0) return;
@@ -274,7 +274,7 @@ module.exports = (client) => {
 
     if (executor) {
       const { checkAndIncrementModAction, dispatchLimitLog } = require('../commands/modlimits');
-      const quota = checkAndIncrementModAction(newMember.guild.id, executor.id, 'memberUpdate');
+      const quota = checkAndIncrementModAction(newMember.guild.id, executor.id, 'memberUpdate', newMember.guild);
       dispatchLimitLog(newMember.guild, {
         actionTitle: 'Member Role Update',
         executor: executor,
@@ -285,16 +285,28 @@ module.exports = (client) => {
       });
     }
 
+    const { createDynamicBox } = require('../utils/boxBuilder');
+    const roleActionText = addedRoles.size > 0 ? `Added: ${addedRoles.map(r => r.name).join(', ')}` : (removedRoles.size > 0 ? `Removed: ${removedRoles.map(r => r.name).join(', ')}` : 'Nickname Updated');
+
+    const infoBox = createDynamicBox('MEMBER ROLE / PROFILE UPDATE', [
+      `Target   : ${newMember.user.tag || newMember.user.username}`,
+      `Executor : ${executor ? (executor.tag || executor.username) : 'User / Admin'}`,
+      `Action   : ${roleActionText}`
+    ]);
+
     const embed = new EmbedBuilder()
       .setColor(0x3498DB)
-      .setTitle(`${emojis.SHIELD || '👥'} Member Roles / Nickname Changed in Server Settings`)
+      .setTitle(`${emojis.ROLES || '🎭'} Member Role / Profile Updated`)
       .setDescription(
+        '```\n' + infoBox + '\n```\n\n' +
         `• **Member:** <@${newMember.id}> (\`${newMember.user.tag}\`)\n\n` +
         `**Changes:**\n${changes.join('\n')}\n\n` +
         `• **Updated By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`User / Admin`'}`
       )
       .setTimestamp();
 
+    // Dispatch to BOTH roles (#role-logs) AND members (#member-logs)
+    dispatchLog(newMember.guild, 'roles', embed);
     dispatchLog(newMember.guild, 'members', embed);
   });
 

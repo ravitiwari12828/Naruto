@@ -43,13 +43,26 @@ function getOrCreateModLimits(guildId) {
   return modLimitsStore.get(guildId);
 }
 
-function checkAndIncrementModAction(guildId, moderatorId, actionType) {
+function checkAndIncrementModAction(guildId, moderatorId, actionType, guild) {
   const config = getOrCreateModLimits(guildId);
   if (!config.enabled) return { allowed: true };
-  if (config.bypasses.has(moderatorId)) return { allowed: true };
+  if (config.bypasses.has(moderatorId)) return { allowed: true, remaining: 'Unlimited' };
+
+  // EXCLUDE SERVER OWNER & EXTRA OWNERS / BOT OWNERS COMPLETELY FROM LIMIT SYSTEM
+  const { isExtraOwner } = require('../utils/owners');
+  const isServerOwner = guild && guild.ownerId === moderatorId;
+  const isExtra = guild && isExtraOwner ? isExtraOwner(guild.id, moderatorId) : false;
+
+  if (isServerOwner || isExtra) {
+    return {
+      allowed: true,
+      isOwner: true,
+      remaining: 'Unlimited (Server Owner / Extra Owner)'
+    };
+  }
 
   const limit = config.limits[actionType];
-  if (limit === undefined || limit === 0) return { allowed: true };
+  if (limit === undefined || limit === 0) return { allowed: true, remaining: 'Unlimited' };
 
   const now = Date.now();
   let userUsage = config.usage.get(moderatorId);
@@ -90,8 +103,24 @@ function checkAndIncrementModAction(guildId, moderatorId, actionType) {
 
 function dispatchLimitLog(guild, { actionTitle, executor, target, details, remaining, resetAt }) {
   const { dispatchLog } = require('../utils/logger');
+  const { createDynamicBox } = require('../utils/boxBuilder');
+
+  const cleanActionName = actionTitle.replace(/^[^a-zA-Z0-9]+/, '').trim();
+  const isOwnerBypass = (typeof remaining === 'string' && remaining.includes('Unlimited')) || (executor && guild && (guild.ownerId === executor.id || (require('../utils/owners').isExtraOwner && require('../utils/owners').isExtraOwner(guild.id, executor.id))));
+
+  // ASCII Box Panel for Structured Log Formatting
+  const boxLines = [
+    `Action   : ${cleanActionName}`,
+    `Executor : ${executor ? (executor.tag || executor.username || executor.id) : 'Unknown'}`,
+    `Target   : ${target ? (target.tag || target.username || target.name || target.id) : 'N/A'}`,
+    `Limits   : ${isOwnerBypass ? 'Bypassed (Owner / Extra Owner)' : (remaining !== undefined ? `${remaining} Remaining` : 'N/A')}`
+  ];
+
+  const infoBox = createDynamicBox(cleanActionName.toUpperCase(), boxLines);
 
   const descLines = [];
+  descLines.push('```\n' + infoBox + '\n```');
+
   if (executor) {
     descLines.push(`• **Executed By :-** <@${executor.id}> (\`${executor.tag || executor.username}\`) \`${executor.id}\``);
   }
@@ -101,25 +130,30 @@ function dispatchLimitLog(guild, { actionTitle, executor, target, details, remai
   if (details) {
     descLines.push(`• **Details :-** ${details}`);
   }
-  if (remaining !== undefined) {
-    descLines.push(`• **Remaining Limits :-** \`${remaining}\``);
-  }
-  if (resetAt) {
-    const timestamp = Math.floor(resetAt / 1000);
-    descLines.push(`• **Limit Reset :-** <t:${timestamp}:R>`);
-  }
 
-  const cleanActionName = actionTitle.replace(/^[^a-zA-Z0-9]+/, '').trim();
+  if (!isOwnerBypass) {
+    if (remaining !== undefined) {
+      descLines.push(`• **Remaining Limits :-** \`${remaining}\``);
+    }
+    if (resetAt) {
+      const timestamp = Math.floor(resetAt / 1000);
+      descLines.push(`• **Limit Reset :-** <t:${timestamp}:R>`);
+    }
+  } else {
+    descLines.push(`• **Limit Status :-** \`Bypassed (Server Owner / Extra Owner)\``);
+  }
 
   const embed = new EmbedBuilder()
     .setColor(0xED4245)
-    .setTitle(actionTitle)
+    .setTitle(`${emojis.SHIELD || '🛡️'} ${actionTitle}`)
     .setDescription(descLines.join('\n'))
     .setThumbnail(executor ? executor.displayAvatarURL({ dynamic: true }) : (guild.iconURL({ dynamic: true }) || undefined))
     .setFooter({ text: `Naruto Limit System | ${cleanActionName}` })
     .setTimestamp();
 
   dispatchLog(guild, 'limitlogs', embed);
+  dispatchLog(guild, 'narutologs', embed);
+  dispatchLog(guild, 'roles', embed);
 }
 
 module.exports = {
