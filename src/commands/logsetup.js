@@ -31,11 +31,50 @@ function getOrCreateLoggingConfig(guildId) {
   return loggingConfigs.get(guildId);
 }
 
+function findExistingLogChannel(guild, chKey, defaultName) {
+  const channelAliases = {
+    modlogs: ['mod-logs', 'modlogs', 'moderation-logs', 'mod-log', 'moderation', 'modcases'],
+    modcases: ['mod-cases', 'cases-log', 'modcases', 'mod-logs'],
+    automod: ['automod-logs', 'automod', 'naruto-automod-logs'],
+    antinuke: ['antinuke-logs', 'security-logs', 'naruto-security-logs'],
+    securitydef: ['security-defense', 'security-logs', 'defense-logs'],
+    noprefix: ['noprefix-audit', 'audit-logs'],
+    narutologs: ['naruto-logs', 'all-logs', 'bot-logs'],
+    server: ['server-logs', 'server-log', 'serverlogs', 'audit-logs', 'guild-logs'],
+    messages: ['message-logs', 'message-log', 'msg-logs', 'chat-logs'],
+    channels: ['channel-logs', 'channel-log', 'chan-logs'],
+    roles: ['role-logs', 'role-log', 'roles-log'],
+    members: ['member-logs', 'member-log', 'user-logs'],
+    voice: ['voice-logs', 'vc-logs', 'voice-log'],
+    joinleave: ['join-leave-logs', 'join-leave', 'welcome-logs'],
+    emojis: ['emoji-logs', 'emojis-log', 'naruto-emoji-logs'],
+    ticketlogs: ['ticket-logs', 'tickets-log'],
+    transcripts: ['ticket-transcripts', 'transcripts'],
+    modmaillogs: ['modmail-logs', 'modmail-log'],
+    modmailtranscripts: ['modmail-transcripts']
+  };
+
+  const aliases = channelAliases[chKey] || [defaultName];
+  aliases.push(defaultName);
+
+  // 1. Check exact name match first across text channels
+  let found = guild.channels.cache.find(c => c.isTextBased() && aliases.some(a => c.name.toLowerCase() === a.toLowerCase()));
+  if (found) return found;
+
+  // 2. Check fuzzy name includes e.g. "my-server-logs" or "mod-logs-2"
+  found = guild.channels.cache.find(c => c.isTextBased() && aliases.some(a => {
+    const cleanAlias = a.toLowerCase().replace(/naruto-/g, '');
+    return c.name.toLowerCase().includes(cleanAlias);
+  }));
+  return found || null;
+}
+
 module.exports = {
   name: 'logsetup',
-  description: 'Setup and deploy audit logging channels (Unified single channel or 8 Specialized Pro channels)',
+  description: 'Setup and deploy audit logging channels (Unified single channel or Pro channels - reuses existing channels automatically)',
   aliases: ['logs', 'logging', 'auditlogs', 'setuplogs'],
   loggingConfigs,
+  findExistingLogChannel,
 
   async execute(message, args) {
     const author = message.author;
@@ -54,45 +93,43 @@ module.exports = {
 
     function buildDashboardEmbed(actionText = '') {
       const dbChannels = (() => { try { return require('../database/db').getLogChannels(guild.id); } catch(e) { return {}; } })();
-      const resolve = (key, configKey) => {
-        const id = config[configKey] || dbChannels[key];
+      const resolve = (key, configKey, defaultName) => {
+        const existing = findExistingLogChannel(guild, key, defaultName);
+        const id = config[configKey] || dbChannels[key] || existing?.id;
         return id ? `<#${id}>` : '`Not Set`';
       };
 
       return createStyledEmbed({
-        title: `${emojis.SCROLL} Audit Logging System Architecture`,
-        subtitle: `${emojis.SHIELD} Server Event & Moderation Logging Grid`,
+        title: `${emojis.SCROLL || '📜'} Audit Logging System Architecture`,
+        subtitle: `${emojis.SHIELD || '🛡️'} Server Event & Moderation Logging Grid`,
         description:
-          `**${emojis.SHIELD} Security Logs Category**\n` +
+          `**${emojis.SHIELD || '🛡️'} Security Logs Category**\n` +
           `\`\`\`\n` +
-          `noprefix-audit      : ${config.mode === 'multi' ? 'Deployed' : 'Use Pro Setup'}\n` +
-          `security-defense    : ${config.mode === 'multi' ? 'Deployed' : 'Use Pro Setup'}\n` +
-          `naruto-logs         : ${config.unifiedChanId ? 'Deployed' : 'Not Created'}\n` +
-          `naruto-automod-logs : ${config.automodLogs ? 'Deployed' : 'Not Set'}\n` +
-          `naruto-emoji-logs   : ${config.emojiLogs ? 'Deployed' : 'Not Set'}\n` +
-          `naruto-mod-cases    : ${config.modCaseLogs ? 'Deployed' : 'Not Set'}\n` +
-          `naruto-security-logs: ${config.securityLogs ? 'Deployed' : 'Not Set'}\n` +
-          `naruto-mod-logs     : ${config.modLogs ? 'Deployed' : 'Not Set'}\n` +
+          `naruto-logs         : ${resolve('narutologs', 'unifiedChanId', 'naruto-logs')}\n` +
+          `naruto-automod-logs : ${resolve('automod', 'automodLogs', 'naruto-automod-logs')}\n` +
+          `naruto-emoji-logs   : ${resolve('emojis', 'emojiLogs', 'naruto-emoji-logs')}\n` +
+          `naruto-mod-cases    : ${resolve('modcases', 'modCaseLogs', 'naruto-mod-cases')}\n` +
+          `naruto-security-logs: ${resolve('antinuke', 'securityLogs', 'naruto-security-logs')}\n` +
+          `naruto-mod-logs     : ${resolve('modlogs', 'modLogs', 'naruto-mod-logs')}\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TOOLS} Server Audit Logs Category**\n` +
+          `**${emojis.TOOLS || '⚙️'} Server Audit Logs Category**\n` +
           `\`\`\`\n` +
-          `server-logs   : ${config.messageLogs ? 'Deployed' : 'Not Set'}\n` +
-          `message-logs  : ${config.messageLogs ? 'Deployed' : 'Not Set'}\n` +
-          `channel-logs  : Not Set\n` +
-          `role-logs     : Not Set\n` +
-          `member-logs   : Not Set\n` +
-          `voice-logs    : ${config.voiceLogs ? 'Deployed' : 'Not Set'}\n` +
-          `join-leave-logs: Not Set\n` +
+          `server-logs   : ${resolve('server', 'messageLogs', 'server-logs')}\n` +
+          `message-logs  : ${resolve('messages', 'messageLogs', 'message-logs')}\n` +
+          `channel-logs  : ${resolve('channels', 'channelLogs', 'channel-logs')}\n` +
+          `role-logs     : ${resolve('roles', 'roleLogs', 'role-logs')}\n` +
+          `member-logs   : ${resolve('members', 'memberLogs', 'member-logs')}\n` +
+          `voice-logs    : ${resolve('voice', 'voiceLogs', 'voice-logs')}\n` +
+          `join-leave-logs: ${resolve('joinleave', 'joinleaveLogs', 'join-leave-logs')}\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TICKETS} Ticket & ModMail Logs Category**\n` +
+          `**${emojis.TICKETS || '🎟️'} Ticket & ModMail Logs Category**\n` +
           `\`\`\`\n` +
-          `ticket-logs        : ${config.ticketLogs ? 'Deployed' : 'Not Set'}\n` +
-          `ticket-transcripts : Not Set\n` +
-          `modmail-logs       : Not Set\n` +
-          `modmail-transcripts: Not Set\n` +
+          `ticket-logs        : ${resolve('ticketlogs', 'ticketLogs', 'ticket-logs')}\n` +
+          `modmail-logs       : ${resolve('modmaillogs', 'modmailLogs', 'modmail-logs')}\n` +
           `\`\`\`\n\n` +
-          (actionText ? `> ${emojis.SUCCESS} **Status:** ${actionText}\n\n` : '') +
-          `**Mode:** \`${config.mode.toUpperCase()}\` | **Choose your setup method below:**`,
+          (actionText ? `> ${emojis.SUCCESS || '✅'} **Status:** ${actionText}\n\n` : '') +
+          `**Mode:** \`${config.mode.toUpperCase()}\` | **Choose your setup method below:**\n` +
+          `*(Existing server channels will be automatically re-used to prevent duplicate channels!)*`,
         requestedBy: author,
         clientUser
       });
@@ -107,11 +144,11 @@ module.exports = {
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId('log_setup_multi')
-            .setLabel('${emojis.SHIELD} 1-Click Pro Setup (8 Channels)')
+            .setLabel('🛡️ 1-Click Pro Setup (Re-uses Existing Channels)')
             .setStyle(ButtonStyle.Primary),
           new ButtonBuilder()
             .setCustomId('log_setup_disable')
-            .setLabel('${emojis.ERROR} Disable Logging')
+            .setLabel('❌ Disable Logging')
             .setStyle(ButtonStyle.Danger)
         )
       ];
@@ -127,27 +164,27 @@ module.exports = {
       time: 180000
     });
 
-async function getOrCreateLogCategory(guild) {
-  let category = guild.channels.cache.find(
-    c => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes('audit logs') || c.name.toLowerCase().includes('server logs'))
-  );
-  if (!category) {
-    try {
-      category = await guild.channels.create({
-        name: '📜 AUDIT LOGS 📜',
-        type: ChannelType.GuildCategory,
-        permissionOverwrites: [
-          { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
-        ]
-      });
-    } catch (e) {}
-  }
-  return category;
-}
+    async function getOrCreateLogCategory(guild) {
+      let category = guild.channels.cache.find(
+        c => c.type === ChannelType.GuildCategory && (c.name.toLowerCase().includes('audit logs') || c.name.toLowerCase().includes('server logs'))
+      );
+      if (!category) {
+        try {
+          category = await guild.channels.create({
+            name: '📜 AUDIT LOGS 📜',
+            type: ChannelType.GuildCategory,
+            permissionOverwrites: [
+              { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
+            ]
+          });
+        } catch (e) {}
+      }
+      return category;
+    }
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: '${emojis.ERROR} Only the administrator can use these buttons.', ephemeral: true });
+        return interaction.reply({ content: `${emojis.ERROR || '❌'} Only the administrator can use these buttons.`, ephemeral: true });
       }
 
       await interaction.deferUpdate();
@@ -156,7 +193,8 @@ async function getOrCreateLogCategory(guild) {
 
       if (interaction.customId === 'log_setup_single') {
         const category = await getOrCreateLogCategory(guild);
-        let chan = guild.channels.cache.find(c => c.name === 'naruto-logs');
+        let chan = findExistingLogChannel(guild, 'narutologs', 'naruto-logs');
+
         if (!chan) {
           try {
             chan = await guild.channels.create({
@@ -169,7 +207,7 @@ async function getOrCreateLogCategory(guild) {
               ]
             });
           } catch (e) {}
-        } else if (category && chan.parentId !== category.id) {
+        } else if (category && !chan.parentId) {
           await chan.setParent(category.id).catch(() => {});
         }
 
@@ -178,7 +216,7 @@ async function getOrCreateLogCategory(guild) {
         config.unifiedChanId = chan?.id || null;
         loggingConfigs.set(guild.id, config);
 
-        actionStatus = `Unified single log channel deployed under **${category?.name || 'Category'}**: <#${chan?.id}>!`;
+        actionStatus = `Unified single log channel mapped to <#${chan?.id}>!`;
       }
 
       else if (interaction.customId === 'log_setup_multi') {
@@ -188,7 +226,7 @@ async function getOrCreateLogCategory(guild) {
 
         const categoryStructure = [
           {
-            name: '${emojis.SHIELD} · Security Logs ·',
+            name: '🛡️ · Security Logs ·',
             channels: [
               { key: 'noprefix', name: 'noprefix-audit' },
               { key: 'securitydef', name: 'security-defense' },
@@ -225,25 +263,30 @@ async function getOrCreateLogCategory(guild) {
 
         config.enabled = true;
         config.mode = 'multi';
+        let reusedCount = 0;
         let createdCount = 0;
 
         for (const catDef of categoryStructure) {
           let categoryChan = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name === catDef.name || c.name.toLowerCase().includes(catDef.name.replace(/[^a-zA-Z]/g, '').toLowerCase())));
-          if (!categoryChan) {
-            try {
-              categoryChan = await guild.channels.create({
-                name: catDef.name,
-                type: ChannelType.GuildCategory,
-                permissionOverwrites: [
-                  { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
-                ]
-              });
-            } catch (e) {}
-          }
 
           for (const chDef of catDef.channels) {
-            let textChan = guild.channels.cache.find(c => c.name === chDef.name);
-            if (!textChan) {
+            let textChan = findExistingLogChannel(guild, chDef.key, chDef.name);
+
+            if (textChan) {
+              reusedCount++;
+            } else {
+              if (!categoryChan) {
+                try {
+                  categoryChan = await guild.channels.create({
+                    name: catDef.name,
+                    type: ChannelType.GuildCategory,
+                    permissionOverwrites: [
+                      { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
+                    ]
+                  });
+                } catch (e) {}
+              }
+
               try {
                 textChan = await guild.channels.create({
                   name: chDef.name,
@@ -255,8 +298,6 @@ async function getOrCreateLogCategory(guild) {
                 });
                 createdCount++;
               } catch (e) {}
-            } else if (categoryChan && textChan.parentId !== categoryChan.id) {
-              await textChan.setParent(categoryChan.id).catch(() => {});
             }
 
             if (textChan) {
@@ -268,7 +309,7 @@ async function getOrCreateLogCategory(guild) {
         }
 
         loggingConfigs.set(guild.id, config);
-        actionStatus = `All categories and specialized log channels created and saved into Database!`;
+        actionStatus = `Logging channels mapped! (${reusedCount} existing channels re-used, ${createdCount} new created)`;
       }
 
       else if (interaction.customId === 'log_setup_disable') {

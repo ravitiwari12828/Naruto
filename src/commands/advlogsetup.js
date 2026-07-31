@@ -9,12 +9,12 @@ const {
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { getOrCreateAdvLogStore } = require('../utils/logger');
-
+const { findExistingLogChannel } = require('./logsetup');
 const db = require('../database/db');
 
 module.exports = {
   name: 'advlogsetup',
-  description: 'Deploy clean multi-category server audit logging channels (Security Logs, Server Audit Logs, Ticket & ModMail Logs)',
+  description: 'Deploy multi-category server audit logging channels (automatically reuses existing server channels)',
   aliases: ['logmodule', 'createlogcategory', 'logssetup', 'advlogs', 'logsetupadvlog', 'advlogsetuplog'],
 
   async execute(message, args) {
@@ -34,10 +34,10 @@ module.exports = {
 
     function buildDashboardEmbed(actionText = '') {
       return createStyledEmbed({
-        title: `${emojis.SCROLL} Server Audit & Event Logging Suite`,
-        subtitle: `${emojis.SHIELD} Clean & Dedicated Event Routing`,
+        title: `${emojis.SCROLL || '📜'} Server Audit & Event Logging Suite`,
+        subtitle: `${emojis.SHIELD || '🛡️'} Clean & Dedicated Event Routing`,
         description:
-          `**${emojis.SHIELD} Security Logs Category**\n` +
+          `**${emojis.SHIELD || '🛡️'} Security Logs Category**\n` +
           `\`\`\`\n` +
           `noprefix-audit       ✓\n` +
           `security-defense     ✓\n` +
@@ -48,7 +48,7 @@ module.exports = {
           `naruto-security-logs ✓\n` +
           `naruto-mod-logs      ✓\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TOOLS} Server Audit Logs Category**\n` +
+          `**${emojis.TOOLS || '⚙️'} Server Audit Logs Category**\n` +
           `\`\`\`\n` +
           `server-logs      ✓\n` +
           `message-logs     ✓\n` +
@@ -58,7 +58,7 @@ module.exports = {
           `voice-logs       ✓\n` +
           `join-leave-logs  ✓\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TICKETS} Ticket & ModMail Logs Category**\n` +
+          `**${emojis.TICKETS || '🎟️'} Ticket & ModMail Logs Category**\n` +
           `\`\`\`\n` +
           `ticket-logs         ✓\n` +
           `ticket-transcripts  ✓\n` +
@@ -66,8 +66,8 @@ module.exports = {
           `modmail-transcripts ✓\n` +
           `\`\`\`\n\n` +
           `Active Mapped: \`${store.channels.size}\` channels\n` +
-          (actionText ? `\n> ${emojis.SUCCESS} **Status:** ${actionText}\n` : '') +
-          `\n*Click below to deploy all 3 categories & 19 channels into DB!*`,
+          (actionText ? `\n> ${emojis.SUCCESS || '✅'} **Status:** ${actionText}\n` : '') +
+          `\n*Existing server log channels will be automatically re-used to prevent duplicate channels!*`,
         requestedBy: author,
         clientUser
       });
@@ -78,7 +78,7 @@ module.exports = {
         new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId('advlog_deploy_all')
-            .setLabel('🚀 1-Click Deploy All Categories & Channels')
+            .setLabel('🚀 1-Click Deploy & Map All Categories')
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
             .setCustomId('advlog_toggle')
@@ -100,7 +100,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: '${emojis.ERROR} Only the administrator can use these buttons.', ephemeral: true });
+        return interaction.reply({ content: `${emojis.ERROR || '❌'} Only the administrator can use these buttons.`, ephemeral: true });
       }
 
       await interaction.deferUpdate();
@@ -110,7 +110,7 @@ module.exports = {
       if (interaction.customId === 'advlog_deploy_all') {
         const categoryStructure = [
           {
-            name: '${emojis.SHIELD} · Security Logs ·',
+            name: '🛡️ · Security Logs ·',
             channels: [
               { key: 'noprefix', name: 'noprefix-audit' },
               { key: 'securitydef', name: 'security-defense' },
@@ -145,25 +145,30 @@ module.exports = {
           }
         ];
 
+        let reusedCount = 0;
         let createdCount = 0;
 
         for (const catDef of categoryStructure) {
           let categoryChan = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name === catDef.name || c.name.toLowerCase().includes(catDef.name.replace(/[^a-zA-Z]/g, '').toLowerCase())));
-          if (!categoryChan) {
-            try {
-              categoryChan = await guild.channels.create({
-                name: catDef.name,
-                type: ChannelType.GuildCategory,
-                permissionOverwrites: [
-                  { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
-                ]
-              });
-            } catch (e) {}
-          }
 
           for (const chDef of catDef.channels) {
-            let textChan = guild.channels.cache.find(c => c.name === chDef.name);
-            if (!textChan) {
+            let textChan = findExistingLogChannel(guild, chDef.key, chDef.name);
+
+            if (textChan) {
+              reusedCount++;
+            } else {
+              if (!categoryChan) {
+                try {
+                  categoryChan = await guild.channels.create({
+                    name: catDef.name,
+                    type: ChannelType.GuildCategory,
+                    permissionOverwrites: [
+                      { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
+                    ]
+                  });
+                } catch (e) {}
+              }
+
               try {
                 textChan = await guild.channels.create({
                   name: chDef.name,
@@ -175,8 +180,6 @@ module.exports = {
                 });
                 createdCount++;
               } catch (e) {}
-            } else if (categoryChan && textChan.parentId !== categoryChan.id) {
-              await textChan.setParent(categoryChan.id).catch(() => {});
             }
 
             if (textChan) {
@@ -187,7 +190,7 @@ module.exports = {
         }
 
         store.enabled = true;
-        actionStatus = `Successfully deployed and saved ${createdCount} channels across 3 categories into Database!`;
+        actionStatus = `Logging channels mapped into DB! (${reusedCount} existing channels re-used, ${createdCount} new created)`;
       }
 
       else if (interaction.customId === 'advlog_toggle') {
