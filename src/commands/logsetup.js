@@ -221,8 +221,6 @@ module.exports = {
           {
             name: '🛡️ · Security Logs ·',
             channels: [
-              { key: 'noprefix', name: 'noprefix-audit' },
-              { key: 'securitydef', name: 'security-defense' },
               { key: 'narutologs', name: 'naruto-logs' },
               { key: 'automod', name: 'naruto-automod-logs' },
               { key: 'emojis', name: 'naruto-emoji-logs' },

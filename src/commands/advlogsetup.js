@@ -39,13 +39,12 @@ module.exports = {
         description:
           `**${emojis.SHIELD || '🛡️'} Security Logs Category**\n` +
           `\`\`\`\n` +
-          `noprefix-audit       ✓\n` +
-          `security-defense     ✓\n` +
           `naruto-logs          ✓\n` +
           `naruto-automod-logs  ✓\n` +
           `naruto-emoji-logs    ✓\n` +
           `naruto-mod-cases     ✓\n` +
           `naruto-security-logs ✓\n` +
+          `naruto-limit-logs    ✓\n` +
           `naruto-mod-logs      ✓\n` +
           `\`\`\`\n\n` +
           `**${emojis.TOOLS || '⚙️'} Server Audit Logs Category**\n` +
@@ -114,8 +113,6 @@ module.exports = {
           {
             name: '🛡️ · Security Logs ·',
             channels: [
-              { key: 'noprefix', name: 'noprefix-audit' },
-              { key: 'securitydef', name: 'security-defense' },
               { key: 'narutologs', name: 'naruto-logs' },
               { key: 'automod', name: 'naruto-automod-logs' },
               { key: 'emojis', name: 'naruto-emoji-logs' },
