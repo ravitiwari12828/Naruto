@@ -633,6 +633,7 @@ client.on('guildBanAdd', async (ban) => {
             rogueUser: executor,
             targetUser: ban.user,
             actionReason: 'Unauthorized Ban',
+            actionTaken: 'Member unbanned, Admin roles stripped & channel locked out!',
             banStatusText: 'Successfully Banned'
           });
         }

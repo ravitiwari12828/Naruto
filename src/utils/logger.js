@@ -91,7 +91,7 @@ async function dispatchLog(guild, logType, embedData) {
   }
 }
 
-function dispatchAntiNukeLog(guild, { rogueUser, targetUser, actionReason, banStatusText, roles, extraDetails, title }) {
+function dispatchAntiNukeLog(guild, { rogueUser, targetUser, actionReason, banStatusText, roles, extraDetails, actionTaken, title }) {
   const descLines = [];
 
   if (rogueUser) {
@@ -109,6 +109,9 @@ function dispatchAntiNukeLog(guild, { rogueUser, targetUser, actionReason, banSt
   if (extraDetails) {
     descLines.push(`• **Details:** ${extraDetails}`);
   }
+
+  const actionText = actionTaken || 'Member restored, Admin roles stripped & channel locked out!';
+  descLines.push(`• **Action:** ${actionText}`);
 
   const clientUser = guild.client.user;
 
