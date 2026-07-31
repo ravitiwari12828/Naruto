@@ -2,11 +2,12 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  StringSelectMenuBuilder
+  StringSelectMenuBuilder,
+  EmbedBuilder,
+  PermissionsBitField
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
-const { PermissionsBitField } = require('discord.js');
 const { createDynamicBox } = require('../utils/boxBuilder');
 
 // Global Daily / 10-Min Mod Limits Store
@@ -15,21 +16,21 @@ const modLimitsStore = new Map();
 function getOrCreateModLimits(guildId) {
   if (!modLimitsStore.has(guildId)) {
     modLimitsStore.set(guildId, {
-      enabled: false,
+      enabled: true,
       logChannelId: null,
       timeWindowMin: 10,
       limits: {
-        memberUpdate: 6,
+        memberUpdate: 3,
         channelCreate: 3,
         channelDelete: 3,
-        channelUpdate: 4,
+        channelUpdate: 3,
         roleCreate: 3,
-        roleDelete: 2,
+        roleDelete: 3,
         roleUpdate: 3,
         ban: 3,
         kick: 3,
-        guildUpdate: 0,
-        timeout: 6,
+        guildUpdate: 1,
+        timeout: 3,
         mention: 3,
         webhookCreate: 3,
         webhookDelete: 3,
@@ -69,6 +70,7 @@ function checkAndIncrementModAction(guildId, moderatorId, actionType) {
       allowed: false,
       current: currentCount,
       limit,
+      remaining: 0,
       resetAt: userUsage.resetAt
     };
   }
@@ -81,8 +83,43 @@ function checkAndIncrementModAction(guildId, moderatorId, actionType) {
     allowed: true,
     current: currentCount + 1,
     limit,
-    remaining: limit - (currentCount + 1)
+    remaining: limit - (currentCount + 1),
+    resetAt: userUsage.resetAt
   };
+}
+
+function dispatchLimitLog(guild, { actionTitle, executor, target, details, remaining, resetAt }) {
+  const { dispatchLog } = require('../utils/logger');
+
+  const descLines = [];
+  if (executor) {
+    descLines.push(`• **Executed By :-** <@${executor.id}> (\`${executor.tag || executor.username}\`) \`${executor.id}\``);
+  }
+  if (target) {
+    descLines.push(`• **Target :-** <@${target.id}> (\`${target.tag || target.username}\`) \`${target.id}\``);
+  }
+  if (details) {
+    descLines.push(`• **Details :-** ${details}`);
+  }
+  if (remaining !== undefined) {
+    descLines.push(`• **Remaining Limits :-** \`${remaining}\``);
+  }
+  if (resetAt) {
+    const timestamp = Math.floor(resetAt / 1000);
+    descLines.push(`• **Limit Reset :-** <t:${timestamp}:R>`);
+  }
+
+  const cleanActionName = actionTitle.replace(/^[^a-zA-Z0-9]+/, '').trim();
+
+  const embed = new EmbedBuilder()
+    .setColor(0xED4245)
+    .setTitle(actionTitle)
+    .setDescription(descLines.join('\n'))
+    .setThumbnail(executor ? executor.displayAvatarURL({ dynamic: true }) : (guild.iconURL({ dynamic: true }) || undefined))
+    .setFooter({ text: `Naruto Limit System | ${cleanActionName}` })
+    .setTimestamp();
+
+  dispatchLog(guild, 'limitlogs', embed);
 }
 
 module.exports = {
@@ -91,6 +128,7 @@ module.exports = {
   aliases: ['limit', 'limits', 'limitlog', 'limitlogs', 'actionlimits', 'modquota', 'limitmod', 'rate-limit'],
   modLimitsStore,
   checkAndIncrementModAction,
+  dispatchLimitLog,
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -137,6 +175,10 @@ module.exports = {
 
       config.logChannelId = chan.id;
       modLimitsStore.set(guild.id, config);
+
+      const db = require('../database/db');
+      db.saveLogChannel(guild.id, 'limitlogs', chan.id);
+
       return message.reply(`${emojis.SUCCESS} AntiNuke Limit Logging channel set to ${chan}.`);
     }
 
@@ -160,8 +202,31 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Usage: \`.limit set <action> <count>\` (e.g. \`.limit set ban 3\`)`);
       }
 
+      // Check max limits rules: Non-owners max = 3, Server Owner max = 5
+      const isOwner = (guild.ownerId === author.id);
+      const maxAllowed = isOwner ? 5 : 3;
+
+      if (newLimit > maxAllowed) {
+        if (!isOwner) {
+          return message.reply(
+            `${emojis.WARNING} Non-owner Administrators can set action limits up to **3** max.\n` +
+            `👑 Only the **Server Owner** can set limits up to **5**!`
+          );
+        } else {
+          return message.reply(`${emojis.WARNING} Server Owner can set action limits up to **5** max.`);
+        }
+      }
+
       config.limits[matchedKey] = newLimit;
       modLimitsStore.set(guild.id, config);
+
+      // Dispatch limit logger embed for edit
+      dispatchLimitLog(guild, {
+        actionTitle: '⚙️ Action Limit Configured',
+        executor: author,
+        details: `Set **${matchedKey}** limit to **\`${newLimit} actions / 10 Minutes\`**`,
+        remaining: newLimit
+      });
 
       const embed = createStyledEmbed({
         title: `${emojis.GEAR} AntiNuke Limit Updated`,
@@ -175,9 +240,9 @@ module.exports = {
     // .limit reset
     if (sub === 'reset') {
       config.limits = {
-        memberUpdate: 6, channelCreate: 3, channelDelete: 3, channelUpdate: 4,
-        roleCreate: 3, roleDelete: 2, roleUpdate: 3, ban: 3, kick: 3,
-        guildUpdate: 0, timeout: 6, mention: 3, webhookCreate: 3,
+        memberUpdate: 3, channelCreate: 3, channelDelete: 3, channelUpdate: 3,
+        roleCreate: 3, roleDelete: 3, roleUpdate: 3, ban: 3, kick: 3,
+        guildUpdate: 1, timeout: 3, mention: 3, webhookCreate: 3,
         webhookDelete: 3, webhookUpdate: 2
       };
       config.usage.clear();
@@ -220,7 +285,8 @@ module.exports = {
       '```\n' + cmdBox + '\n```\n\n' +
       `**📜 Configuration Mappings:**\n` +
       `• **Logging Channel**: ${logChan}\n` +
-      `• **Time Window**: \`${config.timeWindowMin} Minutes\` *(Fixed Security Window)*\n\n` +
+      `• **Time Window**: \`${config.timeWindowMin} Minutes\` *(Fixed Security Window)*\n` +
+      `• **Max Configurable**: Admin = \`3\` | Server Owner = \`5\`\n\n` +
       `*💡 You can customize these limits using the \`.limit set <action> <count>\` command!*`;
 
     const embed = createStyledEmbed({

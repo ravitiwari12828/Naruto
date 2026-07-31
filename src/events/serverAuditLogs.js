@@ -269,6 +269,19 @@ module.exports = (client) => {
 
     const executor = await fetchAuditLogExecutor(newMember.guild, AuditLogEvent.MemberRoleUpdate, newMember.id);
 
+    if (executor) {
+      const { checkAndIncrementModAction, dispatchLimitLog } = require('../commands/modlimits');
+      const quota = checkAndIncrementModAction(newMember.guild.id, executor.id, 'memberUpdate');
+      dispatchLimitLog(newMember.guild, {
+        actionTitle: 'Member Role Update',
+        executor: executor,
+        target: newMember.user,
+        details: changes.join('\n'),
+        remaining: quota.remaining !== undefined ? quota.remaining : 'Unlimited',
+        resetAt: quota.resetAt
+      });
+    }
+
     const embed = new EmbedBuilder()
       .setColor(0x3498DB)
       .setTitle('👥 Member Roles / Nickname Changed in Server Settings')

@@ -235,6 +235,7 @@ module.exports = {
               { key: 'emojis', name: 'naruto-emoji-logs' },
               { key: 'modcases', name: 'naruto-mod-cases' },
               { key: 'antinuke', name: 'naruto-security-logs' },
+              { key: 'limitlogs', name: 'naruto-limit-logs' },
               { key: 'modlogs', name: 'naruto-mod-logs' }
             ]
           },
