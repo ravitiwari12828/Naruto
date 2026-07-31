@@ -42,9 +42,9 @@ function fetchImageBuffer(imageUrl) {
 }
 
 module.exports = {
-  name: 'image',
+  name: 'imagine',
   description: 'Generate high-quality AI art & realistic anime scenes from a text prompt (1 image per 24 hours per user)',
-  aliases: ['imagine', 'img', 'genimage', 'aiimage', 'generateimage', 'draw'],
+  aliases: [],
   imageLimitsStore,
   checkImageLimit,
   recordImageUse,
