@@ -126,6 +126,7 @@ module.exports = {
   description: 'Host and manage giveaways. Short syntax: .gstart, .gend, .greroll',
   aliases: ['gw', 'gstart', 'gcreate', 'gend', 'greroll', 'reroll'],
   giveaways,
+  buildActiveEmbed,
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';

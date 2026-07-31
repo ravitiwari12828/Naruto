@@ -2205,23 +2205,19 @@ client.on('interactionCreate', async (interaction) => {
     gw.entries.add(interaction.user.id);
     giveawayCmd.giveaways.set(gwId, gw);
 
-    // Update live giveaway embed participant count in channel
+    // Update live giveaway embed participant count using the premium buildActiveEmbed format
     try {
-      const origEmbed = interaction.message.embeds[0];
-      if (origEmbed) {
-        const updatedEmbed = EmbedBuilder.from(origEmbed);
-        const endTimestamp = Math.floor(gw.endTime / 1000);
-        updatedEmbed.setDescription(
-          `Click the **🎉 Enter Giveaway** button below to participate!\n\n` +
-          `• **Host:** <@${gw.hostId}>\n` +
-          `• **Prize:** \`${gw.prize}\`\n` +
-          `• **Winners:** \`${gw.winnerCount}\`\n` +
-          `• **Participants:** \`${gw.entries.size}\`\n` +
-          `• **Ends:** <t:${endTimestamp}:F> (<t:${endTimestamp}:R>)\n` +
-          `• **Giveaway ID:** \`${gw.id}\``
-        );
-        await interaction.message.edit({ embeds: [updatedEmbed] }).catch(() => {});
-      }
+      const endTimestamp = Math.floor(gw.endTime / 1000);
+      const updatedEmbed = giveawayCmd.buildActiveEmbed(
+        gw.prize,
+        gw.winnerCount,
+        endTimestamp,
+        gw.id,
+        gw.hostId,
+        gw.entries.size,
+        client.user
+      );
+      await interaction.message.edit({ embeds: [updatedEmbed] }).catch(() => {});
     } catch (e) {}
 
     // Send DM matching Paradox bot aesthetic (Picture 2)
