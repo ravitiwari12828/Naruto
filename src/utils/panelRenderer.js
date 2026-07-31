@@ -283,7 +283,7 @@ const CATEGORIES = [
     heading: `${emojis.SHIELD || emojis.SHIELD} AutoMod Commands`,
     commands: [
       'automod config', 'antibot config',
-      'moderation', 'filter'
+      'moderation'
     ]
   },
   {
