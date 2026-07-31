@@ -1,13 +1,45 @@
+const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 
 // In-memory Reaction Role storage (persisted per guild/message)
 const reactionRoles = new Map();
 
+function parsePairs(args) {
+  const pairs = [];
+  let title = 'React to this message to assign yourself roles';
+
+  let rawStr = args.join(' ');
+
+  // Check if title is specified via title: "..." or "..."
+  const titleMatch = rawStr.match(/^(?:title:\s*)?["']([^"']+)["']/i);
+  if (titleMatch) {
+    title = titleMatch[1];
+    rawStr = rawStr.replace(titleMatch[0], '').trim();
+  }
+
+  // Split remaining string by tokens
+  const tokens = rawStr.split(/\s+/).filter(Boolean);
+
+  for (let i = 0; i < tokens.length; i += 2) {
+    const emoji = tokens[i];
+    const roleToken = tokens[i + 1];
+    if (emoji && roleToken) {
+      const roleIdMatch = roleToken.match(/\d+/);
+      if (roleIdMatch) {
+        pairs.push({ emoji, roleId: roleIdMatch[0] });
+      }
+    }
+  }
+
+  return { title, pairs };
+}
+
 module.exports = {
   name: 'reactionrole',
-  description: 'Reaction Role System: add, remove, list, reset',
-  aliases: ['rr', 'reactionroles'],
+  description: 'Reaction Role System: create, add, remove, list, reset',
+  aliases: ['rr', 'reactionroles', 'reactionrole'],
+  reactionRoles,
 
   async execute(message, args) {
     const sub = args[0]?.toLowerCase();
@@ -20,6 +52,63 @@ module.exports = {
     } catch (e) {}
 
     let guildRR = reactionRoles.get(guildId) || [];
+
+    // .rr create [title: "Title"] <emoji1> <@role1> [emoji2] [@role2] ...
+    // .rr setup ...
+    if (['create', 'setup', 'embed', 'panel'].includes(sub)) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.ManageRoles) && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} You need **Manage Roles** permission to setup reaction roles!`);
+      }
+
+      const restArgs = args.slice(1);
+      if (restArgs.length < 2) {
+        return message.reply(
+          `${emojis.WARNING} **Usage:** \`.rr create <emoji1> <@role1> [emoji2] [@role2] ...\`\n` +
+          `**Example:** \`.rr create 🐱 @Male 🐷 @Female\`\n` +
+          `**With Custom Title:** \`.rr create "Gender Roles" 🐱 @Male 🐷 @Female\``
+        );
+      }
+
+      const { title, pairs } = parsePairs(restArgs);
+
+      if (pairs.length === 0) {
+        return message.reply(`${emojis.WARNING} No valid emoji + role pairs found! Please mention valid roles.`);
+      }
+
+      // Build Sapphire-style reaction role embed
+      const descriptionLines = pairs.map(p => `${p.emoji} - <@&${p.roleId}>`);
+
+      const panelEmbed = new EmbedBuilder()
+        .setColor(0x2F3136) // Sleek dark Sapphire aesthetic
+        .setTitle(title)
+        .setDescription(descriptionLines.join('\n'))
+        .setTimestamp();
+
+      message.delete().catch(() => {});
+
+      const panelMsg = await message.channel.send({ embeds: [panelEmbed] });
+
+      // Add reactions to the message & register bindings
+      for (const pair of pairs) {
+        try {
+          await panelMsg.react(pair.emoji);
+          guildRR.push({
+            messageId: panelMsg.id,
+            channelId: message.channel.id,
+            emoji: pair.emoji,
+            roleId: pair.roleId
+          });
+        } catch (err) {
+          console.error('[RR Create Error]', err.message);
+        }
+      }
+
+      reactionRoles.set(guildId, guildRR);
+
+      const confirmMsg = await message.channel.send(`${emojis.SUCCESS} **Reaction Role Panel Created!** (${pairs.length} roles linked)`);
+      setTimeout(() => confirmMsg.delete().catch(() => {}), 4000);
+      return;
+    }
 
     // .rr add <messageId> <emoji> <@role>
     if (sub === 'add') {
@@ -119,7 +208,9 @@ module.exports = {
     const embed = createStyledEmbed({
       title: `🎭 Reaction Role Commands`,
       description:
-        `\`.rr add <msgID> <emoji> <@role>\` — Add reaction role to message\n` +
+        `\`.rr create <emoji1> <@role1> <emoji2> <@role2>\` — Create Sapphire-style reaction role panel\n` +
+        `\`.rr create "Title" <emoji1> <@role1>\` — Create panel with custom title\n` +
+        `\`.rr add <msgID> <emoji> <@role>\` — Add reaction role to an existing message\n` +
         `\`.rr remove <msgID> <emoji>\` — Remove reaction role from message\n` +
         `\`.rr list\` — View all active reaction roles\n` +
         `\`.rr reset\` — Clear all reaction roles on server`,

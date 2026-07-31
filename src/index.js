@@ -2888,6 +2888,75 @@ client.on('messageReactionAdd', async (reaction, user) => {
   }
 });
 
+// 🎭 REACTION ROLE SYSTEM ASSIGNMENT & REMOVAL
+client.on('messageReactionAdd', async (reaction, user) => {
+  try {
+    if (user.bot) return;
+    if (reaction.partial) await reaction.fetch().catch(() => null);
+    if (reaction.message?.partial) await reaction.message.fetch().catch(() => null);
+
+    const guild = reaction.message?.guild;
+    if (!guild) return;
+
+    const rrCmd = client.commands.get('reactionrole');
+    const reactionRoles = rrCmd ? rrCmd.reactionRoles : null;
+    if (!reactionRoles) return;
+
+    const guildRR = reactionRoles.get(guild.id) || [];
+    if (guildRR.length === 0) return;
+
+    const emojiStr = reaction.emoji.id ? (reaction.emoji.animated ? `<a:${reaction.emoji.name}:${reaction.emoji.id}>` : `<:${reaction.emoji.name}:${reaction.emoji.id}>`) : reaction.emoji.name;
+
+    const match = guildRR.find(r =>
+      r.messageId === reaction.message.id &&
+      (r.emoji === emojiStr || r.emoji === reaction.emoji.name || (reaction.emoji.id && r.emoji.includes(reaction.emoji.id)))
+    );
+
+    if (match) {
+      const member = await guild.members.fetch(user.id).catch(() => null);
+      if (member) {
+        await member.roles.add(match.roleId).catch(() => null);
+      }
+    }
+  } catch (err) {
+    console.error('[ReactionRole Add Error]', err.message);
+  }
+});
+
+client.on('messageReactionRemove', async (reaction, user) => {
+  try {
+    if (user.bot) return;
+    if (reaction.partial) await reaction.fetch().catch(() => null);
+    if (reaction.message?.partial) await reaction.message.fetch().catch(() => null);
+
+    const guild = reaction.message?.guild;
+    if (!guild) return;
+
+    const rrCmd = client.commands.get('reactionrole');
+    const reactionRoles = rrCmd ? rrCmd.reactionRoles : null;
+    if (!reactionRoles) return;
+
+    const guildRR = reactionRoles.get(guild.id) || [];
+    if (guildRR.length === 0) return;
+
+    const emojiStr = reaction.emoji.id ? (reaction.emoji.animated ? `<a:${reaction.emoji.name}:${reaction.emoji.id}>` : `<:${reaction.emoji.name}:${reaction.emoji.id}>`) : reaction.emoji.name;
+
+    const match = guildRR.find(r =>
+      r.messageId === reaction.message.id &&
+      (r.emoji === emojiStr || r.emoji === reaction.emoji.name || (reaction.emoji.id && r.emoji.includes(reaction.emoji.id)))
+    );
+
+    if (match) {
+      const member = await guild.members.fetch(user.id).catch(() => null);
+      if (member) {
+        await member.roles.remove(match.roleId).catch(() => null);
+      }
+    }
+  } catch (err) {
+    console.error('[ReactionRole Remove Error]', err.message);
+  }
+});
+
 // Load custom event handlers
 require('./events/emojisStickers')(client);
 
