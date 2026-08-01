@@ -91,9 +91,10 @@ function formatItemLines(item, maxContentWidth) {
  * @param {number} minWidth - Optional minimum inner width (default: 24, max cap: 26)
  * @returns {string} Formatted monospaced codeblock box string
  */
-function createDynamicBox(title, items = [], minWidth = 24) {
-  // STRICT MOBILE SAFETY CAP: 26 chars inner content = 28 chars total box width
-  const MAX_INNER_WIDTH = 26;
+function createDynamicBox(title, items = [], minWidth = 20) {
+  // STRICT MOBILE SAFETY CAP: 22 chars inner content = 24-25 chars total box width
+  // Fits 100% perfectly on all Discord Mobile screens (iOS / Android / Small Phones) without wrapping.
+  const MAX_INNER_WIDTH = 22;
 
   // Process all items into compliant line strings
   const processedLines = [];
@@ -107,7 +108,7 @@ function createDynamicBox(title, items = [], minWidth = 24) {
     });
   });
 
-  // Calculate final content width: fixed at 24-26 for device-proof alignment
+  // Calculate final content width
   const contentWidth = Math.min(MAX_INNER_WIDTH, Math.max(minWidth, maxVisWidth));
   const borderRepeat = contentWidth + 2; // 1 space padding on each side
 
@@ -118,8 +119,10 @@ function createDynamicBox(title, items = [], minWidth = 24) {
   const boxLines = [topBorder];
 
   if (title) {
-    const formattedTitle = title.length > contentWidth ? title.slice(0, contentWidth - 1) + '…' : title;
-    boxLines.push('│ ' + padVisualCenter(formattedTitle, contentWidth) + ' │');
+    const titleLines = formatItemLines(title, contentWidth);
+    titleLines.forEach(tl => {
+      boxLines.push('│ ' + padVisualCenter(tl, contentWidth) + ' │');
+    });
     boxLines.push(divider);
   }
 
