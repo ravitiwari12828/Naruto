@@ -350,12 +350,27 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
+    const { createDynamicBox } = require('../utils/boxBuilder');
+
     // 1. MEME GENERATION COMMANDS
     if (MEMES_MAP[invoked]) {
       const memeInfo = MEMES_MAP[invoked];
-      const text1 = encodeURIComponent(args[0] || 'When you run');
-      const text2 = encodeURIComponent(args.slice(1).join(' ') || 'Naruto Bot commands!');
-      const memeUrl = `https://api.memegen.link/images/${memeInfo.template}/${text1}/${text2}.png`;
+      const fullArgs = args.join(' ');
+      let text1 = 'When you run';
+      let text2 = 'Naruto Bot commands!';
+
+      if (fullArgs.includes('|')) {
+        const parts = fullArgs.split('|');
+        text1 = parts[0].trim() || 'When you run';
+        text2 = parts.slice(1).join('|').trim() || 'Naruto Bot commands!';
+      } else if (fullArgs.length > 0) {
+        text1 = fullArgs;
+        text2 = 'Naruto Bot commands!';
+      }
+
+      const encodedText1 = encodeURIComponent(text1);
+      const encodedText2 = encodeURIComponent(text2);
+      const memeUrl = `https://api.memegen.link/images/${memeInfo.template}/${encodedText1}/${encodedText2}.png`;
 
       const embed = createStyledEmbed({
         title: `😂 ${memeInfo.title}`,
@@ -491,10 +506,18 @@ async function fetchActionAnimeGif(action) {
     if (['8ball', 'eightball'].includes(invoked)) {
       const question = args.join(' ') || 'Will I become Hokage?';
       const answer = pick(EIGHT_BALL);
+
+      const boxPanel = createDynamicBox('SHARINGAN ORACLE SPEAKS', [
+        `User     : ${author.username}`,
+        `Question : ${question.slice(0, 24)}`,
+        `Answer   : ${answer.slice(0, 24)}`
+      ]);
+
       const embed = createStyledEmbed({
         title: `🎱 The Sharingan Oracle Speaks`,
-        subtitle: `Question: *${question}*`,
-        description: `**${answer}**`,
+        description: '```\n' + boxPanel + '\n```\n\n' +
+          `• **Question:** *${question}*\n` +
+          `• **Answer:** **${answer}**`,
         requestedBy: author,
         clientUser
       });
@@ -503,10 +526,17 @@ async function fetchActionAnimeGif(action) {
 
     // 💬 Truth
     if (invoked === 'truth') {
+      const q = pick(TRUTH_Q);
+      const boxPanel = createDynamicBox('SHINOBI TRUTH CHALLENGE', [
+        `User     : ${author.username}`,
+        `Status   : Answer Honestly`,
+        `Penalty  : Face Village Dishonour`
+      ]);
+
       const embed = createStyledEmbed({
-        title: `${emojis.SCROLL} Shinobi Truth Challenge`,
-        subtitle: `${author.username}, answer honestly or face dishonour!`,
-        description: `**${pick(TRUTH_Q)}**`,
+        title: `📜 Shinobi Truth Challenge`,
+        description: '```\n' + boxPanel + '\n```\n\n' +
+          `**Question:**\n> **${q}**`,
         requestedBy: author,
         clientUser
       });
@@ -515,10 +545,17 @@ async function fetchActionAnimeGif(action) {
 
     // 🎯 Dare
     if (invoked === 'dare') {
+      const d = pick(DARE_D);
+      const boxPanel = createDynamicBox('SHINOBI DARE CHALLENGE', [
+        `User     : ${author.username}`,
+        `Status   : Challenge Accepted`,
+        `Rule     : Complete or Lose Face`
+      ]);
+
       const embed = createStyledEmbed({
-        title: `${emojis.KABOOM} Shinobi Dare`,
-        subtitle: `${author.username} accepted the dare! Do it or lose face in the village!`,
-        description: `**${pick(DARE_D)}**`,
+        title: `⚡ Shinobi Dare Challenge`,
+        description: '```\n' + boxPanel + '\n```\n\n' +
+          `**Your Dare:**\n> **${d}**`,
         requestedBy: author,
         clientUser
       });
@@ -527,9 +564,17 @@ async function fetchActionAnimeGif(action) {
 
     // 🤔 Would You Rather
     if (['wouldyourather', 'wyr'].includes(invoked)) {
+      const wyr = pick(WOULD_YOU_RATHER);
+      const boxPanel = createDynamicBox('SHINOBI DILEMMA (WYR)', [
+        `User     : ${author.username}`,
+        `Type     : Would You Rather`,
+        `Status   : Choose One Option`
+      ]);
+
       const embed = createStyledEmbed({
         title: `⚔️ Shinobi Dilemma — Would You Rather?`,
-        description: `**${pick(WOULD_YOU_RATHER)}**\n\nReact with your answer!`,
+        description: '```\n' + boxPanel + '\n```\n\n' +
+          `**Dilemma:**\n> **${wyr}**`,
         requestedBy: author,
         clientUser
       });
@@ -538,10 +583,17 @@ async function fetchActionAnimeGif(action) {
 
     // 💘 Pickup Lines
     if (invoked === 'pickup') {
+      const pickup = pick(PICKUP_LINES);
+      const boxPanel = createDynamicBox('SHINOBI CHARM SCROLL', [
+        `Caster   : ${author.username}`,
+        `Item     : Scroll of Charm`,
+        `Effect   : Heart Fluttering`
+      ]);
+
       const embed = createStyledEmbed({
         title: `💘 Shinobi Pickup Line`,
-        subtitle: `${author.username} pulls out a scroll of charm...`,
-        description: pick(PICKUP_LINES),
+        description: '```\n' + boxPanel + '\n```\n\n' +
+          `> **${pickup}**`,
         requestedBy: author,
         clientUser
       });
@@ -550,10 +602,17 @@ async function fetchActionAnimeGif(action) {
 
     // 🔮 Fortune
     if (invoked === 'fortune') {
+      const fortune = pick(FORTUNES);
+      const boxPanel = createDynamicBox('KONOHA FORTUNE TELLER', [
+        `User     : ${author.username}`,
+        `Reading  : Today's Shinobi Fate`,
+        `Align    : Divine Chakra`
+      ]);
+
       const embed = createStyledEmbed({
         title: `🔮 Konoha Fortune Teller`,
-        subtitle: `${author.username}'s fate for today:`,
-        description: pick(FORTUNES),
+        description: '```\n' + boxPanel + '\n```\n\n' +
+          `> **${fortune}**`,
         requestedBy: author,
         clientUser
       });
@@ -562,10 +621,17 @@ async function fetchActionAnimeGif(action) {
 
     // ✨ Vibe Check
     if (invoked === 'vibecheck') {
-      const user = targetUser;
+      const vibe = pick(VIBES);
+      const boxPanel = createDynamicBox('VIBE CHECK SCANNER', [
+        `Target   : ${targetUser.username}`,
+        `Vibe     : ${vibe.replace(/^[^a-zA-Z0-9]+/, '').trim()}`
+      ]);
+
       const embed = createStyledEmbed({
-        title: `✨ Vibe Check — ${user.username}`,
-        description: `**Current Vibe: ${pick(VIBES)}**\n\nThe village has spoken. Accept your fate.`,
+        title: `✨ Vibe Check — ${targetUser.username}`,
+        description: '```\n' + boxPanel + '\n```\n\n' +
+          `• **Current Vibe:** **${vibe}**\n\n` +
+          `*The village has spoken. Accept your fate.*`,
         requestedBy: author,
         clientUser
       });
@@ -574,10 +640,16 @@ async function fetchActionAnimeGif(action) {
 
     // 😤 Mood
     if (invoked === 'mood') {
+      const mood = pick(MOODS);
+      const boxPanel = createDynamicBox('DAILY SHINOBI MOOD SCAN', [
+        `Target   : ${targetUser.username}`,
+        `Energy   : Calculated 100%`
+      ]);
+
       const embed = createStyledEmbed({
         title: `😤 Daily Shinobi Mood`,
-        subtitle: `${author.username}'s energy today:`,
-        description: `**${pick(MOODS)}**`,
+        description: '```\n' + boxPanel + '\n```\n\n' +
+          `• **Energy Today:** **${mood}**`,
         requestedBy: author,
         clientUser
       });
