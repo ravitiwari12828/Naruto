@@ -31,53 +31,77 @@ module.exports = {
     } catch (e) {}
 
     // ─────────────────────────────────────────
-    // 1. MESSAGED HELP PANEL (.messaged) — Screenshot 2
+    // 1. SHINOBI MESSAGE TRACKING PANEL (.messaged)
     // ─────────────────────────────────────────
     if (['messaged', 'msghelp', 'messageshelp'].includes(invoked)) {
-      const p = message.guild ? '.' : '.';
-      const embed = new EmbedBuilder()
-        .setColor(0x3498DB)
-        .setTitle(`👑 Premium Message Tracking`)
-        .setDescription(
-          `⚙️ **Admin: Management & Filters (Page 2)**\n\n` +
-          `🛡️ \`${p}addmessages\` / \`${p}removemessages\` *(or ${p}lad / ${p}lrm)*\n` +
-          `➡️ Add or remove messages from a user.\n\n` +
-          `🛡️ \`${p}clearmsgs\` *[@user]*\n` +
-          `➡️ Clear messages for a user or the entire server.\n\n` +
-          `🛡️ \`${p}blacklist\` / \`${p}whitelist\` *channel add/remove #channel*\n` +
-          `➡️ Prevent or allow tracking in specific channels.\n\n` +
-          `🛡️ \`${p}blacklist\` / \`${p}whitelist\` *category add/remove <ID>*\n` +
-          `➡️ Prevent or allow tracking in specific categories.\n\n` +
-          `🛡️ \`${p}msg\` *allowed view*\n` +
-          `➡️ View all blacklisted and whitelisted channels/categories.`
-        )
-        .setFooter({ text: `Page 2 of 3 | Total Commands: 15` });
+      const infoBox = createDynamicBox('SHINOBI MESSAGE TRACKING SUITE', [
+        `Module    : Message Stats & Filter Suite`,
+        `Authority : Admin & Hokage Management`,
+        `Commands  : 5 Executive Tracking Tools`
+      ]);
+
+      const cmdBox = createDynamicBox('MESSAGE STATS MODIFIERS', [
+        '.addmessages <@user> <count> : Add messages (or .lad)',
+        '.removemessages <@user> <cnt>: Remove messages (or .lrm)',
+        '.clearmsgs [@user]           : Clear user/server stats'
+      ]);
+
+      const filterBox = createDynamicBox('CHANNEL & CATEGORY FILTERS', [
+        '.blacklist channel add/remove #chan : Disable tracking',
+        '.whitelist channel add/remove #chan : Force tracking',
+        '.msg allowed view                   : View filter list'
+      ]);
+
+      const embed = createStyledEmbed({
+        title: `${emojis.MESSAGES || '💬'} Shinobi Message Tracking Panel`,
+        subtitle: `Admin Message Stats Management & Channel Filters`,
+        description:
+          '```\n' + infoBox + '\n```\n\n' +
+          `${emojis.ANALYTICS_ZAP || '⚙️'} **Message Stats Modifiers**\n` +
+          '```\n' + cmdBox + '\n```\n\n' +
+          `${emojis.SHIELD || '🛡️'} **Channel & Category Filters**\n` +
+          '```\n' + filterBox + '\n```',
+        requestedBy: author,
+        clientUser
+      });
 
       return message.channel.send({ embeds: [embed] });
     }
 
     // ─────────────────────────────────────────
-    // 2. VOICED HELP PANEL (.voiced / .vcd) — Screenshot 3
+    // 2. SHINOBI VOICE TRACKING PANEL (.voiced / .vcd)
     // ─────────────────────────────────────────
     if (['voiced', 'vchelp', 'voicehelp', 'vcd'].includes(invoked)) {
-      const p = message.guild ? '.' : '.';
-      const embed = new EmbedBuilder()
-        .setColor(0xF1C40F)
-        .setTitle(`👑 Premium Voice Tracking`)
-        .setDescription(
-          `⚙️ **Admin: Management & Filters (Page 2)**\n\n` +
-          `🛡️ \`${p}addvctime\` / \`${p}reducevctime\` *[@user] [mins]* *(or ${p}lavt / ${p}avt / ${p}lrvt)*\n` +
-          `➡️ Add or remove voice minutes from a user.\n\n` +
-          `🛡️ \`${p}clearvoice\` *[@user]* *(or ${p}lcv)*\n` +
-          `➡️ Clear voice stats for a user or the entire server.\n\n` +
-          `🛡️ \`${p}vblacklist\` / \`${p}vwhitelist\` *channel add/remove #channel*\n` +
-          `➡️ Prevent or allow tracking in specific channels.\n\n` +
-          `🛡️ \`${p}vblacklist\` / \`${p}vwhitelist\` *category add/remove <ID>*\n` +
-          `➡️ Prevent or allow tracking in specific categories.\n\n` +
-          `🛡️ \`${p}vcd\` *allowed view*\n` +
-          `➡️ View all blacklisted and whitelisted channels/categories.`
-        )
-        .setFooter({ text: `Page 2 of 3 | Total Commands: 20` });
+      const infoBox = createDynamicBox('SHINOBI VOICE TRACKING SUITE', [
+        `Module    : Voice Time & Filter Suite`,
+        `Authority : Admin & Hokage Management`,
+        `Commands  : 5 Executive Tracking Tools`
+      ]);
+
+      const cmdBox = createDynamicBox('VOICE TIME MODIFIERS', [
+        '.addvctime <@user> <mins>    : Add voice mins (or .avt / .lavt)',
+        '.reducevctime <@user> <mins> : Reduce voice mins (or .lrvt)',
+        '.clearvoice [@user]          : Clear voice stats (or .lcv)'
+      ]);
+
+      const filterBox = createDynamicBox('VOICE CHANNEL & CATEGORY FILTERS', [
+        '.vblacklist channel add/remove #vc : Disable VC tracking',
+        '.vwhitelist channel add/remove #vc : Force VC tracking',
+        '.vcd allowed view                  : View VC filter list'
+      ]);
+
+      const embed = createStyledEmbed({
+        title: `${emojis.VOICE || '🎙️'} Shinobi Voice Tracking Panel`,
+        subtitle: `Admin Voice Minutes Management & VC Filters`,
+        description:
+          '```\n' + infoBox + '\n```\n\n' +
+          `${emojis.ANALYTICS_ZAP || '⚙️'} **Voice Time Modifiers**\n` +
+          '```\n' + cmdBox + '\n```\n\n' +
+          `${emojis.SHIELD || '🛡️'} **Voice Channel & Category Filters**\n` +
+          '```\n' + filterBox + '\n```',
+        requestedBy: author,
+        clientUser
+      });
 
       return message.channel.send({ embeds: [embed] });
     }
