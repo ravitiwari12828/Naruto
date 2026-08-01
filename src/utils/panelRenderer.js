@@ -388,7 +388,11 @@ const CATEGORIES = [
 ];
 
 function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
-  const botAvatarURL = botAvatar || botUser.displayAvatarURL({ dynamic: true, size: 512 });
+  const rawAvatar = botAvatar || (botUser && typeof botUser.displayAvatarURL === 'function' ? botUser.displayAvatarURL({ dynamic: true, size: 512 }) : null);
+  const botAvatarURL = (rawAvatar && typeof rawAvatar === 'string' && rawAvatar.startsWith('http')) ? rawAvatar : null;
+  const userAvatarURL = (message.author && typeof message.author.displayAvatarURL === 'function') ? message.author.displayAvatarURL({ dynamic: true }) : null;
+  const validUserAvatar = (userAvatarURL && typeof userAvatarURL === 'string' && userAvatarURL.startsWith('http')) ? userAvatarURL : null;
+
   const catColor = CATEGORY_COLORS[cat.value] || 0x5865F2;
 
   if (cat.value === 'fun') {
@@ -400,8 +404,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
 
     const embed = new EmbedBuilder()
       .setColor(catColor)
-      .setAuthor({ name: 'Naruto Help Menu', iconURL: botAvatarURL })
-      .setThumbnail(botAvatarURL)
+      .setAuthor(botAvatarURL ? { name: 'Naruto Help Menu', iconURL: botAvatarURL } : { name: 'Naruto Help Menu' })
       .setTitle(`${funEmoji} Shinobi Fun & Entertainment Suite`)
       .setDescription(
         `Below is the complete list of commands for **${cat.label}**.\n\n` +
@@ -426,11 +429,12 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
         `.cuddle .hug .kiss .lick .nom .pat .poke .slap .stare .highfive .bite .greet .punch .handholding .tickle .kill .hold .pats .wave .boop .snuggle .bully\n` +
         `\`\`\``
       )
-      .setFooter({
+      .setFooter(validUserAvatar ? {
         text: `Requested by ${message.author.username} • Total 59 commands`,
-        iconURL: message.author.displayAvatarURL({ dynamic: true })
-      });
+        iconURL: validUserAvatar
+      } : { text: `Requested by ${message.author.username} • Total 59 commands` });
 
+    if (botAvatarURL) embed.setThumbnail(botAvatarURL);
     if (devPortalBanner) embed.setImage(devPortalBanner);
     return embed;
   }
@@ -465,8 +469,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
 
     const embed = new EmbedBuilder()
       .setColor(catColor)
-      .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
-      .setThumbnail(botAvatarURL)
+      .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
       .setTitle(`${welcomeEmoji} Welcome & Greetings System`)
       .setDescription(
         `Welcome **${message.author.username}**! Below is the executive suite for **${cat.label}**.\n\n` +
@@ -478,11 +481,12 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
         '```\n' + dmsBox + '\n```\n\n' +
         `${welcomeEmoji} **Placeholders:** \`{user}\`, \`{username}\`, \`{server_name}\`, \`{membercount}\``
       )
-      .setFooter({
+      .setFooter(validUserAvatar ? {
         text: `Requested by ${message.author.username} • Type .welcome for setup dashboard`,
-        iconURL: message.author.displayAvatarURL({ dynamic: true })
-      });
+        iconURL: validUserAvatar
+      } : { text: `Requested by ${message.author.username} • Type .welcome for setup dashboard` });
 
+    if (botAvatarURL) embed.setThumbnail(botAvatarURL);
     if (devPortalBanner) embed.setImage(devPortalBanner);
     return embed;
   }
@@ -491,7 +495,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   if (cat.value === 'music') {
     const embed = new EmbedBuilder()
       .setColor(catColor)
-      .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
+      .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
       .setTitle(`${emojis.MUSIC || '🎶'} Music Player Suite & Control Panel`)
       .setDescription(
         `Welcome **${message.author.username}**! Below is the executive suite for **Music**.\n\n` +
@@ -522,10 +526,10 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
         `.fav add/list    - Save favorite tracks\n` +
         `\`\`\``
       )
-      .setFooter({
+      .setFooter(validUserAvatar ? {
         text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
-        iconURL: message.author.displayAvatarURL({ dynamic: true })
-      });
+        iconURL: validUserAvatar
+      } : { text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands` });
     if (devPortalBanner) embed.setImage(devPortalBanner);
     return embed;
   }
@@ -539,17 +543,17 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
 
   const embed = new EmbedBuilder()
     .setColor(catColor)
-    .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatarURL })
+    .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
     .setTitle(`${cat.heading}`)
     .setDescription(
       `Welcome **${message.author.username}**! Below is the executive suite for **${cat.label}**.\n` +
       `Type any command below in your server to execute.\n\n` +
       '```\n' + boxStr + '\n```'
     )
-    .setFooter({
+    .setFooter(validUserAvatar ? {
       text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
-      iconURL: message.author.displayAvatarURL({ dynamic: true })
-    });
+      iconURL: validUserAvatar
+    } : { text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands` });
 
   return embed;
 }
