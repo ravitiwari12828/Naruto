@@ -34,6 +34,20 @@ module.exports = {
       }
     }
 
+    // Forward VoiceMaster temp channel subcommands (.vc transfer, .vc claim, .vc name, .vc lock, etc.)
+    const vmSubcommands = [
+      'transfer', 'claim', 'name', 'rename', 'size', 'limit', 'lock', 'unlock',
+      'ghost', 'hide', 'unghost', 'unhide', 'reveal', 'permit', 'allow', 'unpermit',
+      'revoke', 'kick', 'vckick', 'ban', 'unban', 'activity', 'info', 'settings'
+    ];
+
+    if (vmSubcommands.includes(sub)) {
+      const voiceCmd = message.client.commands.get('voice');
+      if (voiceCmd && typeof voiceCmd.execute === 'function') {
+        return voiceCmd.execute(message, args);
+      }
+    }
+
     // Determine if user is running .vblacklist / .vwhitelist or .vc vblacklist / .vc vwhitelist
     const isFilterCmd = ['vblacklist', 'vwhitelist'].includes(invoked) || ['vblacklist', 'vwhitelist', 'blacklist', 'whitelist'].includes(sub);
 
