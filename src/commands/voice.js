@@ -8,7 +8,7 @@ module.exports = {
   name: 'voice',
   description: 'Custom Voice Channels Suite: .vc help, .vc info, .vc name, .vc size, .vc lock, .vc unlock, .vc ghost, .vc unghost, .vc claim, .vc transfer, .vc permit, .vc unpermit, .vc kick, .vc ban, .vc unban, .vc activity',
   aliases: [
-    'vc', 'voicechannel',
+    'voicechannel',
     'vcdeafen', 'vcundeafen', 'vckick', 'vckickall',
     'vclist', 'vcmoveall', 'vcmute', 'vcmuteall',
     'vcpull', 'vcpullall', 'vcunmute', 'vcunmuteall'

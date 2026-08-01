@@ -583,8 +583,8 @@ module.exports = {
   aliases: [
     'lb', 'lbm', 'lbvc', 'lbi', 'leaderboard', 'top', 'st', 'ss', 'stats', 'tracker',
     'userstats', 'useranalytics', 'u', 'usr', 'user', 'profile',
-    'topmessages', 'msgstats', 'messages', 'chat', 'topmsg', 'msgs', 'msg', 'topm',
-    'topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'vc', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct',
+    'topmessages', 'msgstats', 'messages', 'chat', 'topmsg', 'msgs', 'topm',
+    'topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct',
     'topinvites', 'invitestats', 'invites', 'topinv', 'invs', 'inv',
     'joinsleaves', 'memberflow', 'joinleavestats', 'flow', 'jl', 'joins', 'leaves',
     'topcommands', 'commandstats', 'commands', 'cmd', 'cmds',
