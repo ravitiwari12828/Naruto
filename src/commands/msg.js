@@ -43,10 +43,24 @@ module.exports = {
       db.addMessage(target.id, delta);
       const userData = db.getUser(target.id);
 
-      return message.reply({
-        content: `✅ Added **${delta}** messages for **${target.username}**! (New Total: \`${userData.messages}\`)`,
-        allowedMentions: { parse: [], repliedUser: false }
+      const boxText =
+        '```\n' +
+        createDynamicBox('MESSAGE STATS UPDATED', [
+          'Action   : Add Messages',
+          'Target   : ' + String(target.username).slice(0, 12),
+          'Amount   : +' + String(delta) + ' Msgs',
+          'New Total: ' + String(userData.messages) + ' Msgs'
+        ]) +
+        '\n```';
+
+      const embed = createStyledEmbed({
+        title: `${emojis.SUCCESS || '✅'} Message Count Added`,
+        description: boxText,
+        requestedBy: author,
+        clientUser
       });
+
+      return message.channel.send({ embeds: [embed] });
     }
 
     // ─────────────────────────────────────────
@@ -70,10 +84,24 @@ module.exports = {
       db.addMessage(target.id, delta);
       const userData = db.getUser(target.id);
 
-      return message.reply({
-        content: `✅ Removed **${Math.abs(amount)}** messages from **${target.username}**! (New Total: \`${userData.messages}\`)`,
-        allowedMentions: { parse: [], repliedUser: false }
+      const boxText =
+        '```\n' +
+        createDynamicBox('MESSAGE STATS UPDATED', [
+          'Action   : Remove Messages',
+          'Target   : ' + String(target.username).slice(0, 12),
+          'Amount   : -' + String(Math.abs(amount)) + ' Msgs',
+          'New Total: ' + String(userData.messages) + ' Msgs'
+        ]) +
+        '\n```';
+
+      const embed = createStyledEmbed({
+        title: `${emojis.SUCCESS || '✅'} Message Count Reduced`,
+        description: boxText,
+        requestedBy: author,
+        clientUser
       });
+
+      return message.channel.send({ embeds: [embed] });
     }
 
     // ─────────────────────────────────────────
@@ -85,7 +113,23 @@ module.exports = {
       }
       const target = message.mentions.users.first();
       db.clearMessages(target ? target.id : null);
-      return message.reply(`✅ Cleared message stats for ${target ? `**${target.username}**` : 'the entire server'}!`);
+
+      const boxText =
+        '```\n' +
+        createDynamicBox('MESSAGE STATS CLEARED', [
+          'Scope  : ' + (target ? String(target.username).slice(0, 12) : 'Entire Server'),
+          'Status : Reset to 0 Msgs'
+        ]) +
+        '\n```';
+
+      const embed = createStyledEmbed({
+        title: `${emojis.SUCCESS || '🧹'} Message Stats Cleared`,
+        description: boxText,
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.channel.send({ embeds: [embed] });
     }
 
     // ─────────────────────────────────────────

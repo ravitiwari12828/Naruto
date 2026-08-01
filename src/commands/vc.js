@@ -44,10 +44,24 @@ module.exports = {
       const userData = db.getUser(target.id);
       const totalMins = Math.floor((userData.voiceSeconds || 0) / 60);
 
-      return message.reply({
-        content: `✅ Added **${Math.abs(minutes)}** minutes to **${target.username}**'s voice time! (New Total: \`${totalMins}m\`)`,
-        allowedMentions: { parse: [], repliedUser: false }
+      const boxText =
+        '```\n' +
+        createDynamicBox('VOICE TIME UPDATED', [
+          'Action   : Add Voice Time',
+          'Target   : ' + String(target.username).slice(0, 12),
+          'Amount   : +' + String(Math.abs(minutes)) + ' Mins',
+          'New Total: ' + String(totalMins) + ' Mins'
+        ]) +
+        '\n```';
+
+      const embed = createStyledEmbed({
+        title: `${emojis.SUCCESS || '✅'} Voice Time Added`,
+        description: boxText,
+        requestedBy: author,
+        clientUser
       });
+
+      return message.channel.send({ embeds: [embed] });
     }
 
     // ─────────────────────────────────────────
@@ -72,10 +86,24 @@ module.exports = {
       const userData = db.getUser(target.id);
       const totalMins = Math.floor((userData.voiceSeconds || 0) / 60);
 
-      return message.reply({
-        content: `✅ Reduced **${Math.abs(minutes)}** minutes from **${target.username}**'s voice time! (New Total: \`${totalMins}m\`)`,
-        allowedMentions: { parse: [], repliedUser: false }
+      const boxText =
+        '```\n' +
+        createDynamicBox('VOICE TIME UPDATED', [
+          'Action   : Reduce Voice Time',
+          'Target   : ' + String(target.username).slice(0, 12),
+          'Amount   : -' + String(Math.abs(minutes)) + ' Mins',
+          'New Total: ' + String(totalMins) + ' Mins'
+        ]) +
+        '\n```';
+
+      const embed = createStyledEmbed({
+        title: `${emojis.SUCCESS || '✅'} Voice Time Reduced`,
+        description: boxText,
+        requestedBy: author,
+        clientUser
       });
+
+      return message.channel.send({ embeds: [embed] });
     }
 
     // ─────────────────────────────────────────
@@ -87,7 +115,23 @@ module.exports = {
       }
       const target = message.mentions.users.first();
       db.clearVoiceTime(target ? target.id : null);
-      return message.reply(`✅ Cleared voice stats for ${target ? `**${target.username}**` : 'the entire server'}!`);
+
+      const boxText =
+        '```\n' +
+        createDynamicBox('VOICE TIME CLEARED', [
+          'Scope  : ' + (target ? String(target.username).slice(0, 12) : 'Entire Server'),
+          'Status : Reset to 0 Mins'
+        ]) +
+        '\n```';
+
+      const embed = createStyledEmbed({
+        title: `${emojis.SUCCESS || '🧹'} Voice Stats Cleared`,
+        description: boxText,
+        requestedBy: author,
+        clientUser
+      });
+
+      return message.channel.send({ embeds: [embed] });
     }
 
     // ─────────────────────────────────────────
