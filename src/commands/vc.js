@@ -7,7 +7,7 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 module.exports = {
   name: 'vc',
   description: 'Shinobi Voice Tracking Suite: .vc, .vc add, .vc remove, .vc clear, .vc allowed view',
-  aliases: ['voiced', 'vctime', 'addvctime', 'reducevctime', 'clearvoice', 'vcd', 'vfilter', 'vblacklist', 'vwhitelist'],
+  aliases: ['voiced', 'vctime', 'addvctime', 'reducevctime', 'clearvoice', 'vcd', 'vfilter', 'vblacklist', 'vwhitelist', 'vchelp'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -22,6 +22,17 @@ module.exports = {
 
     const sub = args[0]?.toLowerCase();
     const sub2 = args[1]?.toLowerCase();
+
+    // ─────────────────────────────────────────
+    // 0. VOICEMASTER TEMP VC HELP (.vc help / .vchelp)
+    // ─────────────────────────────────────────
+    if (invoked === 'vchelp' || sub === 'help' || sub === 'h' || sub === 'menu') {
+      const voicemasterCmd = message.client.commands.get('voicemaster');
+      if (voicemasterCmd && typeof voicemasterCmd.buildVoiceHelpEmbed === 'function') {
+        const embed = voicemasterCmd.buildVoiceHelpEmbed(message.member);
+        return message.channel.send({ embeds: [embed] });
+      }
+    }
 
     // Determine if user is running .vblacklist / .vwhitelist or .vc vblacklist / .vc vwhitelist
     const isFilterCmd = ['vblacklist', 'vwhitelist'].includes(invoked) || ['vblacklist', 'vwhitelist', 'blacklist', 'whitelist'].includes(sub);

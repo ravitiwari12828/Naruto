@@ -107,13 +107,15 @@ function buildCustomVoiceChannelButtons(guildId, triggerChanId = null) {
   return [row];
 }
 
+const { createDynamicBox } = require('../utils/boxBuilder');
+
 /**
- * Builds the Voice Help embed with device-proof 28-char box for PC, Android & iOS.
+ * Builds the Voice Help embed with device-proof 26-char box for PC, Android & iOS.
  */
 function buildVoiceHelpEmbed(member) {
   const user = member.user;
 
-  const helpBox = buildDeviceProofBox('VOICE COMMANDS', [
+  const helpBox = createDynamicBox('VOICE COMMANDS', [
     'info    : VC settings',
     'name    : Rename channel',
     'size    : Set VC limit',
