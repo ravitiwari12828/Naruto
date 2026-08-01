@@ -21,15 +21,96 @@ module.exports = {
     } catch (e) {}
 
     const sub = args[0]?.toLowerCase();
+    const sub2 = args[1]?.toLowerCase();
+
+    // Determine if user is running .vblacklist / .vwhitelist or .vc vblacklist / .vc vwhitelist
+    const isFilterCmd = ['vblacklist', 'vwhitelist'].includes(invoked) || ['vblacklist', 'vwhitelist', 'blacklist', 'whitelist'].includes(sub);
+
+    if (isFilterCmd) {
+      const mode = (invoked === 'vblacklist' || sub === 'vblacklist' || sub === 'blacklist') ? 'vblacklist' : 'vwhitelist';
+      const fullTokens = [invoked, ...args].map(x => (x || '').toLowerCase());
+
+      let targetType = null;
+      if (fullTokens.includes('category')) targetType = 'category';
+      else if (fullTokens.includes('channel')) targetType = 'channel';
+
+      let action = null;
+      if (fullTokens.includes('add')) action = 'add';
+      else if (fullTokens.includes('remove') || fullTokens.includes('del') || fullTokens.includes('delete')) action = 'remove';
+
+      if (targetType && action) {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
+          return message.reply(`⚠️ Only Administrators can manage voice channel & category filters.`);
+        }
+
+        const config = db.getAutomod(guild.id);
+        if (!config.ignoredVoiceChannels) config.ignoredVoiceChannels = [];
+        if (!config.whitelistedVoiceChannels) config.whitelistedVoiceChannels = [];
+        if (!config.ignoredVoiceCategories) config.ignoredVoiceCategories = [];
+        if (!config.whitelistedVoiceCategories) config.whitelistedVoiceCategories = [];
+
+        const mentionChan = message.mentions?.channels && typeof message.mentions.channels.first === 'function' ? message.mentions.channels.first() : null;
+        const targetInput = mentionChan ? mentionChan.id : args[args.length - 1];
+
+        let targetId = null;
+        let targetName = '';
+
+        if (targetType === 'channel') {
+          const chan = mentionChan || (guild.channels?.cache?.get ? guild.channels.cache.get(targetInput) : null);
+          if (!chan) return message.reply(`⚠️ Please mention a valid voice channel or provide a channel ID.`);
+          targetId = chan.id;
+          targetName = chan.name;
+        } else {
+          const catId = targetInput?.replace(/[<#>]/g, '');
+          if (!catId) return message.reply(`⚠️ Please provide a valid category ID.`);
+          const category = guild.channels?.cache?.get ? guild.channels.cache.get(catId) : null;
+          targetId = catId;
+          targetName = category ? category.name : catId;
+        }
+
+        const isAdd = action === 'add';
+        const arrName = mode === 'vblacklist'
+          ? (targetType === 'channel' ? 'ignoredVoiceChannels' : 'ignoredVoiceCategories')
+          : (targetType === 'channel' ? 'whitelistedVoiceChannels' : 'whitelistedVoiceCategories');
+
+        let targetArray = config[arrName] || [];
+
+        if (isAdd) {
+          if (!targetArray.includes(targetId)) targetArray.push(targetId);
+        } else {
+          config[arrName] = targetArray.filter(id => id !== targetId);
+        }
+
+        db.saveJSON();
+
+        const boxText =
+          '```\n' +
+          createDynamicBox('VOICE FILTER UPDATED', [
+            'Filter   : ' + mode.toUpperCase() + ' ' + targetType.toUpperCase(),
+            'Action   : ' + (isAdd ? 'Added' : 'Removed'),
+            'Target   : ' + String(targetName).slice(0, 12),
+            'ID       : ' + String(targetId)
+          ]) +
+          '\n```';
+
+        const embed = createStyledEmbed({
+          title: `${isAdd ? '🚫' : '✅'} Voice Filter Updated`,
+          description: boxText,
+          requestedBy: author,
+          clientUser
+        });
+
+        return message.channel.send({ embeds: [embed] });
+      }
+    }
 
     // ─────────────────────────────────────────
-    // 1. ALLOWED / FILTER VIEW (.vc allowed view / .vcd allowed view / .vcd)
+    // 2. ALLOWED / FILTER VIEW (.vc allowed view / .vcd allowed view / .vcd)
     // ─────────────────────────────────────────
     if (
       (sub === 'allowed' || sub === 'filter' || sub === 'view' || sub === 'list') ||
       (invoked === 'vcd' && (sub === 'allowed' || sub === 'view' || sub === 'list' || !sub)) ||
-      (invoked === 'vblacklist' && (sub === 'view' || sub === 'list')) ||
-      (invoked === 'vwhitelist' && (sub === 'view' || sub === 'list'))
+      (isFilterCmd && (sub === 'view' || sub === 'list' || sub2 === 'view' || sub2 === 'list' || (!sub2 && invoked !== 'vc')))
     ) {
       const config = db.getAutomod(guild.id);
       const blVc = config.ignoredVoiceChannels || [];
@@ -52,7 +133,7 @@ module.exports = {
 
         const embed = createStyledEmbed({
           title: `${emojis.SHIELD || '🛡️'} Voice Channel Filter View`,
-          description: boxText + '\n\n• **No channels are whitelisted or blacklisted.** All voice channels are currently being tracked for voice time activity.',
+          description: boxText + '\n\n• **No channels or categories are whitelisted or blacklisted.** All voice channels are currently being tracked for voice time activity.',
           requestedBy: author,
           clientUser
         });
@@ -68,9 +149,9 @@ module.exports = {
 
         let details = '';
         if (blVc.length > 0) details += `\n🚫 **Blacklisted Voice Channels:** ${blVc.map(id => `<#${id}>`).join(', ')}`;
-        if (blVcCats.length > 0) details += `\n🚫 **Blacklisted Voice Categories:** ${blVcCats.map(id => `<#${id}>`).join(', ')}`;
+        if (blVcCats.length > 0) details += `\n🚫 **Blacklisted Voice Categories:** ${blVcCats.map(id => `\`${id}\``).join(', ')}`;
         if (wlVc.length > 0) details += `\n✅ **Whitelisted Voice Channels:** ${wlVc.map(id => `<#${id}>`).join(', ')}`;
-        if (wlVcCats.length > 0) details += `\n✅ **Whitelisted Voice Categories:** ${wlVcCats.map(id => `<#${id}>`).join(', ')}`;
+        if (wlVcCats.length > 0) details += `\n✅ **Whitelisted Voice Categories:** ${wlVcCats.map(id => `\`${id}\``).join(', ')}`;
 
         const embed = createStyledEmbed({
           title: `${emojis.SHIELD || '🛡️'} Voice Channel Filter View`,
@@ -83,7 +164,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 2. ADD VOICE TIME (.vc add <@user> <mins> or .addvctime <@user> <mins>)
+    // 3. ADD VOICE TIME (.vc add <@user> <mins> or .addvctime <@user> <mins>)
     // ─────────────────────────────────────────
     if (invoked === 'addvctime' || sub === 'add') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -125,7 +206,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 3. REDUCE VOICE TIME (.vc remove <@user> <mins> or .reducevctime <@user> <mins>)
+    // 4. REDUCE VOICE TIME (.vc remove <@user> <mins> or .reducevctime <@user> <mins>)
     // ─────────────────────────────────────────
     if (invoked === 'reducevctime' || sub === 'remove' || sub === 'rm') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -167,7 +248,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 4. CLEAR VOICE TIME (.vc clear [@user] or .clearvoice [@user])
+    // 5. CLEAR VOICE TIME (.vc clear [@user] or .clearvoice [@user])
     // ─────────────────────────────────────────
     if (invoked === 'clearvoice' || sub === 'clear' || sub === 'reset') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -195,7 +276,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 5. MAIN VOICE TRACKING DASHBOARD (.vc)
+    // 6. MAIN VOICE TRACKING DASHBOARD (.vc)
     // ─────────────────────────────────────────
     const infoBox = createDynamicBox('SHINOBI VOICE TRACKING SUITE', [
       `Module    : Voice Time & Filter Suite`,

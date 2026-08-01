@@ -22,14 +22,97 @@ module.exports = {
 
     const sub = args[0]?.toLowerCase();
     const sub2 = args[1]?.toLowerCase();
+    const sub3 = args[2]?.toLowerCase();
 
     // ─────────────────────────────────────────
-    // 1. ALLOWED / FILTER VIEW (.msg allowed view / .msg allowed / .msg filter)
+    // 1. BLACKLIST & WHITELIST CHANNEL / CATEGORY HANDLERS (.blacklist / .whitelist / .msg blacklist)
+    // ─────────────────────────────────────────
+    const isFilterCmd = ['blacklist', 'whitelist'].includes(invoked) || ['blacklist', 'whitelist'].includes(sub);
+
+    if (isFilterCmd) {
+      const mode = (invoked === 'blacklist' || sub === 'blacklist') ? 'blacklist' : 'whitelist';
+      const fullTokens = [invoked, ...args].map(x => (x || '').toLowerCase());
+
+      let targetType = null;
+      if (fullTokens.includes('category')) targetType = 'category';
+      else if (fullTokens.includes('channel')) targetType = 'channel';
+
+      let action = null;
+      if (fullTokens.includes('add')) action = 'add';
+      else if (fullTokens.includes('remove') || fullTokens.includes('del') || fullTokens.includes('delete')) action = 'remove';
+
+      if (targetType && action) {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
+          return message.reply(`⚠️ Only Administrators can manage message channel & category filters.`);
+        }
+
+        const config = db.getAutomod(guild.id);
+        if (!config.ignoredChannels) config.ignoredChannels = [];
+        if (!config.whitelistedChannels) config.whitelistedChannels = [];
+        if (!config.ignoredCategories) config.ignoredCategories = [];
+        if (!config.whitelistedCategories) config.whitelistedCategories = [];
+
+        const mentionChan = message.mentions?.channels && typeof message.mentions.channels.first === 'function' ? message.mentions.channels.first() : null;
+        const targetInput = mentionChan ? mentionChan.id : args[args.length - 1];
+
+        let targetId = null;
+        let targetName = '';
+
+        if (targetType === 'channel') {
+          const chan = mentionChan || (guild.channels?.cache?.get ? guild.channels.cache.get(targetInput) : null);
+          if (!chan) return message.reply(`⚠️ Please mention a valid channel or provide a channel ID.`);
+          targetId = chan.id;
+          targetName = chan.name;
+        } else {
+          const catId = targetInput?.replace(/[<#>]/g, '');
+          if (!catId) return message.reply(`⚠️ Please provide a valid category ID.`);
+          const category = guild.channels?.cache?.get ? guild.channels.cache.get(catId) : null;
+          targetId = catId;
+          targetName = category ? category.name : catId;
+        }
+
+        const isAdd = action === 'add';
+        const arrName = mode === 'blacklist'
+          ? (targetType === 'channel' ? 'ignoredChannels' : 'ignoredCategories')
+          : (targetType === 'channel' ? 'whitelistedChannels' : 'whitelistedCategories');
+
+        let targetArray = config[arrName] || [];
+
+        if (isAdd) {
+          if (!targetArray.includes(targetId)) targetArray.push(targetId);
+        } else {
+          config[arrName] = targetArray.filter(id => id !== targetId);
+        }
+
+        db.saveJSON();
+
+        const boxText =
+          '```\n' +
+          createDynamicBox('MESSAGE FILTER UPDATED', [
+            'Filter   : ' + mode.toUpperCase() + ' ' + targetType.toUpperCase(),
+            'Action   : ' + (isAdd ? 'Added' : 'Removed'),
+            'Target   : ' + String(targetName).slice(0, 12),
+            'ID       : ' + String(targetId)
+          ]) +
+          '\n```';
+
+        const embed = createStyledEmbed({
+          title: `${isAdd ? '🚫' : '✅'} Message Filter Updated`,
+          description: boxText,
+          requestedBy: author,
+          clientUser
+        });
+
+        return message.channel.send({ embeds: [embed] });
+      }
+    }
+
+    // ─────────────────────────────────────────
+    // 2. ALLOWED / FILTER VIEW (.msg allowed view / .msg allowed / .msg filter)
     // ─────────────────────────────────────────
     if (
       (sub === 'allowed' || sub === 'filter' || sub === 'view' || sub === 'list') ||
-      (invoked === 'blacklist' && (sub === 'view' || sub === 'list')) ||
-      (invoked === 'whitelist' && (sub === 'view' || sub === 'list'))
+      (isFilterCmd && (sub === 'view' || sub === 'list' || sub2 === 'view' || sub2 === 'list' || (!sub2 && invoked !== 'msg')))
     ) {
       const config = db.getAutomod(guild.id);
       const blChans = config.ignoredChannels || [];
@@ -52,7 +135,7 @@ module.exports = {
 
         const embed = createStyledEmbed({
           title: `${emojis.SHIELD || '🛡️'} Message Channel Filter View`,
-          description: boxText + '\n\n• **No channels are whitelisted or blacklisted.** All text channels are currently being tracked for message activity.',
+          description: boxText + '\n\n• **No channels or categories are whitelisted or blacklisted.** All text channels are currently being tracked for message activity.',
           requestedBy: author,
           clientUser
         });
@@ -68,9 +151,9 @@ module.exports = {
 
         let details = '';
         if (blChans.length > 0) details += `\n🚫 **Blacklisted Channels:** ${blChans.map(id => `<#${id}>`).join(', ')}`;
-        if (blCats.length > 0) details += `\n🚫 **Blacklisted Categories:** ${blCats.map(id => `<#${id}>`).join(', ')}`;
+        if (blCats.length > 0) details += `\n🚫 **Blacklisted Categories:** ${blCats.map(id => `\`${id}\``).join(', ')}`;
         if (wlChans.length > 0) details += `\n✅ **Whitelisted Channels:** ${wlChans.map(id => `<#${id}>`).join(', ')}`;
-        if (wlCats.length > 0) details += `\n✅ **Whitelisted Categories:** ${wlCats.map(id => `<#${id}>`).join(', ')}`;
+        if (wlCats.length > 0) details += `\n✅ **Whitelisted Categories:** ${wlCats.map(id => `\`${id}\``).join(', ')}`;
 
         const embed = createStyledEmbed({
           title: `${emojis.SHIELD || '🛡️'} Message Channel Filter View`,
@@ -83,7 +166,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 2. ADD MESSAGES (.msg add <@user> <amount> or .addmessages <@user> <amount>)
+    // 3. ADD MESSAGES (.msg add <@user> <amount> or .addmessages <@user> <amount>)
     // ─────────────────────────────────────────
     if (invoked === 'addmessages' || sub === 'add') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -124,7 +207,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 3. REMOVE MESSAGES (.msg remove <@user> <amount> or .removemessages <@user> <amount>)
+    // 4. REMOVE MESSAGES (.msg remove <@user> <amount> or .removemessages <@user> <amount>)
     // ─────────────────────────────────────────
     if (invoked === 'removemessages' || sub === 'remove' || sub === 'rm') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -165,7 +248,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 4. CLEAR MESSAGES (.msg clear [@user] or .clearmsgs [@user])
+    // 5. CLEAR MESSAGES (.msg clear [@user] or .clearmsgs [@user])
     // ─────────────────────────────────────────
     if (invoked === 'clearmsgs' || sub === 'clear' || sub === 'reset') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -193,7 +276,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 5. MAIN MESSAGE TRACKING DASHBOARD (.msg)
+    // 6. MAIN MESSAGE TRACKING DASHBOARD (.msg)
     // ─────────────────────────────────────────
     const infoBox = createDynamicBox('SHINOBI MESSAGE TRACKING SUITE', [
       `Module    : Message Stats & Filter Suite`,
