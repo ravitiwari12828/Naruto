@@ -6,8 +6,8 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 
 module.exports = {
   name: 'vc',
-  description: 'Shinobi Voice Tracking Suite: .vc, .vc add, .vc remove, .vc clear',
-  aliases: ['voiced', 'vctime', 'addvctime', 'reducevctime', 'clearvoice'],
+  description: 'Shinobi Voice Tracking Suite: .vc, .vc add, .vc remove, .vc clear, .vc allowed view',
+  aliases: ['voiced', 'vctime', 'addvctime', 'reducevctime', 'clearvoice', 'vcd', 'vfilter', 'vblacklist', 'vwhitelist'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -23,7 +23,67 @@ module.exports = {
     const sub = args[0]?.toLowerCase();
 
     // ─────────────────────────────────────────
-    // 1. ADD VOICE TIME (.vc add <@user> <mins> or .addvctime <@user> <mins>)
+    // 1. ALLOWED / FILTER VIEW (.vc allowed view / .vcd allowed view / .vcd)
+    // ─────────────────────────────────────────
+    if (
+      (sub === 'allowed' || sub === 'filter' || sub === 'view' || sub === 'list') ||
+      (invoked === 'vcd' && (sub === 'allowed' || sub === 'view' || sub === 'list' || !sub)) ||
+      (invoked === 'vblacklist' && (sub === 'view' || sub === 'list')) ||
+      (invoked === 'vwhitelist' && (sub === 'view' || sub === 'list'))
+    ) {
+      const config = db.getAutomod(guild.id);
+      const blVc = config.ignoredVoiceChannels || [];
+      const wlVc = config.whitelistedVoiceChannels || [];
+      const blVcCats = config.ignoredVoiceCategories || [];
+      const wlVcCats = config.whitelistedVoiceCategories || [];
+
+      const totalBl = blVc.length + blVcCats.length;
+      const totalWl = wlVc.length + wlVcCats.length;
+
+      if (totalBl === 0 && totalWl === 0) {
+        const boxText =
+          '```\n' +
+          createDynamicBox('VOICE TRACKING FILTERS', [
+            'Server  : ' + String(guild.name).slice(0, 12),
+            'Status  : No Voice Channels Blacklisted/WL',
+            'Tracking: All voice channels active'
+          ]) +
+          '\n```';
+
+        const embed = createStyledEmbed({
+          title: `${emojis.SHIELD || '🛡️'} Voice Channel Filter View`,
+          description: boxText + '\n\n• **No channels are whitelisted or blacklisted.** All voice channels are currently being tracked for voice time activity.',
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      } else {
+        const boxText =
+          '```\n' +
+          createDynamicBox('VOICE TRACKING FILTERS', [
+            'Blacklisted : ' + String(blVc.length) + ' VCs, ' + String(blVcCats.length) + ' Cats',
+            'Whitelisted : ' + String(wlVc.length) + ' VCs, ' + String(wlVcCats.length) + ' Cats'
+          ]) +
+          '\n```';
+
+        let details = '';
+        if (blVc.length > 0) details += `\n🚫 **Blacklisted Voice Channels:** ${blVc.map(id => `<#${id}>`).join(', ')}`;
+        if (blVcCats.length > 0) details += `\n🚫 **Blacklisted Voice Categories:** ${blVcCats.map(id => `<#${id}>`).join(', ')}`;
+        if (wlVc.length > 0) details += `\n✅ **Whitelisted Voice Channels:** ${wlVc.map(id => `<#${id}>`).join(', ')}`;
+        if (wlVcCats.length > 0) details += `\n✅ **Whitelisted Voice Categories:** ${wlVcCats.map(id => `<#${id}>`).join(', ')}`;
+
+        const embed = createStyledEmbed({
+          title: `${emojis.SHIELD || '🛡️'} Voice Channel Filter View`,
+          description: boxText + details,
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+    }
+
+    // ─────────────────────────────────────────
+    // 2. ADD VOICE TIME (.vc add <@user> <mins> or .addvctime <@user> <mins>)
     // ─────────────────────────────────────────
     if (invoked === 'addvctime' || sub === 'add') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -65,7 +125,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 2. REDUCE VOICE TIME (.vc remove <@user> <mins> or .reducevctime <@user> <mins>)
+    // 3. REDUCE VOICE TIME (.vc remove <@user> <mins> or .reducevctime <@user> <mins>)
     // ─────────────────────────────────────────
     if (invoked === 'reducevctime' || sub === 'remove' || sub === 'rm') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -107,7 +167,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 3. CLEAR VOICE TIME (.vc clear [@user] or .clearvoice [@user])
+    // 4. CLEAR VOICE TIME (.vc clear [@user] or .clearvoice [@user])
     // ─────────────────────────────────────────
     if (invoked === 'clearvoice' || sub === 'clear' || sub === 'reset') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -135,7 +195,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 4. MAIN VOICE TRACKING DASHBOARD (.vc)
+    // 5. MAIN VOICE TRACKING DASHBOARD (.vc)
     // ─────────────────────────────────────────
     const infoBox = createDynamicBox('SHINOBI VOICE TRACKING SUITE', [
       `Module    : Voice Time & Filter Suite`,

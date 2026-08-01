@@ -6,8 +6,8 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 
 module.exports = {
   name: 'msg',
-  description: 'Shinobi Message Tracking Suite: .msg, .msg add, .msg remove, .msg clear',
-  aliases: ['messaged', 'message', 'messages', 'addmessages', 'removemessages', 'clearmsgs'],
+  description: 'Shinobi Message Tracking Suite: .msg, .msg add, .msg remove, .msg clear, .msg allowed view',
+  aliases: ['messaged', 'message', 'messages', 'addmessages', 'removemessages', 'clearmsgs', 'msgfilter', 'blacklist', 'whitelist'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -21,9 +21,69 @@ module.exports = {
     } catch (e) {}
 
     const sub = args[0]?.toLowerCase();
+    const sub2 = args[1]?.toLowerCase();
 
     // ─────────────────────────────────────────
-    // 1. ADD MESSAGES (.msg add <@user> <amount> or .addmessages <@user> <amount>)
+    // 1. ALLOWED / FILTER VIEW (.msg allowed view / .msg allowed / .msg filter)
+    // ─────────────────────────────────────────
+    if (
+      (sub === 'allowed' || sub === 'filter' || sub === 'view' || sub === 'list') ||
+      (invoked === 'blacklist' && (sub === 'view' || sub === 'list')) ||
+      (invoked === 'whitelist' && (sub === 'view' || sub === 'list'))
+    ) {
+      const config = db.getAutomod(guild.id);
+      const blChans = config.ignoredChannels || [];
+      const wlChans = config.whitelistedChannels || [];
+      const blCats = config.ignoredCategories || [];
+      const wlCats = config.whitelistedCategories || [];
+
+      const totalBl = blChans.length + blCats.length;
+      const totalWl = wlChans.length + wlCats.length;
+
+      if (totalBl === 0 && totalWl === 0) {
+        const boxText =
+          '```\n' +
+          createDynamicBox('MESSAGE TRACKING FILTERS', [
+            'Server  : ' + String(guild.name).slice(0, 12),
+            'Status  : No Channels Blacklisted/WL',
+            'Tracking: All text channels active'
+          ]) +
+          '\n```';
+
+        const embed = createStyledEmbed({
+          title: `${emojis.SHIELD || '🛡️'} Message Channel Filter View`,
+          description: boxText + '\n\n• **No channels are whitelisted or blacklisted.** All text channels are currently being tracked for message activity.',
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      } else {
+        const boxText =
+          '```\n' +
+          createDynamicBox('MESSAGE TRACKING FILTERS', [
+            'Blacklisted : ' + String(blChans.length) + ' Chans, ' + String(blCats.length) + ' Cats',
+            'Whitelisted : ' + String(wlChans.length) + ' Chans, ' + String(wlCats.length) + ' Cats'
+          ]) +
+          '\n```';
+
+        let details = '';
+        if (blChans.length > 0) details += `\n🚫 **Blacklisted Channels:** ${blChans.map(id => `<#${id}>`).join(', ')}`;
+        if (blCats.length > 0) details += `\n🚫 **Blacklisted Categories:** ${blCats.map(id => `<#${id}>`).join(', ')}`;
+        if (wlChans.length > 0) details += `\n✅ **Whitelisted Channels:** ${wlChans.map(id => `<#${id}>`).join(', ')}`;
+        if (wlCats.length > 0) details += `\n✅ **Whitelisted Categories:** ${wlCats.map(id => `<#${id}>`).join(', ')}`;
+
+        const embed = createStyledEmbed({
+          title: `${emojis.SHIELD || '🛡️'} Message Channel Filter View`,
+          description: boxText + details,
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+    }
+
+    // ─────────────────────────────────────────
+    // 2. ADD MESSAGES (.msg add <@user> <amount> or .addmessages <@user> <amount>)
     // ─────────────────────────────────────────
     if (invoked === 'addmessages' || sub === 'add') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -64,7 +124,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 2. REMOVE MESSAGES (.msg remove <@user> <amount> or .removemessages <@user> <amount>)
+    // 3. REMOVE MESSAGES (.msg remove <@user> <amount> or .removemessages <@user> <amount>)
     // ─────────────────────────────────────────
     if (invoked === 'removemessages' || sub === 'remove' || sub === 'rm') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -105,7 +165,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 3. CLEAR MESSAGES (.msg clear [@user] or .clearmsgs [@user])
+    // 4. CLEAR MESSAGES (.msg clear [@user] or .clearmsgs [@user])
     // ─────────────────────────────────────────
     if (invoked === 'clearmsgs' || sub === 'clear' || sub === 'reset') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
@@ -133,7 +193,7 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 4. MAIN MESSAGE TRACKING DASHBOARD (.msg)
+    // 5. MAIN MESSAGE TRACKING DASHBOARD (.msg)
     // ─────────────────────────────────────────
     const infoBox = createDynamicBox('SHINOBI MESSAGE TRACKING SUITE', [
       `Module    : Message Stats & Filter Suite`,
