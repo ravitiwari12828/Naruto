@@ -107,7 +107,8 @@ function renderGaugeResultEmbed(cmdName, targetUser, userWhoClicked, clientUser,
   const doneRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId(`gauge_done_${cmdName}`)
-      .setLabel(`${emojis.SUCCESS} Scan Complete (${score}%)`)
+      .setLabel(`Scan Complete (${score}%)`)
+      .setEmoji('✅')
       .setStyle(ButtonStyle.Success)
       .setDisabled(true)
   );

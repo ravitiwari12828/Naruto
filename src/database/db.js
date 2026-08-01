@@ -390,6 +390,30 @@ class ResilientDatabase {
     return user;
   }
 
+  clearMessages(userId = null) {
+    if (userId) {
+      const user = this.getUser(userId);
+      user.messages = 0;
+    } else {
+      for (const uid of Object.keys(this.data.users)) {
+        if (this.data.users[uid]) this.data.users[uid].messages = 0;
+      }
+    }
+    this.saveJSON();
+  }
+
+  clearVoiceTime(userId = null) {
+    if (userId) {
+      const user = this.getUser(userId);
+      user.voiceSeconds = 0;
+    } else {
+      for (const uid of Object.keys(this.data.users)) {
+        if (this.data.users[uid]) this.data.users[uid].voiceSeconds = 0;
+      }
+    }
+    this.saveJSON();
+  }
+
   addInvites(userId, count = 1) {
     const user = this.getUser(userId);
     user.invites += count;
