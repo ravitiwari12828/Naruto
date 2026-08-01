@@ -19,12 +19,15 @@ function getOrCreateRoleConfig(guildId) {
   return serverRoleConfigs.get(guildId);
 }
 
+const { PermissionsBitField } = require('discord.js');
+
 module.exports = {
   name: 'roles',
-  description: 'Role Commands: autonick, friend, girl, guest, invcrole, official, rolesetup, vip',
+  description: 'Role Commands: autonick, cleanuproles, friend, girl, guest, invcrole, official, rolesetup, vip',
   aliases: [
     'rolesetup', 'friend', 'girl', 'guest',
-    'invcrole', 'official', 'vip', 'autonick'
+    'invcrole', 'official', 'vip', 'autonick',
+    'cleanuproles', 'deduplicateroles', 'removeroleduplicates', 'fixduplicateroles', 'cleanroles'
   ],
 
   async execute(message, args) {
@@ -38,6 +41,79 @@ module.exports = {
     try {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
+
+    // .cleanuproles / .deduplicateroles
+    if (['cleanuproles', 'deduplicateroles', 'removeroleduplicates', 'fixduplicateroles', 'cleanroles'].includes(invoked) || (invoked === 'roles' && args[0] === 'cleanup')) {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && message.guild.ownerId !== author.id) {
+        return message.reply(`${emojis.WARNING} Only Administrators and Server Owners can clean up duplicate roles.`);
+      }
+
+      const statusMsg = await message.channel.send(`⏳ **Scanning server roles and merging duplicate roles...**`);
+
+      try {
+        await message.guild.roles.fetch();
+        const roleGroups = new Map();
+
+        message.guild.roles.cache.forEach(role => {
+          if (role.name === '@everyone' || role.managed) return;
+          const key = role.name.trim().toLowerCase();
+          if (!roleGroups.has(key)) roleGroups.set(key, []);
+          roleGroups.get(key).push(role);
+        });
+
+        let deletedCount = 0;
+        let mergedMembersCount = 0;
+        const cleanedNames = [];
+
+        for (const [name, roles] of roleGroups.entries()) {
+          if (roles.length <= 1) continue;
+
+          // Sort roles by position descending (keep highest role in hierarchy)
+          roles.sort((a, b) => b.position - a.position);
+          const keeperRole = roles[0];
+          const duplicates = roles.slice(1);
+
+          cleanedNames.push(keeperRole.name);
+
+          for (const dup of duplicates) {
+            // Re-assign members to keeperRole before deleting
+            const membersWithDup = dup.members;
+            for (const [memId, member] of membersWithDup.entries()) {
+              if (!member.roles.cache.has(keeperRole.id)) {
+                await member.roles.add(keeperRole.id).catch(() => {});
+                mergedMembersCount++;
+              }
+            }
+            await dup.delete('Merged duplicate role via .cleanuproles command').catch(() => {});
+            deletedCount++;
+          }
+        }
+
+        const { createDynamicBox } = require('../utils/boxBuilder');
+        const boxPanel = createDynamicBox('ROLE DEDUPLICATION CLEANUP', [
+          `Server     : ${message.guild.name}`,
+          `Role Names : ${cleanedNames.length} Unique Roles Merged`,
+          `Deleted    : ${deletedCount} Duplicate Roles`,
+          `Re-assigned: ${mergedMembersCount} Member Roles`
+        ]);
+
+        const embed = createStyledEmbed({
+          title: `🧹 Server Role Cleanup Complete`,
+          description: '```\n' + boxPanel + '\n```\n\n' +
+            (cleanedNames.length > 0
+              ? `• **Cleaned Role Names:** \`${cleanedNames.join('`, `')}\`\n` +
+                `• **Deleted Duplicates:** \`${deletedCount}\` roles removed\n` +
+                `• **Members Re-assigned:** \`${mergedMembersCount}\` role assignments preserved`
+              : `• **No Duplicate Roles Found!** All server roles are unique and clean.`),
+          requestedBy: author,
+          clientUser
+        });
+
+        return statusMsg.edit({ content: null, embeds: [embed] });
+      } catch (err) {
+        return statusMsg.edit(`❌ Error during role cleanup: ${err.message}`);
+      }
+    }
 
     // .rolesetup <type> <@role>
     if (invoked === 'rolesetup' || (invoked === 'roles' && args[0] === 'setup')) {

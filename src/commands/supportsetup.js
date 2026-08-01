@@ -34,9 +34,11 @@ module.exports = {
 
     try {
       // ─────────────────────────────────────────
-      // 1. CREATE ALL SPECIAL ROLES
+      // 1. CREATE OR REUSE ALL SPECIAL ROLES (STRICT DEDUPLICATION)
       // ─────────────────────────────────────────
-      let ownerRole = guild.roles.cache.find(r => r.name === 'Hokage Owner');
+      await guild.roles.fetch().catch(() => {});
+
+      let ownerRole = guild.roles.cache.find(r => r.name.trim().toLowerCase() === 'hokage owner');
       if (!ownerRole) {
         ownerRole = await guild.roles.create({
           name: 'Hokage Owner',
@@ -46,7 +48,7 @@ module.exports = {
         });
       }
 
-      let staffRole = guild.roles.cache.find(r => r.name === 'ANBU Staff');
+      let staffRole = guild.roles.cache.find(r => r.name.trim().toLowerCase() === 'anbu staff');
       if (!staffRole) {
         staffRole = await guild.roles.create({
           name: 'ANBU Staff',
@@ -56,7 +58,7 @@ module.exports = {
         });
       }
 
-      let ticketStaffRole = guild.roles.cache.find(r => r.name === 'Ticket Staff');
+      let ticketStaffRole = guild.roles.cache.find(r => r.name.trim().toLowerCase() === 'ticket staff');
       if (!ticketStaffRole) {
         ticketStaffRole = await guild.roles.create({
           name: 'Ticket Staff',
@@ -65,7 +67,7 @@ module.exports = {
         });
       }
 
-      let vipRole = guild.roles.cache.find(r => r.name === 'Sanin VIP');
+      let vipRole = guild.roles.cache.find(r => r.name.trim().toLowerCase() === 'sanin vip');
       if (!vipRole) {
         vipRole = await guild.roles.create({
           name: 'Sanin VIP',
@@ -75,7 +77,7 @@ module.exports = {
         });
       }
 
-      let premiumRole = guild.roles.cache.find(r => r.name === 'Chakra Premium');
+      let premiumRole = guild.roles.cache.find(r => r.name.trim().toLowerCase() === 'chakra premium');
       if (!premiumRole) {
         premiumRole = await guild.roles.create({
           name: 'Chakra Premium',
@@ -85,7 +87,7 @@ module.exports = {
         });
       }
 
-      let noPrefixRole = guild.roles.cache.find(r => r.name === 'Minato No-Prefix');
+      let noPrefixRole = guild.roles.cache.find(r => r.name.trim().toLowerCase() === 'minato no-prefix');
       if (!noPrefixRole) {
         noPrefixRole = await guild.roles.create({
           name: 'Minato No-Prefix',

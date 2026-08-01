@@ -72,7 +72,8 @@ async function ensureTicketLogChannels(guild) {
   const config = getOrCreateTicketConfig(guild.id);
 
   // 1. Auto-create & link @Ticket Staff role if missing
-  let staffRole = guild.roles.cache.find(r => r.name.toLowerCase() === 'ticket staff');
+  await guild.roles.fetch().catch(() => {});
+  let staffRole = guild.roles.cache.find(r => r.name.trim().toLowerCase() === 'ticket staff');
   if (!staffRole) {
     try {
       staffRole = await guild.roles.create({
