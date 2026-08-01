@@ -150,6 +150,35 @@ client.once('clientReady', async () => {
   console.log(`==============================================\n`);
 
   client.user.setActivity('💬 DM me for Support | .help', { type: 3 });
+
+  // Startup Cleanup: Sweep and delete leftover empty VoiceMaster temporary channels across all guilds
+  setTimeout(() => {
+    try {
+      const vmCmd = client.commands.get('voicemaster');
+      if (vmCmd && vmCmd.getOrCreateVMConfig) {
+        client.guilds.cache.forEach(async (guild) => {
+          const config = vmCmd.getOrCreateVMConfig(guild.id);
+          guild.channels.cache.forEach(async (chan) => {
+            if (chan.type === ChannelType.GuildVoice) {
+              const isTrigger = chan.id === config.triggerChanId || chan.name.toLowerCase().includes('join to create');
+              if (isTrigger) return;
+
+              const isTemp = config.activeTempVCs.has(chan.id) ||
+                chan.name.includes("'s Room") ||
+                chan.name.startsWith("🔊 ") ||
+                (chan.parent && chan.parent.name.toLowerCase().includes('custom voice'));
+
+              if (isTemp && chan.members.filter(m => !m.user.bot).size === 0) {
+                console.log(`🧹 [VoiceMaster Startup Cleanup] Deleting leftover empty temp VC: ${chan.name} (${chan.id}) in ${guild.name}`);
+                config.activeTempVCs.delete(chan.id);
+                await chan.delete('Startup cleanup of empty temp voice channel').catch(() => {});
+              }
+            }
+          });
+        });
+      }
+    } catch (e) {}
+  }, 5000);
 });
 
 // Guild Join Listener — Bot Owner Private Whitelist & Lockdown
@@ -413,9 +442,17 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   }
 
   // Left temp VC (delete if no human members remain)
-  if (oldState.channelId && config.activeTempVCs.has(oldState.channelId)) {
+  const isTempChannel = (oldState.channelId && config.activeTempVCs.has(oldState.channelId)) ||
+    (oldState.channel && (
+      oldState.channel.name.includes("'s Room") ||
+      oldState.channel.name.startsWith("🔊 ") ||
+      (config.triggerChanId && oldState.channel.id !== config.triggerChanId && !oldState.channel.name.toLowerCase().includes('join to create') &&
+       oldState.channel.parent && oldState.channel.parent.name.toLowerCase().includes('custom voice'))
+    ));
+
+  if (oldState.channelId && isTempChannel && oldState.channelId !== config.triggerChanId) {
     const oldChan = oldState.channel;
-    if (oldChan) {
+    if (oldChan && !oldChan.name.toLowerCase().includes('join to create')) {
       const humanCount = oldChan.members.filter(m => !m.user.bot).size;
       if (humanCount === 0) {
         config.activeTempVCs.delete(oldChan.id);
@@ -432,7 +469,9 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
         // Delete empty temporary voice channel
         setTimeout(() => {
-          oldChan.delete().catch(() => {});
+          if (oldChan.members.filter(m => !m.user.bot).size === 0) {
+            oldChan.delete().catch(() => {});
+          }
         }, 1000);
       }
     }

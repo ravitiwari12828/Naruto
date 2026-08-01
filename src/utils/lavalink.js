@@ -162,7 +162,7 @@ function initLavalink(client) {
     try {
       const songTitle = track?.info?.title || 'Unknown Song';
       const artistName = track?.info?.author || 'Unknown Artist';
-      let statusText = `🎵 ${songTitle} - ${artistName}`;
+      let statusText = `🎶 ${songTitle} - ${artistName}`;
       if (statusText.length > 500) statusText = statusText.slice(0, 497) + '...';
 
       const vcId = player.voiceChannelId;
