@@ -10,7 +10,7 @@ const GAUGE_TITLES = {
   wasted: { title: '💀 Battle Wasted Level', emoji: '💀' },
   powerlevel: { title: '⚡ Power Level Scan', emoji: '⚡' },
   coolrate: { title: '❄️ Coolness Rate', emoji: '❄️' },
-  bonk: { title: '${emojis.MOD} Horny Bonk Level', emoji: emojis.OBJ_MOD || emojis.MOD || '🛡️' }
+  bonk: { title: '🔨 Horny Bonk Level', emoji: '🔨' }
 };
 
 function renderGaugeBox(cmdName, score = null) {
@@ -84,7 +84,7 @@ function getAssessmentText(cmdName, score, targetUser, author, user2) {
     return score > 80 ? '😤 **Sasuke-level Coolness** & Cold Aura 🔥' : score > 50 ? '📖 **Kakashi Mysterious Reading Vibes** ⚡' : '💪 **Rock Lee without eyebrows energy!**';
   }
   if (cmdName === 'bonk') {
-    return score > 80 ? '${emojis.MOD} **MAXIMUM BONK LEVEL** — Sent to Horny Jail immediately!' : score > 50 ? '${emojis.WARNING} **Moderate Horny Energy** — Caution advised!' : '😇 **Pure Soul** — Pure Konoha Shinobi!';
+    return score > 80 ? '🔨 **MAXIMUM BONK LEVEL** — Sent to Horny Jail immediately!' : score > 50 ? '⚠️ **Moderate Horny Energy** — Caution advised!' : '😇 **Pure Soul** — Pure Konoha Shinobi!';
   }
   return '✨ Scan completed!';
 }
@@ -321,7 +321,7 @@ module.exports = {
   name: 'fun',
   description: 'Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore',
   aliases: [
-    'meme', 'ship', 'coinflip', 'roll', 'gauge',
+    'fun', 'meme', 'ship', 'coinflip', 'roll', 'gauge', 'bonk',
     '8ball', 'eightball', 'truth', 'dare', 'wouldyourather', 'wyr',
     'pickup', 'fortune', 'vibecheck', 'mood', 'smartrate', 'rizzmeter',
     'shipname', 'wanted', 'wasted', 'powerlevel', 'coolrate',
