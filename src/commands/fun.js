@@ -354,8 +354,19 @@ module.exports = {
     const { createDynamicBox } = require('../utils/boxBuilder');
 
     // 1. MEME GENERATION COMMANDS
-    if (MEMES_MAP[invoked]) {
-      const memeInfo = MEMES_MAP[invoked];
+    if (invoked === 'meme' || invoked === 'memes' || MEMES_MAP[invoked]) {
+      let memeKey = invoked;
+      if (invoked === 'meme' || invoked === 'memes') {
+        const sub = args[0]?.toLowerCase();
+        if (sub && MEMES_MAP[sub]) {
+          memeKey = sub;
+          args = args.slice(1);
+        } else {
+          const keys = Object.keys(MEMES_MAP);
+          memeKey = keys[Math.floor(Math.random() * keys.length)];
+        }
+      }
+      const memeInfo = MEMES_MAP[memeKey];
       const fullArgs = args.join(' ');
       let text1 = 'When you run';
       let text2 = 'Naruto Bot commands!';
@@ -767,7 +778,10 @@ async function fetchActionAnimeGif(action) {
     }
 
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
-    return renderModuleHelpPanel(message, 'fun');
+    const panelPayload = await renderModuleHelpPanel(message, 'fun');
+    if (panelPayload) {
+      return message.channel.send(panelPayload);
+    }
   },
 
   renderGaugeResultEmbed
