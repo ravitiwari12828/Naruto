@@ -17,7 +17,7 @@ function renderGaugeBox(cmdName, score = null) {
   const titles = {
     smartrate: 'INTELLIGENCE SCAN',
     rizzmeter: 'RIZZ METER SCAN',
-    shipname: 'SHINOBI SHIP NAME SCAN',
+    shipname: 'SHIP NAME SCAN',
     wanted: 'WANTED BOUNTY LEVEL',
     wasted: 'BATTLE WASTED LEVEL',
     powerlevel: 'POWER LEVEL SCAN',
@@ -25,37 +25,23 @@ function renderGaugeBox(cmdName, score = null) {
     bonk: 'BONK LEVEL'
   };
 
-  const title = titles[cmdName] || 'LEVEL CALCULATOR';
+  const title = titles[cmdName] || 'LEVEL SCAN';
 
-  if (score === null) {
-    return '```\n' +
-      '╭──────────────────────────────────╮\n' +
-      '│ ' + title.padEnd(32, ' ') + ' │\n' +
-      '│                                  │\n' +
-      '│  0   5   10   50   100   1,000   │\n' +
-      '│ ( -  -  -  -  -  -  -  -  -  - ) │\n' +
-      '│                                  │\n' +
-      '│          STATUS: IDLE            │\n' +
-      '╰──────────────────────────────────╯\n' +
-      '```';
-  }
+  const items = score === null
+    ? [
+        { key: 'Scale ', value: '0 - 100%' },
+        { key: 'Status', value: 'IDLE' }
+      ]
+    : [
+        { key: 'Score ', value: `${score}%` },
+        { key: 'Status', value: score > 80 ? 'MAX [OK]' : score > 50 ? 'HIGH [OK]' : 'NORMAL' }
+      ];
 
-  const filledCount = Math.round((score / 100) * 10);
-  const emptyCount = 10 - filledCount;
-  const arcGauge = '#'.repeat(filledCount) + '-'.repeat(emptyCount);
-  const bar = '█'.repeat(Math.floor(score / 10)) + '░'.repeat(10 - Math.floor(score / 10));
+  const { createDynamicBox } = require('../utils/boxBuilder');
+  const box = createDynamicBox(title, items);
+  const bar = '█'.repeat(Math.floor((score || 0) / 10)) + '░'.repeat(10 - Math.floor((score || 0) / 10));
 
-  return '```\n' +
-    '╭──────────────────────────────────╮\n' +
-    '│ ' + title.padEnd(32, ' ') + ' │\n' +
-    '│                                  │\n' +
-    '│  0   5   10   50   100   1,000   │\n' +
-    '│ ( ' + arcGauge.split('').join('  ') + ' ) │\n' +
-    '│                                  │\n' +
-    '│        CALCULATED: ' + String(score).padStart(3, ' ') + '%          │\n' +
-    '╰──────────────────────────────────╯\n' +
-    '```\n' +
-    '`[' + bar + '] ' + score + '%`';
+  return '```\n' + box + '\n```\n' + `\`[${bar}] ${score || 0}%\``;
 }
 
 function getAssessmentText(cmdName, score, targetUser, author, user2) {
@@ -368,16 +354,26 @@ module.exports = {
       }
       const memeInfo = MEMES_MAP[memeKey];
       const fullArgs = args.join(' ');
-      let text1 = 'When you run';
-      let text2 = 'Naruto Bot commands!';
+      const RANDOM_MEME_PRESETS = [
+        { text1: 'Me trying to pass Chunin Exams', text2: 'Without opening a single book' },
+        { text1: 'When you use Rasengan', text2: 'To solve every minor problem' },
+        { text1: 'Shikamaru looking at work', text2: 'What a drag...' },
+        { text1: 'Me after 5 minutes of study', text2: 'Sage Mode Activated' },
+        { text1: 'When Kakashi is 3 hours late', text2: 'Lost on the road of life' },
+        { text1: 'When you unlock Eight Gates', text2: 'Just to win a 1v1 duel' },
+        { text1: 'Itachi looking at his brother', text2: 'You lack hatred...' }
+      ];
+      const randomPreset = RANDOM_MEME_PRESETS[Math.floor(Math.random() * RANDOM_MEME_PRESETS.length)];
+      let text1 = randomPreset.text1;
+      let text2 = randomPreset.text2;
 
       if (fullArgs.includes('|')) {
         const parts = fullArgs.split('|');
-        text1 = parts[0].trim() || 'When you run';
-        text2 = parts.slice(1).join('|').trim() || 'Naruto Bot commands!';
+        text1 = parts[0].trim() || randomPreset.text1;
+        text2 = parts.slice(1).join('|').trim() || randomPreset.text2;
       } else if (fullArgs.length > 0) {
         text1 = fullArgs;
-        text2 = 'Naruto Bot commands!';
+        text2 = ' ';
       }
 
       const encodedText1 = encodeURIComponent(text1);
