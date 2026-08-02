@@ -10,7 +10,7 @@ const GAUGE_TITLES = {
   wasted: { title: '💀 Battle Wasted Level', emoji: '💀' },
   powerlevel: { title: '⚡ Power Level Scan', emoji: '⚡' },
   coolrate: { title: '❄️ Coolness Rate', emoji: '❄️' },
-  bonk: { title: '🔨 Horny Bonk Level', emoji: '🔨' }
+  bonk: { title: '🔨 Bonk Level', emoji: '🔨' }
 };
 
 function renderGaugeBox(cmdName, score = null) {
@@ -22,7 +22,7 @@ function renderGaugeBox(cmdName, score = null) {
     wasted: 'BATTLE WASTED LEVEL',
     powerlevel: 'POWER LEVEL SCAN',
     coolrate: 'COOLNESS RATE SCAN',
-    bonk: 'HORNY BONK LEVEL'
+    bonk: 'BONK LEVEL'
   };
 
   const title = titles[cmdName] || 'LEVEL CALCULATOR';
@@ -84,7 +84,7 @@ function getAssessmentText(cmdName, score, targetUser, author, user2) {
     return score > 80 ? '😤 **Sasuke-level Coolness** & Cold Aura 🔥' : score > 50 ? '📖 **Kakashi Mysterious Reading Vibes** ⚡' : '💪 **Rock Lee without eyebrows energy!**';
   }
   if (cmdName === 'bonk') {
-    return score > 80 ? '🔨 **MAXIMUM BONK LEVEL** — Sent to Horny Jail immediately!' : score > 50 ? '⚠️ **Moderate Horny Energy** — Caution advised!' : '😇 **Pure Soul** — Pure Konoha Shinobi!';
+    return score > 80 ? '🔨 **MAXIMUM BONK LEVEL** — Sent to Shinobi Jail!' : score > 50 ? '⚠️ **High Energy Detected** — Caution advised!' : '😇 **Pure Soul** — Pure Konoha Shinobi!';
   }
   return '✨ Scan completed!';
 }
@@ -272,7 +272,6 @@ const EMOTES_MAP = {
   blush: '😳 *blushes brightly*',
   cry: '😭 *crying tears of emotion*',
   dance: '💃 *dances enthusiastically*',
-  lewd: '😏 *looking suspiciously lewd*',
   pout: '😤 *pouts angrily*',
   shrug: '🤷 *shrugs indifferent*',
   sleepy: '😴 *yawns and gets sleepy*',
@@ -329,7 +328,7 @@ module.exports = {
     'spongebobchicken', 'slapcar', 'isthisa', 'drake', 'distractedbf',
     'communismcat', 'eject', 'emergencymeeting', 'headpat', 'tradeoffer', 'waddle',
     // Emotes
-    'blush', 'cry', 'dance', 'lewd', 'pout', 'shrug', 'sleepy', 'smile',
+    'blush', 'cry', 'dance', 'pout', 'shrug', 'sleepy', 'smile',
     'smug', 'thumbsup', 'wag', 'thinking', 'triggered', 'teehee', 'deredere',
     'thonking', 'scoff', 'happy', 'thumbs', 'grin',
     // Actions
@@ -413,7 +412,6 @@ async function fetchActionAnimeGif(action) {
     scoff: 'pout',
     happy: 'smile',
     grin: 'smile',
-    lewd: 'smug',
     shrug: 'smug',
     wag: 'smile',
     triggered: 'slap'

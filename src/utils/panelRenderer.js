@@ -150,7 +150,7 @@ const CATEGORIES = [
       'bonk', 'spongebobchicken', 'slapcar', 'isthisa', 'drake',
       'distractedbf', 'communismcat', 'eject', 'emergencymeeting', 'headpat',
       'tradeoffer', 'waddle', 'blush', 'cry', 'dance',
-      'lewd', 'pout', 'shrug', 'sleepy', 'smile',
+      'pout', 'shrug', 'sleepy', 'smile',
       'smug', 'thumbsup', 'wag', 'thinking', 'triggered',
       'teehee', 'deredere', 'thonking', 'scoff', 'happy',
       'thumbs', 'grin', 'cuddle', 'hug', 'kiss',
@@ -420,7 +420,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
         `\`\`\`\n\n` +
         `${emotesEmoji} **Emotes**\n` +
         `\`\`\`\n` +
-        `.blush .cry .dance .lewd .pout .shrug .sleepy .smile .smug .thumbsup .wag .thinking .triggered .teehee .deredere .thonking .scoff .happy .thumbs .grin\n` +
+        `.blush .cry .dance .pout .shrug .sleepy .smile .smug .thumbsup .wag .thinking .triggered .teehee .deredere .thonking .scoff .happy .thumbs .grin\n` +
         `\`\`\`\n\n` +
         `${actionEmoji} **Actions**\n` +
         `\`\`\`\n` +
