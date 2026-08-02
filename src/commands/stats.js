@@ -24,7 +24,7 @@ function incrementSongCount() {
 module.exports = {
   name: 'stats',
   description: 'Display bot global stats overview, shards and developer team details',
-  aliases: ['botstats', 'systemstats', 'stat'],
+  aliases: [],
   incrementCommandCount,
   incrementSongCount,
 

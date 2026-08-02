@@ -174,9 +174,9 @@ module.exports = {
 
   aliases: [
     'ping', 'about', 'invite', 'node',
-    'profile', 'serverinfo', 'server', 'si',
+    'profile', 'serverinfo', 'si',
     'userinfo', 'user', 'membercount',
-    'botinfo', 'uptime', 'vote', 'support',
+    'botinfo', 'uptime', 'vote',
     'afk', 'avatar', 'av', 'roleinfo', 'serverbanner', 'servericon', 'snipe'
   ],
   snipeStore,

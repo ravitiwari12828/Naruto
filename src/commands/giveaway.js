@@ -124,7 +124,7 @@ function buildRerolledEmbed(gw, winnerMentions, clientUser) {
 module.exports = {
   name: 'giveaway',
   description: 'Host and manage giveaways. Short syntax: .gstart, .gend, .greroll',
-  aliases: ['gw', 'gstart', 'gcreate', 'gend', 'greroll', 'reroll'],
+  aliases: ['gstart', 'gcreate', 'gend', 'greroll', 'reroll'],
   giveaways,
   buildActiveEmbed,
 
@@ -133,12 +133,18 @@ module.exports = {
     const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
 
+    let isDirect = ['gstart', 'gcreate'].includes(invoked);
     if (invoked === 'gstart' || invoked === 'gcreate') {
       sub = 'create';
     } else if (invoked === 'gend') {
       sub = 'end';
     } else if (invoked === 'greroll' || invoked === 'reroll') {
       sub = 'reroll';
+    } else if (invoked === 'giveaway') {
+      if (!['create', 'start', 'end', 'reroll', 'list'].includes(sub)) {
+        sub = 'create';
+        isDirect = true;
+      }
     }
 
     let clientUser = message.client.user;
@@ -146,11 +152,10 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // .gstart <time> <winners> <prize> / .giveaway create <time> <winners> <prize>
+    // .gstart <time> <winners> <prize> / .giveaway <time> <winners> <prize>
     if (sub === 'create' || sub === 'start') {
       message.delete().catch(() => {});
 
-      const isDirect = ['gstart', 'gcreate'].includes(invoked);
       const timeRaw = isDirect ? args[0] : args[1];
       const winnersRaw = isDirect ? args[1] : args[2];
       const prizeRaw = isDirect ? args.slice(2).join(' ') : args.slice(3).join(' ');

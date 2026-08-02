@@ -587,7 +587,7 @@ module.exports = {
     'topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct',
     'topinvites', 'invitestats', 'invites', 'topinv', 'invs', 'inv',
     'joinsleaves', 'memberflow', 'joinleavestats', 'flow', 'jl', 'joins', 'leaves',
-    'topcommands', 'commandstats', 'commands', 'cmd', 'cmds',
+    'topcommands', 'commandstats', 'cmd', 'cmds',
     'ticketstats', 'ticketanalytics', 'tickets', 'tstats', 'tks'
   ],
 

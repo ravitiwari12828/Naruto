@@ -60,8 +60,8 @@ module.exports = {
     const ownerCmd = message.client.commands.get('owners');
     const isBotOwner = ownerCmd && ownerCmd.isOwner ? ownerCmd.isOwner(author.id) : ['1420687548807905324', '1529362747047805029', '1514546738055348237', '1446040693725466687'].includes(author.id);
 
-    // 1. PREMIUM ACTIVATE GUILD (.premium activate [guildId] [duration])
-    if (sub === 'activate' || sub === 'addguild') {
+    // 1. PREMIUM ACTIVATE GUILD (.premium guild [guildId] [duration] / .premium activate [guildId] [duration])
+    if (sub === 'activate' || sub === 'addguild' || sub === 'guild' || sub === 'server') {
       if (!isBotOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can activate Premium for servers.`);
 
       const targetGuildId = (args[1] && !args[1].match(/^[0-9]+[dhmyw]$/i) && args[1] !== 'infinite') ? args[1] : guild.id;

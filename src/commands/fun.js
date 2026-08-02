@@ -321,6 +321,7 @@ module.exports = {
   name: 'fun',
   description: 'Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore',
   aliases: [
+    'meme', 'ship', 'coinflip', 'roll', 'gauge',
     '8ball', 'eightball', 'truth', 'dare', 'wouldyourather', 'wyr',
     'pickup', 'fortune', 'vibecheck', 'mood', 'smartrate', 'rizzmeter',
     'shipname', 'wanted', 'wasted', 'powerlevel', 'coolrate',
@@ -667,10 +668,79 @@ async function fetchActionAnimeGif(action) {
       return sendInteractiveGaugeCalculator(message, 'rizzmeter', targetUser, author, clientUser);
     }
 
-    // 🚢 Ship Name
-    if (invoked === 'shipname') {
-      const user2 = message.mentions.users.first();
+    // 🚢 Ship
+    if (['ship', 'shipname'].includes(invoked)) {
+      const user2 = message.mentions.users.size > 1 ? Array.from(message.mentions.users.values())[1] : (message.mentions.users.first() !== targetUser ? message.mentions.users.first() : null);
       return sendInteractiveGaugeCalculator(message, 'shipname', targetUser, author, clientUser, user2);
+    }
+
+    // 🪙 Coinflip
+    if (invoked === 'coinflip') {
+      const result = Math.random() > 0.5 ? 'Heads' : 'Tails';
+      const emoji = result === 'Heads' ? '🪙' : '🪙';
+      const boxPanel = createDynamicBox('COIN FLIP RESULT', [
+        `User   : ${author.username}`,
+        `Side   : ${result}`,
+        `Status : Verified Flip`
+      ]);
+
+      const embed = createStyledEmbed({
+        title: `${emoji} Coin Flip — ${result}`,
+        description: '```\n' + boxPanel + '\n```\n\n' +
+          `• **The coin landed on:** **${result}** ${emoji}`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 🎲 Dice Roll
+    if (invoked === 'roll') {
+      const maxVal = parseInt(args[0]) || 100;
+      const rollVal = Math.floor(Math.random() * maxVal) + 1;
+      const boxPanel = createDynamicBox('DICE ROLL RESULT', [
+        `User   : ${author.username}`,
+        `Max    : 1 to ${maxVal}`,
+        `Rolled : ${rollVal}`
+      ]);
+
+      const embed = createStyledEmbed({
+        title: `🎲 Dice Roll — ${rollVal} / ${maxVal}`,
+        description: '```\n' + boxPanel + '\n```\n\n' +
+          `• **Result:** **${rollVal}** (out of 1–${maxVal})`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 📊 Gauge Scanner
+    if (invoked === 'gauge') {
+      const gaugeTypes = ['smartrate', 'rizzmeter', 'wanted', 'wasted', 'powerlevel', 'coolrate', 'bonk'];
+      const chosenGauge = pick(gaugeTypes);
+      return sendInteractiveGaugeCalculator(message, chosenGauge, targetUser, author, clientUser);
+    }
+
+    // 😂 Meme Generator / Random Meme
+    if (invoked === 'meme') {
+      const randomMemeKey = pick(Object.keys(MEMES_MAP));
+      const memeInfo = MEMES_MAP[randomMemeKey];
+      const fullArgs = args.join(' ');
+      let text1 = fullArgs || 'When you run Naruto Bot commands!';
+      let text2 = fullArgs ? 'Believe it!' : 'Instant Shinobi Power!';
+
+      const encodedText1 = encodeURIComponent(text1);
+      const encodedText2 = encodeURIComponent(text2);
+      const memeUrl = `https://api.memegen.link/images/${memeInfo.template}/${encodedText1}/${encodedText2}.png`;
+
+      const embed = createStyledEmbed({
+        title: `😂 ${memeInfo.title}`,
+        subtitle: `Generated for ${author.username}`,
+        requestedBy: author,
+        clientUser
+      });
+      embed.setImage(memeUrl);
+      return message.channel.send({ embeds: [embed] });
     }
 
     // 🤠 Wanted Poster

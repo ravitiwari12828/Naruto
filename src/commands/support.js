@@ -8,7 +8,7 @@ const SUPPORT_SERVER_INVITE = 'https://discord.gg/ZPKcPreUMT';
 module.exports = {
   name: 'support',
   description: 'Official Support Server invite link and bot help center',
-  aliases: ['invite', 'supportserver', 'server', 'community'],
+  aliases: ['invite'],
 
   async execute(message, args) {
     let clientUser = message.client.user;

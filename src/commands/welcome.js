@@ -327,7 +327,7 @@ module.exports = {
   name: 'welcome',
   description: 'Customizable Mimu-Style Welcome Embeds with Gothic Fonts, Stylish Bullets & Canvas Cards',
   aliases: [
-    'welcomesetup', 'welcomereset', 'welcometest', 'welcomepreview',
+    'welcomesetup', 'welcomereset', 'welcometest',
     'joindm', 'leavedm', 'boostmsg', 'welcomeconfig', 'welcomepreset', 'welcomecard', 'welcomefont'
   ],
   welcomeConfigs,
@@ -518,6 +518,31 @@ module.exports = {
       });
 
       return message.reply({ embeds: [embed] });
+    }
+
+    // FONT SELECTOR (.welcome font <gothic/smallcaps/script/bold/double/circled>)
+    if (sub === 'font') {
+      const font = args[1]?.toLowerCase();
+      if (font && FANCY_FONTS && FANCY_FONTS[font]) {
+        config.font = font;
+        welcomeConfigs.set(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} **Welcome Font Preset Set to**: \`${font}\`! Type \`.welcometest\` to preview.`);
+      }
+
+      const fontBox = createDynamicBox('WELCOME FONTS', [
+        'gothic   : Gothic Sanctuary',
+        'smallcaps: Small Caps',
+        'script   : Script Fancy',
+        'bold     : Bold Serif',
+        'double   : Double Struck',
+        'circled  : Circled Text'
+      ]);
+
+      return message.reply(
+        `𝔉 **Available Fancy Font Presets:**\n` +
+        '```\n' + fontBox + '\n```\n' +
+        `Usage: \`.welcome font gothic\` or \`.welcomefont smallcaps\``
+      );
     }
 
     // 1. PRESET SELECTOR (.welcome preset <theme>)

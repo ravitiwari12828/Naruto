@@ -21,10 +21,7 @@ async function fastBatchDelete(items, deleteFn, batchSize = 12) {
 module.exports = {
   name: 'nukeroles',
   description: 'Ultra-Fast Executive Command: Bulk delete all server roles and/or channels in parallel',
-  aliases: [
-    'deleteroles', 'nukeallroles', 'nukechannels', 'deletechannels',
-    'nukeallchannels', 'nukeserver', 'nukeall'
-  ],
+  aliases: ['nukechannels', 'nukeall'],
 
   async execute(message, args) {
     const author = message.author;

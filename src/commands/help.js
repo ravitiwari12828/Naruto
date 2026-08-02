@@ -82,7 +82,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
 module.exports = {
   name: 'help',
   description: 'Interactive Multi-Module Help Panel with Dropdown Menu & Category Navigator',
-  aliases: ['h', 'menu', 'commands'],
+  aliases: [],
 
   async execute(message, args) {
     const author = message.author;

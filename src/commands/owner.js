@@ -11,7 +11,7 @@ const { isBotOwner } = require('../utils/owners');
 module.exports = {
   name: 'owner',
   description: 'Dedicated Bot Owner Panel & Hub: Premium, No-Prefix, Server Lockdown, Extra Owner & PanicMode',
-  aliases: ['owners', 'ownermenu', 'ownerhelp', 'botowner'],
+  aliases: [],
 
   async execute(message, args) {
     const author = message.author;

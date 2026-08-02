@@ -1,7 +1,8 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const { PermissionsBitField } = require('discord.js');
 
-// Global Server Special Roles Config Map (guildId -> { friend, girl, guest, official, vip, invcrole })
+// Global Server Special Roles Config Map (guildId -> { friend, girl, guest, staff, official, vip, invcrole, autonick })
 const serverRoleConfigs = new Map();
 
 function getOrCreateRoleConfig(guildId) {
@@ -10,6 +11,7 @@ function getOrCreateRoleConfig(guildId) {
       friend: null,
       girl: null,
       guest: null,
+      staff: null,
       official: null,
       vip: null,
       invcrole: null,
@@ -19,15 +21,12 @@ function getOrCreateRoleConfig(guildId) {
   return serverRoleConfigs.get(guildId);
 }
 
-const { PermissionsBitField } = require('discord.js');
-
 module.exports = {
   name: 'roles',
-  description: 'Role Commands: autonick, cleanuproles, friend, girl, guest, invcrole, official, rolesetup, vip',
+  description: 'Role Commands: autonick, cleanuproles, friend, girl, guest, staff, invcrole, official, rolesetup, vip',
   aliases: [
-    'rolesetup', 'friend', 'girl', 'guest',
-    'invcrole', 'official', 'vip', 'autonick',
-    'cleanuproles', 'deduplicateroles', 'removeroleduplicates', 'fixduplicateroles', 'cleanroles'
+    'rolesetup', 'friend', 'girl', 'guest', 'staff',
+    'invcrole', 'official', 'vip', 'autonick', 'cleanuproles'
   ],
 
   async execute(message, args) {
@@ -42,8 +41,8 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // .cleanuproles / .deduplicateroles
-    if (['cleanuproles', 'deduplicateroles', 'removeroleduplicates', 'fixduplicateroles', 'cleanroles'].includes(invoked) || (invoked === 'roles' && args[0] === 'cleanup')) {
+    // .cleanuproles
+    if (invoked === 'cleanuproles' || (invoked === 'roles' && args[0] === 'cleanup')) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && message.guild.ownerId !== author.id) {
         return message.reply(`${emojis.WARNING} Only Administrators and Server Owners can clean up duplicate roles.`);
       }
@@ -68,7 +67,6 @@ module.exports = {
         for (const [name, roles] of roleGroups.entries()) {
           if (roles.length <= 1) continue;
 
-          // Sort roles by position descending (keep highest role in hierarchy)
           roles.sort((a, b) => b.position - a.position);
           const keeperRole = roles[0];
           const duplicates = roles.slice(1);
@@ -76,7 +74,6 @@ module.exports = {
           cleanedNames.push(keeperRole.name);
 
           for (const dup of duplicates) {
-            // Re-assign members to keeperRole before deleting
             const membersWithDup = dup.members;
             for (const [memId, member] of membersWithDup.entries()) {
               if (!member.roles.cache.has(keeperRole.id)) {
@@ -120,9 +117,9 @@ module.exports = {
       const type = (invoked === 'rolesetup' ? args[0] : args[1])?.toLowerCase();
       const role = message.mentions.roles.first() || message.guild.roles.cache.get(args[1] || args[2]);
 
-      const validTypes = ['friend', 'girl', 'guest', 'official', 'vip', 'invcrole'];
+      const validTypes = ['friend', 'girl', 'guest', 'staff', 'official', 'vip', 'invcrole'];
       if (!type || !validTypes.includes(type) || !role) {
-        return message.reply(`${emojis.WARNING} Usage: \`.rolesetup <friend|girl|guest|official|vip|invcrole> <@role>\``);
+        return message.reply(`${emojis.WARNING} Usage: \`.rolesetup <friend|girl|guest|staff|official|vip|invcrole> <@role>\``);
       }
 
       config[type] = role.id;
@@ -137,11 +134,29 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // .autonick <template>
+    // .autonick <template> / autonick remove / autonick update
     if (invoked === 'autonick' || (invoked === 'roles' && args[0] === 'autonick')) {
+      const subAction = (invoked === 'autonick' ? args[0] : args[1])?.toLowerCase();
+
+      if (subAction === 'remove' || subAction === 'delete' || subAction === 'reset') {
+        config.autonick = null;
+        serverRoleConfigs.set(guildId, config);
+        return message.reply(`${emojis.SUCCESS} **Auto Nickname Template Removed**.`);
+      }
+
+      if (subAction === 'update') {
+        const newTemplate = (invoked === 'autonick' ? args.slice(1) : args.slice(2)).join(' ');
+        if (!newTemplate) {
+          return message.reply(`${emojis.WARNING} Usage: \`.autonick update <new template>\``);
+        }
+        config.autonick = newTemplate;
+        serverRoleConfigs.set(guildId, config);
+        return message.reply(`${emojis.SUCCESS} **Auto Nickname Template Updated**: \`${newTemplate}\``);
+      }
+
       const nickTemplate = (invoked === 'autonick' ? args : args.slice(1)).join(' ');
       if (!nickTemplate) {
-        return message.reply(`${emojis.WARNING} Usage: \`.autonick <template>\` (Example: \`[Shinobi] {user}\`)`);
+        return message.reply(`${emojis.WARNING} Usage: \`.autonick <template>\` | \`.autonick remove\` | \`.autonick update <template>\``);
       }
 
       config.autonick = nickTemplate;
@@ -175,8 +190,8 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Direct role assign shortcuts: .friend, .girl, .guest, .official, .vip
-    if (['friend', 'girl', 'guest', 'official', 'vip'].includes(invoked)) {
+    // Direct role assign shortcuts: .friend, .girl, .guest, .staff, .official, .vip
+    if (['friend', 'girl', 'guest', 'staff', 'official', 'vip'].includes(invoked)) {
       const roleId = config[invoked];
       if (!roleId) {
         return message.reply(`${emojis.WARNING} The **${invoked}** role has not been setup yet! Run \`.rolesetup ${invoked} <@role>\` first.`);
@@ -208,14 +223,17 @@ module.exports = {
       '.friend <@user>',
       '.girl <@user>',
       '.guest <@user>',
+      '.staff <@user>',
       '.official <@user>',
       '.vip <@user>',
       '.invcrole <@role>',
-      '.autonick <template>'
+      '.autonick <template>',
+      '.autonick remove',
+      '.autonick update <tmpl>'
     ]);
 
     const typeBox = createDynamicBox('SYSTEM ROLE TYPES', [
-      'friend, girl, guest,',
+      'friend, girl, guest, staff,',
       'official, vip, invcrole'
     ]);
 
