@@ -1,7 +1,8 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, PermissionsBitField } = require('discord.js');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType } = require('discord.js');
 const db = require('../database/db');
+const { createDynamicBox } = require('../utils/boxBuilder');
 
 function isOwner(authorId, guildOwnerId) {
   const extraOwners = ['1529362747047805029', '1420687548807905324', '1514546738055348237', '1446040693725466687'];
@@ -11,7 +12,7 @@ function isOwner(authorId, guildOwnerId) {
 module.exports = {
   name: 'backup',
   description: 'Full Server Backup & Restore Suite (Roles, Channels, Categories, Settings)',
-  aliases: ['backup', 'serverbackup', 'bk'],
+  aliases: ['bk'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -33,9 +34,18 @@ module.exports = {
 
     // Security Check: Only Bot Owner / Server Owner can use Backup System
     if (!isOwner(author.id, guild.ownerId)) {
+      const boxText =
+        '```\n' +
+        createDynamicBox('ACCESS DENIED', [
+          'Status   : Restricted',
+          'Required : Server Owner',
+          'Or       : Bot Owner'
+        ]) +
+        '\n```';
+
       const embed = createStyledEmbed({
         title: `${emojis.WARNING} Permission Denied`,
-        description: `Only the Server Owner or Bot Owners can manage server backups.`,
+        description: boxText + '\n\n• Only the Server Owner or Bot Owners can manage server backups.',
         requestedBy: author,
         clientUser
       });
@@ -103,16 +113,20 @@ module.exports = {
         db.saveBackup(guild.id, backupData);
         await loadingMsg.delete().catch(() => {});
 
+        const boxText =
+          '```\n' +
+          createDynamicBox('SERVER SNAPSHOT SAVED', [
+            'Backup ID: ' + String(backupId),
+            'Roles    : ' + String(roles.length) + ' Saved',
+            'Channels : ' + String(channels.length) + ' Saved',
+            'Status   : Snapshot Ready'
+          ]) +
+          '\n```';
+
         const embed = createStyledEmbed({
           title: `${emojis.SCROLL} Server Snapshot Saved Successfully!`,
           subtitle: `Full Server Backup ID: [ ${backupId} ]`,
-          fields: [
-            { name: '🆔 Backup ID', value: `\`${backupId}\``, inline: true },
-            { name: `${emojis.ROLES} Roles Backed Up`, value: `\`${roles.length}\` Roles`, inline: true },
-            { name: `${emojis.TOOLS} Channels Backed Up`, value: `\`${channels.length}\` Channels`, inline: true },
-            { name: '📅 Timestamp', value: `<t:${Math.floor(Date.now() / 1000)}:F>`, inline: false },
-            { name: `${emojis.BULB} Restoration Command`, value: `Type \`.backup restore ${backupId}\` to restore this snapshot!`, inline: false }
-          ],
+          description: boxText + `\n\n• Type \`.backup restore ${backupId}\` to restore this snapshot!`,
           thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
           requestedBy: author,
           clientUser
@@ -132,14 +146,30 @@ module.exports = {
       const backupKeys = Object.keys(backups);
 
       if (backupKeys.length === 0) {
+        const boxText =
+          '```\n' +
+          createDynamicBox('SERVER BACKUPS', [
+            'Server : ' + String(guild.name).slice(0, 12),
+            'Status : No Backups Found'
+          ]) +
+          '\n```';
+
         const embed = createStyledEmbed({
           title: `📦 Server Backups`,
-          description: `No backups found for **${guild.name}**.\n\nType \`.backup create\` to generate your first server snapshot!`,
+          description: boxText + '\n\nType `.backup create` to generate your first server snapshot!',
           requestedBy: author,
           clientUser
         });
         return message.channel.send({ embeds: [embed] });
       }
+
+      const boxText =
+        '```\n' +
+        createDynamicBox('SAVED SERVER BACKUPS', [
+          'Server : ' + String(guild.name).slice(0, 12),
+          'Total  : ' + String(backupKeys.length) + ' Snapshots'
+        ]) +
+        '\n```';
 
       const listText = backupKeys.map((id, index) => {
         const b = backups[id];
@@ -150,7 +180,7 @@ module.exports = {
       const embed = createStyledEmbed({
         title: `📦 Saved Server Backups [ ${backupKeys.length} ]`,
         subtitle: `Server Snapshots for ${guild.name}`,
-        description: listText + `\n\n💡 *Restore any backup using \`.backup restore <backupId>\`*`,
+        description: boxText + '\n\n' + listText + `\n\n💡 *Restore any backup using \`.backup restore <backupId>\`*`,
         requestedBy: author,
         clientUser
       });
@@ -170,7 +200,6 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Backup snapshot \`${backupId}\` not found for this server.`);
       }
 
-      // Strictly Owner Confirmation
       if (!isOwner(author.id, guild.ownerId)) {
         return message.reply(`${emojis.WARNING} Only the Server Owner can execute a full server restoration!`);
       }
@@ -179,22 +208,28 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId(`confirm_restore_${backupId}`)
           .setLabel('Confirm Restore')
-          .setEmoji(emojis.OBJ_SUCCESS || emojis.SUCCESS || '🛡️')
+          .setEmoji('🛡️')
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
           .setCustomId(`cancel_restore_${backupId}`)
           .setLabel('Cancel')
-          .setEmoji(emojis.OBJ_ERROR || emojis.ERROR || '🛡️')
+          .setEmoji('✖️')
           .setStyle(ButtonStyle.Secondary)
       );
+
+      const boxText =
+        '```\n' +
+        createDynamicBox('RESTORE CONFIRMATION', [
+          'Backup ID: ' + String(backupId),
+          'Roles    : ' + String(backup.rolesCount) + ' Saved',
+          'Channels : ' + String(backup.channelsCount) + ' Saved'
+        ]) +
+        '\n```';
 
       const confirmEmbed = createStyledEmbed({
         title: `🚨 WARNING: SERVER RESTORE CONFIRMATION`,
         subtitle: `Restoring Backup ID: [ ${backupId} ]`,
-        description: `**Restoring this snapshot will recreate missing roles, channels, and categories to their exact saved state!**\n\n` +
-                     `• **Backup Created:** <t:${Math.floor(backup.createdAt / 1000)}:F>\n` +
-                     `• **Saved Roles:** \`${backup.rolesCount}\`\n` +
-                     `• **Saved Channels:** \`${backup.channelsCount}\`\n\n` +
+        description: boxText + `\n\n**Restoring this snapshot will recreate missing roles, channels, and categories to their exact saved state!**\n\n` +
                      `${emojis.WARNING} *Click **Confirm Restore** below to initiate restoration.*`,
         requestedBy: author,
         clientUser
@@ -209,7 +244,7 @@ module.exports = {
         }
 
         if (i.customId.startsWith('cancel_restore_')) {
-          await i.update({ content: '${emojis.ERROR} Backup restoration cancelled.', embeds: [], components: [] });
+          await i.update({ content: `${emojis.ERROR || '✖️'} Backup restoration cancelled.`, embeds: [], components: [] });
           return;
         }
 
@@ -217,12 +252,10 @@ module.exports = {
           await i.update({ content: `${emojis.LOADING || '⏳'} Initiating full server restoration from snapshot \`${backupId}\`...`, embeds: [], components: [] });
 
           try {
-            // Restore Server Name
             if (backup.guildName && guild.name !== backup.guildName) {
               await guild.setName(backup.guildName, 'AntiNuke Server Backup Restoration').catch(() => {});
             }
 
-            // Restore Roles
             const roleMap = new Map();
             for (const rData of backup.roles) {
               let existingRole = guild.roles.cache.find(r => r.name === rData.name);
@@ -241,7 +274,6 @@ module.exports = {
               if (existingRole) roleMap.set(rData.id, existingRole.id);
             }
 
-            // Restore Categories First
             const categoryMap = new Map();
             const categoriesData = backup.channels.filter(c => c.type === ChannelType.GuildCategory);
             for (const catData of categoriesData) {
@@ -258,7 +290,6 @@ module.exports = {
               if (existingCat) categoryMap.set(catData.id, existingCat.id);
             }
 
-            // Restore Text & Voice Channels
             const nonCatData = backup.channels.filter(c => c.type !== ChannelType.GuildCategory);
             for (const chanData of nonCatData) {
               let existingChan = guild.channels.cache.find(c => c.name === chanData.name && c.type === chanData.type);
@@ -276,10 +307,18 @@ module.exports = {
               }
             }
 
+            const boxDoneText =
+              '```\n' +
+              createDynamicBox('RESTORATION COMPLETE', [
+                'Status   : Success',
+                'Backup ID: ' + String(backupId)
+              ]) +
+              '\n```';
+
             const successEmbed = createStyledEmbed({
               title: `${emojis.SUCCESS} Server Backup Restored Successfully!`,
               subtitle: `Restoration Complete for [ ${backupId} ]`,
-              description: `All missing roles, categories, and channels have been recreated and synchronized!`,
+              description: boxDoneText + `\n\nAll missing roles, categories, and channels have been recreated and synchronized!`,
               requestedBy: author,
               clientUser
             });
@@ -309,15 +348,17 @@ module.exports = {
     }
 
     // DEFAULT: HELP MENU FOR BACKUP
+    const boxHelp = createDynamicBox('SERVER BACKUP SUITE', [
+      '.backup save         : Save snapshot',
+      '.backup list         : View snapshots',
+      '.backup restore <ID> : Restore snapshot',
+      '.backup delete <ID>  : Delete snapshot'
+    ]);
+
     const embed = createStyledEmbed({
       title: `📦 Server Backup & Recovery Suite`,
       subtitle: `Full Server Snapshot & Disaster Recovery`,
-      fields: [
-        { name: '📦 `.backup save` / `.bk save`', value: 'Generates a full snapshot of all channels, categories, roles & settings.', inline: false },
-        { name: '📋 `.backup list` / `.bk list`', value: 'Displays all saved backups for this server.', inline: false },
-        { name: '🔄 `.backup restore <backupId>`', value: 'Restores a server snapshot (Server Owner only).', inline: false },
-        { name: '🗑️ `.backup delete <backupId>`', value: 'Deletes a saved backup snapshot.', inline: false }
-      ],
+      description: '```\n' + boxHelp + '\n```',
       requestedBy: author,
       clientUser
     });

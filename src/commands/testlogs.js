@@ -6,7 +6,7 @@ const { dispatchLog, getOrCreateAdvLogStore } = require('../utils/logger');
 module.exports = {
   name: 'testlogs',
   description: 'Test all server audit logging channels by sending sample test log embeds',
-  aliases: ['checklogs', 'testlogchannels', 'logcheck'],
+  aliases: [],
 
   async execute(message, args) {
     const author = message.author;

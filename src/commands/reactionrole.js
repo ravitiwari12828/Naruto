@@ -74,7 +74,7 @@ function parsePairs(args, client) {
 module.exports = {
   name: 'reactionrole',
   description: 'Reaction Role System: create, add, remove, list, reset',
-  aliases: ['rr', 'reactionroles', 'reactionrole'],
+  aliases: ['rr'],
   reactionRoles,
   resolveEmoji,
 

@@ -6,7 +6,7 @@ const emojis = require('../utils/emojis');
 module.exports = {
   name: 'priority',
   description: 'AI-powered assistant for fast text, question answering, and code generation',
-  aliases: ['ai', 'ask', 'code'],
+  aliases: ['ask', 'code'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
