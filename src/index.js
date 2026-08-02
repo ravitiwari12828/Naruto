@@ -32,8 +32,12 @@ http.createServer((req, res) => {
 // Render Keepalive Self-Ping Loop (Pings every 10 minutes to prevent Render Free Tier from going to sleep)
 if (process.env.RENDER_EXTERNAL_URL) {
   const url = process.env.RENDER_EXTERNAL_URL;
+  const httpsModule = require('https');
+  const httpModule = require('http');
+  const clientModule = url.startsWith('https:') ? httpsModule : httpModule;
+
   setInterval(() => {
-    http.get(url, (res) => {
+    clientModule.get(url, (res) => {
       console.log(`📡 Keepalive self-ping sent to ${url} (Status: ${res.statusCode})`);
     }).on('error', (err) => {
       console.error('⚠️ Keepalive self-ping error:', err.message);
