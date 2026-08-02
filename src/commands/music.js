@@ -312,11 +312,11 @@ module.exports = {
   description: 'Synn Lavalink Complete Music Suite',
   aliases: [
     'm', 'play', 'p', 'stop', 'pause', 'resume',
-    'skip', 's', 'previous', 'prev', 'replay',
+    'skip', 's', 'previous', 'replay',
     'queue', 'q', 'np', 'nowplaying', 'loop', 'repeat',
     'shuffle', 'volume', 'vol', 'clear', 'remove', 'move',
     'skipto', 'jump', 'join', 'connect', 'dc', 'leave',
-    'afk247', '247', 'seek', 'equalizer', 'eq', 'filter', 'filters',
+    'afk247', '247', 'seek', 'equalizer', 'eq', 'filter',
     'autoplay', 'ap', 'fav', 'favorite', 'favorites'
   ],
   afkStore,

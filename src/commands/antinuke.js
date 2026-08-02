@@ -366,7 +366,7 @@ module.exports = {
   name: 'antinuke',
   description: 'Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite',
   aliases: [
-    'panicmode', 'whitelist', 'extraowner', 'bypassrole', 'security', 'protection',
+    'panicmode', 'whitelist', 'extraowner', 'bypassrole',
     'joingate', 'quarantine', 'ratelimits', 'limits'
   ],
   antinukeConfigs,

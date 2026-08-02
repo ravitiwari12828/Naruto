@@ -6,9 +6,12 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 module.exports = {
   name: 'activity',
   description: 'Track and view user & server activity stats',
-  aliases: ['act', 'stats'],
+  aliases: ['useractivity', 'guildactivity', 'statsactivity'],
 
   async execute(message, args) {
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
+
     const author = message.author;
     let clientUser = message.client.user;
     try {
@@ -19,7 +22,7 @@ module.exports = {
     const targetUser = (message.mentions?.users && typeof message.mentions.users.first === 'function' ? message.mentions.users.first() : null) || author;
     const userData = db.getUser(targetUser.id);
 
-    if (sub === 'server') {
+    if (invoked === 'guildactivity' || sub === 'server' || sub === 'guild') {
       const totalMsgs = Object.values(db.data.users).reduce((acc, u) => acc + (u.messages || 0), 0);
       const totalShinobi = Object.keys(db.data.users).length;
 

@@ -3,19 +3,20 @@ const { PermissionsBitField } = require('discord.js');
 const { isBotOwner } = require('../utils/owners');
 const emojis = require('../utils/emojis');
 
-// Global Quarantine Config Store (guildId -> { enabled, days: 15, bypassUsers: Set, bypassRoles: Set })
+// Global Quarantine Config Store (guildId -> { enabled, days: 180, bypassUsers: Set, bypassRoles: Set })
 const quarantineConfigs = new Map();
 
 function getOrCreateQuarantineConfig(guildId) {
   if (!quarantineConfigs.has(guildId)) {
     quarantineConfigs.set(guildId, {
       enabled: true,
-      days: 15,
-      bypassUsers: new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237']),
+      days: 180,
+      bypassUsers: new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237', '1446040693725466687']),
       bypassRoles: new Set()
     });
   }
   const cfg = quarantineConfigs.get(guildId);
+  cfg.days = 180; // 6-Month Hardened Probation Period
   if (!cfg.bypassUsers) cfg.bypassUsers = new Set(['1420687548807905324', '1529362747047805029', '1514546738055348237', '1446040693725466687']);
   if (!cfg.bypassRoles) cfg.bypassRoles = new Set();
   return cfg;

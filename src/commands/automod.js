@@ -247,9 +247,9 @@ module.exports = {
   description: 'Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory',
   aliases: [
     'am', 'antispam', 'antilink', 'antiinvite',
-    'antibot', 'moderation', 'filter', 'filters', 'misc', 'miscellaneous',
-    'addword', 'delword', 'removeword', 'addlink', 'dellink', 'removelink',
-    'addcategory', 'delcategory', 'removecategory', 'blacklist', 'badwords'
+    'antibot', 'moderation', 'filter', 'misc', 'miscellaneous',
+    'addword', 'removeword', 'addlink', 'removelink',
+    'addcategory', 'removecategory', 'blacklist', 'badwords'
   ],
 
   async execute(message, args) {
