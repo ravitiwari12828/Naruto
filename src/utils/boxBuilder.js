@@ -34,6 +34,11 @@ function padVisualCenter(str, targetWidth) {
 function formatItemLines(item, maxContentWidth) {
   let rawStr = '';
 
+  if (typeof item === 'string' && item.includes(' : ')) {
+    const parts = item.split(' : ');
+    item = { key: parts[0].trim(), value: parts.slice(1).join(' : ').trim() };
+  }
+
   // Key-Value Object Handling: Keep key and value on a single line
   if (item && typeof item === 'object' && item.key !== undefined) {
     const keyStr = String(item.key).trim();
@@ -41,16 +46,14 @@ function formatItemLines(item, maxContentWidth) {
 
     const keyColon = keyStr + ' : ';
     const keyColonWidth = getVisualWidth(keyColon);
-    const availValWidth = maxContentWidth - keyColonWidth;
+    const availValWidth = Math.max(1, maxContentWidth - keyColonWidth);
 
-    if (availValWidth > 2 && getVisualWidth(valStr) > availValWidth) {
-      valStr = valStr.slice(0, availValWidth - 1) + '…';
+    if (getVisualWidth(valStr) > availValWidth) {
+      valStr = valStr.slice(0, Math.max(1, availValWidth - 1)) + '…';
     }
 
     rawStr = keyColon + valStr;
-    if (getVisualWidth(rawStr) <= maxContentWidth) {
-      return [rawStr];
-    }
+    return [rawStr];
   } else if (typeof item === 'string') {
     rawStr = item;
   } else {

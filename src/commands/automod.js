@@ -246,6 +246,7 @@ module.exports = {
   name: 'automod',
   description: 'Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory',
   aliases: [
+    'am', 'antispam', 'antilink', 'antiinvite',
     'antibot', 'moderation', 'filter', 'filters', 'misc', 'miscellaneous',
     'addword', 'delword', 'removeword', 'addlink', 'dellink', 'removelink',
     'addcategory', 'delcategory', 'removecategory', 'blacklist', 'badwords'
@@ -255,6 +256,22 @@ module.exports = {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
     const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase();
+
+    const author = message.author;
+    const guild = message.guild;
+    const config = db.getAutomod(guild.id);
+
+    if (invoked === 'antispam') {
+      config.antiSpam = !config.antiSpam;
+      db.saveAutomod(guild.id, config);
+      return message.reply(`${emojis.SUCCESS || '✅'} **AntiSpam Filter**: ${config.antiSpam ? '`ENABLED`' : '`DISABLED`'}`);
+    }
+    if (invoked === 'antilink' || invoked === 'antiinvite') {
+      config.inviteLinks = !config.inviteLinks;
+      db.saveAutomod(guild.id, config);
+      return message.reply(`${emojis.SUCCESS || '✅'} **AntiLink / Invite Filter**: ${config.inviteLinks ? '`ENABLED`' : '`DISABLED`'}`);
+    }
+    if (invoked === 'am') sub = 'filters';
 
     if (['misc', 'miscellaneous', 'moderation', 'mod'].includes(invoked) || ['misc', 'miscellaneous', 'moderation', 'mod'].includes(sub)) {
       sub = 'misc';
@@ -269,9 +286,7 @@ module.exports = {
       sub = invoked;
     }
 
-    const author = message.author;
-    const guild = message.guild;
-    const config = db.getAutomod(guild.id);
+
 
     let clientUser = message.client.user;
     try {

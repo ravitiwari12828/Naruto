@@ -8,7 +8,7 @@ const stickyNotes = new Map();
 module.exports = {
   name: 'stickynote',
   description: 'Sticky Note Commands: stickynote set, stickynote remove, stickynote list, unsticky',
-  aliases: ['sticky', 'stickynotes', 'unsticky', 'unstickynote', 'removesticky', 'delsticky'],
+  aliases: ['sticky', 'unsticky'],
   stickyNotesStore: stickyNotes,
 
   async execute(message, args) {

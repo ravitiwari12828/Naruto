@@ -14,7 +14,7 @@ const SUPPORT_SERVER_INVITE = 'https://discord.gg/ZPKcPreUMT';
 module.exports = {
   name: 'supportsetup',
   description: 'Automated 1-Click Support Server Architecture Builder with Konoha Shinobi Theme',
-  aliases: ['createsupportserver', 'buildsupportserver', 'supportserversetup'],
+  aliases: [],
 
   async execute(message, args) {
     const author = message.author;

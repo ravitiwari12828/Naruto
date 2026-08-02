@@ -7,7 +7,7 @@ const { PermissionsBitField } = require('discord.js');
 module.exports = {
   name: 'singlereaction',
   description: 'Configure single-reaction mode & auto-reactions for a channel',
-  aliases: ['singlereaction', 'sr', 'reactmode', 'singlereact'],
+  aliases: [],
 
   async execute(message, args) {
     const guild = message.guild;

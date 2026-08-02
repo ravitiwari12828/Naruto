@@ -1238,49 +1238,119 @@ client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
   const contentLower = message.content ? message.content.toLowerCase().trim() : '';
 
-  // ⚡ AUTOMATIC SPAM CONTROL (Timeout 2 Minutes on Fast Message Spamming)
+  // ⚡ AUTOMATIC SPAM, LINK & BAD WORD AUTOMOD ENFORCEMENT
   if (message.guild && message.member) {
     const antinukeCmd = client.commands.get('antinuke');
     const antiConfig = antinukeCmd ? antinukeCmd.getOrCreateAntinuke(message.guild.id) : null;
     const isOwnerOrWhitelisted = antiConfig ? (antinukeCmd.isUserWhitelistedForFeature(antiConfig, message.author.id, 'antiSpam') || message.author.id === message.guild.ownerId) : (message.author.id === message.guild.ownerId);
 
     if (!isOwnerOrWhitelisted) {
-      if (!client.spamTracker) client.spamTracker = new Map();
+      const automodConfig = db.getAutomod(message.guild.id);
+      let blockedRule = null;
+      let blockedKeyword = '';
 
-      const userKey = `${message.guild.id}:${message.author.id}`;
-      const now = Date.now();
-      let userLogs = client.spamTracker.get(userKey) || [];
+      // 1. Check Anti-Invite / Anti-Link
+      if (automodConfig.inviteLinks && /(discord\.(gg|com\/invite)|.gg\/)/i.test(message.content)) {
+        blockedRule = 'Anti-Invite Link Guard';
+        blockedKeyword = 'discord.gg';
+      }
 
-      // Filter message timestamps within last 4 seconds
-      userLogs = userLogs.filter(t => now - t < 4000);
-      userLogs.push(now);
-      client.spamTracker.set(userKey, userLogs);
+      // 2. Check Blacklisted Link Domains
+      if (!blockedRule && (automodConfig.linkBlacklist || []).length > 0) {
+        const foundLink = automodConfig.linkBlacklist.find(l => message.content.toLowerCase().includes(l.toLowerCase()));
+        if (foundLink) {
+          blockedRule = 'Blacklisted Link Domain';
+          blockedKeyword = foundLink;
+        }
+      }
 
-      // Trigger threshold: 5 messages in 4 seconds -> 2 Minute Timeout
-      if (userLogs.length >= 5) {
-        client.spamTracker.delete(userKey);
+      // 3. Check Word Blacklist
+      if (!blockedRule && (automodConfig.wordBlacklist || []).length > 0) {
+        const foundWord = automodConfig.wordBlacklist.find(w => {
+          const regex = new RegExp(`\\b${w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
+          return regex.test(message.content);
+        });
+        if (foundWord) {
+          blockedRule = 'Blacklisted Word Guard';
+          blockedKeyword = foundWord;
+        }
+      }
 
-        // Delete the spam message
+      if (blockedRule) {
+        // Prevent user from posting message: delete immediately
         await message.delete().catch(() => {});
 
-        try {
-          // Timeout member for 2 minutes (120,000 ms)
-          await message.member.timeout(2 * 60 * 1000, 'AntiSpam Protection: Fast message spamming');
+        // Send 5-second auto-deleting warning in chat
+        message.channel.send(`⚠️ <@${message.author.id}>, your message was blocked by AutoMod (\`Rule: ${blockedRule}\`).`)
+          .then(m => setTimeout(() => m.delete().catch(() => {}), 5000))
+          .catch(() => {});
 
-          const alertEmbed = createStyledEmbed({
-            title: `⚡ AntiSpam Protection Triggered`,
-            description:
-              `**Spammer:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
-              `**Action:** Timed out for **2 minutes** (120 seconds)\n` +
-              `**Reason:** Fast message spamming detected in <#${message.channel.id}>.`,
-            clientUser: client.user
-          });
+        // Dispatch clean log embed to automod-logs channel
+        const infoBox = createDynamicBox('AUTOMOD MESSAGE BLOCKED', [
+          `User     : ${message.author.username}`,
+          `ID       : ${message.author.id}`,
+          `Channel  : #${message.channel.name}`,
+          `Rule     : ${blockedRule}`,
+          `Keyword  : ${blockedKeyword || 'Filter'}`
+        ]);
 
-          await message.channel.send({ embeds: [alertEmbed] }).catch(() => {});
-        } catch (e) {
-          console.error('Failed to timeout spammer:', e.message);
-        }
+        const automodLogEmbed = new EmbedBuilder()
+          .setColor(0xED4245)
+          .setTitle(`${emojis.SHIELD || '🛡️'} AutoMod Blocked Message in #${message.channel.name}`)
+          .setDescription(
+            '```\n' + infoBox + '\n```\n\n' +
+            `• **User:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
+            `• **Channel:** <#${message.channel.id}>\n` +
+            `• **Rule Triggered:** \`${blockedRule}\` (${blockedKeyword ? `Keyword: \`${blockedKeyword}\`` : ''})\n\n` +
+            `**Blocked Content:**\n>>> ${message.content.slice(0, 1000)}`
+          )
+          .setTimestamp();
+
+        dispatchLog(message.guild, 'automod', automodLogEmbed);
         return;
+      }
+
+      // 4. AntiSpam Check (5 messages in 4 seconds)
+      if (automodConfig.antiSpam) {
+        if (!client.spamTracker) client.spamTracker = new Map();
+
+        const userKey = `${message.guild.id}:${message.author.id}`;
+        const now = Date.now();
+        let userLogs = client.spamTracker.get(userKey) || [];
+
+        userLogs = userLogs.filter(t => now - t < 4000);
+        userLogs.push(now);
+        client.spamTracker.set(userKey, userLogs);
+
+        if (userLogs.length >= 5) {
+          client.spamTracker.delete(userKey);
+          await message.delete().catch(() => {});
+
+          try {
+            await message.member.timeout(2 * 60 * 1000, 'AutoMod AntiSpam: Fast message spamming');
+
+            const infoBox = createDynamicBox('AUTOMOD SPAM BLOCKED', [
+              `User     : ${message.author.username}`,
+              `ID       : ${message.author.id}`,
+              `Action   : 2m Timeout`,
+              `Reason   : Fast Message Spamming`
+            ]);
+
+            const spamEmbed = new EmbedBuilder()
+              .setColor(0xED4245)
+              .setTitle(`${emojis.SHIELD || '🛡️'} AutoMod AntiSpam Intercepted in #${message.channel.name}`)
+              .setDescription(
+                '```\n' + infoBox + '\n```\n\n' +
+                `• **Spammer:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
+                `• **Action Taken:** Timed out for **2 minutes** (120 seconds)\n` +
+                `• **Reason:** Sent 5+ messages within 4 seconds in <#${message.channel.id}>.`
+              )
+              .setTimestamp();
+
+            dispatchLog(message.guild, 'automod', spamEmbed);
+          } catch (e) {}
+          return;
+        }
       }
     }
   }
