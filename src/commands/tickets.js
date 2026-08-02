@@ -273,7 +273,6 @@ module.exports = {
   aliases: [
     'tickets', 't', 'ticketpanel', 'staffrole',
     'panel_deploy', 'ticket_setup', 'add_member', 'remove_member',
-    'category_add', 'category_edit', 'category_remove', 'category_list', 'categories',
     'claim', 'reopen', 'callstaff', 'ticketinfo', 'anonymous'
   ],
   ticketConfigs,

@@ -42,7 +42,7 @@ const CATEGORIES = [
     label: 'Analytics & Tracking',
     value: 'analytics',
     description: 'Track chat, voice timing, invites, joins/leaves, commands & tickets',
-    customEmoji: emojis.OBJ_ZAP,
+    customEmoji: emojis.ANALYTICS_ZAP,
     unicodeFallback: '📊',
     heading: `${emojis.ANALYTICS_ZAP || '📊'} Analytics Commands`,
     commands: [
@@ -69,16 +69,14 @@ const CATEGORIES = [
   {
     label: 'Tickets',
     value: 'ticket',
-    description: 'Support ticket system: setup, category, claim, close, transcript',
+    description: 'Support ticket system: setup, claim, close, transcript',
     customEmoji: emojis.OBJ_TICKETS,
     unicodeFallback: '🎟️',
     heading: `${emojis.TICKETS || '🎟️'} Ticket Commands`,
     commands: [
-      'ticket setup', 'category_add', 'category_edit',
-      'category_remove', 'category_toggle', 'category_list',
-      'panel_deploy', 'claim', 'close',
-      'reopen', 'add_member', 'remove_member',
-      'info', 'transcript', 'callstaff'
+      'ticket setup', 'panel_deploy', 'claim',
+      'close', 'reopen', 'add_member',
+      'remove_member', 'info', 'transcript', 'callstaff'
     ]
   },
   {
