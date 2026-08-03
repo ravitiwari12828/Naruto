@@ -271,8 +271,7 @@ module.exports = {
   name: 'ticket',
   description: 'Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers',
   aliases: [
-    'tickets', 't', 'ticketpanel', 'staffrole',
-    'panel_deploy', 'ticket_setup', 'add_member', 'remove_member',
+    'panel_deploy', 'add_member', 'remove_member',
     'claim', 'reopen', 'callstaff', 'ticketinfo', 'anonymous'
   ],
   ticketConfigs,
@@ -554,9 +553,23 @@ module.exports = {
 
     // 9. CLOSE TICKET (.ticket close / .close)
     if (sub === 'close') {
-      return message.reply(`🔒 Closing ticket channel in 3 seconds...`).then(() => {
-        setTimeout(() => message.channel.delete().catch(() => {}), 3000);
-      });
+      const fetchedMsgs = await message.channel.messages.fetch({ limit: 100 }).catch(() => null);
+      if (fetchedMsgs) {
+        const { logChan, transcriptChan } = await ensureTicketLogChannels(guild);
+        const buffer = generateTranscriptBuffer(message.channel, fetchedMsgs, author);
+        const attachment = new AttachmentBuilder(buffer, { name: `transcript-${message.channel.name}.txt` });
+
+        if (transcriptChan) {
+          await transcriptChan.send({
+            content: `📜 **Ticket Closed & Logged:** \`${message.channel.name}\` closed by <@${author.id}>`,
+            files: [attachment]
+          }).catch(() => {});
+        }
+      }
+
+      await message.reply(`🔒 **Ticket Closed**: Channel will be deleted in 3 seconds...`).catch(() => {});
+      setTimeout(() => message.channel.delete().catch(() => {}), 3000);
+      return;
     }
 
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');

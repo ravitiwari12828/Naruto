@@ -147,7 +147,7 @@ function buildModmailOverviewRow() {
 module.exports = {
   name: 'modmail',
   description: 'Complete ModMail Support Suite (.modmail setup, .r, .close, .modmailtranscript)',
-  aliases: ['r', 'reply', 'close', 'modmailsetup', 'modmailtranscript', 'transcript', 'transcripts'],
+  aliases: ['r', 'reply', 'close', 'modmailsetup', 'modmailtranscript'],
   modmailConfigs,
   activeModmailTickets,
   getOrCreateModmailConfig,

@@ -216,7 +216,7 @@ client.on('guildMemberAdd', async (member) => {
     if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
       const antiConfig = antinukeCmd.getOrCreateAntinuke(member.guild.id);
       
-      if (antiConfig.enabled && (antiConfig.filters.antiBotAdd || antiConfig.panicmode)) {
+      if (!antiConfig.enabled || antiConfig.filters.antiBotAdd || antiConfig.panicmode || true) {
         try {
           const { AuditLogEvent } = require('discord.js');
           let executor = null;
@@ -743,46 +743,65 @@ client.on('channelDelete', async (channel) => {
 
   if (antinukeCmd) {
     const config = antinukeCmd.getOrCreateAntinuke(guild.id);
-    if (config.enabled && (config.filters.antiChannelDelete || config.panicmode)) {
-      try {
-        const { AuditLogEvent } = require('discord.js');
-        let executor = null;
-        for (let i = 0; i < 3; i++) {
-          await new Promise(r => setTimeout(r, 400));
-          const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelDelete }).catch(() => null);
-          const log = logs?.entries.first();
-          if (log && log.target?.id === channel.id && (Date.now() - log.createdTimestamp) < 15000) {
-            executor = log.executor;
-            break;
-          }
+    const quarantineCmd = client.commands.get('quarantine');
+
+    try {
+      const { AuditLogEvent } = require('discord.js');
+      let executor = null;
+      for (let i = 0; i < 3; i++) {
+        await new Promise(r => setTimeout(r, 100));
+        const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelDelete }).catch(() => null);
+        const log = logs?.entries.first();
+        if (log && (Date.now() - log.createdTimestamp) < 15000) {
+          executor = log.executor;
+          break;
         }
+      }
 
-        if (executor && executor.id !== guild.ownerId) {
-          const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiChannel');
-          if (!isWhitelisted) {
-            // Recreate deleted channel
-            await guild.channels.create({
-              name: channel.name,
-              type: channel.type,
-              topic: channel.topic,
-              nsfw: channel.nsfw,
-              parent: channel.parentId
-            }).catch(() => {});
+      if (executor && executor.id !== guild.ownerId) {
+        const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiChannel');
+        const executorMember = await guild.members.fetch(executor.id).catch(() => null);
+        const isQuarantined = executorMember ? quarantineCmd?.isMemberInQuarantine(executorMember)?.isQuarantined : false;
+        const isBotRogue = executor.bot;
 
-            await punishRogueAdmin(guild, executor.id, 'Unauthorized Channel Deletion');
+        const shouldIntervene = (config.enabled && (config.filters.antiChannelDelete || config.panicmode)) || isBotRogue || isQuarantined;
 
-            const { dispatchAntiNukeLog } = require('./utils/logger');
-            dispatchAntiNukeLog(guild, {
-              title: 'Anti Nuke',
-              rogueUser: executor,
-              actionReason: `suspicious activity (Deleting channel: ${channel.name})`,
-              banStatusText: 'Successfully Banned'
-            });
-            return;
+        if (!isWhitelisted && shouldIntervene) {
+          // Recreate deleted channel immediately with all properties
+          const restoredChan = await guild.channels.create({
+            name: channel.name,
+            type: channel.type,
+            topic: channel.topic,
+            nsfw: channel.nsfw,
+            parent: channel.parentId,
+            permissionOverwrites: channel.permissionOverwrites?.cache?.map(p => ({
+              id: p.id,
+              allow: p.allow,
+              deny: p.deny
+            })) || []
+          }).catch(() => null);
+
+          if (restoredChan && restoredChan.isTextBased()) {
+            restoredChan.send(`🛡️ **SHINOBI ANTINUKE EMERGENCY RECOVERY** 🛡️\n\nChannel \`#${channel.name}\` was nuked/deleted by rogue bot/user <@${executor.id}> (\`${executor.tag || executor.username}\`) and has been **RECOVERED & RESTORED INSTANTLY**!\n• **Rogue Entity:** <@${executor.id}>\n• **Action Taken:** Banned & Admin Locked Out!`).catch(() => {});
           }
+
+          // Ban rogue bot/user immediately
+          await guild.members.ban(executor.id, { reason: 'AntiNuke Critical Fail-Safe: Unauthorized Channel Deletion / Nuke Attempt' }).catch(() => {});
+
+          // Lockout admin who added/authorized the rogue bot
+          await punishRogueAdmin(guild, executor.id, 'Unauthorized Channel Nuke');
+
+          const { dispatchAntiNukeLog } = require('./utils/logger');
+          dispatchAntiNukeLog(guild, {
+            title: 'Anti Nuke Channel Recovery',
+            rogueUser: executor,
+            actionReason: `Unauthorized Nuke Attempt (Deleted channel: #${channel.name})`,
+            banStatusText: 'Permanently Banned & Channel Restored'
+          });
+          return;
         }
-      } catch (e) {}
-    }
+      }
+    } catch (e) {}
   }
 
   dispatchLog(guild, 'channels', {
@@ -1676,9 +1695,9 @@ client.on('messageCreate', async (message) => {
       }
     }
 
-    // 🗳️ SINGLE REACTION CHANNEL AUTO-REACT
+    // 🗳️ SINGLE REACTION CHANNEL AUTO-REACT (Only for non-command chat messages)
     const rxConfig = db.getReactionChannel(message.guild.id, message.channel.id);
-    if (rxConfig && rxConfig.enabled && rxConfig.emoji) {
+    if (rxConfig && rxConfig.enabled && rxConfig.emoji && !message.content.startsWith('.')) {
       const rxEmoji = emojis.resolveEmojiForReaction ? emojis.resolveEmojiForReaction(client, message.guild, rxConfig.emoji) : rxConfig.emoji;
       if (rxEmoji) {
         message.react(rxEmoji).catch(() => {});

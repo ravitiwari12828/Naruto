@@ -54,7 +54,7 @@ function isMemberInQuarantine(member) {
 module.exports = {
   name: 'quarantine',
   description: '15-Day New Joiner Security Probation Grid for Users & Bots',
-  aliases: ['probation', 'quantine', 'newuserguard', 'newjoinerguard', '15dayguard'],
+  aliases: ['probation'],
   quarantineConfigs,
   isMemberInQuarantine,
 

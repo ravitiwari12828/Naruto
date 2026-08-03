@@ -71,19 +71,13 @@ module.exports = (client) => {
 
     const executor = await fetchAuditLogExecutor(newGuild, AuditLogEvent.GuildUpdate);
 
-    const infoBox = createDynamicBox('SERVER SETTINGS UPDATED', [
-      `Server   : ${newGuild.name}`,
-      `Executor : ${executor ? (executor.tag || executor.username) : 'Audit Expired'}`,
-      `Changes  : ${changes.length} Property Update(s)`
-    ]);
-
     const embed = new EmbedBuilder()
       .setColor(0x5865F2)
-      .setTitle(`${emojis.GEAR || '⚙️'} Server Settings Updated`)
+      .setTitle(`⚙️ Server Settings Updated`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
-        `**Changes:**\n${changes.join('\n')}\n\n` +
-        `• **Updated By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}`
+        `• **Server:** \`${newGuild.name}\`\n` +
+        `• **Updated By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}\n\n` +
+        `**Changes:**\n${changes.join('\n')}`
       )
       .setThumbnail(newGuild.iconURL({ dynamic: true }) || undefined)
       .setTimestamp();
@@ -100,18 +94,10 @@ module.exports = (client) => {
 
     const executor = await fetchAuditLogExecutor(role.guild, AuditLogEvent.RoleCreate, role.id);
 
-    const infoBox = createDynamicBox('ROLE CREATED', [
-      `Role Name : ${role.name}`,
-      `Role ID   : ${role.id}`,
-      `Color     : ${role.hexColor}`,
-      `Executor  : ${executor ? (executor.tag || executor.username) : 'Unknown'}`
-    ]);
-
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`${emojis.ROLES || '🎭'} Role Created in Server Settings`)
+      .setTitle(`🎭 Role Created`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
         `• **Role:** <@&${role.id}> (**${role.name}**)\n` +
         `• **Role ID:** \`${role.id}\`\n` +
         `• **Color:** \`${role.hexColor}\`\n` +
@@ -153,20 +139,13 @@ module.exports = (client) => {
 
     const executor = await fetchAuditLogExecutor(newRole.guild, AuditLogEvent.RoleUpdate, newRole.id);
 
-    const infoBox = createDynamicBox('ROLE SETTINGS MODIFIED', [
-      `Role Name : ${newRole.name}`,
-      `Role ID   : ${newRole.id}`,
-      `Executor  : ${executor ? (executor.tag || executor.username) : 'Unknown'}`
-    ]);
-
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle(`${emojis.ROLES || '🎭'} Role Modified in Server Settings`)
+      .setTitle(`🎭 Role Modified`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
-        `• **Role:** <@&${newRole.id}> (**${newRole.name}**)\n\n` +
-        `**Changes:**\n${changes.join('\n')}\n\n` +
-        `• **Modified By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}`
+        `• **Role:** <@&${newRole.id}> (**${newRole.name}**)\n` +
+        `• **Modified By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}\n\n` +
+        `**Changes:**\n${changes.join('\n')}`
       )
       .setTimestamp();
 
@@ -179,17 +158,10 @@ module.exports = (client) => {
 
     const executor = await fetchAuditLogExecutor(role.guild, AuditLogEvent.RoleDelete, role.id);
 
-    const infoBox = createDynamicBox('ROLE DELETED', [
-      `Role Name : ${role.name}`,
-      `Role ID   : ${role.id}`,
-      `Executor  : ${executor ? (executor.tag || executor.username) : 'Unknown'}`
-    ]);
-
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`${emojis.REMOVE || '🗑️'} Role Deleted in Server Settings`)
+      .setTitle(`🗑️ Role Deleted`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
         `• **Role Name:** \`${role.name}\`\n` +
         `• **Role ID:** \`${role.id}\`\n` +
         `• **Deleted By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}`
@@ -221,9 +193,8 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`${emojis.SUCCESS || '📁'} Channel Created in Server Settings`)
+      .setTitle(`📁 Channel Created`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
         `• **Channel:** <#${channel.id}> (\`${channel.name}\`)\n` +
         `• **Channel ID:** \`${channel.id}\`\n` +
         `• **Category:** \`${categoryName}\`\n` +
@@ -232,7 +203,6 @@ module.exports = (client) => {
       .setTimestamp();
 
     dispatchLog(channel.guild, 'channels', embed);
-    dispatchLog(channel.guild, 'server', embed);
   });
 
   client.on('channelUpdate', async (oldChannel, newChannel) => {
@@ -261,26 +231,18 @@ module.exports = (client) => {
 
     const executor = await fetchAuditLogExecutor(newChannel.guild, AuditLogEvent.ChannelUpdate, newChannel.id);
 
-    const infoBox = createDynamicBox('CHANNEL MODIFIED / PERMISSIONS UPDATED', [
-      `Name     : ${newChannel.name}`,
-      `ID       : ${newChannel.id}`,
-      `Category : ${newChannel.parent ? newChannel.parent.name : 'None'}`,
-      `Executor : ${executor ? (executor.tag || executor.username) : 'Unknown'}`
-    ]);
-
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle(`${emojis.GEAR || '⚙️'} Channel Modified in Server Settings`)
+      .setTitle(`⚙️ Channel Modified / Permissions Updated`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
-        `• **Channel:** <#${newChannel.id}> (\`${newChannel.name}\`)\n\n` +
-        `**Changes:**\n${changes.join('\n')}\n\n` +
-        `• **Modified By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}`
+        `• **Channel:** <#${newChannel.id}> (\`${newChannel.name}\`)\n` +
+        `• **Category:** \`${newChannel.parent ? newChannel.parent.name : 'None'}\`\n` +
+        `• **Modified By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}\n\n` +
+        `**Changes:**\n${changes.join('\n')}`
       )
       .setTimestamp();
 
     dispatchLog(newChannel.guild, 'channels', embed);
-    dispatchLog(newChannel.guild, 'server', embed);
   });
 
   client.on('channelDelete', async (channel) => {
@@ -291,18 +253,10 @@ module.exports = (client) => {
     const executor = await fetchAuditLogExecutor(channel.guild, AuditLogEvent.ChannelDelete, channel.id);
     const categoryName = channel.parent ? channel.parent.name : 'None';
 
-    const infoBox = createDynamicBox('CHANNEL DELETED', [
-      `Name     : ${channel.name}`,
-      `ID       : ${channel.id}`,
-      `Category : ${categoryName}`,
-      `Executor : ${executor ? (executor.tag || executor.username) : 'Unknown'}`
-    ]);
-
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`${emojis.REMOVE || '🗑️'} Channel Deleted in Server Settings`)
+      .setTitle(`🗑️ Channel Deleted`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
         `• **Channel Name:** \`${channel.name}\`\n` +
         `• **Channel ID:** \`${channel.id}\`\n` +
         `• **Category:** \`${categoryName}\`\n` +
@@ -311,7 +265,6 @@ module.exports = (client) => {
       .setTimestamp();
 
     dispatchLog(channel.guild, 'channels', embed);
-    dispatchLog(channel.guild, 'server', embed);
   });
 
   // ─────────────────────────────────────────
@@ -355,17 +308,10 @@ module.exports = (client) => {
       .map(r => `<@&${r.id}> (**${r.name}**)`)
       .join(', ') || 'None';
 
-    const infoBox = createDynamicBox('USER LEFT SERVER', [
-      `User     : ${member.user.tag || member.user.username}`,
-      `ID       : ${member.id}`,
-      `Members  : ${guild.memberCount}`
-    ]);
-
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`${emojis.REMOVE || '📤'} User Left Server`)
+      .setTitle(`📤 User Left Server`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
         `• **User:** <@${member.id}> (\`${member.user.tag}\`)\n` +
         (joinedUnix ? `• **Joined Server:** <t:${joinedUnix}:R> (<t:${joinedUnix}:f>)\n` : '') +
         `• **Roles:** ${rolesList}\n` +
@@ -414,19 +360,10 @@ module.exports = (client) => {
       });
     }
 
-    const roleActionText = addedRoles.size > 0 ? `Added: ${addedRoles.map(r => r.name).join(', ')}` : (removedRoles.size > 0 ? `Removed: ${removedRoles.map(r => r.name).join(', ')}` : 'Nickname Updated');
-
-    const infoBox = createDynamicBox('MEMBER ROLE / PROFILE UPDATE', [
-      `Target   : ${newMember.user.tag || newMember.user.username}`,
-      `Executor : ${executor ? (executor.tag || executor.username) : 'User / Admin'}`,
-      `Action   : ${roleActionText}`
-    ]);
-
     const embed = new EmbedBuilder()
       .setColor(0x3498DB)
-      .setTitle(`${emojis.ROLES || '🎭'} Member Role / Profile Updated`)
+      .setTitle(`🎭 Member Role / Profile Updated`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
         `• **Member:** <@${newMember.id}> (\`${newMember.user.tag}\`)\n\n` +
         `**Changes:**\n${changes.join('\n')}\n\n` +
         `• **Updated By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`User / Admin`'}`
@@ -446,17 +383,10 @@ module.exports = (client) => {
 
     const executor = await fetchAuditLogExecutor(ban.guild, AuditLogEvent.MemberBanAdd, ban.user.id);
 
-    const infoBox = createDynamicBox('MEMBER BANNED FROM SERVER', [
-      `Target   : ${ban.user.tag || ban.user.username}`,
-      `ID       : ${ban.user.id}`,
-      `Executor : ${executor ? (executor.tag || executor.username) : 'Unknown'}`
-    ]);
-
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`${emojis.REMOVE || '🔨'} Member Banned in Server Settings`)
+      .setTitle(`🔨 Member Banned`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
         `• **Banned User:** <@${ban.user.id}> (\`${ban.user.tag}\`)\n` +
         `• **User ID:** \`${ban.user.id}\`\n` +
         `• **Reason:** \`${ban.reason || 'No reason provided'}\`\n` +
@@ -465,7 +395,6 @@ module.exports = (client) => {
       .setTimestamp();
 
     dispatchLog(ban.guild, 'banunban', embed);
-    dispatchLog(ban.guild, 'server', embed);
   });
 
   client.on('guildBanRemove', async (ban) => {
@@ -474,17 +403,10 @@ module.exports = (client) => {
 
     const executor = await fetchAuditLogExecutor(ban.guild, AuditLogEvent.MemberBanRemove, ban.user.id);
 
-    const infoBox = createDynamicBox('MEMBER UNBANNED FROM SERVER', [
-      `Target   : ${ban.user.tag || ban.user.username}`,
-      `ID       : ${ban.user.id}`,
-      `Executor : ${executor ? (executor.tag || executor.username) : 'Unknown'}`
-    ]);
-
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`${emojis.UNLOCK || '🔓'} Member Unbanned in Server Settings`)
+      .setTitle(`🔓 Member Unbanned`)
       .setDescription(
-        '```\n' + infoBox + '\n```\n\n' +
         `• **Unbanned User:** <@${ban.user.id}> (\`${ban.user.tag}\`)\n` +
         `• **User ID:** \`${ban.user.id}\`\n` +
         `• **Unbanned By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}`
@@ -492,7 +414,6 @@ module.exports = (client) => {
       .setTimestamp();
 
     dispatchLog(ban.guild, 'banunban', embed);
-    dispatchLog(ban.guild, 'server', embed);
   });
 
   // ─────────────────────────────────────────
