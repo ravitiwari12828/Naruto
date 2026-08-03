@@ -438,6 +438,28 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   }
 
   if (cat.value === 'welcome') {
+    const setupBox = createDynamicBox('SETUP & CONFIGURATION', [
+      'welcome setup <#chan>  : Bind welcome channel',
+      'welcome preset <theme> : Mimu theme preset',
+      'welcome image <url>    : Set banner image/GIF',
+      'welcometest            : Preview welcome card',
+      'welcomereset           : Reset welcome setup'
+    ], 36, 42);
+
+    const editBox = createDynamicBox('EDITABLE TEXT & MARKS', [
+      'welcome description <txt>: Edit welcome text',
+      'welcome title <txt>      : Edit embed title',
+      'welcome color <#hex>     : Edit border color',
+      'welcome footer <txt>     : Edit embed footer',
+      'welcome header <txt>     : Edit text outside'
+    ], 36, 42);
+
+    const dmsBox = createDynamicBox('DMS & SERVER BOOSTS', [
+      'joindm <on/off/txt>   : Private welcome DM',
+      'leavedm <on/off/txt>  : Private leave DM',
+      'boostmsg <#chan> <txt>: Boost announcement'
+    ], 36, 42);
+
     const gearEmoji = emojis.GEAR || emojis.TOOLS || '<a:an_bot:1530948362784870510>';
     const arEmoji = emojis.AUTORESPOND || '<a:autoresponder:1530942573705822409>';
     const mailEmoji = emojis.MODMAIL_ENVELOPE || '<a:modmail:1530942601497284731>';
@@ -448,23 +470,13 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
       .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
       .setTitle(`${welcomeEmoji} Welcome & Greetings System`)
       .setDescription(
-        `Welcome **${message.author.username}**! Below are the full commands for **${cat.label}**.\n\n` +
+        `Welcome **${message.author.username}**! Below is the executive suite for **${cat.label}**.\n\n` +
         `${gearEmoji} **Setup & Configuration**\n` +
-        `• \`.welcome setup <#chan>\` — Bind welcome channel\n` +
-        `• \`.welcome preset <theme>\` — Apply theme (\`gothic\`, \`aesthetic\`, \`shinobi\`, etc.)\n` +
-        `• \`.welcome image <url>\` — Set custom banner image or GIF URL\n` +
-        `• \`.welcometest\` — Preview current welcome card\n` +
-        `• \`.welcomereset\` — Reset welcome setup to default\n\n` +
+        '```\n' + setupBox + '\n```\n\n' +
         `${arEmoji} **Editable Text & Aesthetics**\n` +
-        `• \`.welcome description <text>\` — Edit welcome message body text\n` +
-        `• \`.welcome title <text>\` — Edit embed title text\n` +
-        `• \`.welcome color <#hex>\` — Edit embed border color\n` +
-        `• \`.welcome footer <text>\` — Edit embed footer text\n` +
-        `• \`.welcome header <text>\` — Edit outer text header\n\n` +
+        '```\n' + editBox + '\n```\n\n' +
         `${mailEmoji} **DMs & Server Boosts**\n` +
-        `• \`.joindm <on/off/text>\` — Configure private welcome DM\n` +
-        `• \`.leavedm <on/off/text>\` — Configure private leave DM\n` +
-        `• \`.boostmsg <#chan> <text>\` — Configure server boost announcements\n\n` +
+        '```\n' + dmsBox + '\n```\n\n' +
         `✨ **Placeholders:** \`{user}\`, \`{username}\`, \`{server_name}\`, \`{membercount}\``
       )
       .setFooter(validUserAvatar ? {

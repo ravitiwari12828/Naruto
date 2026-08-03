@@ -103,10 +103,9 @@ function formatItemLines(item, maxContentWidth) {
  * @param {number} minWidth - Optional minimum inner width (default: 20, max cap: 22)
  * @returns {string} Formatted monospaced codeblock box string
  */
-function createDynamicBox(title, items = [], minWidth = 20) {
-  // STRICT MOBILE SAFETY CAP: 22 chars inner content = 24-25 chars total box width
-  // Fits 100% perfectly on all Discord Mobile screens (iOS / Android / Small Phones) without wrapping.
-  const MAX_INNER_WIDTH = 22;
+function createDynamicBox(title, items = [], minWidth = 20, customMaxWidth = null) {
+  // Safe Inner Width: Default 22 chars for general cards, configurable up to 38 chars for wide panels
+  const MAX_INNER_WIDTH = customMaxWidth || 22;
 
   // Process all items into compliant line strings
   const processedLines = [];
