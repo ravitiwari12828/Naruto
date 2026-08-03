@@ -51,17 +51,21 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
     })
     .join('\n'); // Discord H3 headers naturally add clean vertical spacing & larger font size
 
+  const { createDynamicBox } = require('../utils/boxBuilder');
+
+  const metricsBox = createDynamicBox('SYSTEM METRICS', [
+    `Server Prefix  : .`,
+    `Total Commands : ${totalRegistered}+`,
+    `Active Modules : ${CATEGORIES.length}`
+  ]);
+
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
     .setAuthor({ name: 'Naruto Help Panel', iconURL: botAvatar })
     .setThumbnail(botAvatar)
     .setDescription(
       `A feature-packed All-In-One Discord bot built with a **Naruto Shinobi** theme!\n\n` +
-      `\`\`\`\n` +
-      `Server Prefix  :  .\n` +
-      `Total Commands :  ${totalRegistered}+\n` +
-      `Active Modules :  ${CATEGORIES.length}\n` +
-      `\`\`\`\n\n` +
+      '```\n' + metricsBox + '\n```\n\n' +
       `## ${emojis.DANCE || '<a:Flantic_qt_dance:1530521741263245333>'} All Modules\n` +
       `${moduleLines}\n\n` +
       `### ${emojis.QUICK_LINKS || '<a:quick_links:1530949796884512810>'} **Quick Links**\n` +
