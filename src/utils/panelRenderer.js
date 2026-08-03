@@ -439,25 +439,25 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
 
   if (cat.value === 'welcome') {
     const setupBox = createDynamicBox('SETUP & CONFIGURATION', [
-      'welcome setup <#chan>  : Bind welcome channel',
-      'welcome preset <theme> : Mimu theme preset',
-      'welcome image <url>    : Set banner image/GIF',
-      'welcometest            : Preview welcome card',
-      'welcomereset           : Reset welcome setup'
+      'welcome setup  : Bind welcome',
+      'welcome preset : Theme preset',
+      'welcome image  : Set banner URL',
+      'welcometest    : Preview card',
+      'welcomereset   : Reset setup'
     ]);
 
     const editBox = createDynamicBox('EDITABLE TEXT & MARKS', [
-      'welcome description <txt>: Edit welcome text',
-      'welcome title <txt>      : Edit embed title',
-      'welcome color <#hex>     : Edit border color',
-      'welcome footer <txt>     : Edit embed footer',
-      'welcome header <txt>     : Edit text outside'
+      'welcome description : Edit text',
+      'welcome title       : Edit title',
+      'welcome color       : Edit color',
+      'welcome footer      : Edit footer',
+      'welcome header      : Edit header'
     ]);
 
     const dmsBox = createDynamicBox('DMS & SERVER BOOSTS', [
-      'joindm <on/off/txt> : Private welcome DM',
-      'leavedm <on/off/txt>: Private leave DM',
-      'boostmsg <#chan> <txt>: Boost announcement'
+      'joindm   : Private join DM',
+      'leavedm  : Private leave DM',
+      'boostmsg : Boost announce'
     ]);
 
     const gearEmoji = emojis.GEAR || emojis.TOOLS || '<a:an_bot:1530948362784870510>';

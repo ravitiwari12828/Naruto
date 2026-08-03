@@ -34,15 +34,21 @@ function padVisualCenter(str, targetWidth) {
 function formatItemLines(item, maxContentWidth) {
   let rawStr = '';
 
-  if (typeof item === 'string' && item.includes(' : ')) {
-    const parts = item.split(' : ');
-    item = { key: parts[0].trim(), value: parts.slice(1).join(' : ').trim() };
+  if (typeof item === 'string' && (item.includes(' : ') || item.includes(': '))) {
+    const splitChar = item.includes(' : ') ? ' : ' : ': ';
+    const parts = item.split(splitChar);
+    item = { key: parts[0].trim(), value: parts.slice(1).join(splitChar).trim() };
   }
 
   // Key-Value Object Handling: Keep key and value on a single line
   if (item && typeof item === 'object' && item.key !== undefined) {
-    const keyStr = String(item.key).trim();
+    let keyStr = String(item.key).trim();
     let valStr = item.value !== undefined ? String(item.value).trim() : '';
+
+    const maxKeyWidth = Math.min(14, Math.floor(maxContentWidth * 0.58));
+    if (getVisualWidth(keyStr) > maxKeyWidth) {
+      keyStr = keyStr.slice(0, Math.max(1, maxKeyWidth - 1)) + '…';
+    }
 
     const keyColon = keyStr + ' : ';
     const keyColonWidth = getVisualWidth(keyColon);
@@ -53,6 +59,9 @@ function formatItemLines(item, maxContentWidth) {
     }
 
     rawStr = keyColon + valStr;
+    if (getVisualWidth(rawStr) > maxContentWidth) {
+      rawStr = rawStr.slice(0, Math.max(1, maxContentWidth - 1)) + '…';
+    }
     return [rawStr];
   } else if (typeof item === 'string') {
     rawStr = item;
@@ -91,7 +100,7 @@ function formatItemLines(item, maxContentWidth) {
  * 
  * @param {string} title - Header title of the box
  * @param {Array<string | {key: string, value: any}>} items - Array of content items
- * @param {number} minWidth - Optional minimum inner width (default: 24, max cap: 26)
+ * @param {number} minWidth - Optional minimum inner width (default: 20, max cap: 22)
  * @returns {string} Formatted monospaced codeblock box string
  */
 function createDynamicBox(title, items = [], minWidth = 20) {
@@ -130,6 +139,9 @@ function createDynamicBox(title, items = [], minWidth = 20) {
   }
 
   processedLines.forEach(lineStr => {
+    if (getVisualWidth(lineStr) > contentWidth) {
+      lineStr = lineStr.slice(0, Math.max(1, contentWidth - 1)) + '…';
+    }
     boxLines.push('│ ' + padVisualEnd(lineStr, contentWidth) + ' │');
   });
 
