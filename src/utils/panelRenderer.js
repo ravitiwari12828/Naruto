@@ -438,28 +438,6 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
   }
 
   if (cat.value === 'welcome') {
-    const setupBox = createDynamicBox('SETUP & CONFIGURATION', [
-      'welcome setup <#chan>  : Bind welcome channel',
-      'welcome preset <theme> : Mimu theme preset',
-      'welcome image <url>    : Set banner image/GIF',
-      'welcometest            : Preview welcome card',
-      'welcomereset           : Reset welcome setup'
-    ], 36, 42);
-
-    const editBox = createDynamicBox('EDITABLE TEXT & MARKS', [
-      'welcome description <txt>: Edit welcome text',
-      'welcome title <txt>      : Edit embed title',
-      'welcome color <#hex>     : Edit border color',
-      'welcome footer <txt>     : Edit embed footer',
-      'welcome header <txt>     : Edit text outside'
-    ], 36, 42);
-
-    const dmsBox = createDynamicBox('DMS & SERVER BOOSTS', [
-      'joindm <on/off/txt>   : Private welcome DM',
-      'leavedm <on/off/txt>  : Private leave DM',
-      'boostmsg <#chan> <txt>: Boost announcement'
-    ], 36, 42);
-
     const gearEmoji = emojis.GEAR || emojis.TOOLS || '<a:an_bot:1530948362784870510>';
     const arEmoji = emojis.AUTORESPOND || '<a:autoresponder:1530942573705822409>';
     const mailEmoji = emojis.MODMAIL_ENVELOPE || '<a:modmail:1530942601497284731>';
@@ -470,13 +448,23 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
       .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
       .setTitle(`${welcomeEmoji} Welcome & Greetings System`)
       .setDescription(
-        `Welcome **${message.author.username}**! Below is the executive suite for **${cat.label}**.\n\n` +
+        `Welcome **${message.author.username}**! Below is the complete command list for **${cat.label}**.\n\n` +
         `${gearEmoji} **Setup & Configuration**\n` +
-        '```\n' + setupBox + '\n```\n\n' +
+        `• \`.welcome setup <#channel>\` \n  └ *Bind welcome channel*\n` +
+        `• \`.welcome preset <theme>\` \n  └ *Apply theme (gothic, aesthetic, shinobi, etc.)*\n` +
+        `• \`.welcome image <url>\` \n  └ *Set custom banner image or GIF URL*\n` +
+        `• \`.welcometest\` \n  └ *Preview current welcome card*\n` +
+        `• \`.welcomereset\` \n  └ *Reset welcome setup to default*\n\n` +
         `${arEmoji} **Editable Text & Aesthetics**\n` +
-        '```\n' + editBox + '\n```\n\n' +
+        `• \`.welcome description <text>\` \n  └ *Edit welcome message body text*\n` +
+        `• \`.welcome title <text>\` \n  └ *Edit embed title text*\n` +
+        `• \`.welcome color <#hex>\` \n  └ *Edit embed border color*\n` +
+        `• \`.welcome footer <text>\` \n  └ *Edit embed footer text*\n` +
+        `• \`.welcome header <text>\` \n  └ *Edit outer text header*\n\n` +
         `${mailEmoji} **DMs & Server Boosts**\n` +
-        '```\n' + dmsBox + '\n```\n\n' +
+        `• \`.joindm <on/off/text>\` \n  └ *Configure private welcome DM*\n` +
+        `• \`.leavedm <on/off/text>\` \n  └ *Configure private leave DM*\n` +
+        `• \`.boostmsg <#channel> <text>\` \n  └ *Configure server boost announcements*\n\n` +
         `✨ **Placeholders:** \`{user}\`, \`{username}\`, \`{server_name}\`, \`{membercount}\``
       )
       .setFooter(validUserAvatar ? {
@@ -503,7 +491,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
         `.pause        - Pause current track\n` +
         `.resume       - Resume paused track\n` +
         `.skip         - Skip to next track\n` +
-        `.prev         - Go back to previous track\n` +
+        `.previous     - Go back to previous track\n` +
         `.stop         - Stop music and clear queue\n` +
         `\`\`\`\n\n` +
         `${emojis.ALL_MODULES || '📋'} **Queue & Playlist**\n` +
@@ -532,12 +520,8 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     return embed;
   }
 
-  // Executive Dynamic Codeblock Box Layout for all modules
-  const displayCmds = cat.commands.map(cmd => '.' + cmd);
-  let rawTitle = cat.label.includes('&') ? cat.label.split('&')[0].trim() : cat.label;
-  rawTitle = rawTitle.toUpperCase() + ' COMMANDS';
-
-  const boxStr = createDynamicBox(rawTitle, displayCmds);
+  // Clean Mobile-Proof List Layout for all modules
+  const cmdListStr = cat.commands.map(cmd => `• \`.${cmd}\``).join('\n');
 
   const embed = new EmbedBuilder()
     .setColor(catColor)
@@ -546,7 +530,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     .setDescription(
       `Welcome **${message.author.username}**! Below is the executive suite for **${cat.label}**.\n` +
       `Type any command below in your server to execute.\n\n` +
-      '```\n' + boxStr + '\n```'
+      `📜 **Command List:**\n${cmdListStr}`
     )
     .setFooter(validUserAvatar ? {
       text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
