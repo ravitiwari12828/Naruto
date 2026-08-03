@@ -520,8 +520,12 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     return embed;
   }
 
-  // Clean Mobile-Proof List Layout for all modules
-  const cmdListStr = cat.commands.map(cmd => `• \`.${cmd}\``).join('\n');
+  // Executive Dynamic Codeblock Box Layout for all modules
+  const displayCmds = cat.commands.map(cmd => '.' + cmd);
+  let rawTitle = cat.label.includes('&') ? cat.label.split('&')[0].trim() : cat.label;
+  rawTitle = rawTitle.toUpperCase() + ' COMMANDS';
+
+  const boxStr = createDynamicBox(rawTitle, displayCmds);
 
   const embed = new EmbedBuilder()
     .setColor(catColor)
@@ -530,7 +534,7 @@ function buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner) {
     .setDescription(
       `Welcome **${message.author.username}**! Below is the executive suite for **${cat.label}**.\n` +
       `Type any command below in your server to execute.\n\n` +
-      `📜 **Command List:**\n${cmdListStr}`
+      '```\n' + boxStr + '\n```'
     )
     .setFooter(validUserAvatar ? {
       text: `Requested by ${message.author.username} • Total ${cat.commands.length} commands`,
