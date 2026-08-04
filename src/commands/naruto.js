@@ -181,8 +181,8 @@ module.exports = {
   aliases: [
     'shinobi', 'ninjaprofile', 'ninjatrain', 'ninjajutsu',
     'ninjabattle', 'ninjamission', 'ninjaclan', 'ninjarankup',
-    'ninjainventory', 'ninjainv', 'ninjalb', 'ninjaleaderboard',
-    'ninjatop', 'jutsu', 'quest'
+    'ninjainventory', 'ninjainv', 'ninjashop', 'ninjabuy', 'ninjasell',
+    'ninjalb', 'ninjaleaderboard', 'ninjatop', 'jutsu', 'quest'
   ],
 
   async execute(message, args) {
@@ -198,6 +198,9 @@ module.exports = {
     if (invoked === 'ninjaclan') sub = 'clan';
     if (invoked === 'ninjarankup') sub = 'rankup';
     if (invoked === 'ninjainventory' || invoked === 'ninjainv') sub = 'inventory';
+    if (invoked === 'ninjashop') sub = 'shop';
+    if (invoked === 'ninjabuy') sub = 'buy';
+    if (invoked === 'ninjasell') sub = 'sell';
     if (invoked === 'ninjalb' || invoked === 'ninjaleaderboard' || invoked === 'ninjatop') sub = 'leaderboard';
 
     const author = message.author;

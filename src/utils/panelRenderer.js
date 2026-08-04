@@ -207,7 +207,8 @@ const CATEGORIES = [
     commands: [
       'ninja profile', 'ninja train', 'ninja jutsu',
       'ninja battle', 'ninja mission', 'ninja clan',
-      'ninja rankup', 'ninja inventory', 'ninja top'
+      'ninja rankup', 'ninja shop', 'ninja inventory',
+      'ninja top'
     ]
   },
   {
