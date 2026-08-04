@@ -365,9 +365,20 @@ class ResilientDatabase {
   addMessage(userId, count = 1) {
     const user = this.getUser(userId);
     user.messages += count;
-    user.xp += count * 5;
+
+    // ProBot-style: 2-minute XP cooldown per user
+    const now = Date.now();
+    const lastXp = user._lastXpAt || 0;
+    if (now - lastXp >= 120000) {
+      // Random 15–40 XP per eligible message (ProBot range)
+      const xpGain = (Math.floor(Math.random() * 26) + 15) * count;
+      user.xp = (user.xp || 0) + xpGain;
+      user._lastXpAt = now;
+    }
+
     const oldLevel = user.level;
-    user.level = Math.floor(0.1 * Math.sqrt(user.xp)) + 1;
+    // ProBot quadratic curve: level = floor(0.1 * sqrt(xp)) + 1
+    user.level = Math.max(1, Math.floor(0.1 * Math.sqrt(user.xp || 0)) + 1);
     user.rank = calculateRank(user.level);
 
     if (this.useSqlite && this.sqliteDb) {
@@ -383,8 +394,9 @@ class ResilientDatabase {
   addVoiceTime(userId, seconds) {
     const user = this.getUser(userId);
     user.voiceSeconds += seconds;
-    user.xp += Math.floor(seconds / 60) * 10;
-    user.level = Math.floor(0.1 * Math.sqrt(user.xp)) + 1;
+    // ProBot-style: 10 XP per minute of voice activity
+    user.xp = (user.xp || 0) + Math.floor(seconds / 60) * 10;
+    user.level = Math.max(1, Math.floor(0.1 * Math.sqrt(user.xp || 0)) + 1);
     user.rank = calculateRank(user.level);
 
     if (this.useSqlite && this.sqliteDb) {

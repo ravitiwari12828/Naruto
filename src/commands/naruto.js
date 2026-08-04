@@ -742,3 +742,107 @@ module.exports = {
     return message.channel.send({ embeds: [helpEmbed] });
   }
 };
+
+// ─────────────────────────────────────────
+// PROBOT-STYLE XP LEVELING ENGINE
+// Text XP: 15–40 XP per message (2-min cooldown per user per guild)
+// Level formula: XP needed = 5 * (level^2) + 50 * level + 100
+// Level-up announcements + optional role rewards
+// ─────────────────────────────────────────
+
+const xpCooldowns = new Map(); // key: `${userId}:${guildId}` → last xp timestamp
+
+function getXpForLevel(level) {
+  // ProBot-style curve: each level requires more XP
+  return 5 * (level * level) + 50 * level + 100;
+}
+
+function getTotalXpForLevel(level) {
+  let total = 0;
+  for (let i = 1; i < level; i++) total += getXpForLevel(i);
+  return total;
+}
+
+function calculateLevelFromXp(totalXp) {
+  let level = 1;
+  let accumulated = 0;
+  while (true) {
+    const needed = getXpForLevel(level);
+    if (accumulated + needed > totalXp) break;
+    accumulated += needed;
+    level++;
+    if (level > 200) break;
+  }
+  return { level, currentLevelXp: totalXp - accumulated, neededXp: getXpForLevel(level) };
+}
+
+module.exports.handleMessageXP = async function(message) {
+  if (!message.guild || message.author.bot) return;
+
+  const key = `${message.author.id}:${message.guild.id}`;
+  const now = Date.now();
+  const last = xpCooldowns.get(key) || 0;
+
+  // 2-minute cooldown
+  if (now - last < 120000) return;
+  xpCooldowns.set(key, now);
+
+  // Random 15–40 XP per message (ProBot range)
+  const xpGain = Math.floor(Math.random() * 26) + 15;
+
+  const userData = db.getUser(message.author.id);
+  const oldTotalXp = userData.ninjaXP || 0;
+  const newTotalXp = oldTotalXp + xpGain;
+
+  const before = calculateLevelFromXp(oldTotalXp);
+  const after = calculateLevelFromXp(newTotalXp);
+
+  db.updateUser(message.author.id, (u) => {
+    u.ninjaXP = newTotalXp;
+    u.level = after.level;
+    u.xp = after.currentLevelXp;
+  });
+
+  // Level-up announcement
+  if (after.level > before.level) {
+    const newLevel = after.level;
+
+    // Determine new shinobi rank at this level
+    const rankReqs = calculateRankRequirements(newLevel);
+    const rankMsg = newLevel === rankReqs.reqLevel
+      ? `\n🎖️ You can now **rank up to ${rankReqs.next}**! Type \`.ninja rankup\`.`
+      : '';
+
+    // Auto role rewards (if guild has leveling roles configured)
+    let roleMsg = '';
+    try {
+      const levelingConfig = db.getGuildLevelingConfig ? db.getGuildLevelingConfig(message.guild.id) : null;
+      if (levelingConfig?.roleRewards) {
+        const reward = levelingConfig.roleRewards.find(r => r.level === newLevel);
+        if (reward) {
+          const role = message.guild.roles.cache.get(reward.roleId);
+          if (role) {
+            await message.member.roles.add(role).catch(() => {});
+            roleMsg = `\n🎁 You earned the **${role.name}** role reward!`;
+          }
+        }
+      }
+    } catch (e) {}
+
+    const levelUpBox = createDynamicBox('LEVEL UP', [
+      { key: 'Level  ', value: `${before.level} → ${newLevel}` },
+      { key: 'Next XP', value: `${after.neededXp} XP needed` }
+    ], 20, 22);
+
+    try {
+      await message.channel.send({
+        content: `<@${message.author.id}>`,
+        embeds: [{
+          color: 0xFF7A00,
+          description: `**⬆️ LEVEL UP!** You reached **Level ${newLevel}**!${rankMsg}${roleMsg}\n\`\`\`\n${levelUpBox}\n\`\`\``
+        }]
+      });
+    } catch (e) {}
+  }
+};
+

@@ -273,44 +273,60 @@ async function buildWelcomeCard(config, member) {
 }
 
 function buildWelcomeConfigPanel(config, guild, author, clientUser) {
-  const chanMention = config.channelId ? `<#${config.channelId}>` : 'Not Set';
+  const chanName = config.channelId
+    ? (guild?.channels?.cache?.get(config.channelId)?.name || 'set').slice(0, 10)
+    : 'not-set';
   const boostChanMention = config.boostChannelId ? `<#${config.boostChannelId}>` : 'Not Set';
 
   const statusBox = createDynamicBox('SYSTEM STATUS', [
-    `status   : ${config.enabled ? 'ACTIVE' : 'DISABLED'}`,
-    `channel  : ${config.channelId ? '#' + (guild?.channels?.cache?.get(config.channelId)?.name || 'channel') : 'Not Set'}`,
-    `render   : ${config.cardType === 'canvas' ? 'Graphic Canvas' : 'Rich Embed'}`,
-    `preset   : ${(config.style || 'gothic').toUpperCase()}`,
-    `color    : ${config.color || '#800020'}`,
-    `joindm   : ${config.joinDmEnabled ? 'Enabled' : 'Disabled'}`,
-    `leavedm  : ${config.leaveDmEnabled ? 'Enabled' : 'Disabled'}`,
-    `boost    : ${config.boostEnabled && config.boostChannelId ? 'Enabled' : 'Disabled'}`
-  ]);
+    { key: 'Status ', value: config.enabled ? 'ACTIVE' : 'DISABLED' },
+    { key: 'Channel', value: '#' + chanName },
+    { key: 'Render ', value: config.cardType === 'canvas' ? 'Canvas' : 'Embed' },
+    { key: 'Preset ', value: (config.style || 'gothic').toUpperCase() },
+    { key: 'Color  ', value: config.color || '#800020' },
+    { key: 'JoinDM ', value: config.joinDmEnabled ? 'On' : 'Off' },
+    { key: 'LeaveDM', value: config.leaveDmEnabled ? 'On' : 'Off' },
+    { key: 'Boost  ', value: config.boostEnabled && config.boostChannelId ? 'On' : 'Off' }
+  ], 20, 22);
 
-  const cmdBox = createDynamicBox('CONFIG COMMANDS', [
-    'welcome setup <#chan> : Bind welcome',
-    'welcome preset <theme>: Apply theme',
-    'welcome card <mode>   : Toggle mode',
-    'welcome description   : Edit text',
-    'welcometest           : Preview card',
-    'boostmsg <#chan>      : Boost config',
-    'joindm <on/off/text>  : Join DM config',
-    'leavedm <on/off/text> : Leave DM config'
-  ]);
+  const setupBox = createDynamicBox('SETUP COMMANDS', [
+    { key: 'setup  ', value: '<#channel>' },
+    { key: 'preset ', value: '<theme>' },
+    { key: 'card   ', value: '<canvas/embed>' },
+    { key: 'image  ', value: '<url>' },
+    { key: 'color  ', value: '<#hex>' },
+    { key: 'test   ', value: 'Preview card' },
+    { key: 'reset  ', value: 'Reset config' }
+  ], 20, 22);
+
+  const textBox = createDynamicBox('EDITABLE TEXT', [
+    { key: 'title  ', value: 'Embed title' },
+    { key: 'desc   ', value: 'Body text' },
+    { key: 'footer ', value: 'Embed footer' },
+    { key: 'header ', value: 'Outer header' }
+  ], 20, 22);
+
+  const dmBox = createDynamicBox('DMS & BOOSTS', [
+    { key: 'joindm ', value: '<on/off/txt>' },
+    { key: 'leavedm', value: '<on/off/txt>' },
+    { key: 'boostmsg', value: '<#chan> <txt>' }
+  ], 20, 22);
 
   const gearEmoji = emojis.GEAR || '<a:an_bot:1530948362784870510>';
   const configEmoji = emojis.AUTORESPOND || '<a:autoresponder:1530942573705822409>';
   const boostEmoji = emojis.BOOST || '<a:BOOST:1532470412217159790>';
+  const mailEmoji = emojis.MODMAIL_ENVELOPE || '<a:modmail:1530942601497284731>';
 
   const description =
-    `Welcome **${author.username}**! Below is your server **Welcome System Hub & Greetings Config**.\n\n` +
-    `${gearEmoji} **System Status & Settings**\n` +
+    `${gearEmoji} **System Status**\n` +
     '```\n' + statusBox + '\n```\n\n' +
-    `${configEmoji} **Configuration & Font Commands**\n` +
-    '```\n' + cmdBox + '\n```\n\n' +
-    `${boostEmoji} **Server Boost Announcement:** Bound to ${boostChanMention} (Use \`.boostmsg test\` to preview)\n\n` +
-    `**💬 Active Description Body:**\n` +
-    `>>> ${config.description}`;
+    `${configEmoji} **Setup Commands**\n` +
+    '```\n' + setupBox + '\n```\n\n' +
+    `${mailEmoji} **Editable Text & Aesthetics**\n` +
+    '```\n' + textBox + '\n```\n\n' +
+    `${boostEmoji} **DMs & Server Boosts**\n` +
+    '```\n' + dmBox + '\n```\n\n' +
+    `> *Type \`.welcome <command>\` to configure any option above.*`;
 
   const embed = createStyledEmbed({
     title: `👋 Welcome System Dashboard`,
