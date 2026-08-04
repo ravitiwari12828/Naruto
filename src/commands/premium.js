@@ -1,8 +1,8 @@
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { parseDurationMs, formatExpiryText } = require('./noprefix');
 const { createDynamicBox } = require('../utils/boxBuilder');
-const { isBotOwner } = require('../utils/owners');
 
 // Global Premium Stores (ID -> expiresAt | null for Infinite)
 const premiumGuilds = new Map();
@@ -12,6 +12,9 @@ const premiumUsers = new Map([
   ['1514546738055348237', null],
   ['1446040693725466687', null]
 ]);
+
+// Temporary draft state for appearance customization before Save
+const appearanceDrafts = new Map();
 
 function isGuildPremium(guildId) {
   if (!premiumGuilds.has(guildId)) return false;
@@ -31,11 +34,63 @@ function isUserPremium(userId) {
   return false;
 }
 
+function buildAppearanceDashboard(guild, draft, author, clientUser) {
+  const nickname = draft.nickname || guild.members.me?.nickname || clientUser.username;
+  const bio = draft.bio || 'Naruto Shinobi Bot Active';
+  const avatarStatus = draft.avatar ? 'Custom Image [Pending Save]' : (clientUser.avatar ? 'Custom Avatar' : 'Default Avatar');
+  const bannerStatus = draft.banner ? 'Custom Banner [Pending Save]' : 'Default Banner';
+
+  const box = createDynamicBox('BOT APPEARANCE SUITE', [
+    { key: 'Nickname', value: nickname.slice(0, 16) },
+    { key: 'StatusBio', value: bio.slice(0, 16) },
+    { key: 'Avatar  ', value: avatarStatus.slice(0, 16) },
+    { key: 'Banner  ', value: bannerStatus.slice(0, 16) },
+    { key: 'Tier    ', value: 'PREMIUM VIP' }
+  ]);
+
+  const embed = createStyledEmbed({
+    title: `🎨 Bot Appearance Customization Suite`,
+    subtitle: `${guild.name} • Premium Feature`,
+    description:
+      '```\n' + box + '\n```\n\n' +
+      `• **Set Nickname:** \`.botnickname <text>\` or \`.premium nickname <text>\`\n` +
+      `• **Set Status Bio:** \`.botbio <text>\` or \`.premium bio <text>\`\n` +
+      `• **Set Avatar:** \`.setavatar <imageURL/attachment>\`\n` +
+      `• **Set Banner:** \`.setbanner <imageURL/attachment>\`\n\n` +
+      `*Use the interactive buttons below to **Save**, **Refresh**, or **Reset** appearance settings!*`,
+    requestedBy: author,
+    clientUser
+  });
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('app_save')
+      .setLabel('Save Settings')
+      .setEmoji('💾')
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId('app_refresh')
+      .setLabel('Refresh Profile')
+      .setEmoji('🔄')
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId('app_reset')
+      .setLabel('Reset Defaults')
+      .setEmoji('🗑️')
+      .setStyle(ButtonStyle.Danger)
+  );
+
+  return { embeds: [embed], components: [row] };
+}
+
 module.exports = {
   name: 'premium',
-  description: 'Premium Suite: activate guild [time], revoke guild, adduser [time], revokeuser, status',
+  description: 'Premium Suite: Activate Guild, Add VIP User, Bot Appearance (Bio, Avatar, Banner, Nickname, Save/Refresh/Reset)',
   aliases: [
-    'vip', 'donator', 'premiumguild', 'premiumuser'
+    'vip', 'donator', 'premiumguild', 'premiumuser',
+    'botappearance', 'appearance', 'setavatar', 'botavatar',
+    'setbanner', 'botbanner', 'setbio', 'botbio',
+    'setnickname', 'botnickname', 'resetappearance'
   ],
   premiumGuilds,
   premiumUsers,
@@ -48,6 +103,12 @@ module.exports = {
     let sub = args[0]?.toLowerCase();
 
     if (invoked === 'premiumguild') sub = 'guild';
+    if (invoked === 'botappearance' || invoked === 'appearance') sub = 'appearance';
+    if (invoked === 'setavatar' || invoked === 'botavatar') sub = 'avatar';
+    if (invoked === 'setbanner' || invoked === 'botbanner') sub = 'banner';
+    if (invoked === 'setbio' || invoked === 'botbio') sub = 'bio';
+    if (invoked === 'setnickname' || invoked === 'botnickname') sub = 'nickname';
+    if (invoked === 'resetappearance') sub = 'reset';
 
     const author = message.author;
     const guild = message.guild;
@@ -60,7 +121,147 @@ module.exports = {
     const ownerCmd = message.client.commands.get('owners');
     const isBotOwner = ownerCmd && ownerCmd.isOwner ? ownerCmd.isOwner(author.id) : ['1420687548807905324', '1529362747047805029', '1514546738055348237', '1446040693725466687'].includes(author.id);
 
-    // 1. PREMIUM ACTIVATE GUILD (.premium guild [guildId] [duration] / .premium activate [guildId] [duration])
+    // ─────────────────────────────────────────
+    // BOT APPEARANCE CUSTOMIZATION SUITE (PREMIUM FEATURE)
+    // ─────────────────────────────────────────
+    if (['appearance', 'avatar', 'banner', 'bio', 'nickname', 'save', 'refresh', 'reset'].includes(sub)) {
+      const hasAccess = isBotOwner || isGuildPremium(guild.id) || isUserPremium(author.id);
+      if (!hasAccess) {
+        return message.reply(`${emojis.WARNING || '⚠️'} **Premium Required!** Bot Appearance Customization (Avatar, Banner, Bio & Nickname) requires **Premium Tier**! Type \`.premium status\` to check eligibility.`);
+      }
+
+      if (!appearanceDrafts.has(guild.id)) {
+        appearanceDrafts.set(guild.id, {
+          nickname: guild.members.me?.nickname || '',
+          bio: '',
+          avatar: null,
+          banner: null
+        });
+      }
+
+      const draft = appearanceDrafts.get(guild.id);
+
+      // 1. SET NICKNAME (.botnickname <name> / .premium nickname <name>)
+      if (sub === 'nickname') {
+        const newNick = args.slice(invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1).join(' ');
+        if (!newNick) return message.reply(`${emojis.WARNING || '⚠️'} Please specify a nickname! Usage: \`.botnickname <name>\``);
+
+        draft.nickname = newNick;
+        try {
+          if (guild.members.me?.permissions.has('ChangeNickname')) {
+            await guild.members.me.setNickname(newNick);
+          }
+        } catch (e) {}
+
+        return message.reply(`${emojis.SUCCESS || '✅'} Bot nickname updated to **"${newNick}"**! Click **Save Settings** in \`.botappearance\` to persist.`);
+      }
+
+      // 2. SET BIO (.botbio <text> / .premium bio <text>)
+      if (sub === 'bio') {
+        const newBio = args.slice(invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1).join(' ');
+        if (!newBio) return message.reply(`${emojis.WARNING || '⚠️'} Please specify a status bio! Usage: \`.botbio <text>\``);
+
+        draft.bio = newBio;
+        try {
+          message.client.user.setActivity(newBio);
+        } catch (e) {}
+
+        return message.reply(`${emojis.SUCCESS || '✅'} Bot bio status updated to **"${newBio}"**!`);
+      }
+
+      // 3. SET AVATAR (.setavatar <URL/Attachment>)
+      if (sub === 'avatar') {
+        const attachment = message.attachments.first();
+        const imgUrl = attachment ? attachment.url : args[invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1];
+        if (!imgUrl) return message.reply(`${emojis.WARNING || '⚠️'} Provide an image URL or attach an image! Usage: \`.setavatar <imageURL/attachment>\``);
+
+        draft.avatar = imgUrl;
+        return message.reply(`${emojis.SUCCESS || '✅'} Avatar image staged! Click **Save Settings** in \`.botappearance\` to apply globally.`);
+      }
+
+      // 4. SET BANNER (.setbanner <URL/Attachment>)
+      if (sub === 'banner') {
+        const attachment = message.attachments.first();
+        const imgUrl = attachment ? attachment.url : args[invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1];
+        if (!imgUrl) return message.reply(`${emojis.WARNING || '⚠️'} Provide a banner image URL or attach an image! Usage: \`.setbanner <imageURL/attachment>\``);
+
+        draft.banner = imgUrl;
+        return message.reply(`${emojis.SUCCESS || '✅'} Banner image staged! Click **Save Settings** in \`.botappearance\` to apply globally.`);
+      }
+
+      // 5. RESET APPEARANCE (.resetappearance / .premium reset)
+      if (sub === 'reset') {
+        draft.nickname = '';
+        draft.bio = '';
+        draft.avatar = null;
+        draft.banner = null;
+
+        try {
+          if (guild.members.me?.permissions.has('ChangeNickname')) {
+            await guild.members.me.setNickname(null);
+          }
+        } catch (e) {}
+
+        return message.reply(`${emojis.SUCCESS || '✅'} **BOT APPEARANCE RESET!** Restored default nickname, avatar, banner, and bio.`);
+      }
+
+      // 6. DASHBOARD MAIN INTERACTIVE PANEL (.botappearance / .appearance)
+      const payload = buildAppearanceDashboard(guild, draft, author, clientUser);
+      const dashboardMsg = await message.channel.send(payload);
+
+      // Create Interactive Collector for Save, Refresh, and Reset Buttons
+      const collector = dashboardMsg.createMessageComponentCollector({
+        filter: i => i.user.id === author.id,
+        time: 180000
+      });
+
+      collector.on('collect', async i => {
+        if (i.customId === 'app_save') {
+          // SAVE & APPLY ALL SETTINGS TO DISCORD API
+          try {
+            if (draft.nickname && guild.members.me?.permissions.has('ChangeNickname')) {
+              await guild.members.me.setNickname(draft.nickname);
+            }
+            if (draft.avatar) {
+              await message.client.user.setAvatar(draft.avatar).catch(() => {});
+            }
+            if (draft.banner) {
+              await message.client.user.setBanner(draft.banner).catch(() => {});
+            }
+            if (draft.bio) {
+              message.client.user.setActivity(draft.bio);
+            }
+            await i.reply({ content: `${emojis.SUCCESS || '✅'} **All bot appearance settings saved and applied to Discord!**`, ephemeral: true });
+          } catch (err) {
+            await i.reply({ content: `⚠️ Error applying settings: ${err.message}`, ephemeral: true });
+          }
+        } else if (i.customId === 'app_refresh') {
+          // REFRESH BOT PROFILE STATUS
+          const updatedUser = await message.client.users.fetch(message.client.user.id, { force: true }).catch(() => clientUser);
+          const updatedPayload = buildAppearanceDashboard(guild, draft, author, updatedUser);
+          await i.update(updatedPayload).catch(() => {});
+        } else if (i.customId === 'app_reset') {
+          // RESET DEFAULTS
+          draft.nickname = '';
+          draft.bio = '';
+          draft.avatar = null;
+          draft.banner = null;
+
+          try {
+            if (guild.members.me?.permissions.has('ChangeNickname')) {
+              await guild.members.me.setNickname(null);
+            }
+          } catch (e) {}
+
+          const updatedPayload = buildAppearanceDashboard(guild, draft, author, clientUser);
+          await i.update(updatedPayload).catch(() => {});
+        }
+      });
+
+      return;
+    }
+
+    // 1. PREMIUM ACTIVATE GUILD (.premium guild [guildId] [duration])
     if (sub === 'activate' || sub === 'addguild' || sub === 'guild' || sub === 'server') {
       if (!isBotOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can activate Premium for servers.`);
 
@@ -77,7 +278,7 @@ module.exports = {
         { key: 'Server ID', value: targetGuildId },
         { key: 'Duration ', value: expiryText },
         { key: 'Status   ', value: 'ACTIVE (PREMIUM TIER)' },
-        { key: 'Perks    ', value: '450% Vol, 2x XP, Priority AI' }
+        { key: 'Perks    ', value: 'Bot Appearance, 2x XP, Priority AI' }
       ]);
 
       const embed = createStyledEmbed({
@@ -179,13 +380,15 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // Default Help
-    const box = createDynamicBox('PREMIUM COMMANDS GUIDE', [
-      '.premium activate [id] [30d|inf]',
-      '.premium revoke [guildId]',
-      '.premium adduser @user [30d|inf]',
-      '.premium revokeuser @user',
-      '.premium status'
+    // Default Help Guide
+    const box = createDynamicBox('PREMIUM SUITE GUIDE', [
+      '.botappearance       : Interactive Appearance Dashboard',
+      '.setnickname <name>  : Set Guild Bot Nickname',
+      '.setbio <text>       : Set Bot Status Bio',
+      '.setavatar <imageURL>: Set Bot Profile Avatar',
+      '.setbanner <imageURL>: Set Bot Profile Banner',
+      '.resetappearance     : Reset Bot Appearance',
+      '.premium activate    : Upgrade Server to Premium'
     ]);
 
     const embed = createStyledEmbed({
