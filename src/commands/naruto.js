@@ -179,7 +179,7 @@ module.exports = {
   name: 'ninja',
   description: 'Global Shinobi Ninja RPG: Profile, Jutsu, Train, Battle, Missions, Clans, Rankup, Shop, Buy, Sell & Leaderboards',
   aliases: [
-    'shinobi', 'ninjaprofile', 'ninjatrain', 'ninjajutsu',
+    'ninjaprofile', 'ninjatrain', 'ninjajutsu',
     'ninjabattle', 'ninjamission', 'ninjaclan', 'ninjarankup',
     'ninjainventory', 'ninjainv', 'ninjashop', 'ninjabuy', 'ninjasell',
     'ninjalb', 'ninjaleaderboard', 'ninjatop', 'jutsu', 'quest'
@@ -190,7 +190,7 @@ module.exports = {
     const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     let sub = args[0]?.toLowerCase() || 'profile';
 
-    if (invoked === 'shinobi' || invoked === 'ninjaprofile') sub = 'profile';
+    if (invoked === 'ninjaprofile') sub = 'profile';
     if (invoked === 'ninjatrain') sub = 'train';
     if (invoked === 'ninjajutsu' || invoked === 'jutsu') sub = 'jutsu';
     if (invoked === 'ninjabattle') sub = 'battle';
