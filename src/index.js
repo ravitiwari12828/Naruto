@@ -209,6 +209,10 @@ const voiceJoinTimes = new Map();
 // Member Join Welcome & AntiBotAdd Listener
 client.on('guildMemberAdd', async (member) => {
   db.recordAnalyticsEvent(member.guild.id, member.id, 'join', 1);
+  try {
+    const counterCmd = client.commands.get('counter');
+    if (counterCmd && counterCmd.refreshGuildCounters) counterCmd.refreshGuildCounters(member.guild);
+  } catch (e) {}
 
   // 0. STRICT ANTIBOT-ADD ENFORCEMENT: No one can add bots unless explicitly whitelisted or Server Owner
   if (member.user.bot) {
@@ -519,6 +523,10 @@ client.on('messageUpdate', (oldMsg, newMsg) => {
 // Member Leave Listener
 client.on('guildMemberRemove', async (member) => {
   db.recordAnalyticsEvent(member.guild.id, member.id, 'leave', 1);
+  try {
+    const counterCmd = client.commands.get('counter');
+    if (counterCmd && counterCmd.refreshGuildCounters) counterCmd.refreshGuildCounters(member.guild);
+  } catch (e) {}
 
   const welcomeCmd = client.commands.get('welcome');
   if (welcomeCmd && welcomeCmd.getOrCreateWelcomeConfig) {
@@ -3075,6 +3083,40 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     }
   }
 });
+
+// ⭐️ REACTION XP LEVELING ENGINE
+client.on('messageReactionAdd', async (reaction, user) => {
+  try {
+    if (user.bot) return;
+    if (reaction.partial) await reaction.fetch().catch(() => null);
+    if (reaction.message?.partial) await reaction.message.fetch().catch(() => null);
+
+    const guild = reaction.message?.guild;
+    if (!guild) return;
+
+    const levelCfg = db.getLevelConfig(guild.id);
+    if (levelCfg.enabled === false) return;
+
+    const channelId = reaction.message.channel.id;
+    if (levelCfg.ignoredChannels && levelCfg.ignoredChannels.includes(channelId)) return;
+
+    const member = await guild.members.fetch(user.id).catch(() => null);
+    const memberRoleIds = member ? member.roles.cache.map(r => r.id) : [];
+    if (levelCfg.ignoredRoles && memberRoleIds.some(rId => levelCfg.ignoredRoles.includes(rId))) return;
+
+    const res = db.addReactionXP(user.id, 1, guild.id, memberRoleIds, channelId);
+    if (res && res.leveledUp) {
+      // Check for level up announcement if configured
+      if (levelCfg.channelId !== 'none') {
+        const targetChan = (levelCfg.channelId && levelCfg.channelId !== 'default' && guild.channels.cache.get(levelCfg.channelId)) || reaction.message.channel;
+        targetChan.send({ content: `🎉 Congratulations <@${user.id}>! You leveled up to **Level ${res.user.level}** via reactions!` }).catch(() => {});
+      }
+    }
+  } catch (err) {
+    console.error('[ReactionXP Error]', err.message);
+  }
+});
+
 
 // 🗳️ SINGLE REACTION MODE ENFORCEMENT & DUP VOTE STRIPPING
 client.on('messageReactionAdd', async (reaction, user) => {

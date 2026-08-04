@@ -366,24 +366,28 @@ class ResilientDatabase {
       if (!this.data.guildLevels[guildId][userId]) {
         this.data.guildLevels[guildId][userId] = {
           xp: 0,
+          weeklyXp: 0,
+          monthlyXp: 0,
           level: 1,
           rank: 'Academy Student',
           messages: 0,
           voiceSeconds: 0,
-          _lastXpAt: 0
+          _lastXpAt: 0,
+          _lastReactionXpAt: 0,
+          cardBg: null
         };
       }
       const gLvl = this.data.guildLevels[guildId][userId];
 
       return new Proxy(u, {
         get(target, prop) {
-          if (['xp', 'level', 'rank', 'messages', 'voiceSeconds', '_lastXpAt'].includes(prop)) {
-            return gLvl[prop] !== undefined ? gLvl[prop] : (prop === 'level' ? 1 : prop === 'rank' ? 'Academy Student' : 0);
+          if (['xp', 'weeklyXp', 'monthlyXp', 'level', 'rank', 'messages', 'voiceSeconds', '_lastXpAt', '_lastReactionXpAt', 'cardBg'].includes(prop)) {
+            return gLvl[prop] !== undefined ? gLvl[prop] : (prop === 'level' ? 1 : prop === 'rank' ? 'Academy Student' : prop === 'cardBg' ? null : 0);
           }
           return target[prop];
         },
         set(target, prop, value) {
-          if (['xp', 'level', 'rank', 'messages', 'voiceSeconds', '_lastXpAt'].includes(prop)) {
+          if (['xp', 'weeklyXp', 'monthlyXp', 'level', 'rank', 'messages', 'voiceSeconds', '_lastXpAt', '_lastReactionXpAt', 'cardBg'].includes(prop)) {
             gLvl[prop] = value;
             return true;
           }
@@ -406,11 +410,18 @@ class ResilientDatabase {
         cooldown: 120, // 2 minutes in seconds
         minXp: 15,
         maxXp: 40,
+        reactionXpMin: 5,
+        reactionXpMax: 15,
+        voiceXpRate: 10, // XP per min
         roleRewardsMode: 'stack', // 'stack' or 'replace'
         roleRewards: [], // [{ level: 5, roleId: '...' }]
         ignoredChannels: [], // ['channelId']
         ignoredRoles: [], // ['roleId']
-        multipliers: {} // { 'roleId': 1.5 }
+        multipliers: {}, // { 'roleId': 1.5 }
+        channelMultipliers: {}, // { 'channelId': 2.0 }
+        championRoleId: null, // #1 leaderboard role
+        disableVoteBooster: false,
+        leaderboardBanner: null
       };
     }
     const cfg = this.data.levelConfigs[guildId];
@@ -418,11 +429,15 @@ class ResilientDatabase {
     if (cfg.cooldown === undefined) cfg.cooldown = 120;
     if (cfg.minXp === undefined) cfg.minXp = 15;
     if (cfg.maxXp === undefined) cfg.maxXp = 40;
+    if (cfg.reactionXpMin === undefined) cfg.reactionXpMin = 5;
+    if (cfg.reactionXpMax === undefined) cfg.reactionXpMax = 15;
+    if (cfg.voiceXpRate === undefined) cfg.voiceXpRate = 10;
     if (!cfg.roleRewardsMode) cfg.roleRewardsMode = 'stack';
     if (!Array.isArray(cfg.roleRewards)) cfg.roleRewards = [];
     if (!Array.isArray(cfg.ignoredChannels)) cfg.ignoredChannels = [];
     if (!Array.isArray(cfg.ignoredRoles)) cfg.ignoredRoles = [];
     if (!cfg.multipliers) cfg.multipliers = {};
+    if (!cfg.channelMultipliers) cfg.channelMultipliers = {};
     return cfg;
   }
 
@@ -448,11 +463,11 @@ class ResilientDatabase {
     return false;
   }
 
-  addMessage(userId, count = 1, guildId = null, memberRoleIds = []) {
+  addMessage(userId, count = 1, guildId = null, memberRoleIds = [], channelId = null) {
     const user = this.getUser(userId, guildId);
     user.messages += count;
 
-    let cfg = { cooldown: 120, minXp: 15, maxXp: 40, multipliers: {}, ignoredChannels: [], ignoredRoles: [] };
+    let cfg = { cooldown: 120, minXp: 15, maxXp: 40, multipliers: {}, channelMultipliers: {}, ignoredChannels: [], ignoredRoles: [] };
     if (guildId) {
       cfg = this.getLevelConfig(guildId);
     }
@@ -478,7 +493,14 @@ class ResilientDatabase {
         baseGain = Math.round(baseGain * maxMult);
       }
 
+      // Apply channel multipliers
+      if (channelId && cfg.channelMultipliers && cfg.channelMultipliers[channelId]) {
+        baseGain = Math.round(baseGain * cfg.channelMultipliers[channelId]);
+      }
+
       user.xp = (user.xp || 0) + baseGain;
+      user.weeklyXp = (user.weeklyXp || 0) + baseGain;
+      user.monthlyXp = (user.monthlyXp || 0) + baseGain;
       user._lastXpAt = now;
       gainedXp = baseGain;
     }
@@ -498,88 +520,62 @@ class ResilientDatabase {
     return { user, leveledUp: user.level > oldLevel, gainedXp };
   }
 
+  addReactionXP(userId, count = 1, guildId = null, memberRoleIds = [], channelId = null) {
+    const user = this.getUser(userId, guildId);
+    let cfg = { reactionXpMin: 5, reactionXpMax: 15, multipliers: {}, channelMultipliers: {} };
+    if (guildId) cfg = this.getLevelConfig(guildId);
+
+    const now = Date.now();
+    const lastXp = user._lastReactionXpAt || 0;
+
+    let gainedXp = 0;
+    // 30-second cooldown between reaction XP gains
+    if (now - lastXp >= 30000) {
+      const min = cfg.reactionXpMin || 5;
+      const max = cfg.reactionXpMax || 15;
+      let baseGain = (Math.floor(Math.random() * Math.max(1, max - min + 1)) + min) * count;
+
+      if (memberRoleIds && memberRoleIds.length > 0 && cfg.multipliers) {
+        let maxMult = 1.0;
+        for (const rId of memberRoleIds) {
+          if (cfg.multipliers[rId] && cfg.multipliers[rId] > maxMult) maxMult = cfg.multipliers[rId];
+        }
+        baseGain = Math.round(baseGain * maxMult);
+      }
+
+      if (channelId && cfg.channelMultipliers && cfg.channelMultipliers[channelId]) {
+        baseGain = Math.round(baseGain * cfg.channelMultipliers[channelId]);
+      }
+
+      user.xp = (user.xp || 0) + baseGain;
+      user.weeklyXp = (user.weeklyXp || 0) + baseGain;
+      user.monthlyXp = (user.monthlyXp || 0) + baseGain;
+      user._lastReactionXpAt = now;
+      gainedXp = baseGain;
+    }
+
+    const oldLevel = user.level;
+    user.level = Math.max(1, Math.floor(0.1 * Math.sqrt(user.xp || 0)) + 1);
+    user.rank = calculateRank(user.level);
+
+    this.saveJSON();
+    return { user, leveledUp: user.level > oldLevel, gainedXp };
+  }
+
   addVoiceTime(userId, seconds, guildId = null) {
     const user = this.getUser(userId, guildId);
     user.voiceSeconds += seconds;
-    // ProBot-style: 10 XP per minute of voice activity
-    user.xp = (user.xp || 0) + Math.floor(seconds / 60) * 10;
-    user.level = Math.max(1, Math.floor(0.1 * Math.sqrt(user.xp || 0)) + 1);
-    user.rank = calculateRank(user.level);
 
-    if (this.useSqlite && this.sqliteDb) {
-      this.sqliteDb.run(
-        `INSERT OR REPLACE INTO users (id, messages, voiceSeconds, invites, xp, level, rank, chakra, ryo, jutsuList) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [userId, user.messages, user.voiceSeconds, user.invites, user.xp, user.level, user.rank, user.chakra, user.ryo, JSON.stringify(user.jutsuList)]
-      );
-    }
-    this.saveJSON();
-    return user;
-  }
+    let cfg = { voiceXpRate: 10 };
+    if (guildId) cfg = this.getLevelConfig(guildId);
 
-  clearMessages(userId = null, guildId = null) {
-    if (guildId && this.data.guildLevels && this.data.guildLevels[guildId]) {
-      if (userId && this.data.guildLevels[guildId][userId]) {
-        this.data.guildLevels[guildId][userId].messages = 0;
-      } else {
-        for (const uid of Object.keys(this.data.guildLevels[guildId])) {
-          if (this.data.guildLevels[guildId][uid]) this.data.guildLevels[guildId][uid].messages = 0;
-        }
-      }
-    }
-    if (userId) {
-      const user = this.getUser(userId);
-      user.messages = 0;
-    } else {
-      for (const uid of Object.keys(this.data.users)) {
-        if (this.data.users[uid]) this.data.users[uid].messages = 0;
-      }
-    }
-    this.saveJSON();
-  }
+    const rate = cfg.voiceXpRate !== undefined ? cfg.voiceXpRate : 10;
+    const gained = Math.floor(seconds / 60) * rate;
 
-  clearVoiceTime(userId = null, guildId = null) {
-    if (guildId && this.data.guildLevels && this.data.guildLevels[guildId]) {
-      if (userId && this.data.guildLevels[guildId][userId]) {
-        this.data.guildLevels[guildId][userId].voiceSeconds = 0;
-      } else {
-        for (const uid of Object.keys(this.data.guildLevels[guildId])) {
-          if (this.data.guildLevels[guildId][uid]) this.data.guildLevels[guildId][uid].voiceSeconds = 0;
-        }
-      }
-    }
-    if (userId) {
-      const user = this.getUser(userId);
-      user.voiceSeconds = 0;
-    } else {
-      for (const uid of Object.keys(this.data.users)) {
-        if (this.data.users[uid]) this.data.users[uid].voiceSeconds = 0;
-      }
-    }
-    this.saveJSON();
-  }
+    user.xp = (user.xp || 0) + gained;
+    user.weeklyXp = (user.weeklyXp || 0) + gained;
+    user.monthlyXp = (user.monthlyXp || 0) + gained;
 
-  addInvites(userId, count = 1, guildId = null) {
-    const user = this.getUser(userId, guildId);
-    user.invites += count;
-    user.xp = (user.xp || 0) + count * 15;
-    user.level = Math.max(1, Math.floor(0.1 * Math.sqrt(user.xp || 0)) + 1);
-    user.rank = calculateRank(user.level);
-
-    if (this.useSqlite && this.sqliteDb) {
-      this.sqliteDb.run(
-        `INSERT OR REPLACE INTO users (id, messages, voiceSeconds, invites, xp, level, rank, chakra, ryo, jutsuList) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [userId, user.messages, user.voiceSeconds, user.invites, user.xp, user.level, user.rank, user.chakra, user.ryo, JSON.stringify(user.jutsuList)]
-      );
-    }
-    this.saveJSON();
-    return user;
-  }
-
-  updateUser(userId, updateFn, guildId = null) {
-    const user = this.getUser(userId, guildId);
-    if (typeof updateFn === 'function') {
-      updateFn(user);
-    }
     user.level = Math.max(1, Math.floor(0.1 * Math.sqrt(user.xp || 0)) + 1);
     user.rank = calculateRank(user.level);
 
@@ -604,6 +600,42 @@ class ResilientDatabase {
     const allUsers = Object.entries(source).map(([id, u]) => ({
       userId: id,
       xp: u.xp || 0,
+      level: u.level || 1,
+      rank: u.rank || calculateRank(u.level || 1),
+      messages: u.messages || 0
+    })).sort((a, b) => b.xp - a.xp);
+    return allUsers.slice(0, limit);
+  }
+
+  getTopUsersByWeeklyXP(limit = 10, guildId = null) {
+    let source = {};
+    if (guildId && this.data.guildLevels && this.data.guildLevels[guildId]) {
+      source = this.data.guildLevels[guildId];
+    } else {
+      source = this.data.users || {};
+    }
+
+    const allUsers = Object.entries(source).map(([id, u]) => ({
+      userId: id,
+      xp: u.weeklyXp || u.xp || 0,
+      level: u.level || 1,
+      rank: u.rank || calculateRank(u.level || 1),
+      messages: u.messages || 0
+    })).sort((a, b) => b.xp - a.xp);
+    return allUsers.slice(0, limit);
+  }
+
+  getTopUsersByMonthlyXP(limit = 10, guildId = null) {
+    let source = {};
+    if (guildId && this.data.guildLevels && this.data.guildLevels[guildId]) {
+      source = this.data.guildLevels[guildId];
+    } else {
+      source = this.data.users || {};
+    }
+
+    const allUsers = Object.entries(source).map(([id, u]) => ({
+      userId: id,
+      xp: u.monthlyXp || u.xp || 0,
       level: u.level || 1,
       rank: u.rank || calculateRank(u.level || 1),
       messages: u.messages || 0

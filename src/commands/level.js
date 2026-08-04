@@ -500,36 +500,113 @@ module.exports = {
         return message.reply(`${emojis.SUCCESS} Added **${mult}x XP Multiplier** for role <@&${role.id}>.`);
       }
 
+      if (action === 'channel' || action === 'chan') {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return message.reply(`${emojis.WARNING} Only Administrators can configure channel multipliers.`);
+        }
+        const chan = message.mentions.channels.first() || guild.channels.cache.get(args[2]);
+        const mult = parseFloat(args[3] || args[2]);
+        if (!chan || isNaN(mult) || mult <= 0) {
+          return message.reply(`${emojis.WARNING} Usage: \`.level multiplier channel <#channel> <multiplier>\` (e.g. \`.level multiplier channel #general 2.0\`)`);
+        }
+
+        db.updateLevelConfig(guildId, cfg => {
+          if (!cfg.channelMultipliers) cfg.channelMultipliers = {};
+          cfg.channelMultipliers[chan.id] = mult;
+        });
+
+        return message.reply(`${emojis.SUCCESS} Added **${mult}x XP Multiplier** for channel <#${chan.id}>.`);
+      }
+
       if (action === 'remove' || action === 'del') {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
           return message.reply(`${emojis.WARNING} Only Administrators can configure XP multipliers.`);
         }
-        const role = message.mentions.roles.first() || guild.roles.cache.get(args[2]);
-        if (!role) return message.reply(`${emojis.WARNING} Usage: \`.level multiplier remove <@role>\``);
+        const role = message.mentions.roles.first() || message.mentions.channels.first() || guild.roles.cache.get(args[2]);
+        if (!role) return message.reply(`${emojis.WARNING} Usage: \`.level multiplier remove <@role | #channel>\``);
 
         db.updateLevelConfig(guildId, cfg => {
           if (cfg.multipliers) delete cfg.multipliers[role.id];
+          if (cfg.channelMultipliers) delete cfg.channelMultipliers[role.id];
         });
 
-        return message.reply(`${emojis.SUCCESS} Removed XP Multiplier for role <@&${role.id}>.`);
+        return message.reply(`${emojis.SUCCESS} Removed XP Multiplier for <@&${role.id}>.`);
       }
 
       // List Multipliers
       const cfg = db.getLevelConfig(guildId);
-      const list = Object.entries(cfg.multipliers || {})
+      const roleList = Object.entries(cfg.multipliers || {})
         .map(([rId, m]) => `<@&${rId}> : **${m}x XP**`)
         .join('\n') || 'None configured';
 
+      const chanList = Object.entries(cfg.channelMultipliers || {})
+        .map(([cId, m]) => `<#${cId}> : **${m}x XP**`)
+        .join('\n') || 'None configured';
+
       const embed = createStyledEmbed({
-        title: `✨ Active Role XP Multipliers — ${guild.name}`,
+        title: `✨ Active XP Multipliers — ${guild.name}`,
         description:
-          `${list}\n\n` +
-          `*To add: \`.level multiplier add <@role> <multiplier>\`*\n` +
-          `*To remove: \`.level multiplier remove <@role>\`*`,
+          `**Role Boosters:**\n${roleList}\n\n` +
+          `**Channel Boosters:**\n${chanList}\n\n` +
+          `*Add Role Multiplier: \`.level multiplier add <@role> <multiplier>\`*\n` +
+          `*Add Channel Multiplier: \`.level multiplier channel <#channel> <multiplier>\`*`,
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
+    }
+
+    // .level bg <url | hexColor | reset>
+    if (sub === 'bg' || sub === 'background' || sub === 'cardbg') {
+      const input = args.slice(1).join(' ').trim();
+      if (!input) {
+        return message.reply(`${emojis.INFO} Usage: \`.level bg <image_url | #hexColor | reset>\``);
+      }
+      if (input.toLowerCase() === 'reset') {
+        db.updateUser(author.id, u => { u.cardBg = null; }, guildId);
+        return message.reply(`${emojis.SUCCESS} Reset your rank card background to default theme.`);
+      }
+      db.updateUser(author.id, u => { u.cardBg = input; }, guildId);
+      return message.reply(`${emojis.SUCCESS} Updated your rank card background to: \`${input}\`!`);
+    }
+
+    // .level champion role <@role>
+    if (sub === 'champion' || sub === 'firstplace') {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can set the champion role.`);
+      }
+      const role = message.mentions.roles.first() || guild.roles.cache.get(args[2] || args[1]);
+      if (!role) return message.reply(`${emojis.WARNING} Usage: \`.level champion role <@role>\``);
+
+      db.updateLevelConfig(guildId, cfg => { cfg.championRoleId = role.id; });
+      return message.reply(`${emojis.SUCCESS} Set <@&${role.id}> as the **#1 Leaderboard Champion Role**!`);
+    }
+
+    // .level reaction-rate <min> <max>
+    if (sub === 'reaction-rate' || sub === 'rx-rate') {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can configure reaction XP rates.`);
+      }
+      const minXp = parseInt(args[1]);
+      const maxXp = parseInt(args[2]);
+      if (isNaN(minXp) || isNaN(maxXp) || minXp < 1 || maxXp < minXp) {
+        return message.reply(`${emojis.WARNING} Usage: \`.level reaction-rate <minXp> <maxXp>\` (e.g. \`.level reaction-rate 5 15\`)`);
+      }
+      db.updateLevelConfig(guildId, cfg => { cfg.reactionXpMin = minXp; cfg.reactionXpMax = maxXp; });
+      return message.reply(`${emojis.SUCCESS} Reaction XP Rate set to **${minXp} - ${maxXp} XP** per reaction.`);
+    }
+
+    // .level voice-rate <xpPerMin>
+    if (sub === 'voice-rate' || sub === 'voice-xp') {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can configure voice XP rates.`);
+      }
+      const rate = parseInt(args[1]);
+      if (isNaN(rate) || rate < 0) {
+        return message.reply(`${emojis.WARNING} Usage: \`.level voice-rate <xpPerMin>\` (e.g. \`.level voice-rate 10\`)`);
+      }
+      db.updateLevelConfig(guildId, cfg => { cfg.voiceXpRate = rate; });
+      return message.reply(`${emojis.SUCCESS} Voice XP Rate set to **${rate} XP per minute**.`);
     }
 
     // .level rate <minXp> <maxXp> [cooldownSeconds]
@@ -578,16 +655,30 @@ module.exports = {
       }
     }
 
-    // 5. .level leaderboard / .lb
+    // 5. .level leaderboard / .lb [weekly | monthly | all]
     if (sub === 'leaderboard' || sub === 'lb' || sub === 'top') {
-      const top10 = db.getTopUsersByXP(10, guildId);
-      const items = top10.map((u, i) => `#${i + 1} Lvl ${u.level} - ${u.rank.slice(0, 10)} (${u.xp} XP)`);
+      const mode = (args[1] || '').toLowerCase();
+      let top10 = [];
+      let lbTitle = 'Shinobi Level Leaderboard — Top Chatters';
 
+      if (['weekly', 'week'].includes(mode)) {
+        top10 = db.getTopUsersByWeeklyXP(10, guildId);
+        lbTitle = '📅 Weekly XP Leaderboard — Top Chatters This Week';
+      } else if (['monthly', 'month'].includes(mode)) {
+        top10 = db.getTopUsersByMonthlyXP(10, guildId);
+        lbTitle = '🗓️ Monthly XP Leaderboard — Top Chatters This Month';
+      } else {
+        top10 = db.getTopUsersByXP(10, guildId);
+        lbTitle = '⭐ All-Time Shinobi Leaderboard — Top Chatters';
+      }
+
+      const items = top10.map((u, i) => `#${i + 1} Lvl ${u.level} - ${u.rank.slice(0, 10)} (${u.xp} XP)`);
       const box = createDynamicBox('SHINOBI LEADERBOARD TOP 10', items.length ? items : ['No data available']);
 
       const embed = createStyledEmbed({
-        title: `${emojis.RANK || emojis.LEVEL || '⭐'} Shinobi Level Leaderboard — Top Chatters`,
-        description: '```\n' + box + '\n```',
+        title: `${emojis.RANK || emojis.LEVEL || '⭐'} ${lbTitle}`,
+        subtitle: `Server: ${guild.name} • View: ${mode ? mode.toUpperCase() : 'ALL-TIME'}`,
+        description: '```\n' + box + '\n```\n*Use `.level lb weekly` or `.level lb monthly` to toggle views!*',
         requestedBy: author,
         clientUser
       });
@@ -651,9 +742,23 @@ module.exports = {
         const canvas = createCanvas(W, H);
         const ctx = canvas.getContext('2d');
 
-        // ── BACKGROUND: deep dark with subtle grid pattern ────────────────
-        ctx.fillStyle = '#0f0f1a';
-        ctx.fillRect(0, 0, W, H);
+        // ── BACKGROUND: custom image / custom color / default dark ────────
+        let bgLoaded = false;
+        if (userData.cardBg && userData.cardBg.startsWith('http')) {
+          try {
+            const customBgImg = await loadImage(userData.cardBg);
+            ctx.drawImage(customBgImg, 0, 0, W, H);
+            // Dark overlay for readability
+            ctx.fillStyle = 'rgba(15,15,26,0.65)';
+            ctx.fillRect(0, 0, W, H);
+            bgLoaded = true;
+          } catch {}
+        }
+
+        if (!bgLoaded) {
+          ctx.fillStyle = (userData.cardBg && userData.cardBg.startsWith('#')) ? userData.cardBg : '#0f0f1a';
+          ctx.fillRect(0, 0, W, H);
+        }
 
         // Subtle dot grid
         ctx.fillStyle = 'rgba(255,255,255,0.025)';
