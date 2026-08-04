@@ -123,8 +123,8 @@ function buildRerolledEmbed(gw, winnerMentions, clientUser) {
 
 module.exports = {
   name: 'giveaway',
-  description: 'Host and manage giveaways. Short syntax: .gstart, .gend, .greroll',
-  aliases: ['gstart', 'gcreate', 'gend', 'greroll', 'reroll'],
+  description: 'Host and manage giveaways. Short syntax: .gstart, .gend, .greroll, .gdelete, .gedit',
+  aliases: ['gstart', 'gcreate', 'gend', 'greroll', 'reroll', 'gdelete', 'gedit'],
   giveaways,
   buildActiveEmbed,
 
@@ -140,8 +140,12 @@ module.exports = {
       sub = 'end';
     } else if (invoked === 'greroll' || invoked === 'reroll') {
       sub = 'reroll';
+    } else if (invoked === 'gdelete') {
+      sub = 'delete';
+    } else if (invoked === 'gedit') {
+      sub = 'edit';
     } else if (invoked === 'giveaway') {
-      if (!['create', 'start', 'end', 'reroll', 'list'].includes(sub)) {
+      if (!['create', 'start', 'end', 'reroll', 'list', 'delete', 'edit'].includes(sub)) {
         sub = 'create';
         isDirect = true;
       }
@@ -311,6 +315,135 @@ module.exports = {
       });
     }
 
+    // ─────────────────────────────────────────
+    // .gdelete <id> / .giveaway delete <id>
+    // Delete (cancel) an active giveaway entirely
+    // ─────────────────────────────────────────
+    if (sub === 'delete') {
+      if (!message.member.permissions.has(8n) && message.guild.ownerId !== message.author.id) {
+        return message.reply(`⚠️ Only **Administrators** can delete giveaways.`);
+      }
+
+      const isDirect2 = invoked === 'gdelete';
+      const id = (isDirect2 ? args[0] : args[1])?.toUpperCase();
+
+      if (!id) return message.reply(`${emojis.WARNING} Usage: \`.giveaway delete <id>\` or \`.gdelete <id>\``);
+
+      const gw = giveaways.get(id);
+      if (!gw) return message.reply(`${emojis.WARNING} No giveaway found with ID \`${id}\`.`);
+
+      giveaways.delete(id);
+
+      // Try to delete or edit the original message
+      try {
+        const chan = message.client.channels.cache.get(gw.channelId);
+        if (chan) {
+          const origMsg = await chan.messages.fetch(gw.messageId).catch(() => null);
+          if (origMsg) {
+            const cancelEmbed = new EmbedBuilder()
+              .setColor(0xFF3333)
+              .setTitle(`🗑️ GIVEAWAY CANCELLED`)
+              .setDescription(`> **${gw.prize}**\n\nThis giveaway has been **deleted** by <@${message.author.id}>.`)
+              .setFooter({ text: `Giveaway ID: ${id} • Deleted`, iconURL: clientUser?.displayAvatarURL?.() || undefined })
+              .setTimestamp();
+            await origMsg.edit({ embeds: [cancelEmbed], components: [] }).catch(() => {});
+          }
+        }
+      } catch (e) {}
+
+      return message.reply(`${emojis.SUCCESS || '✅'} Giveaway \`${id}\` has been **deleted**.`);
+    }
+
+    // ─────────────────────────────────────────
+    // .gedit <id> duration/host/price/winners <value>
+    // .giveaway edit duration/host/price/winners <id> <value>
+    // ─────────────────────────────────────────
+    if (sub === 'edit') {
+      if (!message.member.permissions.has(8n) && message.guild.ownerId !== message.author.id) {
+        return message.reply(`⚠️ Only **Administrators** can edit giveaways.`);
+      }
+
+      // Determine format: .gedit <id> <field> <value> OR .giveaway edit <field> <id> <value>
+      const isDirect3 = invoked === 'gedit';
+      let field, id, rawValue;
+
+      if (isDirect3) {
+        // .gedit <id> <field> <value...>
+        id = args[0]?.toUpperCase();
+        field = args[1]?.toLowerCase();
+        rawValue = args.slice(2).join(' ');
+      } else {
+        // .giveaway edit <field> <id> <value...>
+        field = args[1]?.toLowerCase();
+        id = args[2]?.toUpperCase();
+        rawValue = args.slice(3).join(' ');
+      }
+
+      if (!field || !id || !rawValue) {
+        return message.reply(
+          `${emojis.WARNING} Usage:\n` +
+          `\`.giveaway edit duration <id> <time>\` — Edit end time (e.g. \`1h\`, \`30m\`)\n` +
+          `\`.giveaway edit host <id> <@user>\` — Change the host\n` +
+          `\`.giveaway edit price <id> <new prize>\` — Change the prize\n` +
+          `\`.giveaway edit winners <id> <number>\` — Change winner count`
+        );
+      }
+
+      const gw = giveaways.get(id);
+      if (!gw) return message.reply(`${emojis.WARNING} No giveaway found with ID \`${id}\`.`);
+      if (gw.ended) return message.reply(`${emojis.WARNING} Cannot edit an ended giveaway.`);
+
+      let successMsg = '';
+
+      if (field === 'duration' || field === 'time') {
+        const newDuration = parseTime(rawValue);
+        if (!newDuration) return message.reply(`${emojis.WARNING} Invalid time format. Use: \`10m\`, \`2h\`, \`1d\``);
+        gw.endTime = Date.now() + newDuration;
+        giveaways.set(id, gw);
+        successMsg = `⏱️ **Duration updated!** New end time: <t:${Math.floor(gw.endTime / 1000)}:R>`;
+
+      } else if (field === 'host') {
+        const newHost = message.mentions.users.first();
+        if (!newHost) return message.reply(`${emojis.WARNING} Please mention a user. Example: \`.giveaway edit host ${id} @user\``);
+        gw.hostId = newHost.id;
+        giveaways.set(id, gw);
+        successMsg = `🎤 **Host updated** to <@${newHost.id}>!`;
+
+      } else if (field === 'price' || field === 'prize') {
+        gw.prize = rawValue;
+        giveaways.set(id, gw);
+        successMsg = `🎁 **Prize updated** to: **${rawValue}**`;
+
+      } else if (field === 'winners') {
+        const newCount = parseInt(rawValue, 10);
+        if (isNaN(newCount) || newCount < 1) return message.reply(`${emojis.WARNING} Winner count must be a number ≥ 1.`);
+        gw.winnerCount = newCount;
+        giveaways.set(id, gw);
+        successMsg = `🏆 **Winner count updated** to **${newCount}**!`;
+
+      } else {
+        return message.reply(`${emojis.WARNING} Unknown field \`${field}\`. Valid fields: \`duration\`, \`host\`, \`price\`, \`winners\``);
+      }
+
+      // Live-update the original giveaway message
+      try {
+        const chan = message.client.channels.cache.get(gw.channelId);
+        if (chan) {
+          const origMsg = await chan.messages.fetch(gw.messageId).catch(() => null);
+          if (origMsg) {
+            const updatedEmbed = buildActiveEmbed(
+              gw.prize, gw.winnerCount,
+              Math.floor(gw.endTime / 1000),
+              gw.id, gw.hostId, gw.entries.size, clientUser
+            );
+            await origMsg.edit({ embeds: [updatedEmbed] }).catch(() => {});
+          }
+        }
+      } catch (e) {}
+
+      return message.reply(`${emojis.SUCCESS || '✅'} Giveaway \`${id}\` edited! ${successMsg}`);
+    }
+
     // .giveaway list
     if (sub === 'list') {
       const all = [...giveaways.values()];
@@ -336,3 +469,4 @@ module.exports = {
     return renderModuleHelpPanel(message, 'giveaway');
   }
 };
+

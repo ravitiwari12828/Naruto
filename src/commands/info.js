@@ -175,7 +175,7 @@ module.exports = {
   aliases: [
     'ping', 'about', 'invite', 'node',
     'profile', 'serverinfo', 'si',
-    'userinfo', 'user', 'membercount',
+    'userinfo', 'user', 'membercount', 'members', 'mc',
     'botinfo', 'uptime', 'vote',
     'afk', 'avatar', 'av', 'roleinfo', 'serverbanner', 'servericon', 'snipe'
   ],
@@ -408,6 +408,50 @@ module.exports = {
         requestedBy: author,
         clientUser
       });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 👥 MEMBERCOUNT — Full server member breakdown
+    if (invoked === 'membercount' || invoked === 'members' || invoked === 'mc') {
+      await guild.members.fetch().catch(() => {}); // force cache refresh
+
+      const total       = guild.memberCount;
+      const bots        = guild.members.cache.filter(m => m.user.bot).size;
+      const humans      = total - bots;
+      const online      = guild.members.cache.filter(m => m.presence?.status === 'online').size;
+      const idle        = guild.members.cache.filter(m => m.presence?.status === 'idle').size;
+      const dnd         = guild.members.cache.filter(m => m.presence?.status === 'dnd').size;
+      const offline     = guild.members.cache.filter(m => !m.presence || m.presence.status === 'offline').size;
+      const boosters    = guild.members.cache.filter(m => m.premiumSince).size;
+
+      const boxText =
+        '```\n' +
+        '╭──────────────────────────╮\n' +
+        '│     MEMBER COUNT         │\n' +
+        '├──────────────────────────┤\n' +
+        '│ Total   : ' + String(total).padEnd(14, ' ') + ' │\n' +
+        '│ Humans  : ' + String(humans).padEnd(14, ' ') + ' │\n' +
+        '│ Bots    : ' + String(bots).padEnd(14, ' ') + ' │\n' +
+        '├──────────────────────────┤\n' +
+        '│ Online  : ' + String(online).padEnd(14, ' ') + ' │\n' +
+        '│ Idle    : ' + String(idle).padEnd(14, ' ') + ' │\n' +
+        '│ DnD     : ' + String(dnd).padEnd(14, ' ') + ' │\n' +
+        '│ Offline : ' + String(offline).padEnd(14, ' ') + ' │\n' +
+        '├──────────────────────────┤\n' +
+        '│ Boosters: ' + String(boosters).padEnd(14, ' ') + ' │\n' +
+        '╰──────────────────────────╯\n' +
+        '```';
+
+      const embed = createStyledEmbed({
+        title: `${emojis.MEMBERS || '👥'} Member Count — ${guild.name}`,
+        subtitle: `Live Server Member Statistics`,
+        description: boxText + '\n\n' +
+          `🟢 **Online:** \`${online}\` • 🟡 **Idle:** \`${idle}\` • 🔴 **DnD:** \`${dnd}\` • ⚫ **Offline:** \`${offline}\`\n` +
+          `> 👤 **${humans.toLocaleString()}** humans • 🤖 **${bots.toLocaleString()}** bots • 💎 **${boosters}** boosters`,
+        requestedBy: author,
+        clientUser
+      });
+
       return message.channel.send({ embeds: [embed] });
     }
 
