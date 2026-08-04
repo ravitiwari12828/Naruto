@@ -554,21 +554,17 @@ module.exports = {
 
       // 🛒 SHOP DISPLAY (.ninja shop)
       if (action === 'shop') {
-        const shopBox = createDynamicBox('KONOHA NINJA ARMORY SHOP', [
-          '🗡️ Kunai Blade    : Buy 100 | Sell 60  | Max 50',
-          '🥷 Shuriken Pack  : Buy 150 | Sell 90  | Max 50',
-          '🧪 Health Elixir  : Buy 200 | Sell 120 | Max 20',
-          '💊 Chakra Pill    : Buy 250 | Sell 150 | Max 20',
-          '📜 Ancient Scroll : Buy 500 | Sell 300 | Max 10'
-        ]);
+        const shopListStr = SHOP_ITEMS.map(i => {
+          return `${i.name}\n└ Buy: \`${i.cost} Ryo\` | Sell: \`${i.sellPrice} Ryo\` | Max: \`${i.maxCap}\`\n  *${i.desc}*`;
+        }).join('\n\n');
 
         const embed = createStyledEmbed({
           title: `🛍️ Konoha Shinobi Shop & Armory`,
           subtitle: `Prices, Resell Values & Inventory Caps`,
           description:
-            '```\n' + shopBox + '\n```\n\n' +
-            `• **To Buy Items:** \`.ninja buy <item> [amount]\` *(e.g. \`.ninja buy elixir 5\`)*\n` +
-            `• **To Sell Items:** \`.ninja sell <item> [amount]\` *(e.g. \`.ninja sell kunai 3\`)*`,
+            `${shopListStr}\n\n` +
+            `• **To Buy:** \`.ninja buy <item> [amount]\` *(e.g. \`.ninja buy elixir 5\`)*\n` +
+            `• **To Sell:** \`.ninja sell <item> [amount]\` *(e.g. \`.ninja sell kunai 3\`)*`,
           requestedBy: author,
           clientUser
         });
