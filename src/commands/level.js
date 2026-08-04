@@ -310,205 +310,254 @@ module.exports = {
     if (!sub || sub === 'rank' || sub === 'card') {
       const targetUser = message.mentions.users.first() || author;
       const userData = db.getUser(targetUser.id);
-      const nextLvlXp = userData.level * 75;
-      const progress = Math.min(1, (userData.xp || 0) / Math.max(1, nextLvlXp));
+      const totalXp  = userData.xp || 0;
+      const level    = userData.level || 1;
+
+      // ── Correct XP Math (ProBot quadratic: level = floor(0.1*sqrt(xp))+1) ──
+      // Inverse: xp needed to START level L = ((L-1)/0.1)^2 = (L-1)^2 * 100
+      const xpStartThisLevel = Math.pow((level - 1), 2) * 100;
+      const xpStartNextLevel = Math.pow(level, 2) * 100;
+      const xpInThisLevel    = Math.max(0, totalXp - xpStartThisLevel);
+      const xpNeededThisLevel = xpStartNextLevel - xpStartThisLevel;
+      const progress = Math.min(1, xpInThisLevel / Math.max(1, xpNeededThisLevel));
 
       try {
-        const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
+        const { createCanvas, loadImage } = require('@napi-rs/canvas');
 
-        // ── Card Dimensions ──────────────────────────
-        const W = 700, H = 200;
+        const W = 760, H = 220;
         const canvas = createCanvas(W, H);
         const ctx = canvas.getContext('2d');
 
-        // ── Background: dark card ────────────────────
-        ctx.fillStyle = '#1a1a2e';
-        ctx.beginPath();
-        ctx.roundRect(0, 0, W, H, 18);
-        ctx.fill();
+        // ── BACKGROUND: deep dark with subtle grid pattern ────────────────
+        ctx.fillStyle = '#0f0f1a';
+        ctx.fillRect(0, 0, W, H);
 
-        // ── Accent triangle shape (top-right, teal like reference) ─
+        // Subtle dot grid
+        ctx.fillStyle = 'rgba(255,255,255,0.025)';
+        for (let gx = 20; gx < W; gx += 30) {
+          for (let gy = 20; gy < H; gy += 30) {
+            ctx.beginPath();
+            ctx.arc(gx, gy, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+
+        // Diagonal slash accent (top-right corner, Naruto leaf village inspired)
         ctx.save();
         ctx.beginPath();
-        ctx.moveTo(W - 140, 0);
+        ctx.moveTo(W - 200, 0);
         ctx.lineTo(W, 0);
         ctx.lineTo(W, H);
-        ctx.lineTo(W - 80, H);
+        ctx.lineTo(W - 130, H);
         ctx.closePath();
-        ctx.fillStyle = '#00b4d8';
-        ctx.globalAlpha = 0.22;
-        ctx.fill();
-        // Inner lighter slice
-        ctx.beginPath();
-        ctx.moveTo(W - 70, 0);
-        ctx.lineTo(W, 0);
-        ctx.lineTo(W, H);
-        ctx.lineTo(W - 30, H);
-        ctx.closePath();
-        ctx.fillStyle = '#48cae4';
-        ctx.globalAlpha = 0.18;
+        const bgAccent = ctx.createLinearGradient(W - 200, 0, W, H);
+        bgAccent.addColorStop(0, 'rgba(255,107,0,0.07)');
+        bgAccent.addColorStop(1, 'rgba(255,200,0,0.04)');
+        ctx.fillStyle = bgAccent;
         ctx.fill();
         ctx.restore();
 
-        // ── Orange side accent bar (left edge) ──────
+        // Bright accent slash line
         ctx.save();
-        ctx.fillStyle = '#FF6B00';
-        ctx.globalAlpha = 0.85;
+        ctx.strokeStyle = 'rgba(255,107,0,0.35)';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.roundRect(0, 0, 6, H, [18, 0, 0, 18]);
-        ctx.fill();
-        ctx.restore();
-
-        // ── Subtle inner glow border ─────────────────
-        ctx.save();
-        ctx.strokeStyle = '#FF6B00';
-        ctx.lineWidth = 1.5;
-        ctx.globalAlpha = 0.25;
-        ctx.beginPath();
-        ctx.roundRect(1, 1, W - 2, H - 2, 17);
+        ctx.moveTo(W - 200, 0);
+        ctx.lineTo(W - 130, H);
         ctx.stroke();
         ctx.restore();
 
-        // ── Circular Avatar ──────────────────────────
-        const avatarX = 70, avatarY = H / 2, avatarR = 60;
-
-        // Avatar glow ring (orange)
+        // Rounded card border
         ctx.save();
-        ctx.shadowColor = '#FF6B00';
-        ctx.shadowBlur = 18;
-        ctx.strokeStyle = '#FF6B00';
-        ctx.lineWidth = 3.5;
+        ctx.strokeStyle = 'rgba(255,107,0,0.2)';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(avatarX, avatarY, avatarR + 3, 0, Math.PI * 2);
+        ctx.roundRect(1, 1, W - 2, H - 2, 16);
         ctx.stroke();
         ctx.restore();
 
-        // Clip circle for avatar
+        // ── AVATAR (circle, left side) ───────────────────────────────────
+        const avX = 95, avY = H / 2, avR = 68;
+
+        // Outer glow (soft orange halo)
+        ctx.save();
+        const halo = ctx.createRadialGradient(avX, avY, avR - 5, avX, avY, avR + 20);
+        halo.addColorStop(0, 'rgba(255,107,0,0.35)');
+        halo.addColorStop(1, 'rgba(255,107,0,0)');
+        ctx.fillStyle = halo;
+        ctx.beginPath();
+        ctx.arc(avX, avY, avR + 20, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+
+        // Ring border
+        ctx.save();
+        const ringGrad = ctx.createLinearGradient(avX - avR, avY - avR, avX + avR, avY + avR);
+        ringGrad.addColorStop(0, '#FF6B00');
+        ringGrad.addColorStop(0.5, '#FFD700');
+        ringGrad.addColorStop(1, '#FF6B00');
+        ctx.strokeStyle = ringGrad;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(avX, avY, avR + 4, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // Avatar clip + draw
         ctx.save();
         ctx.beginPath();
-        ctx.arc(avatarX, avatarY, avatarR, 0, Math.PI * 2);
+        ctx.arc(avX, avY, avR, 0, Math.PI * 2);
         ctx.clip();
-
         try {
-          const avatarUrl = targetUser.displayAvatarURL({ extension: 'png', size: 256 });
-          const avatarImg = await loadImage(avatarUrl);
-          ctx.drawImage(avatarImg, avatarX - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2);
+          const avImg = await loadImage(targetUser.displayAvatarURL({ extension: 'png', size: 256 }));
+          ctx.drawImage(avImg, avX - avR, avY - avR, avR * 2, avR * 2);
         } catch {
-          // Fallback: gradient circle if avatar load fails
-          const grad = ctx.createRadialGradient(avatarX, avatarY, 0, avatarX, avatarY, avatarR);
-          grad.addColorStop(0, '#FF6B00');
-          grad.addColorStop(1, '#1a1a2e');
-          ctx.fillStyle = grad;
-          ctx.fillRect(avatarX - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2);
+          const fbGrad = ctx.createLinearGradient(avX - avR, avY - avR, avX + avR, avY + avR);
+          fbGrad.addColorStop(0, '#FF6B00');
+          fbGrad.addColorStop(1, '#6b00ff');
+          ctx.fillStyle = fbGrad;
+          ctx.fillRect(avX - avR, avY - avR, avR * 2, avR * 2);
+          ctx.font = 'bold 40px sans-serif';
+          ctx.fillStyle = '#fff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(targetUser.username[0].toUpperCase(), avX, avY);
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'alphabetic';
         }
         ctx.restore();
 
-        // ── Username ─────────────────────────────────
-        const textX = 155;
-        const username = targetUser.username.length > 18
-          ? targetUser.username.slice(0, 18) + '…'
+        // ── USERNAME (large, white, bold) ─────────────────────────────────
+        const tx = 188;
+        const uname = targetUser.username.length > 16
+          ? targetUser.username.slice(0, 16) + '…'
           : targetUser.username;
 
-        ctx.font = 'bold 30px sans-serif';
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillText('@' + username, textX, 68);
+        ctx.font = 'bold 34px sans-serif';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('@' + uname, tx, 62);
 
-        // Underline below username (orange accent)
-        const usernameWidth = ctx.measureText('@' + username).width;
+        // Thin coloured underline
+        const unameW = ctx.measureText('@' + uname).width;
+        const lineGrad = ctx.createLinearGradient(tx, 0, tx + unameW, 0);
+        lineGrad.addColorStop(0, '#FF6B00');
+        lineGrad.addColorStop(1, '#FFD700');
         ctx.save();
-        ctx.strokeStyle = '#FF6B00';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = lineGrad;
+        ctx.lineWidth = 2.5;
         ctx.lineCap = 'round';
         ctx.beginPath();
-        ctx.moveTo(textX, 76);
-        ctx.lineTo(textX + usernameWidth, 76);
+        ctx.moveTo(tx, 70);
+        ctx.lineTo(tx + unameW, 70);
         ctx.stroke();
         ctx.restore();
 
-        // ── Inline Stats: Level  XP  Rank ────────────
-        const statsY = 112;
-        ctx.font = 'bold 17px sans-serif';
+        // ── STAT CHIPS: Level / XP / Rank ────────────────────────────────
+        const chipY = 90, chipH = 28, chipR = 8, chipPad = 12;
+        const stats = [
+          { label: 'LVL', value: String(level) },
+          { label: 'XP', value: `${fmtNum(xpInThisLevel)} / ${fmtNum(xpNeededThisLevel)}` },
+          { label: 'RANK', value: (userData.rank || 'Student').split(' ')[0] }
+        ];
 
-        // "Level:" label (dim)
-        ctx.fillStyle = '#aaaaaa';
-        ctx.fillText('Level:', textX, statsY);
-        const lvlLabelW = ctx.measureText('Level:').width;
+        ctx.font = 'bold 13px sans-serif';
+        let chipX = tx;
+        for (const chip of stats) {
+          const label = chip.label + ' ';
+          const val   = chip.value;
+          const lW = ctx.measureText(label).width;
+          const vW = ctx.measureText(val).width;
+          const totalW = lW + vW + chipPad * 2;
 
-        // Level value (yellow)
-        ctx.fillStyle = '#FFD700';
-        const lvlText = String(userData.level || 1);
-        ctx.fillText(lvlText, textX + lvlLabelW + 6, statsY);
-        const lvlValW = ctx.measureText(lvlText).width;
+          // Chip background
+          ctx.save();
+          ctx.fillStyle = 'rgba(255,107,0,0.12)';
+          ctx.strokeStyle = 'rgba(255,107,0,0.3)';
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.roundRect(chipX, chipY, totalW, chipH, chipR);
+          ctx.fill();
+          ctx.stroke();
+          ctx.restore();
 
-        // "XP:" label
-        const xpLabelX = textX + lvlLabelW + 6 + lvlValW + 24;
-        ctx.fillStyle = '#aaaaaa';
-        ctx.fillText('XP:', xpLabelX, statsY);
-        const xpLabelW = ctx.measureText('XP:').width;
+          // Label (dim)
+          ctx.fillStyle = '#aaaaaa';
+          ctx.fillText(label, chipX + chipPad, chipY + 19);
 
-        // XP value (yellow)
-        ctx.fillStyle = '#FFD700';
-        const xpText = `${fmtNum(userData.xp || 0)} / ${fmtNum(nextLvlXp)}`;
-        ctx.fillText(xpText, xpLabelX + xpLabelW + 6, statsY);
-        const xpValW = ctx.measureText(xpText).width;
+          // Value (orange-gold)
+          ctx.fillStyle = '#FFD700';
+          ctx.fillText(val, chipX + chipPad + lW, chipY + 19);
 
-        // "Rank:" label
-        const rankLabelX = xpLabelX + xpLabelW + 6 + xpValW + 24;
-        ctx.fillStyle = '#aaaaaa';
-        ctx.fillText('Rank:', rankLabelX, statsY);
-        const rankLabelW = ctx.measureText('Rank:').width;
+          chipX += totalW + 10;
+        }
 
-        // Rank value (yellow)
-        ctx.fillStyle = '#FFD700';
-        ctx.fillText(String(userData.rank || 'Student').split(' ')[0], rankLabelX + rankLabelW + 6, statsY);
+        // ── PROGRESS BAR ──────────────────────────────────────────────────
+        const barX = tx, barY = 140;
+        const barW = W - tx - 60, barH2 = 20;
 
-        // ── XP Progress Bar ───────────────────────────
-        const barX = textX, barY = 135;
-        const barW = W - textX - 70, barH = 18;
-        const filled = Math.round(barW * progress);
-
-        // Bar background (dark track)
+        // Track
         ctx.save();
-        ctx.fillStyle = '#2e2e4e';
+        ctx.fillStyle = '#1e1e30';
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.roundRect(barX, barY, barW, barH, barH / 2);
+        ctx.roundRect(barX, barY, barW, barH2, barH2 / 2);
         ctx.fill();
+        ctx.stroke();
 
-        // Filled portion — orange → red gradient
-        if (filled > 0) {
-          const barGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+        // Fill (only as wide as actual progress)
+        const filled = Math.round(barW * progress);
+        if (filled > 2) {
+          const barGrad = ctx.createLinearGradient(barX, 0, barX + filled, 0);
           barGrad.addColorStop(0, '#FF6B00');
-          barGrad.addColorStop(0.6, '#FF3300');
-          barGrad.addColorStop(1, '#FF6B00');
+          barGrad.addColorStop(0.5, '#FF9900');
+          barGrad.addColorStop(1, '#FFD700');
           ctx.fillStyle = barGrad;
           ctx.beginPath();
-          ctx.roundRect(barX, barY, Math.max(barH, filled), barH, barH / 2);
+          ctx.roundRect(barX, barY, filled, barH2, barH2 / 2);
           ctx.fill();
 
-          // Shine highlight on filled bar
-          ctx.fillStyle = 'rgba(255,255,255,0.12)';
+          // Top shine strip
+          ctx.fillStyle = 'rgba(255,255,255,0.15)';
           ctx.beginPath();
-          ctx.roundRect(barX, barY, Math.max(barH, filled), barH / 2, [barH / 2, barH / 2, 0, 0]);
+          ctx.roundRect(barX + 2, barY + 2, filled - 4, barH2 / 2 - 2, [(barH2 / 2) - 1, (barH2 / 2) - 1, 0, 0]);
           ctx.fill();
         }
         ctx.restore();
 
-        // Percentage text inside/below bar
+        // Percentage label — floats to the right of the filled bar
         const pctText = Math.round(progress * 100) + '%';
-        ctx.font = 'bold 11px sans-serif';
-        ctx.fillStyle = progress > 0.15 ? '#fff' : '#aaa';
-        ctx.fillText(pctText, barX + 8, barY + 13);
+        ctx.font = 'bold 12px sans-serif';
+        ctx.fillStyle = progress > 0.08 ? '#ffffff' : '#777777';
+        const pctX = Math.min(barX + filled + 6, barX + barW - ctx.measureText(pctText).width - 4);
+        ctx.fillText(pctText, Math.max(barX + 4, pctX), barY + 14);
 
-        // ── Shinobi rank label (bottom right of card) ─
-        ctx.font = '13px sans-serif';
-        ctx.fillStyle = '#48cae4';
-        ctx.globalAlpha = 0.85;
-        const rankLabel = '⚡ ' + (userData.rank || 'Academy Student');
-        const rankLabelMW = ctx.measureText(rankLabel).width;
-        ctx.fillText(rankLabel, W - rankLabelMW - 20, H - 14);
-        ctx.globalAlpha = 1;
+        // XP progress label below bar
+        ctx.font = '11px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.fillText(`${fmtNum(xpInThisLevel)} XP earned this level  •  ${fmtNum(xpNeededThisLevel - xpInThisLevel)} XP to level ${level + 1}`, barX, barY + barH2 + 15);
 
-        // ── Send card as image attachment ─────────────
+        // ── Server rank number (top-right) ────────────────────────────────
+        // Fetch server rank
+        let serverRank = '?';
+        try {
+          const top = db.getTopUsersByXP(500);
+          const idx = top.findIndex(u => u.id === targetUser.id || u.userId === targetUser.id);
+          serverRank = idx >= 0 ? String(idx + 1) : '—';
+        } catch {}
+
+        ctx.font = 'bold 13px sans-serif';
+        ctx.fillStyle = 'rgba(255,215,0,0.7)';
+        const srLabel = `# ${serverRank}`;
+        const srW = ctx.measureText(srLabel).width;
+        ctx.fillText(srLabel, W - srW - 18, 22);
+
+        // Small "SERVER RANK" text above it
+        ctx.font = '9px sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillText('SERVER RANK', W - ctx.measureText('SERVER RANK').width - 18, 12);
+
+        // ── Send ──────────────────────────────────────────────────────────
         const buffer = canvas.toBuffer('image/png');
         const { AttachmentBuilder } = require('discord.js');
         const attachment = new AttachmentBuilder(buffer, { name: 'rankcard.png' });
@@ -516,20 +565,18 @@ module.exports = {
 
       } catch (err) {
         console.error('[RankCard Canvas Error]', err.message);
-        // Fallback to embed if canvas fails
-        const nextLvlXp2 = userData.level * 75;
-        const progress2 = Math.min(100, Math.floor(((userData.xp || 0) / Math.max(1, nextLvlXp2)) * 100));
-        const filled2 = Math.floor(progress2 / 10);
-        const bar = '█'.repeat(filled2) + '░'.repeat(10 - filled2);
-        const box = createDynamicBox('SHINOBI RANK PROFILE', [
+        // Fallback embed
+        const pct = Math.round(progress * 100);
+        const barStr = '█'.repeat(Math.floor(pct / 10)) + '░'.repeat(10 - Math.floor(pct / 10));
+        const box = createDynamicBox('SHINOBI RANK CARD', [
           { key: 'Username', value: targetUser.username.slice(0, 12) },
           { key: 'Rank    ', value: (userData.rank || 'Student').slice(0, 12) },
-          { key: 'Level   ', value: 'Level ' + (userData.level || 1) },
-          { key: 'Total XP', value: (userData.xp || 0) + ' XP' },
-          { key: 'Progress', value: '[' + bar + '] ' + progress2 + '%' }
+          { key: 'Level   ', value: String(level) },
+          { key: 'XP      ', value: `${fmtNum(xpInThisLevel)}/${fmtNum(xpNeededThisLevel)}` },
+          { key: 'Progress', value: '[' + barStr + '] ' + pct + '%' }
         ]);
         const embed = createStyledEmbed({
-          title: `${emojis.RANK || emojis.LEVEL || '📈'} Shinobi Rank Card — ${targetUser.username}`,
+          title: `📈 Shinobi Rank Card — ${targetUser.username}`,
           subtitle: `${userData.rank || 'Academy Student'}`,
           description: '```\n' + box + '\n```',
           requestedBy: author,
@@ -538,7 +585,6 @@ module.exports = {
         return message.channel.send({ embeds: [embed] });
       }
     }
-
 
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
     return renderModuleHelpPanel(message, 'level');
