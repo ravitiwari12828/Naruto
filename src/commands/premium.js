@@ -130,12 +130,14 @@ module.exports = {
         return message.reply(`${emojis.WARNING || '⚠️'} **Premium Required!** Bot Appearance Customization (Avatar, Banner, Bio & Nickname) requires **Premium Tier**! Type \`.premium status\` to check eligibility.`);
       }
 
+      const storedApp = db.getGuildAppearance(guild.id);
+
       if (!appearanceDrafts.has(guild.id)) {
         appearanceDrafts.set(guild.id, {
-          nickname: guild.members.me?.nickname || '',
-          bio: '',
-          avatar: null,
-          banner: null
+          nickname: storedApp.nickname || guild.members.me?.nickname || '',
+          bio: storedApp.bio || '',
+          avatar: storedApp.avatar || null,
+          banner: storedApp.banner || null
         });
       }
 
@@ -147,13 +149,14 @@ module.exports = {
         if (!newNick) return message.reply(`${emojis.WARNING || '⚠️'} Please specify a nickname! Usage: \`.botnickname <name>\``);
 
         draft.nickname = newNick;
+        db.setGuildAppearance(guild.id, { nickname: newNick });
         try {
           if (guild.members.me?.permissions.has('ChangeNickname')) {
             await guild.members.me.setNickname(newNick);
           }
         } catch (e) {}
 
-        return message.reply(`${emojis.SUCCESS || '✅'} Bot nickname updated to **"${newNick}"**! Click **Save Settings** in \`.botappearance\` to persist.`);
+        return message.reply(`${emojis.SUCCESS || '✅'} Server bot nickname updated to **"${newNick}"**! Click **Save Settings** in \`.botappearance\` to confirm.`);
       }
 
       // 2. SET BIO (.botbio <text> / .premium bio <text>)
@@ -162,11 +165,9 @@ module.exports = {
         if (!newBio) return message.reply(`${emojis.WARNING || '⚠️'} Please specify a status bio! Usage: \`.botbio <text>\``);
 
         draft.bio = newBio;
-        try {
-          message.client.user.setActivity(newBio);
-        } catch (e) {}
+        db.setGuildAppearance(guild.id, { bio: newBio });
 
-        return message.reply(`${emojis.SUCCESS || '✅'} Bot bio status updated to **"${newBio}"**!`);
+        return message.reply(`${emojis.SUCCESS || '✅'} Server bot status bio updated to **"${newBio}"**!`);
       }
 
       // 3. SET AVATAR (.setavatar <URL/Attachment>)
@@ -176,7 +177,8 @@ module.exports = {
         if (!imgUrl) return message.reply(`${emojis.WARNING || '⚠️'} Provide an image URL or attach an image! Usage: \`.setavatar <imageURL/attachment>\``);
 
         draft.avatar = imgUrl;
-        return message.reply(`${emojis.SUCCESS || '✅'} Avatar image staged! Click **Save Settings** in \`.botappearance\` to apply globally.`);
+        db.setGuildAppearance(guild.id, { avatar: imgUrl });
+        return message.reply(`${emojis.SUCCESS || '✅'} Server bot avatar updated for **${guild.name}**! *(Original global bot profile remains unchanged)*.`);
       }
 
       // 4. SET BANNER (.setbanner <URL/Attachment>)
@@ -186,7 +188,8 @@ module.exports = {
         if (!imgUrl) return message.reply(`${emojis.WARNING || '⚠️'} Provide a banner image URL or attach an image! Usage: \`.setbanner <imageURL/attachment>\``);
 
         draft.banner = imgUrl;
-        return message.reply(`${emojis.SUCCESS || '✅'} Banner image staged! Click **Save Settings** in \`.botappearance\` to apply globally.`);
+        db.setGuildAppearance(guild.id, { banner: imgUrl });
+        return message.reply(`${emojis.SUCCESS || '✅'} Server bot banner updated for **${guild.name}**! *(Original global bot profile remains unchanged)*.`);
       }
 
       // 5. RESET APPEARANCE (.resetappearance / .premium reset)
@@ -195,6 +198,7 @@ module.exports = {
         draft.bio = '';
         draft.avatar = null;
         draft.banner = null;
+        db.setGuildAppearance(guild.id, { nickname: '', bio: '', avatar: null, banner: null });
 
         try {
           if (guild.members.me?.permissions.has('ChangeNickname')) {
@@ -202,7 +206,7 @@ module.exports = {
           }
         } catch (e) {}
 
-        return message.reply(`${emojis.SUCCESS || '✅'} **BOT APPEARANCE RESET!** Restored default nickname, avatar, banner, and bio.`);
+        return message.reply(`${emojis.SUCCESS || '✅'} **SERVER BOT APPEARANCE RESET!** Restored default nickname, avatar, banner, and bio for **${guild.name}**.`);
       }
 
       // 6. DASHBOARD MAIN INTERACTIVE PANEL (.botappearance / .appearance)
@@ -217,21 +221,18 @@ module.exports = {
 
       collector.on('collect', async i => {
         if (i.customId === 'app_save') {
-          // SAVE & APPLY ALL SETTINGS TO DISCORD API
+          // SAVE & APPLY ALL SETTINGS PER GUILD
           try {
+            db.setGuildAppearance(guild.id, {
+              nickname: draft.nickname,
+              bio: draft.bio,
+              avatar: draft.avatar,
+              banner: draft.banner
+            });
             if (draft.nickname && guild.members.me?.permissions.has('ChangeNickname')) {
-              await guild.members.me.setNickname(draft.nickname);
+              await guild.members.me.setNickname(draft.nickname).catch(() => {});
             }
-            if (draft.avatar) {
-              await message.client.user.setAvatar(draft.avatar).catch(() => {});
-            }
-            if (draft.banner) {
-              await message.client.user.setBanner(draft.banner).catch(() => {});
-            }
-            if (draft.bio) {
-              message.client.user.setActivity(draft.bio);
-            }
-            await i.reply({ content: `${emojis.SUCCESS || '✅'} **All bot appearance settings saved and applied to Discord!**`, ephemeral: true });
+            await i.reply({ content: `${emojis.SUCCESS || '✅'} **Server bot appearance settings saved and active for ${guild.name}!** *(Original global bot account is untouched)*.`, ephemeral: true });
           } catch (err) {
             await i.reply({ content: `⚠️ Error applying settings: ${err.message}`, ephemeral: true });
           }
@@ -246,10 +247,11 @@ module.exports = {
           draft.bio = '';
           draft.avatar = null;
           draft.banner = null;
+          db.setGuildAppearance(guild.id, { nickname: '', bio: '', avatar: null, banner: null });
 
           try {
             if (guild.members.me?.permissions.has('ChangeNickname')) {
-              await guild.members.me.setNickname(null);
+              await guild.members.me.setNickname(null).catch(() => {});
             }
           } catch (e) {}
 

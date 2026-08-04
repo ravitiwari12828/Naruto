@@ -1034,6 +1034,27 @@ class ResilientDatabase {
     this.saveJSON();
     return ecoData;
   }
+
+  // --- PER-GUILD BOT APPEARANCE SUITE ---
+  getGuildAppearance(guildId) {
+    if (!this.data.botAppearances) this.data.botAppearances = {};
+    if (!this.data.botAppearances[guildId]) {
+      this.data.botAppearances[guildId] = {
+        nickname: '',
+        bio: '',
+        avatar: null,
+        banner: null
+      };
+    }
+    return this.data.botAppearances[guildId];
+  }
+
+  setGuildAppearance(guildId, appearanceData) {
+    if (!this.data.botAppearances) this.data.botAppearances = {};
+    this.data.botAppearances[guildId] = Object.assign(this.getGuildAppearance(guildId), appearanceData);
+    this.saveJSON();
+    return this.data.botAppearances[guildId];
+  }
 }
 
 const db = new ResilientDatabase();

@@ -42,14 +42,24 @@ function createStyledEmbed({
     }
   }
 
-  let botIcon = (botUserObj && typeof botUserObj.displayAvatarURL === 'function')
+  let guildId = null;
+  if (requestedBy && requestedBy.guild) guildId = requestedBy.guild.id;
+
+  let guildAppearance = null;
+  try {
+    const db = require('../database/db');
+    if (guildId) guildAppearance = db.getGuildAppearance(guildId);
+  } catch (e) {}
+
+  let botIcon = guildAppearance?.avatar || ((botUserObj && typeof botUserObj.displayAvatarURL === 'function')
     ? botUserObj.displayAvatarURL({ dynamic: true, size: 512 })
-    : null;
+    : null);
 
   const embed = new EmbedBuilder().setColor(color);
 
   // Author header: plain text author name + BOT avatar
-  const cleanAuthor = stripCustomEmojis(authorName);
+  const displayAuthorName = (guildAppearance?.nickname) ? guildAppearance.nickname : authorName;
+  const cleanAuthor = stripCustomEmojis(displayAuthorName);
   if (botIcon) {
     embed.setAuthor({ name: cleanAuthor, iconURL: botIcon });
   } else {
