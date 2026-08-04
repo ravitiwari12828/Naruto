@@ -104,8 +104,8 @@ function formatItemLines(item, maxContentWidth) {
  * @returns {string} Formatted monospaced codeblock box string
  */
 function createDynamicBox(title, items = [], minWidth = 20, customMaxWidth = null) {
-  // Safe Inner Width: Configurable up to 54 chars for wide panels
-  const MAX_INNER_WIDTH = customMaxWidth || 52;
+  // Safe Inner Width: Fixed at 22 chars (26 chars total box width) for universal mobile alignment without wrapping
+  const MAX_INNER_WIDTH = customMaxWidth || 22;
 
   // Process all items into compliant line strings
   const processedLines = [];

@@ -554,13 +554,13 @@ module.exports = {
 
       // 🛒 SHOP DISPLAY (.ninja shop)
       if (action === 'shop') {
-        const shopBox = createDynamicBox('KONOHA NINJA ARMORY SHOP', [
-          { key: '🗡️ Kunai Blade    ', value: '100 Ryo | Max: 50' },
-          { key: '🥷 Shuriken Pack  ', value: '150 Ryo | Max: 50' },
-          { key: '🧪 Health Elixir  ', value: '200 Ryo | Max: 20' },
-          { key: '💊 Chakra Pill    ', value: '250 Ryo | Max: 20' },
-          { key: '📜 Ancient Scroll ', value: '500 Ryo | Max: 10' }
-        ], 20, 42);
+        const shopBox = createDynamicBox('KONOHA NINJA SHOP', [
+          { key: 'Kunai   ', value: '100 Ryo | Max: 50' },
+          { key: 'Shuriken', value: '150 Ryo | Max: 50' },
+          { key: 'Elixir  ', value: '200 Ryo | Max: 20' },
+          { key: 'Pill    ', value: '250 Ryo | Max: 20' },
+          { key: 'Scroll  ', value: '500 Ryo | Max: 10' }
+        ], 20, 22);
 
         const embed = createStyledEmbed({
           title: `🛍️ Konoha Shinobi Shop & Armory`,
@@ -666,14 +666,14 @@ module.exports = {
 
       // 🎒 INVENTORY DISPLAY (.ninja inventory)
       const inv = userData.ninjaInventory || {};
-      const invBox = createDynamicBox(`NINJA GEAR BAG — ${targetUser.username.toUpperCase()}`, [
-        { key: 'Kunai    ', value: `${inv.kunai || 0} / 50` },
-        { key: 'Shuriken ', value: `${inv.shuriken || 0} / 50` },
-        { key: 'Elixirs  ', value: `${inv.elixir || inv.healthPotion || 0} / 20` },
-        { key: 'Pills    ', value: `${inv.pill || inv.chakraPill || 0} / 20` },
-        { key: 'Scrolls  ', value: `${inv.scroll || 0} / 10` },
-        { key: 'Ryo      ', value: `${userData.ryo || 0} Ryo` }
-      ]);
+      const invBox = createDynamicBox('NINJA GEAR BAG', [
+        { key: 'Kunai   ', value: `${inv.kunai || 0} / 50` },
+        { key: 'Shuriken', value: `${inv.shuriken || 0} / 50` },
+        { key: 'Elixirs ', value: `${inv.elixir || inv.healthPotion || 0} / 20` },
+        { key: 'Pills   ', value: `${inv.pill || inv.chakraPill || 0} / 20` },
+        { key: 'Scrolls ', value: `${inv.scroll || 0} / 10` },
+        { key: 'Ryo     ', value: `${userData.ryo || 0} Ryo` }
+      ], 20, 22);
 
       const embed = createStyledEmbed({
         title: `🎒 ${targetUser.username}'s Shinobi Weapon Bag`,
