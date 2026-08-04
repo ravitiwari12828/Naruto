@@ -349,10 +349,17 @@ class ResilientDatabase {
         rank: 'Academy Student',
         chakra: 100,
         ryo: 500,
-        jutsuList: ['Rasengan', 'Shadow Clone Jutsu']
+        clan: 'None',
+        jutsuList: ['Rasengan', 'Shadow Clone Jutsu'],
+        ninjaInventory: { kunai: 5, shuriken: 10, healthPotions: 2, chakraPills: 2, scrolls: 1 },
+        ninjaStats: { wins: 0, losses: 0, battles: 0, missionsCompleted: 0 }
       };
     }
-    return this.data.users[userId];
+    const u = this.data.users[userId];
+    if (!u.clan) u.clan = 'None';
+    if (!u.ninjaInventory) u.ninjaInventory = { kunai: 5, shuriken: 10, healthPotions: 2, chakraPills: 2, scrolls: 1 };
+    if (!u.ninjaStats) u.ninjaStats = { wins: 0, losses: 0, battles: 0, missionsCompleted: 0 };
+    return u;
   }
 
   addMessage(userId, count = 1) {

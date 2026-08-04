@@ -205,8 +205,9 @@ const CATEGORIES = [
     unicodeFallback: '🍥',
     heading: `${emojis.NINJUTSU || '🍥'} Shinobi Ninja RPG Commands`,
     commands: [
-      'profile', 'train', 'jutsu', 'battle',
-      'mission', 'clan', 'rankup', 'inventory'
+      'ninja profile', 'ninja train', 'ninja jutsu',
+      'ninja battle', 'ninja mission', 'ninja clan',
+      'ninja rankup', 'ninja inventory', 'ninja top'
     ]
   },
   {
