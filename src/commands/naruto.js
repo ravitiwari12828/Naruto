@@ -1,4 +1,5 @@
-const { createStyledEmbed, formatCodePills } = require('../utils/embedBuilder');
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+const { createStyledEmbed } = require('../utils/embedBuilder');
 const { createDynamicBox } = require('../utils/boxBuilder');
 const db = require('../database/db');
 const emojis = require('../utils/emojis');
@@ -52,11 +53,11 @@ const CLANS = {
 };
 
 const SHOP_ITEMS = [
-  { id: 'kunai', name: '🗡️ Kunai Blade', cost: 100, desc: '+15 Physical Attack in Battle' },
-  { id: 'shuriken', name: '🥷 Shuriken Pack', cost: 150, desc: '+25 Ranged Attack in Battle' },
-  { id: 'healthPotion', name: '🧪 Health Elixir', cost: 200, desc: 'Restores 50 HP in Battle' },
-  { id: 'chakraPill', name: '💊 Military Chakra Pill', cost: 250, desc: 'Restores 50 Chakra in Battle' },
-  { id: 'scroll', name: '📜 Ancient Jutsu Scroll', cost: 500, desc: 'Unlocks advanced Jutsu training' }
+  { id: 'kunai', aliases: ['kunai', 'kunais', 'blade', 'blades'], name: '🗡️ Kunai Blade', cost: 100, sellPrice: 60, maxCap: 50, desc: '+15 Physical Attack in Battle' },
+  { id: 'shuriken', aliases: ['shuriken', 'shurikens', 'star', 'stars'], name: '🥷 Shuriken Pack', cost: 150, sellPrice: 90, maxCap: 50, desc: '+25 Ranged Attack in Battle' },
+  { id: 'elixir', aliases: ['elixir', 'elixirs', 'potion', 'potions', 'healthpotion', 'healthpotions'], name: '🧪 Health Elixir', cost: 200, sellPrice: 120, maxCap: 20, desc: 'Restores 50 HP in Battle' },
+  { id: 'pill', aliases: ['pill', 'pills', 'chakrapill', 'chakrapills'], name: '💊 Military Chakra Pill', cost: 250, sellPrice: 150, maxCap: 20, desc: 'Restores 50 Chakra in Battle' },
+  { id: 'scroll', aliases: ['scroll', 'scrolls', 'jutsuscroll'], name: '📜 Ancient Jutsu Scroll', cost: 500, sellPrice: 300, maxCap: 10, desc: 'Unlocks advanced Jutsu training' }
 ];
 
 const AVAILABLE_JUTSUS = [
@@ -90,9 +91,93 @@ function calculateRankRequirements(level) {
   return { current: 'Hokage', next: 'Max Rank', reqLevel: 100 };
 }
 
+function findShopItem(query) {
+  if (!query) return null;
+  const q = query.toLowerCase().trim();
+  return SHOP_ITEMS.find(i => i.id === q || i.aliases.includes(q) || i.name.toLowerCase().includes(q));
+}
+
+function buildLeaderboardPayload(catParam, author, clientUser) {
+  const allUsers = Object.entries(db.data.users).map(([id, data]) => ({ id, ...data }));
+  let title = '';
+  let fieldFormatter = (u) => '';
+
+  if (catParam === 'ryo' || catParam === 'money') {
+    allUsers.sort((a, b) => (b.ryo || 0) - (a.ryo || 0));
+    title = `💴 Global Shinobi Ryo Leaderboard`;
+    fieldFormatter = (u) => `**${u.ryo || 0} Ryo** • Rank: *${u.rank || 'Academy Student'}*`;
+  } else if (catParam === 'wins' || catParam === 'battles') {
+    allUsers.sort((a, b) => (b.ninjaStats?.wins || 0) - (a.ninjaStats?.wins || 0));
+    title = `⚔️ Global Shinobi PvP Battles Leaderboard`;
+    fieldFormatter = (u) => `**${u.ninjaStats?.wins || 0} Victories** (${u.ninjaStats?.battles || 0} Total Battles)`;
+  } else if (catParam === 'rank' || catParam === 'ranks') {
+    const rankWeight = { 'Hokage': 8, 'Shadow': 7, 'Sannin': 6, 'Anbu': 5, 'Jonin': 4, 'Chunin': 3, 'Genin': 2, 'Academy Student': 1 };
+    allUsers.sort((a, b) => (rankWeight[b.rank || 'Academy Student'] || 1) - (rankWeight[a.rank || 'Academy Student'] || 1) || (b.level || 1) - (a.level || 1));
+    title = `🏅 Global Shinobi Ninja Rank Leaderboard`;
+    fieldFormatter = (u) => `**${u.rank || 'Academy Student'}** • Level **${u.level || 1}** (${u.xp || 0} XP)`;
+  } else if (catParam === 'missions' || catParam === 'quests') {
+    allUsers.sort((a, b) => (b.ninjaStats?.missionsCompleted || 0) - (a.ninjaStats?.missionsCompleted || 0));
+    title = `📜 Global Shinobi Missions Leaderboard`;
+    fieldFormatter = (u) => `**${u.ninjaStats?.missionsCompleted || 0} Missions Completed**`;
+  } else {
+    allUsers.sort((a, b) => (b.level || 1) - (a.level || 1) || (b.xp || 0) - (a.xp || 0));
+    title = `🍥 Global Shinobi Level Leaderboard`;
+    fieldFormatter = (u) => `Level **${u.level || 1}** (${u.xp || 0} XP) • Rank: *${u.rank || 'Academy Student'}*`;
+  }
+
+  const top10 = allUsers.slice(0, 10);
+  const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+  let descLines = [];
+  for (let i = 0; i < top10.length; i++) {
+    const u = top10[i];
+    const medal = medals[i] || `**${i + 1}.**`;
+    descLines.push(`${medal} <@${u.id}> — ${fieldFormatter(u)}`);
+  }
+  if (descLines.length === 0) descLines.push('*No shinobi data tracked yet.*');
+
+  const embed = createStyledEmbed({
+    title: title,
+    subtitle: `Global Konoha Leaderboard Rankings`,
+    description: descLines.join('\n\n'),
+    requestedBy: author,
+    clientUser,
+    footerText: 'Top 10 Shinobi in Naruto Bot World'
+  });
+
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('ninjalb_level')
+      .setLabel('Level')
+      .setEmoji('🍥')
+      .setStyle(catParam === 'level' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('ninjalb_ryo')
+      .setLabel('Ryo')
+      .setEmoji('💴')
+      .setStyle(catParam === 'ryo' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('ninjalb_rank')
+      .setLabel('Rank')
+      .setEmoji('🏅')
+      .setStyle(catParam === 'rank' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('ninjalb_wins')
+      .setLabel('Battles')
+      .setEmoji('⚔️')
+      .setStyle(catParam === 'wins' ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('ninjalb_missions')
+      .setLabel('Missions')
+      .setEmoji('📜')
+      .setStyle(catParam === 'missions' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+  );
+
+  return { embeds: [embed], components: [row] };
+}
+
 module.exports = {
   name: 'ninja',
-  description: 'Global Shinobi Ninja RPG: Profile, Jutsu, Train, Battle, Missions, Clans, Rankup & Inventory',
+  description: 'Global Shinobi Ninja RPG: Profile, Jutsu, Train, Battle, Missions, Clans, Rankup, Shop, Buy, Sell & Leaderboards',
   aliases: [
     'shinobi', 'ninjaprofile', 'ninjatrain', 'ninjajutsu',
     'ninjabattle', 'ninjamission', 'ninjaclan', 'ninjarankup',
@@ -263,19 +348,15 @@ module.exports = {
         return message.reply(`${emojis.WARNING || '⚠️'} You do not have enough Chakra (\`${userData.chakra}/100\`) to enter battle! Use \`.ninja train\` to meditate.`);
       }
 
-      // Pick user's strongest jutsu
       const userJutsuName = userData.jutsuList[Math.floor(Math.random() * userData.jutsuList.length)];
       const jutsuObj = AVAILABLE_JUTSUS.find(j => j.name === userJutsuName) || { damage: 40, chakra: 20 };
 
-      // Calculate Clan Perk bonus
       let clanBonusText = '';
       let userAtkBonus = 0;
       if (userData.clan === 'Uchiha') { userAtkBonus += 15; clanBonusText = '🔥 *Uchiha Sharingan activated (+15 Atk)*'; }
       if (userData.clan === 'Hyuga') { userAtkBonus += 10; clanBonusText = '👁️ *Hyuga Byakugan strike (+10 Critical Atk)*'; }
 
       const totalUserDamage = jutsuObj.damage + userAtkBonus + Math.floor(Math.random() * 15);
-      const enemyDamage = Math.max(10, enemy.atk - Math.floor(Math.random() * 10));
-
       const isWin = totalUserDamage >= enemy.hp || Math.random() > 0.3;
 
       db.updateUser(author.id, (u) => {
@@ -432,40 +513,141 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 8. SHINOBI INVENTORY (.ninja inventory / .ninjainventory)
+    // 8. SHINOBI SHOP & QUANTITY BUY/SELL (.ninja shop, .ninja buy, .ninja sell)
     // ─────────────────────────────────────────
-    if (sub === 'inventory' || sub === 'inv' || sub === 'shop') {
-      const action = args[1]?.toLowerCase();
+    if (sub === 'shop' || sub === 'buy' || sub === 'sell' || sub === 'inventory' || sub === 'inv') {
+      let action = sub;
+      let argIndexOffset = 0;
 
+      if (sub === 'inventory' || sub === 'inv') {
+        if (['shop', 'buy', 'sell'].includes(args[1]?.toLowerCase())) {
+          action = args[1].toLowerCase();
+          argIndexOffset = 1;
+        } else {
+          action = 'inventory';
+        }
+      }
+
+      // 🛒 SHOP DISPLAY (.ninja shop)
+      if (action === 'shop') {
+        const shopBox = createDynamicBox('KONOHA NINJA ARMORY SHOP', [
+          '🗡️ Kunai Blade    : Buy 100 | Sell 60  | Max 50',
+          '🥷 Shuriken Pack  : Buy 150 | Sell 90  | Max 50',
+          '🧪 Health Elixir  : Buy 200 | Sell 120 | Max 20',
+          '💊 Chakra Pill    : Buy 250 | Sell 150 | Max 20',
+          '📜 Ancient Scroll : Buy 500 | Sell 300 | Max 10'
+        ]);
+
+        const embed = createStyledEmbed({
+          title: `🛍️ Konoha Shinobi Shop & Armory`,
+          subtitle: `Prices, Resell Values & Inventory Caps`,
+          description:
+            '```\n' + shopBox + '\n```\n\n' +
+            `• **To Buy Items:** \`.ninja buy <item> [amount]\` *(e.g. \`.ninja buy elixir 5\`)*\n` +
+            `• **To Sell Items:** \`.ninja sell <item> [amount]\` *(e.g. \`.ninja sell kunai 3\`)*`,
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      // 🛍️ BUY ITEMS IN QUANTITY (.ninja buy <item> [quantity])
       if (action === 'buy') {
-        const itemQuery = args[2]?.toLowerCase();
-        const itemToBuy = SHOP_ITEMS.find(i => i.id.toLowerCase() === itemQuery || i.name.toLowerCase().includes(itemQuery || ''));
+        const p1 = args[1 + argIndexOffset];
+        const p2 = args[2 + argIndexOffset];
 
-        if (!itemToBuy) {
-          const shopStr = SHOP_ITEMS.map(i => `• **${i.name}** — \`${i.cost} Ryo\`\n  └ *${i.desc}*`).join('\n');
-          return message.reply(`🛍️ **Konoha Weapon Shop:**\n\n${shopStr}\n\n**To Buy:** \`.ninja buy <item>\``);
+        let qty = 1;
+        let query = p1;
+
+        if (p1 && !isNaN(parseInt(p1))) {
+          qty = parseInt(p1);
+          query = p2;
+        } else if (p2 && !isNaN(parseInt(p2))) {
+          qty = parseInt(p2);
         }
 
-        if (userData.ryo < itemToBuy.cost) {
-          return message.reply(`${emojis.WARNING || '⚠️'} You need **${itemToBuy.cost} Ryo** to buy **${itemToBuy.name}**! You have \`${userData.ryo} Ryo\`.`);
+        if (!query) {
+          return message.reply(`${emojis.WARNING || '⚠️'} Please specify an item to buy! Usage: \`.ninja buy <item> [amount]\`. Type \`.ninja shop\` for prices.`);
+        }
+
+        const item = findShopItem(query);
+        if (!item) {
+          return message.reply(`${emojis.WARNING || '⚠️'} Item **"${query}"** not found in shop! Type \`.ninja shop\` to view available weapons and potions.`);
+        }
+
+        qty = Math.max(1, qty);
+        const inv = userData.ninjaInventory || {};
+        const currentQty = inv[item.id] || 0;
+
+        if (currentQty + qty > item.maxCap) {
+          return message.reply(`${emojis.WARNING || '⚠️'} **Inventory Limit Exceeded!** You can only hold up to **${item.maxCap} ${item.name}**! You currently hold \`${currentQty}\`.`);
+        }
+
+        const totalCost = item.cost * qty;
+        if (userData.ryo < totalCost) {
+          return message.reply(`${emojis.WARNING || '⚠️'} You need **${totalCost} Ryo** to buy \`${qty}x ${item.name}\`! You currently have \`${userData.ryo} Ryo\`.`);
         }
 
         db.updateUser(author.id, (u) => {
-          u.ryo -= itemToBuy.cost;
+          u.ryo -= totalCost;
           if (!u.ninjaInventory) u.ninjaInventory = {};
-          u.ninjaInventory[itemToBuy.id] = (u.ninjaInventory[itemToBuy.id] || 0) + 1;
+          u.ninjaInventory[item.id] = currentQty + qty;
         });
 
-        return message.reply(`${emojis.SUCCESS || '✅'} Purchased **${itemToBuy.name}** for \`${itemToBuy.cost} Ryo\`!`);
+        return message.reply(`${emojis.SUCCESS || '✅'} **PURCHASE SUCCESSFUL!** Purchased \`${qty}x ${item.name}\` for **${totalCost} Ryo**! Balance: \`${userData.ryo - totalCost} Ryo\`.`);
       }
 
+      // 💰 SELL ITEMS FOR RYO (.ninja sell <item> [quantity])
+      if (action === 'sell') {
+        const p1 = args[1 + argIndexOffset];
+        const p2 = args[2 + argIndexOffset];
+
+        let qty = 1;
+        let query = p1;
+
+        if (p1 && !isNaN(parseInt(p1))) {
+          qty = parseInt(p1);
+          query = p2;
+        } else if (p2 && !isNaN(parseInt(p2))) {
+          qty = parseInt(p2);
+        }
+
+        if (!query) {
+          return message.reply(`${emojis.WARNING || '⚠️'} Please specify an item to sell! Usage: \`.ninja sell <item> [amount]\`.`);
+        }
+
+        const item = findShopItem(query);
+        if (!item) {
+          return message.reply(`${emojis.WARNING || '⚠️'} Item **"${query}"** not recognized!`);
+        }
+
+        qty = Math.max(1, qty);
+        const inv = userData.ninjaInventory || {};
+        const currentQty = inv[item.id] || 0;
+
+        if (currentQty < qty) {
+          return message.reply(`${emojis.WARNING || '⚠️'} You do not have \`${qty}x ${item.name}\` in your inventory! You currently hold \`${currentQty}\`.`);
+        }
+
+        const totalEarned = item.sellPrice * qty;
+
+        db.updateUser(author.id, (u) => {
+          if (!u.ninjaInventory) u.ninjaInventory = {};
+          u.ninjaInventory[item.id] = Math.max(0, currentQty - qty);
+          u.ryo += totalEarned;
+        });
+
+        return message.reply(`${emojis.SUCCESS || '✅'} **SALE SUCCESSFUL!** Sold \`${qty}x ${item.name}\` for **+${totalEarned} Ryo**! Balance: \`${userData.ryo + totalEarned} Ryo\`.`);
+      }
+
+      // 🎒 INVENTORY DISPLAY (.ninja inventory)
       const inv = userData.ninjaInventory || {};
       const invBox = createDynamicBox(`NINJA GEAR BAG — ${targetUser.username.toUpperCase()}`, [
-        { key: 'Kunai    ', value: `${inv.kunai || 0} Blades` },
-        { key: 'Shuriken ', value: `${inv.shuriken || 0} Packs` },
-        { key: 'Elixirs  ', value: `${inv.healthPotion || 0} Potions` },
-        { key: 'Pills    ', value: `${inv.chakraPill || 0} Pills` },
-        { key: 'Scrolls  ', value: `${inv.scroll || 0} Scrolls` },
+        { key: 'Kunai    ', value: `${inv.kunai || 0} / 50` },
+        { key: 'Shuriken ', value: `${inv.shuriken || 0} / 50` },
+        { key: 'Elixirs  ', value: `${inv.elixir || inv.healthPotion || 0} / 20` },
+        { key: 'Pills    ', value: `${inv.pill || inv.chakraPill || 0} / 20` },
+        { key: 'Scrolls  ', value: `${inv.scroll || 0} / 10` },
         { key: 'Ryo      ', value: `${userData.ryo || 0} Ryo` }
       ]);
 
@@ -474,7 +656,9 @@ module.exports = {
         subtitle: `Ninja Armory & Consumables`,
         description:
           '```\n' + invBox + '\n```\n\n' +
-          `💡 *Tip: Type \`.ninja buy <item>\` to buy weapons or items from Konoha Shop!*`,
+          `• **Buy Items:** \`.ninja buy <item> [amount]\`\n` +
+          `• **Sell Items:** \`.ninja sell <item> [amount]\`\n` +
+          `• **View Shop:** \`.ninja shop\``,
         requestedBy: author,
         clientUser
       });
@@ -482,60 +666,51 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // 9. SHINOBI GLOBAL LEADERBOARD (.ninja top / .ninjalb)
+    // 9. SHINOBI GLOBAL LEADERBOARD (.ninja top / .ninjalb) WITH INTERACTIVE BUTTONS
     // ─────────────────────────────────────────
     if (sub === 'leaderboard' || sub === 'lb' || sub === 'top') {
       const catParam = args[1]?.toLowerCase() || 'level';
 
-      const allUsers = Object.entries(db.data.users).map(([id, data]) => ({ id, ...data }));
-      let title = '';
-      let fieldFormatter = (u) => '';
+      const payload = buildLeaderboardPayload(catParam, message.author, clientUser);
+      const replyMsg = await message.channel.send(payload);
 
-      if (catParam === 'ryo' || catParam === 'money') {
-        allUsers.sort((a, b) => (b.ryo || 0) - (a.ryo || 0));
-        title = `💴 Shinobi Ryo Leaderboard`;
-        fieldFormatter = (u) => `**${u.ryo || 0} Ryo** • Rank: *${u.rank || 'Academy Student'}*`;
-      } else if (catParam === 'wins' || catParam === 'battles') {
-        allUsers.sort((a, b) => (b.ninjaStats?.wins || 0) - (a.ninjaStats?.wins || 0));
-        title = `⚔️ Shinobi PvP Battle Leaderboard`;
-        fieldFormatter = (u) => `**${u.ninjaStats?.wins || 0} Victories** (${u.ninjaStats?.battles || 0} Battles)`;
-      } else {
-        allUsers.sort((a, b) => (b.level || 1) - (a.level || 1) || (b.xp || 0) - (a.xp || 0));
-        title = `🍥 Global Shinobi Level Leaderboard`;
-        fieldFormatter = (u) => `Level **${u.level || 1}** (${u.xp || 0} XP) • Rank: *${u.rank || 'Academy Student'}*`;
-      }
-
-      const top10 = allUsers.slice(0, 10);
-      const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
-      let descLines = [];
-      for (let i = 0; i < top10.length; i++) {
-        const u = top10[i];
-        const medal = medals[i] || `**${i + 1}.**`;
-        descLines.push(`${medal} <@${u.id}> — ${fieldFormatter(u)}`);
-      }
-      if (descLines.length === 0) descLines.push('*No shinobi data tracked yet.*');
-
-      const embed = createStyledEmbed({
-        title: title,
-        subtitle: `Global Konoha Leaderboard Rankings`,
-        description: descLines.join('\n\n'),
-        requestedBy: message.author,
-        clientUser,
-        footerText: 'Top 10 Shinobi in Naruto Bot World'
+      // Create Interactive Component Collector for 2 minutes
+      const collector = replyMsg.createMessageComponentCollector({
+        filter: i => i.user.id === author.id,
+        time: 120000
       });
-      return message.channel.send({ embeds: [embed] });
+
+      collector.on('collect', async i => {
+        let newCat = 'level';
+        if (i.customId === 'ninjalb_level') newCat = 'level';
+        if (i.customId === 'ninjalb_ryo') newCat = 'ryo';
+        if (i.customId === 'ninjalb_rank') newCat = 'rank';
+        if (i.customId === 'ninjalb_wins') newCat = 'wins';
+        if (i.customId === 'ninjalb_missions') newCat = 'missions';
+
+        const updatedPayload = buildLeaderboardPayload(newCat, message.author, clientUser);
+        await i.update(updatedPayload).catch(() => {});
+      });
+
+      return;
     }
 
     // Default Fallback: Shinobi Help Card
-    const commandsList = [
-      '.ninja profile', '.ninja train', '.ninja jutsu',
-      '.ninja battle', '.ninja mission', '.ninja clan',
-      '.ninja rankup', '.ninja inventory', '.ninja top'
-    ];
     const helpEmbed = createStyledEmbed({
       title: '🍥 Naruto Shinobi RPG Hub',
       subtitle: `Master Shinobi Commands`,
-      description: `**Shinobi RPG**\n` + formatCodePills(commandsList),
+      description:
+        `• \`.ninja profile\` — *View your global shinobi scroll*\n` +
+        `• \`.ninja train\` — *Meditate to restore chakra & gain XP*\n` +
+        `• \`.ninja jutsu\` — *Learn & view jutsu techniques*\n` +
+        `• \`.ninja battle\` — *Fight rogue ninjas & Akatsuki*\n` +
+        `• \`.ninja mission\` — *Complete daily shinobi missions*\n` +
+        `• \`.ninja clan\` — *Choose your shinobi clan*\n` +
+        `• \`.ninja rankup\` — *Advance your shinobi rank*\n` +
+        `• \`.ninja shop\` — *View Konoha weapons & potions shop*\n` +
+        `• \`.ninja buy <item> [amount]\` — *Buy weapons & items in quantity*\n` +
+        `• \`.ninja sell <item> [amount]\` — *Sell items for Ryo*\n` +
+        `• \`.ninja top\` — *View interactive global leaderboards*`,
       requestedBy: message.author,
       clientUser,
       footerText: 'Naruto Shinobi Suite'
