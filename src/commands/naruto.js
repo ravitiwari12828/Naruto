@@ -554,46 +554,54 @@ module.exports = {
 
       // 🛒 SHOP DISPLAY (.ninja shop)
       if (action === 'shop') {
-        // ── Box 1: Prices & Resell Values (with item emojis) ──
-        const priceBox =
+        // ── Box 1: Buy Prices ──
+        const buyBox =
           '╭──────────────────────────╮\n' +
-          '│  KONOHA NINJA ARMORY     │\n' +
-          '│        SHOP              │\n' +
+          '│    BUY PRICES  (Ryo)     │\n' +
           '├──────────────────────────┤\n' +
-          '│ 🗡️  Kunai B…  : Buy 100  │\n' +
-          '│           Sell: 60 Ryo  │\n' +
-          '│ 🥷  Shuriken… : Buy 150  │\n' +
-          '│           Sell: 90 Ryo  │\n' +
-          '│ 🧪  Health E… : Buy 200  │\n' +
-          '│           Sell: 120 Ryo │\n' +
-          '│ 💊  Chakra P… : Buy 250  │\n' +
-          '│           Sell: 150 Ryo │\n' +
-          '│ 📜  Ancient … : Buy 500  │\n' +
-          '│           Sell: 300 Ryo │\n' +
+          '│ 🗡️  Kunai Blade    :  100 │\n' +
+          '│ 🥷  Shuriken Pack  :  150 │\n' +
+          '│ 🧪  Health Elixir  :  200 │\n' +
+          '│ 💊  Chakra Pill    :  250 │\n' +
+          '│ 📜  Ancient Scroll :  500 │\n' +
           '╰──────────────────────────╯';
 
-        // ── Box 2: Max Inventory Capacity ──
+        // ── Box 2: Sell Values ──
+        const sellBox =
+          '╭──────────────────────────╮\n' +
+          '│   SELL VALUES  (Ryo)     │\n' +
+          '├──────────────────────────┤\n' +
+          '│ 🗡️  Kunai Blade    :   60 │\n' +
+          '│ 🥷  Shuriken Pack  :   90 │\n' +
+          '│ 🧪  Health Elixir  :  120 │\n' +
+          '│ 💊  Chakra Pill    :  150 │\n' +
+          '│ 📜  Ancient Scroll :  300 │\n' +
+          '╰──────────────────────────╯';
+
+        // ── Box 3: Max Inventory Capacity ──
         const capBox =
           '╭──────────────────────────╮\n' +
           '│   MAX INVENTORY CAPACITY │\n' +
           '├──────────────────────────┤\n' +
-          '│ 🗡️  Kunai Blade  : ×  50 │\n' +
-          '│ 🥷  Shuriken Pack: ×  50 │\n' +
-          '│ 🧪  Health Elixir: ×  20 │\n' +
-          '│ 💊  Chakra Pill  : ×  20 │\n' +
-          '│ 📜  Jutsu Scroll : ×  10 │\n' +
+          '│ 🗡️  Kunai Blade    : × 50 │\n' +
+          '│ 🥷  Shuriken Pack  : × 50 │\n' +
+          '│ 🧪  Health Elixir  : × 20 │\n' +
+          '│ 💊  Chakra Pill    : × 20 │\n' +
+          '│ 📜  Ancient Scroll : × 10 │\n' +
           '╰──────────────────────────╯';
 
         const embed = createStyledEmbed({
           title: `🛍️ Konoha Shinobi Shop & Armory`,
           subtitle: `Prices, Resell Values & Inventory Caps`,
           description:
-            `🏮 **Prices & Resell Values**\n` +
-            '```\n' + priceBox + '\n```\n\n' +
+            `🏮 **Buy Prices**\n` +
+            '```\n' + buyBox + '\n```\n\n' +
+            `💰 **Sell Values**\n` +
+            '```\n' + sellBox + '\n```\n\n' +
             `🎒 **Max Inventory Capacity**\n` +
             '```\n' + capBox + '\n```\n\n' +
-            `• **To Buy Items:** \`.ninja buy <item> [amount]\` *(e.g. \`.ninja buy kunai 5\`)*\n` +
-            `• **To Sell Items:** \`.ninja sell <item> [amount]\` *(e.g. \`.ninja sell elixir 2\`)*\n` +
+            `• **To Buy:** \`.ninja buy <item> [amount]\` *(e.g. \`.ninja buy kunai 5\`)*\n` +
+            `• **To Sell:** \`.ninja sell <item> [amount]\` *(e.g. \`.ninja sell elixir 2\`)*\n` +
             `• **Check Bag:** \`.ninja inventory\``,
           requestedBy: author,
           clientUser
