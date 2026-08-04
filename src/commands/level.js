@@ -7,6 +7,14 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 // Global Leveling Config per guild
 const levelConfigs = new Map();
 
+// Compact number formatter: 3400 → 3.4K
+function fmtNum(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
+  return String(n);
+}
+
+
 function getOrCreateLevelConfig(guildId) {
   if (!levelConfigs.has(guildId)) {
     levelConfigs.set(guildId, {
@@ -298,32 +306,239 @@ module.exports = {
       return message.reply(`${emojis.SUCCESS} Set ${target.user.username}'s level to **Level ${newLvl}**.`);
     }
 
-    // 8. .level rank [@user]
+    // 8. .level rank [@user] — Canvas Rank Card
     if (!sub || sub === 'rank' || sub === 'card') {
       const targetUser = message.mentions.users.first() || author;
       const userData = db.getUser(targetUser.id);
       const nextLvlXp = userData.level * 75;
-      const progress = Math.min(100, Math.floor((userData.xp / nextLvlXp) * 100));
-      const filledCount = Math.floor(progress / 10);
-      const bar = '#'.repeat(filledCount) + '-'.repeat(10 - filledCount);
+      const progress = Math.min(1, (userData.xp || 0) / Math.max(1, nextLvlXp));
 
-      const box = createDynamicBox('SHINOBI RANK PROFILE', [
-        { key: 'Username', value: targetUser.username.slice(0, 12) },
-        { key: 'Rank    ', value: userData.rank.slice(0, 12) },
-        { key: 'Level   ', value: 'Level ' + userData.level },
-        { key: 'Total XP', value: userData.xp + ' XP' },
-        { key: 'Progress', value: '[' + bar + ']' }
-      ]);
+      try {
+        const { createCanvas, loadImage, GlobalFonts } = require('@napi-rs/canvas');
 
-      const embed = createStyledEmbed({
-        title: `${emojis.RANK || emojis.LEVEL || '📈'} Shinobi Rank Card — ${targetUser.username}`,
-        subtitle: `${userData.rank}`,
-        description: '```\n' + box + '\n```',
-        requestedBy: author,
-        clientUser
-      });
-      return message.channel.send({ embeds: [embed] });
+        // ── Card Dimensions ──────────────────────────
+        const W = 700, H = 200;
+        const canvas = createCanvas(W, H);
+        const ctx = canvas.getContext('2d');
+
+        // ── Background: dark card ────────────────────
+        ctx.fillStyle = '#1a1a2e';
+        ctx.beginPath();
+        ctx.roundRect(0, 0, W, H, 18);
+        ctx.fill();
+
+        // ── Accent triangle shape (top-right, teal like reference) ─
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(W - 140, 0);
+        ctx.lineTo(W, 0);
+        ctx.lineTo(W, H);
+        ctx.lineTo(W - 80, H);
+        ctx.closePath();
+        ctx.fillStyle = '#00b4d8';
+        ctx.globalAlpha = 0.22;
+        ctx.fill();
+        // Inner lighter slice
+        ctx.beginPath();
+        ctx.moveTo(W - 70, 0);
+        ctx.lineTo(W, 0);
+        ctx.lineTo(W, H);
+        ctx.lineTo(W - 30, H);
+        ctx.closePath();
+        ctx.fillStyle = '#48cae4';
+        ctx.globalAlpha = 0.18;
+        ctx.fill();
+        ctx.restore();
+
+        // ── Orange side accent bar (left edge) ──────
+        ctx.save();
+        ctx.fillStyle = '#FF6B00';
+        ctx.globalAlpha = 0.85;
+        ctx.beginPath();
+        ctx.roundRect(0, 0, 6, H, [18, 0, 0, 18]);
+        ctx.fill();
+        ctx.restore();
+
+        // ── Subtle inner glow border ─────────────────
+        ctx.save();
+        ctx.strokeStyle = '#FF6B00';
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.25;
+        ctx.beginPath();
+        ctx.roundRect(1, 1, W - 2, H - 2, 17);
+        ctx.stroke();
+        ctx.restore();
+
+        // ── Circular Avatar ──────────────────────────
+        const avatarX = 70, avatarY = H / 2, avatarR = 60;
+
+        // Avatar glow ring (orange)
+        ctx.save();
+        ctx.shadowColor = '#FF6B00';
+        ctx.shadowBlur = 18;
+        ctx.strokeStyle = '#FF6B00';
+        ctx.lineWidth = 3.5;
+        ctx.beginPath();
+        ctx.arc(avatarX, avatarY, avatarR + 3, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+
+        // Clip circle for avatar
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(avatarX, avatarY, avatarR, 0, Math.PI * 2);
+        ctx.clip();
+
+        try {
+          const avatarUrl = targetUser.displayAvatarURL({ extension: 'png', size: 256 });
+          const avatarImg = await loadImage(avatarUrl);
+          ctx.drawImage(avatarImg, avatarX - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2);
+        } catch {
+          // Fallback: gradient circle if avatar load fails
+          const grad = ctx.createRadialGradient(avatarX, avatarY, 0, avatarX, avatarY, avatarR);
+          grad.addColorStop(0, '#FF6B00');
+          grad.addColorStop(1, '#1a1a2e');
+          ctx.fillStyle = grad;
+          ctx.fillRect(avatarX - avatarR, avatarY - avatarR, avatarR * 2, avatarR * 2);
+        }
+        ctx.restore();
+
+        // ── Username ─────────────────────────────────
+        const textX = 155;
+        const username = targetUser.username.length > 18
+          ? targetUser.username.slice(0, 18) + '…'
+          : targetUser.username;
+
+        ctx.font = 'bold 30px sans-serif';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText('@' + username, textX, 68);
+
+        // Underline below username (orange accent)
+        const usernameWidth = ctx.measureText('@' + username).width;
+        ctx.save();
+        ctx.strokeStyle = '#FF6B00';
+        ctx.lineWidth = 3;
+        ctx.lineCap = 'round';
+        ctx.beginPath();
+        ctx.moveTo(textX, 76);
+        ctx.lineTo(textX + usernameWidth, 76);
+        ctx.stroke();
+        ctx.restore();
+
+        // ── Inline Stats: Level  XP  Rank ────────────
+        const statsY = 112;
+        ctx.font = 'bold 17px sans-serif';
+
+        // "Level:" label (dim)
+        ctx.fillStyle = '#aaaaaa';
+        ctx.fillText('Level:', textX, statsY);
+        const lvlLabelW = ctx.measureText('Level:').width;
+
+        // Level value (yellow)
+        ctx.fillStyle = '#FFD700';
+        const lvlText = String(userData.level || 1);
+        ctx.fillText(lvlText, textX + lvlLabelW + 6, statsY);
+        const lvlValW = ctx.measureText(lvlText).width;
+
+        // "XP:" label
+        const xpLabelX = textX + lvlLabelW + 6 + lvlValW + 24;
+        ctx.fillStyle = '#aaaaaa';
+        ctx.fillText('XP:', xpLabelX, statsY);
+        const xpLabelW = ctx.measureText('XP:').width;
+
+        // XP value (yellow)
+        ctx.fillStyle = '#FFD700';
+        const xpText = `${fmtNum(userData.xp || 0)} / ${fmtNum(nextLvlXp)}`;
+        ctx.fillText(xpText, xpLabelX + xpLabelW + 6, statsY);
+        const xpValW = ctx.measureText(xpText).width;
+
+        // "Rank:" label
+        const rankLabelX = xpLabelX + xpLabelW + 6 + xpValW + 24;
+        ctx.fillStyle = '#aaaaaa';
+        ctx.fillText('Rank:', rankLabelX, statsY);
+        const rankLabelW = ctx.measureText('Rank:').width;
+
+        // Rank value (yellow)
+        ctx.fillStyle = '#FFD700';
+        ctx.fillText(String(userData.rank || 'Student').split(' ')[0], rankLabelX + rankLabelW + 6, statsY);
+
+        // ── XP Progress Bar ───────────────────────────
+        const barX = textX, barY = 135;
+        const barW = W - textX - 70, barH = 18;
+        const filled = Math.round(barW * progress);
+
+        // Bar background (dark track)
+        ctx.save();
+        ctx.fillStyle = '#2e2e4e';
+        ctx.beginPath();
+        ctx.roundRect(barX, barY, barW, barH, barH / 2);
+        ctx.fill();
+
+        // Filled portion — orange → red gradient
+        if (filled > 0) {
+          const barGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+          barGrad.addColorStop(0, '#FF6B00');
+          barGrad.addColorStop(0.6, '#FF3300');
+          barGrad.addColorStop(1, '#FF6B00');
+          ctx.fillStyle = barGrad;
+          ctx.beginPath();
+          ctx.roundRect(barX, barY, Math.max(barH, filled), barH, barH / 2);
+          ctx.fill();
+
+          // Shine highlight on filled bar
+          ctx.fillStyle = 'rgba(255,255,255,0.12)';
+          ctx.beginPath();
+          ctx.roundRect(barX, barY, Math.max(barH, filled), barH / 2, [barH / 2, barH / 2, 0, 0]);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // Percentage text inside/below bar
+        const pctText = Math.round(progress * 100) + '%';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.fillStyle = progress > 0.15 ? '#fff' : '#aaa';
+        ctx.fillText(pctText, barX + 8, barY + 13);
+
+        // ── Shinobi rank label (bottom right of card) ─
+        ctx.font = '13px sans-serif';
+        ctx.fillStyle = '#48cae4';
+        ctx.globalAlpha = 0.85;
+        const rankLabel = '⚡ ' + (userData.rank || 'Academy Student');
+        const rankLabelMW = ctx.measureText(rankLabel).width;
+        ctx.fillText(rankLabel, W - rankLabelMW - 20, H - 14);
+        ctx.globalAlpha = 1;
+
+        // ── Send card as image attachment ─────────────
+        const buffer = canvas.toBuffer('image/png');
+        const { AttachmentBuilder } = require('discord.js');
+        const attachment = new AttachmentBuilder(buffer, { name: 'rankcard.png' });
+        return message.channel.send({ files: [attachment] });
+
+      } catch (err) {
+        console.error('[RankCard Canvas Error]', err.message);
+        // Fallback to embed if canvas fails
+        const nextLvlXp2 = userData.level * 75;
+        const progress2 = Math.min(100, Math.floor(((userData.xp || 0) / Math.max(1, nextLvlXp2)) * 100));
+        const filled2 = Math.floor(progress2 / 10);
+        const bar = '█'.repeat(filled2) + '░'.repeat(10 - filled2);
+        const box = createDynamicBox('SHINOBI RANK PROFILE', [
+          { key: 'Username', value: targetUser.username.slice(0, 12) },
+          { key: 'Rank    ', value: (userData.rank || 'Student').slice(0, 12) },
+          { key: 'Level   ', value: 'Level ' + (userData.level || 1) },
+          { key: 'Total XP', value: (userData.xp || 0) + ' XP' },
+          { key: 'Progress', value: '[' + bar + '] ' + progress2 + '%' }
+        ]);
+        const embed = createStyledEmbed({
+          title: `${emojis.RANK || emojis.LEVEL || '📈'} Shinobi Rank Card — ${targetUser.username}`,
+          subtitle: `${userData.rank || 'Academy Student'}`,
+          description: '```\n' + box + '\n```',
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
     }
+
 
     const { renderModuleHelpPanel } = require('../utils/panelRenderer');
     return renderModuleHelpPanel(message, 'level');
