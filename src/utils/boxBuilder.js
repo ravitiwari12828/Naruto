@@ -45,7 +45,7 @@ function formatItemLines(item, maxContentWidth) {
     let keyStr = String(item.key).trim();
     let valStr = item.value !== undefined ? String(item.value).trim() : '';
 
-    const maxKeyWidth = Math.min(14, Math.floor(maxContentWidth * 0.58));
+    const maxKeyWidth = Math.min(26, Math.floor(maxContentWidth * 0.65));
     if (getVisualWidth(keyStr) > maxKeyWidth) {
       keyStr = keyStr.slice(0, Math.max(1, maxKeyWidth - 1)) + '…';
     }
@@ -104,8 +104,8 @@ function formatItemLines(item, maxContentWidth) {
  * @returns {string} Formatted monospaced codeblock box string
  */
 function createDynamicBox(title, items = [], minWidth = 20, customMaxWidth = null) {
-  // Safe Inner Width: Default 22 chars for general cards, configurable up to 38 chars for wide panels
-  const MAX_INNER_WIDTH = customMaxWidth || 22;
+  // Safe Inner Width: Configurable up to 54 chars for wide panels
+  const MAX_INNER_WIDTH = customMaxWidth || 52;
 
   // Process all items into compliant line strings
   const processedLines = [];
