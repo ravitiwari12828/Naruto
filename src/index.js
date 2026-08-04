@@ -1534,13 +1534,14 @@ client.on('messageCreate', async (message) => {
   }
 
   // GUILD MESSAGES & LEVELING ENGINE
-  const userBefore = db.getUser(message.author.id);
+  const guildId = message.guild.id;
+  const userBefore = db.getUser(message.author.id, guildId);
   const oldLvl = userBefore.level;
 
-  db.addMessage(message.author.id, 1);
-  db.recordAnalyticsEvent(message.guild.id, message.author.id, 'message', 1);
+  db.addMessage(message.author.id, 1, guildId);
+  db.recordAnalyticsEvent(guildId, message.author.id, 'message', 1);
 
-  const userAfter = db.getUser(message.author.id);
+  const userAfter = db.getUser(message.author.id, guildId);
   if (userAfter.level > oldLvl) {
     const levelCmd = client.commands.get('level');
     const levelCfg = levelCmd ? levelCmd.getOrCreateLevelConfig(message.guild.id) : { enabled: true, channelId: null };

@@ -195,7 +195,7 @@ module.exports = {
 
     // 2. .level perks / .perks / .rewards
     if (sub === 'perks' || sub === 'rewards' || sub === 'benefits') {
-      const userData = db.getUser(author.id);
+      const userData = db.getUser(author.id, guildId);
       const userLvl = userData.level || 1;
 
       const box1 = createDynamicBox('PHASE 1: TRAINEE (LVL 5-25)', [
@@ -260,7 +260,7 @@ module.exports = {
 
     // 5. .level leaderboard / .lb
     if (sub === 'leaderboard' || sub === 'lb' || sub === 'top') {
-      const top10 = db.getTopUsersByXP(10);
+      const top10 = db.getTopUsersByXP(10, guildId);
       const items = top10.map((u, i) => `#${i + 1} Lvl ${u.level} - ${u.rank.slice(0, 10)} (${u.xp} XP)`);
 
       const box = createDynamicBox('SHINOBI LEADERBOARD TOP 10', items.length ? items : ['No data available']);
@@ -286,7 +286,7 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Usage: \`.level addxp @user <amount>\``);
       }
 
-      db.updateUser(target.id, (u) => { u.xp += amount; });
+      db.updateUser(target.id, (u) => { u.xp = (u.xp || 0) + amount; }, guildId);
       return message.reply(`${emojis.SUCCESS} Added \`+${amount} XP\` to ${target.user.username}.`);
     }
 
@@ -302,14 +302,17 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Usage: \`.level setlevel @user <level>\``);
       }
 
-      db.updateUser(target.id, (u) => { u.level = newLvl; });
+      db.updateUser(target.id, (u) => {
+        u.xp = Math.pow((newLvl - 1), 2) * 100;
+        u.level = newLvl;
+      }, guildId);
       return message.reply(`${emojis.SUCCESS} Set ${target.user.username}'s level to **Level ${newLvl}**.`);
     }
 
     // 8. .level rank [@user] — Canvas Rank Card
     if (!sub || sub === 'rank' || sub === 'card') {
       const targetUser = message.mentions.users.first() || author;
-      const userData = db.getUser(targetUser.id);
+      const userData = db.getUser(targetUser.id, guildId);
       const totalXp  = userData.xp || 0;
       const level    = userData.level || 1;
 
@@ -541,7 +544,7 @@ module.exports = {
         // Fetch server rank
         let serverRank = '?';
         try {
-          const top = db.getTopUsersByXP(500);
+          const top = db.getTopUsersByXP(500, guildId);
           const idx = top.findIndex(u => u.id === targetUser.id || u.userId === targetUser.id);
           serverRank = idx >= 0 ? String(idx + 1) : '—';
         } catch {}

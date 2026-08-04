@@ -338,7 +338,7 @@ class ResilientDatabase {
   }
 
   // --- USER XP, MESSAGES & VOICE TIMING ---
-  getUser(userId) {
+  getUser(userId, guildId = null) {
     if (!this.data.users[userId]) {
       this.data.users[userId] = {
         messages: 0,
@@ -359,11 +359,45 @@ class ResilientDatabase {
     if (!u.clan) u.clan = 'None';
     if (!u.ninjaInventory) u.ninjaInventory = { kunai: 5, shuriken: 10, healthPotions: 2, chakraPills: 2, scrolls: 1 };
     if (!u.ninjaStats) u.ninjaStats = { wins: 0, losses: 0, battles: 0, missionsCompleted: 0 };
+
+    if (guildId) {
+      if (!this.data.guildLevels) this.data.guildLevels = {};
+      if (!this.data.guildLevels[guildId]) this.data.guildLevels[guildId] = {};
+      if (!this.data.guildLevels[guildId][userId]) {
+        this.data.guildLevels[guildId][userId] = {
+          xp: 0,
+          level: 1,
+          rank: 'Academy Student',
+          messages: 0,
+          voiceSeconds: 0,
+          _lastXpAt: 0
+        };
+      }
+      const gLvl = this.data.guildLevels[guildId][userId];
+
+      return new Proxy(u, {
+        get(target, prop) {
+          if (['xp', 'level', 'rank', 'messages', 'voiceSeconds', '_lastXpAt'].includes(prop)) {
+            return gLvl[prop] !== undefined ? gLvl[prop] : (prop === 'level' ? 1 : prop === 'rank' ? 'Academy Student' : 0);
+          }
+          return target[prop];
+        },
+        set(target, prop, value) {
+          if (['xp', 'level', 'rank', 'messages', 'voiceSeconds', '_lastXpAt'].includes(prop)) {
+            gLvl[prop] = value;
+            return true;
+          }
+          target[prop] = value;
+          return true;
+        }
+      });
+    }
+
     return u;
   }
 
-  addMessage(userId, count = 1) {
-    const user = this.getUser(userId);
+  addMessage(userId, count = 1, guildId = null) {
+    const user = this.getUser(userId, guildId);
     user.messages += count;
 
     // ProBot-style: 2-minute XP cooldown per user
@@ -391,8 +425,8 @@ class ResilientDatabase {
     return { user, leveledUp: user.level > oldLevel };
   }
 
-  addVoiceTime(userId, seconds) {
-    const user = this.getUser(userId);
+  addVoiceTime(userId, seconds, guildId = null) {
+    const user = this.getUser(userId, guildId);
     user.voiceSeconds += seconds;
     // ProBot-style: 10 XP per minute of voice activity
     user.xp = (user.xp || 0) + Math.floor(seconds / 60) * 10;
@@ -409,7 +443,16 @@ class ResilientDatabase {
     return user;
   }
 
-  clearMessages(userId = null) {
+  clearMessages(userId = null, guildId = null) {
+    if (guildId && this.data.guildLevels && this.data.guildLevels[guildId]) {
+      if (userId && this.data.guildLevels[guildId][userId]) {
+        this.data.guildLevels[guildId][userId].messages = 0;
+      } else {
+        for (const uid of Object.keys(this.data.guildLevels[guildId])) {
+          if (this.data.guildLevels[guildId][uid]) this.data.guildLevels[guildId][uid].messages = 0;
+        }
+      }
+    }
     if (userId) {
       const user = this.getUser(userId);
       user.messages = 0;
@@ -421,7 +464,16 @@ class ResilientDatabase {
     this.saveJSON();
   }
 
-  clearVoiceTime(userId = null) {
+  clearVoiceTime(userId = null, guildId = null) {
+    if (guildId && this.data.guildLevels && this.data.guildLevels[guildId]) {
+      if (userId && this.data.guildLevels[guildId][userId]) {
+        this.data.guildLevels[guildId][userId].voiceSeconds = 0;
+      } else {
+        for (const uid of Object.keys(this.data.guildLevels[guildId])) {
+          if (this.data.guildLevels[guildId][uid]) this.data.guildLevels[guildId][uid].voiceSeconds = 0;
+        }
+      }
+    }
     if (userId) {
       const user = this.getUser(userId);
       user.voiceSeconds = 0;
@@ -433,27 +485,11 @@ class ResilientDatabase {
     this.saveJSON();
   }
 
-  addInvites(userId, count = 1) {
-    const user = this.getUser(userId);
+  addInvites(userId, count = 1, guildId = null) {
+    const user = this.getUser(userId, guildId);
     user.invites += count;
-    user.xp += count * 15;
-
-    if (this.useSqlite && this.sqliteDb) {
-      this.sqliteDb.run(
-        `INSERT OR REPLACE INTO users (id, messages, voiceSeconds, invites, xp, level, rank, chakra, ryo, jutsuList) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [userId, user.messages, user.voiceSeconds, user.invites, user.xp, user.level, user.rank, user.chakra, user.ryo, JSON.stringify(user.jutsuList)]
-      );
-    }
-    this.saveJSON();
-    return user;
-  }
-
-  updateUser(userId, updateFn) {
-    const user = this.getUser(userId);
-    if (typeof updateFn === 'function') {
-      updateFn(user);
-    }
-    user.level = Math.floor(0.1 * Math.sqrt(user.xp || 0)) + 1;
+    user.xp = (user.xp || 0) + count * 15;
+    user.level = Math.max(1, Math.floor(0.1 * Math.sqrt(user.xp || 0)) + 1);
     user.rank = calculateRank(user.level);
 
     if (this.useSqlite && this.sqliteDb) {
@@ -466,16 +502,42 @@ class ResilientDatabase {
     return user;
   }
 
-  getTopUsersByXP(limit = 10) {
-    const allUsers = Object.entries(this.data.users || {}).map(([id, u]) => ({
+  updateUser(userId, updateFn, guildId = null) {
+    const user = this.getUser(userId, guildId);
+    if (typeof updateFn === 'function') {
+      updateFn(user);
+    }
+    user.level = Math.max(1, Math.floor(0.1 * Math.sqrt(user.xp || 0)) + 1);
+    user.rank = calculateRank(user.level);
+
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `INSERT OR REPLACE INTO users (id, messages, voiceSeconds, invites, xp, level, rank, chakra, ryo, jutsuList) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [userId, user.messages, user.voiceSeconds, user.invites, user.xp, user.level, user.rank, user.chakra, user.ryo, JSON.stringify(user.jutsuList)]
+      );
+    }
+    this.saveJSON();
+    return user;
+  }
+
+  getTopUsersByXP(limit = 10, guildId = null) {
+    let source = {};
+    if (guildId && this.data.guildLevels && this.data.guildLevels[guildId]) {
+      source = this.data.guildLevels[guildId];
+    } else {
+      source = this.data.users || {};
+    }
+
+    const allUsers = Object.entries(source).map(([id, u]) => ({
       userId: id,
       xp: u.xp || 0,
       level: u.level || 1,
-      rank: u.rank || 'Academy Student',
+      rank: u.rank || calculateRank(u.level || 1),
       messages: u.messages || 0
     })).sort((a, b) => b.xp - a.xp);
     return allUsers.slice(0, limit);
   }
+
 
   // --- TIME-WINDOWED ANALYTICS tracking ---
   recordAnalyticsEvent(guildId, userId, eventType, value = 1) {
