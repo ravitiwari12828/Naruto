@@ -3,6 +3,7 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { parseDurationMs, formatExpiryText } = require('./noprefix');
 const { createDynamicBox } = require('../utils/boxBuilder');
+const db = require('../database/db');
 
 // Global Premium Stores (ID -> expiresAt | null for Infinite)
 const premiumGuilds = new Map();
