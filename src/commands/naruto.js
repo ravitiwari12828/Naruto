@@ -554,26 +554,53 @@ module.exports = {
 
       // 🛒 SHOP DISPLAY (.ninja shop)
       if (action === 'shop') {
-        const shopBox = createDynamicBox('KONOHA NINJA SHOP', [
-          { key: 'Kunai   ', value: '100 Ryo | Max: 50' },
-          { key: 'Shuriken', value: '150 Ryo | Max: 50' },
-          { key: 'Elixir  ', value: '200 Ryo | Max: 20' },
-          { key: 'Pill    ', value: '250 Ryo | Max: 20' },
-          { key: 'Scroll  ', value: '500 Ryo | Max: 10' }
-        ], 20, 22);
+        // ── Box 1: Prices & Resell Values (with item emojis) ──
+        const priceBox =
+          '╭──────────────────────────╮\n' +
+          '│  KONOHA NINJA ARMORY     │\n' +
+          '│        SHOP              │\n' +
+          '├──────────────────────────┤\n' +
+          '│ 🗡️  Kunai B…  : Buy 100  │\n' +
+          '│           Sell: 60 Ryo  │\n' +
+          '│ 🥷  Shuriken… : Buy 150  │\n' +
+          '│           Sell: 90 Ryo  │\n' +
+          '│ 🧪  Health E… : Buy 200  │\n' +
+          '│           Sell: 120 Ryo │\n' +
+          '│ 💊  Chakra P… : Buy 250  │\n' +
+          '│           Sell: 150 Ryo │\n' +
+          '│ 📜  Ancient … : Buy 500  │\n' +
+          '│           Sell: 300 Ryo │\n' +
+          '╰──────────────────────────╯';
+
+        // ── Box 2: Max Inventory Capacity ──
+        const capBox =
+          '╭──────────────────────────╮\n' +
+          '│   MAX INVENTORY CAPACITY │\n' +
+          '├──────────────────────────┤\n' +
+          '│ 🗡️  Kunai Blade  : ×  50 │\n' +
+          '│ 🥷  Shuriken Pack: ×  50 │\n' +
+          '│ 🧪  Health Elixir: ×  20 │\n' +
+          '│ 💊  Chakra Pill  : ×  20 │\n' +
+          '│ 📜  Jutsu Scroll : ×  10 │\n' +
+          '╰──────────────────────────╯';
 
         const embed = createStyledEmbed({
           title: `🛍️ Konoha Shinobi Shop & Armory`,
-          subtitle: `Weapon & Item Prices & Inventory Caps`,
+          subtitle: `Prices, Resell Values & Inventory Caps`,
           description:
-            '```\n' + shopBox + '\n```\n\n' +
-            `• **To Buy:** \`.ninja buy <item> [amount]\` *(e.g. \`.ninja buy elixir 5\`)*\n` +
-            `• **To Sell:** \`.ninja sell <item> [amount]\` *(e.g. \`.ninja sell kunai 3\`)*`,
+            `🏮 **Prices & Resell Values**\n` +
+            '```\n' + priceBox + '\n```\n\n' +
+            `🎒 **Max Inventory Capacity**\n` +
+            '```\n' + capBox + '\n```\n\n' +
+            `• **To Buy Items:** \`.ninja buy <item> [amount]\` *(e.g. \`.ninja buy kunai 5\`)*\n` +
+            `• **To Sell Items:** \`.ninja sell <item> [amount]\` *(e.g. \`.ninja sell elixir 2\`)*\n` +
+            `• **Check Bag:** \`.ninja inventory\``,
           requestedBy: author,
           clientUser
         });
         return message.channel.send({ embeds: [embed] });
       }
+
 
       // 🛍️ BUY ITEMS IN QUANTITY (.ninja buy <item> [quantity])
       if (action === 'buy') {
