@@ -225,7 +225,7 @@ module.exports = {
         { key: 'Ryo   ', value: `${userData.ryo || 500} Ryo` },
         { key: 'Clan  ', value: `${clanInfo.name}` },
         { key: 'Wins  ', value: `${userData.ninjaStats?.wins || 0} Wins` },
-        { key: 'Streak', value: `🔥 ${userData.ninjaStats?.winStreak || 0} (Max: ${userData.ninjaStats?.maxWinStreak || 0})` }
+        { key: 'Streak', value: `${userData.ninjaStats?.winStreak || 0} (Max: ${userData.ninjaStats?.maxWinStreak || 0})` }
       ]);
 
       const embed = createStyledEmbed({
@@ -401,13 +401,13 @@ module.exports = {
       const battleBox = createDynamicBox('BATTLE RESULTS', [
         { key: 'Enemy  ', value: enemy.name },
         { key: 'Outcome', value: isWin ? 'VICTORY [WIN]' : 'DEFEAT [LOSS]' },
-        { key: 'Streak ', value: isWin ? `🔥 ${winStreak} Wins` : '🔥 Reset to 0' },
+        { key: 'Streak ', value: isWin ? `${winStreak} Wins` : 'Reset to 0' },
         { key: 'Damage ', value: `${totalUserDamage} HP` },
         { key: 'Reward ', value: isWin ? `+${totalRyoGained} Ryo` : '0 Ryo' }
       ]);
 
       const embed = createStyledEmbed({
-        title: isWin ? `⚔️ SHINOBI VICTORY! (🔥 ${winStreak} Win Streak)` : `💀 SHINOBI DEFEAT!`,
+        title: isWin ? `⚔️ SHINOBI VICTORY! (${winStreak} Win Streak)` : `💀 SHINOBI DEFEAT!`,
         subtitle: `${author.username} engaged ${enemy.name} in combat!`,
         description:
           '```\n' + battleBox + '\n```\n\n' +

@@ -58,13 +58,13 @@ module.exports = {
       const totalReward = monster.reward + bonusCoins;
 
       eco.balance += totalReward;
-      let streakText = eco.battleStreak.current > 1 ? `\n🔥 **Win Streak:** \`${eco.battleStreak.current} Wins\` (+${Math.round(streakBonusPct * 100)}% Bonus: +${fmt(bonusCoins)} ${emojis.coin})` : '';
+      let streakText = eco.battleStreak.current > 1 ? `\n**Win Streak:** \`${eco.battleStreak.current} Wins\` (+${Math.round(streakBonusPct * 100)}% Bonus: +${fmt(bonusCoins)} ${emojis.coin})` : '';
 
       resultText = `${emojis.success} **${pet.name}** defeated the **${monster.name}**!\n+${fmt(totalReward)} ${emojis.coin} • +${xpGain} XP${streakText}${leveledUp ? `\n${emojis.levelup} **${pet.name}** leveled up to Lv.${pet.level}!` : ''}`;
     } else {
       eco.battleStreak.current = 0;
       pet.hp = Math.max(10, pet.hp - 15);
-      resultText = `${emojis.error} **${pet.name}** was defeated by the **${monster.name}**! HP dropped to ${pet.hp}/100.\n🔥 **Win Streak Reset!**`;
+      resultText = `${emojis.error} **${pet.name}** was defeated by the **${monster.name}**! HP dropped to ${pet.hp}/100.\n**Win Streak Reset!**`;
     }
 
     db.setEconomy(message.guild.id, message.author.id, eco);
