@@ -216,12 +216,13 @@ module.exports = {
       const clanInfo = CLANS[userData.clan?.toLowerCase()] || { name: 'None', emoji: '🥋', perk: 'No clan perks' };
 
       const profileBox = createDynamicBox(`SHINOBI PROFILE — ${targetUser.username.toUpperCase()}`, [
-        { key: 'Rank ', value: userData.rank || 'Academy Student' },
-        { key: 'Level', value: `Lv. ${userData.level || 1} (${userData.xp || 0} XP)` },
+        { key: 'Rank  ', value: userData.rank || 'Academy Student' },
+        { key: 'Level ', value: `Lv. ${userData.level || 1} (${userData.xp || 0} XP)` },
         { key: 'Chakra', value: `${userData.chakra || 100}/100` },
-        { key: 'Ryo  ', value: `${userData.ryo || 500} Ryo` },
-        { key: 'Clan ', value: `${clanInfo.emoji} ${clanInfo.name}` },
-        { key: 'Wins ', value: `${userData.ninjaStats?.wins || 0} Battles` }
+        { key: 'Ryo   ', value: `${userData.ryo || 500} Ryo` },
+        { key: 'Clan  ', value: `${clanInfo.emoji} ${clanInfo.name}` },
+        { key: 'Wins  ', value: `${userData.ninjaStats?.wins || 0} Battles` },
+        { key: 'Streak', value: `🔥 ${userData.ninjaStats?.winStreak || 0} Wins (Max: ${userData.ninjaStats?.maxWinStreak || 0})` }
       ]);
 
       const embed = createStyledEmbed({
@@ -359,38 +360,59 @@ module.exports = {
       const totalUserDamage = jutsuObj.damage + userAtkBonus + Math.floor(Math.random() * 15);
       const isWin = totalUserDamage >= enemy.hp || Math.random() > 0.3;
 
+      let winStreak = userData.ninjaStats?.winStreak || 0;
+      let maxWinStreak = userData.ninjaStats?.maxWinStreak || 0;
+      let streakBonusRyo = 0;
+      let streakBonusXp = 0;
+
+      if (isWin) {
+        winStreak += 1;
+        if (winStreak > maxWinStreak) maxWinStreak = winStreak;
+        const streakPct = Math.min(1.0, (winStreak - 1) * 0.1);
+        streakBonusRyo = Math.floor(enemy.ryo * streakPct);
+        streakBonusXp = Math.floor(enemy.xp * streakPct);
+      } else {
+        winStreak = 0;
+      }
+
       db.updateUser(author.id, (u) => {
         u.chakra = Math.max(0, u.chakra - jutsuObj.chakra);
         u.lastBattleTime = now;
-        if (!u.ninjaStats) u.ninjaStats = { wins: 0, losses: 0, battles: 0, missionsCompleted: 0 };
+        if (!u.ninjaStats) u.ninjaStats = { wins: 0, losses: 0, battles: 0, missionsCompleted: 0, winStreak: 0, maxWinStreak: 0 };
         u.ninjaStats.battles += 1;
+        u.ninjaStats.winStreak = winStreak;
+        u.ninjaStats.maxWinStreak = Math.max(u.ninjaStats.maxWinStreak || 0, maxWinStreak);
 
         if (isWin) {
           u.ninjaStats.wins += 1;
-          u.ryo += enemy.ryo;
-          u.xp += enemy.xp;
+          u.ryo += (enemy.ryo + streakBonusRyo);
+          u.xp += (enemy.xp + streakBonusXp);
         } else {
           u.ninjaStats.losses += 1;
         }
       });
 
+      const totalRyoGained = enemy.ryo + streakBonusRyo;
+      const totalXpGained = enemy.xp + streakBonusXp;
+
       const battleBox = createDynamicBox(`BATTLE RESULTS — VS ${enemy.name.toUpperCase()}`, [
         { key: 'Outcome ', value: isWin ? 'VICTORY [WIN]' : 'DEFEAT [LOSS]' },
+        { key: 'Streak  ', value: isWin ? `🔥 ${winStreak} Wins (+${Math.round(Math.min(100, (winStreak - 1) * 10))}% Bonus)` : '🔥 Reset to 0' },
         { key: 'Technique', value: userJutsuName },
         { key: 'Damage  ', value: `${totalUserDamage} HP` },
         { key: 'Chakra  ', value: `-${jutsuObj.chakra} Used` },
-        { key: 'Reward  ', value: isWin ? `+${enemy.ryo} Ryo | +${enemy.xp} XP` : '0 Ryo' }
+        { key: 'Reward  ', value: isWin ? `+${totalRyoGained} Ryo | +${totalXpGained} XP` : '0 Ryo' }
       ]);
 
       const embed = createStyledEmbed({
-        title: isWin ? `⚔️ SHINOBI VICTORY!` : `💀 SHINOBI DEFEAT!`,
+        title: isWin ? `⚔️ SHINOBI VICTORY! (🔥 ${winStreak} Win Streak)` : `💀 SHINOBI DEFEAT!`,
         subtitle: `${author.username} engaged ${enemy.name} in combat!`,
         description:
           '```\n' + battleBox + '\n```\n\n' +
           (clanBonusText ? `${clanBonusText}\n\n` : '') +
           (isWin
-            ? `🎉 **You defeated ${enemy.name}!** Earned \`+${enemy.ryo} Ryo\` and \`+${enemy.xp} XP\`!`
-            : `💥 **${enemy.name} counter-attacked and forced your retreat!** Train harder and try again.`),
+            ? `🎉 **You defeated ${enemy.name}!** Earned \`+${totalRyoGained} Ryo\` (+${streakBonusRyo} streak bonus) and \`+${totalXpGained} XP\`!`
+            : `💥 **${enemy.name} counter-attacked and forced your retreat!** Win streak reset to 0. Train harder and try again.`),
         requestedBy: author,
         clientUser
       });
