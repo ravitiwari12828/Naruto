@@ -396,18 +396,91 @@ class ResilientDatabase {
     return u;
   }
 
-  addMessage(userId, count = 1, guildId = null) {
+  getLevelConfig(guildId) {
+    if (!this.data.levelConfigs) this.data.levelConfigs = {};
+    if (!this.data.levelConfigs[guildId]) {
+      this.data.levelConfigs[guildId] = {
+        enabled: true,
+        channelId: null, // null = current channel, 'dm' = DM, 'none' = disabled
+        message: null, // custom level up message
+        cooldown: 120, // 2 minutes in seconds
+        minXp: 15,
+        maxXp: 40,
+        roleRewardsMode: 'stack', // 'stack' or 'replace'
+        roleRewards: [], // [{ level: 5, roleId: '...' }]
+        ignoredChannels: [], // ['channelId']
+        ignoredRoles: [], // ['roleId']
+        multipliers: {} // { 'roleId': 1.5 }
+      };
+    }
+    const cfg = this.data.levelConfigs[guildId];
+    if (cfg.enabled === undefined) cfg.enabled = true;
+    if (cfg.cooldown === undefined) cfg.cooldown = 120;
+    if (cfg.minXp === undefined) cfg.minXp = 15;
+    if (cfg.maxXp === undefined) cfg.maxXp = 40;
+    if (!cfg.roleRewardsMode) cfg.roleRewardsMode = 'stack';
+    if (!Array.isArray(cfg.roleRewards)) cfg.roleRewards = [];
+    if (!Array.isArray(cfg.ignoredChannels)) cfg.ignoredChannels = [];
+    if (!Array.isArray(cfg.ignoredRoles)) cfg.ignoredRoles = [];
+    if (!cfg.multipliers) cfg.multipliers = {};
+    return cfg;
+  }
+
+  updateLevelConfig(guildId, updateFn) {
+    const cfg = this.getLevelConfig(guildId);
+    if (typeof updateFn === 'function') {
+      updateFn(cfg);
+    }
+    this.saveJSON();
+    return cfg;
+  }
+
+  resetGuildLevels(guildId, userId = null) {
+    if (guildId && this.data.guildLevels && this.data.guildLevels[guildId]) {
+      if (userId) {
+        delete this.data.guildLevels[guildId][userId];
+      } else {
+        this.data.guildLevels[guildId] = {};
+      }
+      this.saveJSON();
+      return true;
+    }
+    return false;
+  }
+
+  addMessage(userId, count = 1, guildId = null, memberRoleIds = []) {
     const user = this.getUser(userId, guildId);
     user.messages += count;
 
-    // ProBot-style: 2-minute XP cooldown per user
+    let cfg = { cooldown: 120, minXp: 15, maxXp: 40, multipliers: {}, ignoredChannels: [], ignoredRoles: [] };
+    if (guildId) {
+      cfg = this.getLevelConfig(guildId);
+    }
+
     const now = Date.now();
+    const cooldownMs = (cfg.cooldown || 120) * 1000;
     const lastXp = user._lastXpAt || 0;
-    if (now - lastXp >= 120000) {
-      // Random 15–40 XP per eligible message (ProBot range)
-      const xpGain = (Math.floor(Math.random() * 26) + 15) * count;
-      user.xp = (user.xp || 0) + xpGain;
+
+    let gainedXp = 0;
+    if (now - lastXp >= cooldownMs) {
+      const min = cfg.minXp || 15;
+      const max = cfg.maxXp || 40;
+      let baseGain = (Math.floor(Math.random() * Math.max(1, max - min + 1)) + min) * count;
+
+      // Apply role multipliers
+      if (memberRoleIds && memberRoleIds.length > 0 && cfg.multipliers) {
+        let maxMult = 1.0;
+        for (const rId of memberRoleIds) {
+          if (cfg.multipliers[rId] && cfg.multipliers[rId] > maxMult) {
+            maxMult = cfg.multipliers[rId];
+          }
+        }
+        baseGain = Math.round(baseGain * maxMult);
+      }
+
+      user.xp = (user.xp || 0) + baseGain;
       user._lastXpAt = now;
+      gainedXp = baseGain;
     }
 
     const oldLevel = user.level;
@@ -422,7 +495,7 @@ class ResilientDatabase {
       );
     }
     this.saveJSON();
-    return { user, leveledUp: user.level > oldLevel };
+    return { user, leveledUp: user.level > oldLevel, gainedXp };
   }
 
   addVoiceTime(userId, seconds, guildId = null) {

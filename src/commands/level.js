@@ -229,33 +229,353 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 3. .level disable
-    if (sub === 'disable') {
+    // 3. .level disable / .level enable
+    if (sub === 'disable' || sub === 'enable') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`${emojis.WARNING} Only Administrators can disable leveling.`);
+        return message.reply(`${emojis.WARNING} Only Administrators can toggle leveling.`);
       }
-
-      config.enabled = false;
-      levelConfigs.set(guildId, config);
-
-      return message.reply(`${emojis.SUCCESS} Leveling system disabled on this server.`);
+      const isEnable = sub === 'enable';
+      db.updateLevelConfig(guildId, cfg => { cfg.enabled = isEnable; });
+      return message.reply(`${emojis.SUCCESS} Server leveling system **${isEnable ? 'ENABLED' : 'DISABLED'}**.`);
     }
 
-    // 4. .level status
-    if (sub === 'status') {
-      const box = createDynamicBox('LEVELING SYSTEM STATUS', [
-        { key: 'Status   ', value: config.enabled ? 'ENABLED' : 'DISABLED' },
-        { key: 'Announce ', value: config.channelId ? '<#channel>' : 'Current Channel' },
-        { key: 'PerkRoles', value: String(config.levelRoles ? config.levelRoles.size : 0) + ' configured' }
+    // 4. .level config / .level status / .level settings
+    if (sub === 'status' || sub === 'config' || sub === 'settings') {
+      const cfg = db.getLevelConfig(guildId);
+
+      let channelDisplay = 'Current Channel';
+      if (cfg.channelId === 'dm') channelDisplay = '📥 Direct Messages (DM)';
+      else if (cfg.channelId === 'none') channelDisplay = '❌ Disabled (No Messages)';
+      else if (cfg.channelId && cfg.channelId !== 'default') channelDisplay = `<#${cfg.channelId}>`;
+
+      const rewardCount = (cfg.roleRewards ? cfg.roleRewards.length : 0) + 7; // 7 default ranks
+      const ignoredChanCount = cfg.ignoredChannels ? cfg.ignoredChannels.length : 0;
+      const ignoredRoleCount = cfg.ignoredRoles ? cfg.ignoredRoles.length : 0;
+      const multCount = cfg.multipliers ? Object.keys(cfg.multipliers).length : 0;
+
+      const box = createDynamicBox('ARCANE LEVELING CONFIG', [
+        { key: 'Status   ', value: cfg.enabled ? 'ENABLED' : 'DISABLED' },
+        { key: 'Announce ', value: channelDisplay.slice(0, 16) },
+        { key: 'XP Rate  ', value: `${cfg.minXp}-${cfg.maxXp} XP (${cfg.cooldown}s)` },
+        { key: 'Role Mode', value: (cfg.roleRewardsMode || 'stack').toUpperCase() },
+        { key: 'Rewards  ', value: `${rewardCount} configured` },
+        { key: 'Ignored  ', value: `${ignoredChanCount} chan / ${ignoredRoleCount} role` },
+        { key: 'Boosters ', value: `${multCount} multipliers` }
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL || '📈'} Leveling System Status`,
-        description: '```\n' + box + '\n```',
+        title: `${emojis.LEVEL || '⚙️'} Server Leveling System Configuration`,
+        subtitle: `Arcane-Style Advanced Server Leveling Engine`,
+        description:
+          '```\n' + box + '\n```\n\n' +
+          `**⚡ Configuration Commands:**\n` +
+          `• \`.level channel <#channel|dm|default|none>\` — Set announcement channel\n` +
+          `• \`.level message <text>\` — Set custom level up message\n` +
+          `• \`.level rewards add <level> <@role>\` — Add custom level role reward\n` +
+          `• \`.level rewards mode <stack|replace>\` — Toggle stacking or replacing roles\n` +
+          `• \`.level ignore channel <#channel>\` — Toggle no-XP channel\n` +
+          `• \`.level ignore role <@role>\` — Toggle no-XP role\n` +
+          `• \`.level multiplier add <@role> <multiplier>\` — Add XP boost (e.g. 1.5x)\n` +
+          `• \`.level rate <minXp> <maxXp> [cooldown]\` — Customize XP earn rate`,
         requestedBy: author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
+    }
+
+    // ── ARCANE LEVELING CONFIGURATION SUBCOMMANDS ─────────────────────────────
+
+    // .level channel <#channel | dm | default | none>
+    if (sub === 'channel' || sub === 'announcements') {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can change level announcement settings.`);
+      }
+
+      const argVal = args[1]?.toLowerCase();
+      if (!argVal) {
+        return message.reply(`${emojis.WARNING} Usage: \`.level channel <#channel | dm | default | none>\``);
+      }
+
+      let setVal = null;
+      let display = '';
+      if (['dm', 'direct'].includes(argVal)) {
+        setVal = 'dm';
+        display = '📥 Direct Messages (DM)';
+      } else if (['none', 'disabled', 'off'].includes(argVal)) {
+        setVal = 'none';
+        display = '❌ Disabled (No announcements)';
+      } else if (['default', 'current', 'here'].includes(argVal)) {
+        setVal = 'default';
+        display = 'Current Chat Channel';
+      } else {
+        const chan = message.mentions.channels.first() || guild.channels.cache.get(argVal);
+        if (!chan) return message.reply(`${emojis.WARNING} Channel not found! Mention a valid channel or use \`dm\`, \`default\`, or \`none\`.`);
+        setVal = chan.id;
+        display = `<#${chan.id}>`;
+      }
+
+      db.updateLevelConfig(guildId, cfg => { cfg.channelId = setVal; });
+      return message.reply(`${emojis.SUCCESS} Level up announcements will now be sent to **${display}**.`);
+    }
+
+    // .level message <custom text | reset>
+    if (sub === 'message' || sub === 'msg') {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can set level up messages.`);
+      }
+
+      const customText = args.slice(1).join(' ');
+      if (!customText) {
+        const currentMsg = db.getLevelConfig(guildId).message || 'Default Styled Embed';
+        return message.reply(
+          `${emojis.INFO} **Current Level Up Message:**\n\`${currentMsg}\`\n\n` +
+          `**Usage:** \`.level message <text>\` or \`.level message reset\`\n` +
+          `**Variables:** \`{user}\`, \`{user.mention}\`, \`{level}\`, \`{rank}\`, \`{role}\``
+        );
+      }
+
+      if (customText.toLowerCase() === 'reset' || customText.toLowerCase() === 'default') {
+        db.updateLevelConfig(guildId, cfg => { cfg.message = null; });
+        return message.reply(`${emojis.SUCCESS} Reset level up message to default styled embed.`);
+      }
+
+      db.updateLevelConfig(guildId, cfg => { cfg.message = customText; });
+      return message.reply(`${emojis.SUCCESS} Custom level up message saved!\n> ${customText}`);
+    }
+
+    // .level rewards <add|remove|mode|list>
+    if (sub === 'rewards' || sub === 'reward') {
+      const action = args[1]?.toLowerCase();
+
+      if (action === 'add') {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return message.reply(`${emojis.WARNING} Only Administrators can configure role rewards.`);
+        }
+        const lvlNum = parseInt(args[2]);
+        const role = message.mentions.roles.first() || guild.roles.cache.get(args[3] || args[2]);
+        if (isNaN(lvlNum) || !role) {
+          return message.reply(`${emojis.WARNING} Usage: \`.level rewards add <level> <@role>\``);
+        }
+
+        db.updateLevelConfig(guildId, cfg => {
+          if (!cfg.roleRewards) cfg.roleRewards = [];
+          cfg.roleRewards = cfg.roleRewards.filter(r => r.level !== lvlNum);
+          cfg.roleRewards.push({ level: lvlNum, roleId: role.id });
+        });
+
+        return message.reply(`${emojis.SUCCESS} Added **Level ${lvlNum}** Role Reward: <@&${role.id}>.`);
+      }
+
+      if (action === 'remove' || action === 'del') {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return message.reply(`${emojis.WARNING} Only Administrators can configure role rewards.`);
+        }
+        const lvlNum = parseInt(args[2]);
+        if (isNaN(lvlNum)) return message.reply(`${emojis.WARNING} Usage: \`.level rewards remove <level>\``);
+
+        db.updateLevelConfig(guildId, cfg => {
+          if (cfg.roleRewards) cfg.roleRewards = cfg.roleRewards.filter(r => r.level !== lvlNum);
+        });
+
+        return message.reply(`${emojis.SUCCESS} Removed Role Reward for Level **${lvlNum}**.`);
+      }
+
+      if (action === 'mode') {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return message.reply(`${emojis.WARNING} Only Administrators can change role reward mode.`);
+        }
+        const mode = args[2]?.toLowerCase();
+        if (!['stack', 'replace'].includes(mode)) {
+          return message.reply(`${emojis.WARNING} Usage: \`.level rewards mode <stack | replace>\`\n> **stack:** Keep previous level roles\n> **replace:** Remove previous level roles upon leveling up`);
+        }
+
+        db.updateLevelConfig(guildId, cfg => { cfg.roleRewardsMode = mode; });
+        return message.reply(`${emojis.SUCCESS} Role reward mode set to **${mode.toUpperCase()}**.`);
+      }
+
+      // Default: List Role Rewards
+      const cfg = db.getLevelConfig(guildId);
+      const customList = (cfg.roleRewards || []).map(r => `Lvl ${r.level} : <@&${r.roleId}>`).join('\n') || 'None configured';
+
+      const embed = createStyledEmbed({
+        title: `🎁 Server Role Rewards — ${guild.name}`,
+        subtitle: `Mode: ${(cfg.roleRewardsMode || 'stack').toUpperCase()} (Stack or Replace)`,
+        description:
+          `**📜 Configured Custom Role Rewards:**\n${customList}\n\n` +
+          `**Default Shinobi Rank Rewards:**\n` +
+          `• Lvl 5: Genin • Lvl 15: Chunin • Lvl 25: Special Jounin • Lvl 40: Jounin • Lvl 60: ANBU • Lvl 75: Sannin • Lvl 100: Hokage\n\n` +
+          `*To add: \`.level rewards add <level> <@role>\`*\n` +
+          `*To change mode: \`.level rewards mode <stack|replace>\`*`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // .level ignore <channel|role|list>
+    if (sub === 'ignore' || sub === 'no-xp' || sub === 'blacklist') {
+      const action = args[1]?.toLowerCase();
+
+      if (action === 'channel' || action === 'chan') {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return message.reply(`${emojis.WARNING} Only Administrators can configure ignored channels.`);
+        }
+        const chan = message.mentions.channels.first() || guild.channels.cache.get(args[2]);
+        if (!chan) return message.reply(`${emojis.WARNING} Usage: \`.level ignore channel <#channel>\``);
+
+        let isIgnored = false;
+        db.updateLevelConfig(guildId, cfg => {
+          if (!cfg.ignoredChannels) cfg.ignoredChannels = [];
+          if (cfg.ignoredChannels.includes(chan.id)) {
+            cfg.ignoredChannels = cfg.ignoredChannels.filter(id => id !== chan.id);
+            isIgnored = false;
+          } else {
+            cfg.ignoredChannels.push(chan.id);
+            isIgnored = true;
+          }
+        });
+
+        return message.reply(`${emojis.SUCCESS} Channel <#${chan.id}> is now **${isIgnored ? 'IGNORED (No-XP)' : 'ACTIVE (XP Enabled)'}**.`);
+      }
+
+      if (action === 'role') {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return message.reply(`${emojis.WARNING} Only Administrators can configure ignored roles.`);
+        }
+        const role = message.mentions.roles.first() || guild.roles.cache.get(args[2]);
+        if (!role) return message.reply(`${emojis.WARNING} Usage: \`.level ignore role <@role>\``);
+
+        let isIgnored = false;
+        db.updateLevelConfig(guildId, cfg => {
+          if (!cfg.ignoredRoles) cfg.ignoredRoles = [];
+          if (cfg.ignoredRoles.includes(role.id)) {
+            cfg.ignoredRoles = cfg.ignoredRoles.filter(id => id !== role.id);
+            isIgnored = false;
+          } else {
+            cfg.ignoredRoles.push(role.id);
+            isIgnored = true;
+          }
+        });
+
+        return message.reply(`${emojis.SUCCESS} Role <@&${role.id}> is now **${isIgnored ? 'IGNORED (No-XP)' : 'ACTIVE (XP Enabled)'}**.`);
+      }
+
+      // List Ignored Channels & Roles
+      const cfg = db.getLevelConfig(guildId);
+      const chanList = (cfg.ignoredChannels || []).map(id => `<#${id}>`).join(', ') || 'None';
+      const roleList = (cfg.ignoredRoles || []).map(id => `<@&${id}>`).join(', ') || 'None';
+
+      const embed = createStyledEmbed({
+        title: `🚫 Ignored Channels & Roles (No-XP) — ${guild.name}`,
+        description:
+          `**Forbidden Channels (No-XP):**\n${chanList}\n\n` +
+          `**Forbidden Roles (No-XP):**\n${roleList}\n\n` +
+          `*Toggle channel: \`.level ignore channel <#channel>\`*\n` +
+          `*Toggle role: \`.level ignore role <@role>\`*`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // .level multiplier <add|remove|list>
+    if (sub === 'multiplier' || sub === 'boosters' || sub === 'mult') {
+      const action = args[1]?.toLowerCase();
+
+      if (action === 'add') {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return message.reply(`${emojis.WARNING} Only Administrators can configure XP multipliers.`);
+        }
+        const role = message.mentions.roles.first() || guild.roles.cache.get(args[2]);
+        const mult = parseFloat(args[3] || args[2]);
+        if (!role || isNaN(mult) || mult <= 0) {
+          return message.reply(`${emojis.WARNING} Usage: \`.level multiplier add <@role> <multiplier>\` (e.g. \`.level multiplier add @Booster 1.5\`)`);
+        }
+
+        db.updateLevelConfig(guildId, cfg => {
+          if (!cfg.multipliers) cfg.multipliers = {};
+          cfg.multipliers[role.id] = mult;
+        });
+
+        return message.reply(`${emojis.SUCCESS} Added **${mult}x XP Multiplier** for role <@&${role.id}>.`);
+      }
+
+      if (action === 'remove' || action === 'del') {
+        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return message.reply(`${emojis.WARNING} Only Administrators can configure XP multipliers.`);
+        }
+        const role = message.mentions.roles.first() || guild.roles.cache.get(args[2]);
+        if (!role) return message.reply(`${emojis.WARNING} Usage: \`.level multiplier remove <@role>\``);
+
+        db.updateLevelConfig(guildId, cfg => {
+          if (cfg.multipliers) delete cfg.multipliers[role.id];
+        });
+
+        return message.reply(`${emojis.SUCCESS} Removed XP Multiplier for role <@&${role.id}>.`);
+      }
+
+      // List Multipliers
+      const cfg = db.getLevelConfig(guildId);
+      const list = Object.entries(cfg.multipliers || {})
+        .map(([rId, m]) => `<@&${rId}> : **${m}x XP**`)
+        .join('\n') || 'None configured';
+
+      const embed = createStyledEmbed({
+        title: `✨ Active Role XP Multipliers — ${guild.name}`,
+        description:
+          `${list}\n\n` +
+          `*To add: \`.level multiplier add <@role> <multiplier>\`*\n` +
+          `*To remove: \`.level multiplier remove <@role>\`*`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // .level rate <minXp> <maxXp> [cooldownSeconds]
+    if (sub === 'rate' || sub === 'xp-rate') {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can configure XP earn rates.`);
+      }
+
+      const minXp = parseInt(args[1]);
+      const maxXp = parseInt(args[2]);
+      const cooldown = parseInt(args[3] || '120');
+
+      if (isNaN(minXp) || isNaN(maxXp) || minXp < 1 || maxXp < minXp) {
+        return message.reply(`${emojis.WARNING} Usage: \`.level rate <minXp> <maxXp> [cooldownSeconds]\` (e.g. \`.level rate 15 40 120\`)`);
+      }
+
+      db.updateLevelConfig(guildId, cfg => {
+        cfg.minXp = minXp;
+        cfg.maxXp = maxXp;
+        cfg.cooldown = Math.max(1, cooldown);
+      });
+
+      return message.reply(`${emojis.SUCCESS} XP Earn Rate set to **${minXp} - ${maxXp} XP** per message with a **${cooldown}s cooldown**.`);
+    }
+
+    // .level reset <@user | all>
+    if (sub === 'reset') {
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+        return message.reply(`${emojis.WARNING} Only Administrators can reset server levels.`);
+      }
+
+      const target = message.mentions.members?.first();
+      const targetUser = target?.user;
+      const isAll = args[1]?.toLowerCase() === 'all';
+
+      if (!targetUser && !isAll) {
+        return message.reply(`${emojis.WARNING} Usage: \`.level reset <@user | all>\``);
+      }
+
+      if (isAll) {
+        db.resetGuildLevels(guildId);
+        return message.reply(`${emojis.SUCCESS} **ALL** server XP, levels, and ranks have been reset for **${guild.name}**.`);
+      } else {
+        db.resetGuildLevels(guildId, targetUser.id);
+        return message.reply(`${emojis.SUCCESS} Reset leveling data for ${targetUser.username} in this server.`);
+      }
     }
 
     // 5. .level leaderboard / .lb

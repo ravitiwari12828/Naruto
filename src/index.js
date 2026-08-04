@@ -1535,64 +1535,129 @@ client.on('messageCreate', async (message) => {
 
   // GUILD MESSAGES & LEVELING ENGINE
   const guildId = message.guild.id;
-  const userBefore = db.getUser(message.author.id, guildId);
-  const oldLvl = userBefore.level;
+  const levelCfg = db.getLevelConfig(guildId);
 
-  db.addMessage(message.author.id, 1, guildId);
-  db.recordAnalyticsEvent(guildId, message.author.id, 'message', 1);
+  if (levelCfg.enabled !== false) {
+    const isIgnoredChan = levelCfg.ignoredChannels && levelCfg.ignoredChannels.includes(message.channel.id);
+    const memberRoleIds = message.member ? message.member.roles.cache.map(r => r.id) : [];
+    const isIgnoredRole = levelCfg.ignoredRoles && memberRoleIds.some(rId => levelCfg.ignoredRoles.includes(rId));
 
-  const userAfter = db.getUser(message.author.id, guildId);
-  if (userAfter.level > oldLvl) {
-    const levelCmd = client.commands.get('level');
-    const levelCfg = levelCmd ? levelCmd.getOrCreateLevelConfig(message.guild.id) : { enabled: true, channelId: null };
+    if (!isIgnoredChan && !isIgnoredRole) {
+      const userBefore = db.getUser(message.author.id, guildId);
+      const oldLvl = userBefore.level;
 
-    // Auto-assign level rank role & perk roles if bot has ManageRoles permission
-    if (message.member && message.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
-      const currentRank = userAfter.rank;
-      const targetRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === currentRank.toLowerCase() || (currentRank.includes('Student') && r.name.toLowerCase().includes('student')));
+      db.addMessage(message.author.id, 1, guildId, memberRoleIds);
+      db.recordAnalyticsEvent(guildId, message.author.id, 'message', 1);
 
-      if (targetRole && !message.member.roles.cache.has(targetRole.id)) {
-        await message.member.roles.add(targetRole.id).catch(() => {});
-      }
+      const userAfter = db.getUser(message.author.id, guildId);
+      if (userAfter.level > oldLvl) {
+        // ── Auto-assign level rank role & perk/custom role rewards ──
+        if (message.member && message.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
+          const currentRank = userAfter.rank;
+          const targetRole = message.guild.roles.cache.find(r => r.name.toLowerCase() === currentRank.toLowerCase() || (currentRank.includes('Student') && r.name.toLowerCase().includes('student')));
 
-      const perkThresholds = [
-        { lvl: 5, key: 'Genin Trainee' },
-        { lvl: 15, key: 'Chunin Captain' },
-        { lvl: 25, key: 'Special Jounin Operative' },
-        { lvl: 40, key: 'Jounin Master' },
-        { lvl: 60, key: 'ANBU Commander' },
-        { lvl: 75, key: 'Sannin Legend' },
-        { lvl: 100, key: 'Hokage Sovereign' }
-      ];
+          if (targetRole && !message.member.roles.cache.has(targetRole.id)) {
+            await message.member.roles.add(targetRole.id).catch(() => {});
+          }
 
-      for (const perk of perkThresholds) {
-        if (userAfter.level >= perk.lvl) {
-          const perkRole = message.guild.roles.cache.find(r => r.name.toLowerCase().includes(perk.key.toLowerCase()));
-          if (perkRole && !message.member.roles.cache.has(perkRole.id)) {
-            await message.member.roles.add(perkRole.id).catch(() => {});
+          // Custom & Default Role Rewards
+          const customRewards = levelCfg.roleRewards || [];
+          const defaultPerks = [
+            { level: 5, roleName: 'Genin Trainee' },
+            { level: 15, roleName: 'Chunin Captain' },
+            { level: 25, roleName: 'Special Jounin Operative' },
+            { level: 40, roleName: 'Jounin Master' },
+            { level: 60, roleName: 'ANBU Commander' },
+            { level: 75, roleName: 'Sannin Legend' },
+            { level: 100, roleName: 'Hokage Sovereign' }
+          ];
+
+          let newlyUnlockedRoleName = null;
+
+          // If mode is 'replace', collect previous level roles to remove
+          const rolesToRemove = [];
+
+          for (const reward of customRewards) {
+            if (userAfter.level >= reward.level) {
+              const r = message.guild.roles.cache.get(reward.roleId);
+              if (r) {
+                if (reward.level === userAfter.level) newlyUnlockedRoleName = r.name;
+                if (!message.member.roles.cache.has(r.id)) {
+                  await message.member.roles.add(r.id).catch(() => {});
+                }
+              }
+            } else if (levelCfg.roleRewardsMode === 'replace') {
+              const r = message.guild.roles.cache.get(reward.roleId);
+              if (r && message.member.roles.cache.has(r.id)) {
+                rolesToRemove.push(r.id);
+              }
+            }
+          }
+
+          for (const perk of defaultPerks) {
+            if (userAfter.level >= perk.level) {
+              const r = message.guild.roles.cache.find(r => r.name.toLowerCase().includes(perk.roleName.toLowerCase()));
+              if (r) {
+                if (perk.level === userAfter.level && !newlyUnlockedRoleName) newlyUnlockedRoleName = r.name;
+                if (!message.member.roles.cache.has(r.id)) {
+                  await message.member.roles.add(r.id).catch(() => {});
+                }
+              }
+            } else if (levelCfg.roleRewardsMode === 'replace') {
+              const r = message.guild.roles.cache.find(r => r.name.toLowerCase().includes(perk.roleName.toLowerCase()));
+              if (r && message.member.roles.cache.has(r.id)) {
+                rolesToRemove.push(r.id);
+              }
+            }
+          }
+
+          if (rolesToRemove.length > 0) {
+            for (const rId of rolesToRemove) {
+              await message.member.roles.remove(rId).catch(() => {});
+            }
+          }
+
+          // ── Announce Level Up ──
+          if (levelCfg.channelId !== 'none') {
+            let targetChan = message.channel;
+            if (levelCfg.channelId === 'dm') {
+              targetChan = message.author;
+            } else if (levelCfg.channelId && levelCfg.channelId !== 'default') {
+              targetChan = message.guild.channels.cache.get(levelCfg.channelId) || message.channel;
+            }
+
+            if (levelCfg.message) {
+              // Custom text message format
+              const customTxt = levelCfg.message
+                .replace(/{user}/g, message.author.username)
+                .replace(/{user\.mention}/g, `<@${message.author.id}>`)
+                .replace(/{user\.username}/g, message.author.username)
+                .replace(/{level}/g, String(userAfter.level))
+                .replace(/{rank}/g, userAfter.rank)
+                .replace(/{role}/g, newlyUnlockedRoleName || userAfter.rank);
+
+              targetChan.send(customTxt).catch(() => {});
+            } else {
+              // Styled Embed Announcement
+              const levelUpEmbed = createStyledEmbed({
+                title: `${emojis.CELEBRATION || '🎉'} LEVEL UP! — Shinobi Rank Advancement`,
+                description: `Congratulations <@${message.author.id}>! Your activity elevated your Ninja Rank!`,
+                fields: [
+                  { name: `${emojis.STAR || '⭐'} New Level`, value: `\`Level ${userAfter.level}\``, inline: true },
+                  { name: `${emojis.NINJA_RANK || '🍥'} Shinobi Rank`, value: `\`${userAfter.rank}\``, inline: true },
+                  { name: `${emojis.ZAP || '✨'} Total XP`, value: `\`${userAfter.xp} XP\``, inline: true }
+                ],
+                thumbnailUrl: message.author.displayAvatarURL({ dynamic: true, size: 256 }),
+                requestedBy: message.author,
+                clientUser: client.user,
+                footerText: `Naruto Leveling • Chat to unlock higher Ninja Ranks!`
+              });
+
+              targetChan.send({ content: `<@${message.author.id}>`, embeds: [levelUpEmbed] }).catch(() => {});
+            }
           }
         }
       }
-    }
-
-    if (levelCfg.enabled !== false) {
-      const targetChan = (levelCfg.channelId && message.guild.channels.cache.get(levelCfg.channelId)) || message.channel;
-
-      const levelUpEmbed = createStyledEmbed({
-        title: `${emojis.CELEBRATION || '🎉'} LEVEL UP! — Shinobi Rank Advancement`,
-        description: `Congratulations <@${message.author.id}>! Your activity has elevated your Ninja Rank!`,
-        fields: [
-          { name: `${emojis.STAR || '⭐'} New Level`, value: `\`Level ${userAfter.level}\``, inline: true },
-          { name: `${emojis.NINJA_RANK || '🍥'} Shinobi Rank`, value: `\`${userAfter.rank}\``, inline: true },
-          { name: `${emojis.ZAP || '✨'} Total XP`, value: `\`${userAfter.xp} XP\``, inline: true }
-        ],
-        thumbnailUrl: message.author.displayAvatarURL({ dynamic: true, size: 256 }),
-        requestedBy: message.author,
-        clientUser: client.user,
-        footerText: `Naruto Leveling • Chat to unlock higher Ninja Ranks!`
-      });
-
-      targetChan.send({ content: `<@${message.author.id}>`, embeds: [levelUpEmbed] }).catch(() => {});
     }
   }
 
