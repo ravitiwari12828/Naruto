@@ -218,14 +218,14 @@ module.exports = {
     if (sub === 'profile' || sub === 'info' || sub === 'stats') {
       const clanInfo = CLANS[userData.clan?.toLowerCase()] || { name: 'None', emoji: '🥋', perk: 'No clan perks' };
 
-      const profileBox = createDynamicBox(`SHINOBI PROFILE — ${targetUser.username.toUpperCase()}`, [
+      const profileBox = createDynamicBox('SHINOBI PROFILE', [
         { key: 'Rank  ', value: userData.rank || 'Academy Student' },
-        { key: 'Level ', value: `Lv. ${userData.level || 1} (${userData.xp || 0} XP)` },
+        { key: 'Level ', value: `Lv.${userData.level || 1} (${userData.xp || 0} XP)` },
         { key: 'Chakra', value: `${userData.chakra || 100}/100` },
         { key: 'Ryo   ', value: `${userData.ryo || 500} Ryo` },
-        { key: 'Clan  ', value: `${clanInfo.emoji} ${clanInfo.name}` },
-        { key: 'Wins  ', value: `${userData.ninjaStats?.wins || 0} Battles` },
-        { key: 'Streak', value: `🔥 ${userData.ninjaStats?.winStreak || 0} Wins (Max: ${userData.ninjaStats?.maxWinStreak || 0})` }
+        { key: 'Clan  ', value: `${clanInfo.name}` },
+        { key: 'Wins  ', value: `${userData.ninjaStats?.wins || 0} Wins` },
+        { key: 'Streak', value: `🔥 ${userData.ninjaStats?.winStreak || 0} (Max: ${userData.ninjaStats?.maxWinStreak || 0})` }
       ]);
 
       const embed = createStyledEmbed({
@@ -398,13 +398,12 @@ module.exports = {
       const totalRyoGained = enemy.ryo + streakBonusRyo;
       const totalXpGained = enemy.xp + streakBonusXp;
 
-      const battleBox = createDynamicBox(`BATTLE RESULTS — VS ${enemy.name.toUpperCase()}`, [
-        { key: 'Outcome ', value: isWin ? 'VICTORY [WIN]' : 'DEFEAT [LOSS]' },
-        { key: 'Streak  ', value: isWin ? `🔥 ${winStreak} Wins (+${Math.round(Math.min(100, (winStreak - 1) * 10))}% Bonus)` : '🔥 Reset to 0' },
-        { key: 'Technique', value: userJutsuName },
-        { key: 'Damage  ', value: `${totalUserDamage} HP` },
-        { key: 'Chakra  ', value: `-${jutsuObj.chakra} Used` },
-        { key: 'Reward  ', value: isWin ? `+${totalRyoGained} Ryo | +${totalXpGained} XP` : '0 Ryo' }
+      const battleBox = createDynamicBox('BATTLE RESULTS', [
+        { key: 'Enemy  ', value: enemy.name },
+        { key: 'Outcome', value: isWin ? 'VICTORY [WIN]' : 'DEFEAT [LOSS]' },
+        { key: 'Streak ', value: isWin ? `🔥 ${winStreak} Wins` : '🔥 Reset to 0' },
+        { key: 'Damage ', value: `${totalUserDamage} HP` },
+        { key: 'Reward ', value: isWin ? `+${totalRyoGained} Ryo` : '0 Ryo' }
       ]);
 
       const embed = createStyledEmbed({
