@@ -128,7 +128,7 @@ const CATEGORIES = [
     ]
   },
   {
-    label: 'Levels & Arcane Suite',
+    label: 'Levels & Shinobi Suite',
     value: 'level',
     description: 'Level System: rank, custom bg, leaderboards, multipliers, role rewards & XP rates',
     customEmoji: emojis.OBJ_LEVEL,

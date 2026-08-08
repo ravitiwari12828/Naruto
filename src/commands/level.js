@@ -253,7 +253,7 @@ module.exports = {
       const ignoredRoleCount = cfg.ignoredRoles ? cfg.ignoredRoles.length : 0;
       const multCount = cfg.multipliers ? Object.keys(cfg.multipliers).length : 0;
 
-      const box = createDynamicBox('ARCANE LEVELING CONFIG', [
+      const box = createDynamicBox('SHINOBI LEVELING CONFIG', [
         { key: 'Status   ', value: cfg.enabled ? 'ENABLED' : 'DISABLED' },
         { key: 'Announce ', value: channelDisplay.slice(0, 16) },
         { key: 'XP Rate  ', value: `${cfg.minXp}-${cfg.maxXp} XP (${cfg.cooldown}s)` },
@@ -265,7 +265,7 @@ module.exports = {
 
       const embed = createStyledEmbed({
         title: `${emojis.LEVEL || '⚙️'} Server Leveling System Configuration`,
-        subtitle: `Arcane-Style Advanced Server Leveling Engine`,
+        subtitle: `Shinobi Advanced Server Leveling Engine`,
         description:
           '```\n' + box + '\n```\n\n' +
           `**⚡ Configuration Commands:**\n` +
@@ -283,7 +283,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ── ARCANE LEVELING CONFIGURATION SUBCOMMANDS ─────────────────────────────
+    // ── SHINOBI LEVELING CONFIGURATION SUBCOMMANDS ─────────────────────────────
 
     // .level channel <#channel | dm | default | none>
     if (sub === 'channel' || sub === 'announcements') {
