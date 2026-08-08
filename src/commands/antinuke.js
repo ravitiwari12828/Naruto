@@ -357,7 +357,26 @@ function renderPanicComponents(config) {
     new ButtonBuilder().setCustomId('toggle_guild').setEmoji(emojis.OBJ_AN_GUILD).setStyle(f.antiGuildUpdate ? ButtonStyle.Success : ButtonStyle.Secondary)
   );
 
-  return [row1, row2, row3];
+  // Row 4: 1-Click Master Presets (Enable All / Disable All / Refresh)
+  const row4 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('an_enable_all')
+      .setLabel('Enable All Filters')
+      .setEmoji(emojis.SUCCESS || '🟢')
+      .setStyle(ButtonStyle.Success),
+    new ButtonBuilder()
+      .setCustomId('an_disable_all')
+      .setLabel('Disable All Filters')
+      .setEmoji(emojis.DISABLED || '🔴')
+      .setStyle(ButtonStyle.Danger),
+    new ButtonBuilder()
+      .setCustomId('an_refresh')
+      .setLabel('Refresh Status')
+      .setEmoji(emojis.OBJ_REFRESH || '🔄')
+      .setStyle(ButtonStyle.Secondary)
+  );
+
+  return [row1, row2, row3, row4];
 }
 
 
@@ -956,6 +975,14 @@ module.exports = {
         f.antiRoleCreate = !f.antiRoleCreate;
         f.antiRoleDelete = f.antiRoleCreate;
         f.antiRoleUpdate = f.antiRoleCreate;
+      } else if (id === 'an_enable_all') {
+        config.enabled = true;
+        Object.keys(config.filters).forEach(k => config.filters[k] = true);
+      } else if (id === 'an_disable_all') {
+        config.enabled = false;
+        Object.keys(config.filters).forEach(k => config.filters[k] = false);
+      } else if (id === 'an_refresh') {
+        // Refresh only
       } else if (id === 'toggle_webhook') {
         f.antiWebhookCreate = !f.antiWebhookCreate;
         f.antiWebhookDelete = f.antiWebhookCreate;

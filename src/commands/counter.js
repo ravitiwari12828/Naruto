@@ -146,26 +146,93 @@ module.exports = {
       }
     }
 
-    // 2. .counter list
-    if (!sub || sub === 'list') {
+    // 2. .counter list / .counter panel / .counter config
+    if (!sub || sub === 'list' || sub === 'panel' || sub === 'config') {
       const cfg = getCounters(guildId);
       const list = (cfg.counters || []).map(c => {
         const chan = guild.channels.cache.get(c.channelId);
         return `• **${c.type.toUpperCase()}**: ${chan ? `<#${chan.id}> (\`${chan.name}\`)` : 'Channel deleted'}`;
       }).join('\n') || 'No counter channels setup yet.';
 
+      const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
+      const row = new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId('btn_counter_setup').setLabel('Setup Default Counters').setEmoji(emojis.SUCCESS || '📊').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId('btn_counter_refresh').setLabel('Refresh Now').setEmoji(emojis.OBJ_REFRESH || '🔄').setStyle(ButtonStyle.Primary),
+        new ButtonBuilder().setCustomId('btn_counter_reset').setLabel('Reset Counters').setEmoji(emojis.DISABLED || '🗑️').setStyle(ButtonStyle.Danger)
+      );
+
       const embed = createStyledEmbed({
         title: `📊 Active Server Counter Channels — ${guild.name}`,
+        subtitle: `Real-time Voice & Goal Counter Channel Suite`,
         description:
           `${list}\n\n` +
-          `**Commands:**\n` +
+          `**Commands & Actions:**\n` +
           `• \`.counter setup\` — Auto-create default counter channels\n` +
           `• \`.counter create <total|users|bots|online|boosters>\` — Add specific counter\n` +
           `• \`.counter goal <target_number>\` — Add member goal counter`,
         requestedBy: author,
         clientUser
       });
-      return message.channel.send({ embeds: [embed] });
+
+      const msg = await message.channel.send({ embeds: [embed], components: [row] });
+      const collector = msg.createMessageComponentCollector({ time: 180000 });
+
+      collector.on('collect', async (interaction) => {
+        if (interaction.user.id !== author.id) {
+          return interaction.reply({ content: `${emojis.DISABLED} Only ${author.username} can click these buttons.`, flags: 64 });
+        }
+        if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          return interaction.reply({ content: `${emojis.WARNING} Administrator permissions required.`, flags: 64 });
+        }
+
+        if (interaction.customId === 'btn_counter_refresh') {
+          await refreshGuildCounters(guild);
+          return interaction.reply({ content: `🔄 Refreshed all server counter channels!`, flags: 64 });
+        }
+
+        if (interaction.customId === 'btn_counter_reset') {
+          updateCountersConfig(guildId, c => { c.counters = []; c.categoryId = null; });
+          return interaction.reply({ content: `🗑️ Counter configuration cleared.`, flags: 64 });
+        }
+
+        if (interaction.customId === 'btn_counter_setup') {
+          await interaction.deferReply({ flags: 64 });
+          try {
+            const totalMembers = guild.memberCount || 0;
+            const botCount = guild.members.cache.filter(m => m.user.bot).size;
+            const userCount = Math.max(0, totalMembers - botCount);
+
+            const category = await guild.channels.create({
+              name: '📊 SERVER STATS',
+              type: ChannelType.GuildCategory,
+              permissionOverwrites: [{ id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.Connect] }]
+            });
+
+            const cTotal = await guild.channels.create({ name: `👥 Total Members: ${totalMembers.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
+            const cUsers = await guild.channels.create({ name: `👤 Users: ${userCount.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
+            const cBots = await guild.channels.create({ name: `🤖 Bots: ${botCount.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
+
+            const nextGoal = Math.ceil((totalMembers + 1) / 100) * 100 || 500;
+            const cGoal = await guild.channels.create({ name: `🎯 Goal: ${totalMembers}/${nextGoal}`, type: ChannelType.GuildVoice, parent: category.id });
+
+            updateCountersConfig(guildId, cfg => {
+              cfg.categoryId = category.id;
+              cfg.counters = [
+                { channelId: cTotal.id, type: 'total' },
+                { channelId: cUsers.id, type: 'users' },
+                { channelId: cBots.id, type: 'bots' },
+                { channelId: cGoal.id, type: 'goal', goal: nextGoal }
+              ];
+            });
+
+            return interaction.followUp({ content: `📊 Server Stats Counter channels successfully created!`, flags: 64 });
+          } catch (err) {
+            return interaction.followUp({ content: `Failed to create counters: ${err.message}`, flags: 64 });
+          }
+        }
+      });
+
+      return;
     }
 
     // 3. .counter goal <target>
