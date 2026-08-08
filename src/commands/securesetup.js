@@ -42,25 +42,21 @@ module.exports = {
       const isPanicOn = antinukeData?.panicmode ?? false;
       const secLogChan = guild.channels.cache.find(c => c.name.includes('security-logs'));
 
-      const boxMain = [
-        '╭──────────────────────────╮',
-        '│   SECURITY SYSTEM HUB    │',
-        '├──────────────────────────┤',
-        '│ AntiNuke   : ' + (isAntiNukeOn ? 'ENABLED [OK]' : 'DISABLED[X]'),
-        '│ Panic Mode : ' + (isPanicOn ? 'ACTIVE  [ON]' : 'NORMAL [OFF]'),
-        '│ AutoMod    : ' + (isAutoModOn ? 'ENABLED [OK]' : 'DISABLED[X]'),
-        '│ LogChannel : ' + (secLogChan ? ('#' + secLogChan.name).slice(0, 12).padEnd(12, ' ') : 'NOT CREATED '),
-        '╰──────────────────────────╯'
-      ];
+      const boxMain = createDynamicBox('SECURITY SYSTEM HUB', [
+        { key: 'AntiNuke  ', value: isAntiNukeOn ? 'ENABLED [OK]' : 'DISABLED[X]' },
+        { key: 'Panic Mode', value: isPanicOn ? 'ACTIVE  [ON]' : 'NORMAL [OFF]' },
+        { key: 'AutoMod   ', value: isAutoModOn ? 'ENABLED [OK]' : 'DISABLED[X]' },
+        { key: 'LogChannel', value: secLogChan ? `#${secLogChan.name}` : 'NOT CREATED' }
+      ], 28);
 
       const description =
         `Welcome **${author.username}**! Configure and lock down your server security using the interactive buttons below.\n\n` +
-        '```\n' + boxMain.join('\n') + '\n```\n\n' +
+        '```\n' + boxMain + '\n```\n\n' +
         (statusText ? `> 💡 **Latest Action:** ${statusText}\n\n` : '') +
         `*Click any button below to trigger immediate server protection setup!*`;
 
       return createStyledEmbed({
-        title: `${emojis.SHIELD} One-Click Server Security & Protection Setup`,
+        title: `${emojis.AN_SHIELD || emojis.SHIELD || '🛡️'} One-Click Server Security & Protection Setup`,
         subtitle: `Shinobi Defense Grid Wizard`,
         description,
         requestedBy: author,
@@ -72,30 +68,36 @@ module.exports = {
       const row1 = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId('setup_full_protect')
-          .setLabel('⚡ 1-Click Maximum Protection')
+          .setLabel('Max Protection')
+          .setEmoji('⚡')
           .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
           .setCustomId('setup_antinuke')
-          .setLabel('${emojis.SHIELD} Enable AntiNuke Grid')
+          .setLabel('AntiNuke Grid')
+          .setEmoji(emojis.OBJ_AN_SHIELD || '🛡️')
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
           .setCustomId('setup_automod')
-          .setLabel('🍊 Enable AutoMod & AntiBot')
+          .setLabel('AutoMod & AntiBot')
+          .setEmoji(emojis.OBJ_AN_BOT || '🤖')
           .setStyle(ButtonStyle.Primary)
       );
 
       const row2 = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId('setup_log_channel')
-          .setLabel('📜 Create Security Log Channel')
+          .setLabel('Security Logs')
+          .setEmoji('📜')
           .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
           .setCustomId('setup_panic_toggle')
-          .setLabel('🚨 Toggle Panic Lockdown')
+          .setLabel('Panic Lockdown')
+          .setEmoji('🚨')
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
           .setCustomId('setup_refresh')
-          .setLabel('🔄 Refresh Status')
+          .setLabel('Refresh Status')
+          .setEmoji(emojis.OBJ_REFRESH || '🔄')
           .setStyle(ButtonStyle.Secondary)
       );
 
@@ -114,7 +116,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: '${emojis.ERROR} Only the administrator who invoked `.securesetup` can use these buttons.', ephemeral: true });
+        return interaction.reply({ content: `${emojis.WARNING || '⚠️'} Only the administrator who invoked \`.securesetup\` can use these buttons.`, flags: 64 });
       }
 
       await interaction.deferUpdate();
