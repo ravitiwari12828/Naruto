@@ -41,14 +41,15 @@ const CATEGORIES = [
   {
     label: 'Analytics & Tracking',
     value: 'analytics',
-    description: 'Track chat, voice timing, invites, joins/leaves, commands & tickets',
+    description: 'Track chat, voice timing, invites, joins/leaves, activity & server counters',
     customEmoji: emojis.ANALYTICS_ZAP,
     unicodeFallback: '📊',
     heading: `${emojis.ANALYTICS_ZAP || '📊'} Analytics Commands`,
     commands: [
-      'analytics', 'userstats',
+      'analytics', 'userstats', 'activity',
       'topmessages', 'topvoice', 'topinvites',
-      'joinsleaves', 'topcommands', 'ticketstats'
+      'joinsleaves', 'topcommands', 'ticketstats',
+      'counter setup', 'counter list', 'counter goal <target>'
     ]
   },
   {
@@ -88,52 +89,59 @@ const CATEGORIES = [
     heading: `${emojis.VOICE || '🔊'} Voice Commands`,
     commands: [
       'vctemp setup', 'vctemp disable', 'vctemp status',
+      'voicemaster setup', 'vm name', 'vm limit', 'vm lock', 'vm unlock', 'vm claim',
       'vcmute', 'vcunmute', 'vcmuteall', 'vcunmuteall',
       'vcdeafen', 'vcundeafen', 'vckick', 'vckickall',
-      'vcpull', 'vcpullall', 'vcmoveall'
+      'vcpull', 'vcpullall', 'vcmoveall',
+      'vc add', 'vc clear', 'vc count'
     ]
   },
   {
     label: 'Music Suite',
     value: 'music',
-    description: 'Lavalink music player: seek, equalizer, multi-filters, 24/7 AFK mode',
+    description: 'Lavalink music player: seek, equalizer, multi-filters, lyrics & 24/7 AFK mode',
     customEmoji: emojis.OBJ_MUSIC,
     unicodeFallback: '🎶',
     heading: `${emojis.MUSIC || '🎶'} Music Commands`,
     commands: [
       'play', 'pause', 'resume', 'seek', 'equalizer',
       'filter', 'skip', 'stop', 'queue', 'nowplaying',
-      'volume', 'loop', 'shuffle', '247', 'join', 'leave'
+      'volume', 'loop', 'shuffle', 'lyrics', '247', 'join', 'leave'
     ]
   },
   {
     label: 'AntiNuke & Security',
     value: 'antinuke',
-    description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, BypassRole & 21 Security Filters',
+    description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, Securesetup & 21 Security Filters',
     customEmoji: emojis.OBJ_AN_SHIELD,
     unicodeFallback: '🛡️',
     heading: `${emojis.AN_SHIELD} AntiNuke & Security Commands`,
     commands: [
+      'securesetup',
       'antinuke', 'antinuke enable', 'antinuke disable',
       'whitelist add', 'whitelist remove',
+      'extraowner add', 'extraowner remove', 'extraowner list',
       'bypassrole add', 'bypassrole remove',
-      'quarantine', 'quarantine enable', 'quarantine disable',
-      'quarantine set days <1-30>',
-      'vanityguard enable', 'vanityguard disable',
-      'vanityguard set <vanity>', 'vanityguard status',
-      'disableeveryone'
+      'quarantine enable', 'quarantine disable', 'quarantine set days <1-30>',
+      'vanityguard enable', 'vanityguard disable', 'vanityguard set <vanity>',
+      'disableeveryone', 'nukeserver'
     ]
   },
   {
-    label: 'Levels',
+    label: 'Levels & Arcane Suite',
     value: 'level',
-    description: 'Level System: rank, leaderboard, setup, disable & status',
+    description: 'Level System: rank, custom bg, leaderboards, multipliers, role rewards & XP rates',
     customEmoji: emojis.OBJ_LEVEL,
     unicodeFallback: '⭐',
     heading: `${emojis.LEVEL || '⭐'} Level Commands`,
     commands: [
-      'level rank', 'level leaderboard',
-      'level setup', 'level disable', 'level status'
+      'level rank', 'level bg <url|color|reset>',
+      'level leaderboard [weekly|monthly]',
+      'level config', 'level setup', 'level disable',
+      'level channel <#chan|dm|none>', 'level message <text>',
+      'level rewards add/remove/mode', 'level ignore channel/role',
+      'level multiplier add/channel', 'level rate <min> <max>',
+      'level champion role <@role>', 'level reset <@user|all>'
     ]
   },
   {
@@ -163,38 +171,40 @@ const CATEGORIES = [
   {
     label: 'Giveaways',
     value: 'giveaway',
-    description: 'Create & manage server giveaways',
+    description: 'Create, edit & manage server giveaways',
     customEmoji: emojis.OBJ_GIVEAWAY,
     unicodeFallback: '🎉',
     heading: `${emojis.GIVEAWAY || '🎉'} Giveaways Commands`,
     commands: [
-      'gstart', 'gend <id>', 'greroll <id>'
+      'gstart', 'gend <id>', 'greroll <id>', 'gedit <id>', 'gdelete <id>'
     ]
   },
   {
     label: 'Information & Bot Stats',
     value: 'info',
-    description: 'Bot stats, ping, serverinfo, userinfo, avatar, banner, uptime & invite',
+    description: 'Bot stats, ping, serverinfo, userinfo, avatar, banner, embed builder & invite',
     customEmoji: emojis.OBJ_ANALYTICS,
     unicodeFallback: 'ℹ️',
     heading: `${emojis.STATS || 'ℹ️'} Information Commands`,
     commands: [
       'help', 'info', 'ping', 'uptime', 'invite',
-      'support', 'botinfo', 'serverinfo', 'userinfo',
-      'avatar', 'banner', 'roles', 'channels', 'emojis', 'stats'
+      'support', 'supportsetup', 'botinfo', 'serverinfo', 'userinfo',
+      'avatar', 'banner', 'embed', 'roles', 'channels', 'emojis', 'stats'
     ]
   },
   {
     label: 'Moderation',
     value: 'mod',
-    description: 'Kick, ban, unban, timeout, purge, warn & channel management',
+    description: 'Kick, ban, unban, timeout, purge, warn, fakepermissions & limits',
     customEmoji: emojis.OBJ_MOD,
     unicodeFallback: '🔨',
     heading: `${emojis.MOD || '🔨'} Moderation Commands`,
     commands: [
       'ban', 'unban', 'kick', 'timeout', 'untimeout',
       'mute', 'unmute', 'purge', 'warn', 'warnings',
-      'clearwarns', 'nuke'
+      'clearwarns', 'nuke', 'modlimits',
+      'fakepermissions add/remove/list',
+      'msg add', 'msg clear', 'msg count'
     ]
   },
   {
@@ -287,9 +297,9 @@ const CATEGORIES = [
     ]
   },
   {
-    label: 'Priority AI',
+    label: 'Priority AI & Image',
     value: 'priority',
-    description: 'AI text answers & coding assistant',
+    description: 'AI text answers, image generation & coding assistant',
     customEmoji: emojis.OBJ_AN_SPARKLES,
     unicodeFallback: '✨',
     heading: `${emojis.SPARKLES} Priority AI Commands`,
@@ -297,21 +307,27 @@ const CATEGORIES = [
       'ask <question>',
       'ai <prompt>',
       'imagine <prompt>',
+      'image <prompt>',
       'code <task>',
-      'priority <query>'
+      'priority <query>',
+      'noprefix add/remove/list',
+      'premium status/grant'
     ]
   },
   {
-    label: 'Reaction Roles',
+    label: 'Reaction Roles & Single Reaction',
     value: 'reactionrole',
-    description: 'Self-assignable roles via emoji reactions',
+    description: 'Self-assignable roles & single-reaction enforcement',
     customEmoji: emojis.OBJ_REACTIONROLES,
     unicodeFallback: '🎭',
     heading: `${emojis.REACTIONROLES || '🎭'} Reaction Roles Commands`,
     commands: [
       'rr setup',
       'rr add <messageId> <emoji> <@role>',
-      'rr remove <messageId> <emoji>'
+      'rr remove <messageId> <emoji>',
+      'singlereaction add <#channel>',
+      'singlereaction remove <#channel>',
+      'singlereaction list'
     ]
   },
   {
