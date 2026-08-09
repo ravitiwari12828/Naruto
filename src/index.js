@@ -3320,11 +3320,7 @@ require('./events/serverAuditLogs')(client);
 require('./events/messageLogs')(client);
 
 const token = process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim() : null;
-const isRenderHost = !!(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.IS_RENDER === 'true');
-
-if (isRenderHost) {
-  flushLog(`🛑 [Render Cloud Host] Discord Gateway login disabled on Render. Bot is running exclusively on Localhost per user directive.`, true);
-} else if (token && token !== 'your_discord_bot_token_here') {
+if (token && token !== 'your_discord_bot_token_here') {
   client.login(token).catch(err => {
     flushLog(`❌ [Discord Login Failed]: ${err.message}`, true);
   });
