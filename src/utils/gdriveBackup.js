@@ -44,6 +44,47 @@ function createSnapshot() {
 }
 
 /**
+ * Helper to get Google Drive Access Token using OAuth2 Refresh Token
+ */
+function getAccessTokenFromRefreshToken(clientId, clientSecret, refreshToken) {
+  return new Promise((resolve, reject) => {
+    const postData = new URLSearchParams({
+      client_id: clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type: 'refresh_token'
+    }).toString();
+
+    const req = https.request('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(data);
+          if (parsed.access_token) {
+            resolve(parsed.access_token);
+          } else {
+            reject(new Error(parsed.error_description || 'Failed to refresh OAuth token'));
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.write(postData);
+    req.end();
+  });
+}
+
+/**
  * Helper to get Google Drive Access Token using Service Account Key JSON
  */
 function getAccessTokenFromServiceAccount(serviceAccountJson) {
@@ -137,7 +178,7 @@ function uploadFileToDrive(accessToken, filepath, folderId = null) {
         fileContent.toString('utf-8') +
         closeDelim;
 
-      const req = https.request('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+      const req = https.request('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
@@ -180,9 +221,12 @@ async function performDriveBackup() {
   }
 
   const credsEnv = process.env.GOOGLE_DRIVE_CREDENTIALS || process.env.GDRIVE_CREDENTIALS;
+  const clientId = process.env.GDRIVE_CLIENT_ID;
+  const clientSecret = process.env.GDRIVE_CLIENT_SECRET;
+  const refreshToken = process.env.GDRIVE_REFRESH_TOKEN;
   const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || null;
 
-  if (!credsEnv) {
+  if (!credsEnv && !(clientId && clientSecret && refreshToken)) {
     return {
       success: true,
       snapshotOnly: true,
@@ -194,8 +238,14 @@ async function performDriveBackup() {
   }
 
   try {
-    const credsJson = JSON.parse(credsEnv);
-    const token = await getAccessTokenFromServiceAccount(credsJson);
+    let token = null;
+    if (clientId && clientSecret && refreshToken) {
+      token = await getAccessTokenFromRefreshToken(clientId, clientSecret, refreshToken);
+    } else {
+      const credsJson = JSON.parse(credsEnv);
+      token = await getAccessTokenFromServiceAccount(credsJson);
+    }
+
     const driveFile = await uploadFileToDrive(token, snapshotRes.filepath, folderId);
 
     return {
@@ -232,5 +282,6 @@ module.exports = {
   createSnapshot,
   performDriveBackup,
   getAccessTokenFromServiceAccount,
+  getAccessTokenFromRefreshToken,
   uploadFileToDrive
 };
