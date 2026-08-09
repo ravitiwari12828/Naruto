@@ -38,6 +38,8 @@ http.createServer((req, res) => {
   res.end('🍥 Naruto Bot is 24/7 Active!\n');
 }).listen(PORT, () => {
   console.log(`🌐 Keepalive & Commands Web Server listening on port ${PORT}`);
+}).on('error', (err) => {
+  console.log(`ℹ️ [Web Server] Port ${PORT} already bound on localhost, skipping web server bind.`);
 });
 
 // Render Keepalive Self-Ping Loop (Pings every 4 minutes to keep Render Free Tier 24/7 active)
@@ -3317,6 +3319,7 @@ require('./events/emojisStickers')(client);
 require('./events/serverAuditLogs')(client);
 require('./events/messageLogs')(client);
 
+const token = process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim() : null;
 const isRenderHost = !!(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.IS_RENDER === 'true');
 
 if (isRenderHost) {
