@@ -119,10 +119,21 @@ module.exports = {
       const dropdownRow = buildDropdownMenu();
       const navRow = buildNavigationButtons();
 
-      const helpMessage = await message.channel.send({
-        embeds: [mainEmbed],
-        components: [dropdownRow, navRow]
-      });
+      let helpMessage = null;
+      try {
+        helpMessage = await message.channel.send({
+          embeds: [mainEmbed],
+          components: [dropdownRow, navRow]
+        });
+      } catch (sendErr) {
+        flushLog(`⚠️ [Help Panel Send Warning]: ${sendErr.message} - Retrying with fallback reply...`, true);
+        helpMessage = await message.reply({ embeds: [mainEmbed] }).catch(err => {
+          flushLog(`❌ [Help Panel Fallback Failed]: ${err.message}`, true);
+          return null;
+        });
+      }
+
+      if (!helpMessage) return;
 
       const collector = helpMessage.createMessageComponentCollector({
         time: 300000
