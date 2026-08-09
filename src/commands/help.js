@@ -126,37 +126,39 @@ module.exports = {
       });
 
     collector.on('collect', async (interaction) => {
-      if (interaction.user.id !== author.id) {
-        return interaction.reply({
-          content: `${emojis.DISABLED} Only the user who ran \`.help\` can use this menu.`,
-          flags: 64
-        });
-      }
-
-      await interaction.deferUpdate();
-
-      if (interaction.customId === 'help_home') {
-        return helpMessage.edit({
-          embeds: [buildMainEmbed(message, botUser, botAvatar, devPortalBanner)],
-          components: [buildDropdownMenu(), buildNavigationButtons()]
-        });
-      }
-
-      if (interaction.customId === 'help_delete') {
-        return helpMessage.delete().catch(() => {});
-      }
-
-      if (interaction.isStringSelectMenu() && interaction.customId === 'help_category_select') {
-        const selectedValue = interaction.values[0];
-        const cat = CATEGORIES.find(c => c.value === selectedValue);
-
-        if (cat) {
-          const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
-          return helpMessage.edit({
-            embeds: [catEmbed],
-            components: [buildDropdownMenu(), buildNavigationButtons()]
-          });
+      try {
+        if (interaction.user.id !== author.id) {
+          return interaction.reply({
+            content: `${emojis.DISABLED} Only the user who ran \`.help\` can use this menu.`,
+            flags: 64
+          }).catch(() => {});
         }
+
+        if (interaction.customId === 'help_home') {
+          return interaction.update({
+            embeds: [buildMainEmbed(message, botUser, botAvatar, devPortalBanner)],
+            components: [buildDropdownMenu(), buildNavigationButtons()]
+          }).catch(() => {});
+        }
+
+        if (interaction.customId === 'help_delete') {
+          return helpMessage.delete().catch(() => {});
+        }
+
+        if (interaction.isStringSelectMenu() && interaction.customId === 'help_category_select') {
+          const selectedValue = interaction.values[0];
+          const cat = CATEGORIES.find(c => c.value === selectedValue);
+
+          if (cat) {
+            const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
+            return interaction.update({
+              embeds: [catEmbed],
+              components: [buildDropdownMenu(), buildNavigationButtons()]
+            }).catch(() => {});
+          }
+        }
+      } catch (err) {
+        console.error('[Help Interaction Error]', err);
       }
     });
 
