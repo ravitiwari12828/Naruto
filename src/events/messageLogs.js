@@ -153,8 +153,8 @@ module.exports = (client) => {
     try {
       if (!oldMessage || !oldMessage.guild || oldMessage.author?.bot) return;
 
-      const oldContent = oldMessage.content ? oldMessage.content.trim() : '';
-      const newContent = newMessage.content ? newMessage.content.trim() : '';
+      const oldContent = sanitizeMentions(oldMessage.content ? oldMessage.content.trim() : '');
+      const newContent = sanitizeMentions(newMessage.content ? newMessage.content.trim() : '');
 
       if (oldContent === newContent) return;
 

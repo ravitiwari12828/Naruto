@@ -85,7 +85,10 @@ async function dispatchLog(guild, logType, embedData) {
       }
     }
 
-    await targetChannel.send({ embeds: [embed] }).catch(() => {});
+    await targetChannel.send({
+      embeds: [embed],
+      allowedMentions: { parse: [], users: [], roles: [] }
+    }).catch(() => {});
   } catch (e) {
     console.error(`Error sending log [${logType}]:`, e.message);
   }
