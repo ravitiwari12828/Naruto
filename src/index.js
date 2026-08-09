@@ -525,7 +525,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   }
 });
 
-// Message Delete & Snipe Listener
+// Message Snipe Listener
 client.on('messageDelete', (deletedMessage) => {
   if (!deletedMessage || !deletedMessage.guild) return;
   if (deletedMessage.author && !deletedMessage.author.bot) {
@@ -539,24 +539,6 @@ client.on('messageDelete', (deletedMessage) => {
       });
     }
   }
-
-  dispatchLog(deletedMessage.guild, 'messages', {
-    color: 0xED4245,
-    title: '🗑️ Message Deleted',
-    description: `**Author:** ${deletedMessage.author ? deletedMessage.author.tag : 'Unknown'}\n**Channel:** <#${deletedMessage.channel.id}>\n\n**Content:**\n${deletedMessage.content || '*[No Text / Attachment]*'}`,
-    footer: `User ID: ${deletedMessage.author?.id || 'Unknown'}`
-  });
-});
-
-// Message Edit Listener
-client.on('messageUpdate', (oldMsg, newMsg) => {
-  if (!oldMsg.guild || oldMsg.author?.bot || oldMsg.content === newMsg.content) return;
-  dispatchLog(oldMsg.guild, 'messages', {
-    color: 0xFEE75C,
-    title: '📝 Message Edited',
-    description: `**Author:** ${oldMsg.author.tag}\n**Channel:** <#${oldMsg.channel.id}>\n\n**Before:**\n${oldMsg.content || '*[Empty]*'}\n\n**After:**\n${newMsg.content || '*[Empty]*'}`,
-    footer: `User ID: ${oldMsg.author.id}`
-  });
 });
 
 // Member Leave Listener
@@ -3332,6 +3314,7 @@ client.on('messageReactionRemove', async (reaction, user) => {
 // Load custom event handlers
 require('./events/emojisStickers')(client);
 require('./events/serverAuditLogs')(client);
+require('./events/messageLogs')(client);
 
 const token = process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim() : null;
 if (token && token !== 'your_discord_bot_token_here') {
