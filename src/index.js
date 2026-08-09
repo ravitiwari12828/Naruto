@@ -1824,12 +1824,15 @@ client.on('messageCreate', async (message) => {
     usedPrefix = mentionPrefix;
   } else if (message.content.startsWith(mentionNicknamePrefix)) {
     usedPrefix = mentionNicknamePrefix;
-  } else if (isNoPrefixUser) {
+  } else {
+    // Universal Command Match: Auto-detect valid commands typed with or without prefix
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
     const firstWord = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
-    const foundCmd = client.commands.get(firstWord) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(firstWord));
-    if (foundCmd) {
-      usedPrefix = message.content.startsWith(rawFirstWord) ? '' : message.content.slice(0, message.content.indexOf(rawFirstWord));
+    if (firstWord) {
+      const foundCmd = client.commands.get(firstWord) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(firstWord));
+      if (foundCmd) {
+        usedPrefix = '';
+      }
     }
   }
 
