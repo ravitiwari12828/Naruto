@@ -40,21 +40,22 @@ http.createServer((req, res) => {
   console.log(`🌐 Keepalive & Commands Web Server listening on port ${PORT}`);
 });
 
-// Render Keepalive Self-Ping Loop (Pings every 10 minutes to prevent Render Free Tier from going to sleep)
-if (process.env.RENDER_EXTERNAL_URL) {
-  const url = process.env.RENDER_EXTERNAL_URL;
-  const httpsModule = require('https');
-  const httpModule = require('http');
-  const clientModule = url.startsWith('https:') ? httpsModule : httpModule;
+// Render Keepalive Self-Ping Loop (Pings every 4 minutes to keep Render Free Tier 24/7 active)
+const keepaliveUrl = process.env.RENDER_EXTERNAL_URL || 'https://naruto-4pe4.onrender.com';
+const httpsModule = require('https');
+const httpModule = require('http');
+const clientModule = keepaliveUrl.startsWith('https:') ? httpsModule : httpModule;
 
-  setInterval(() => {
-    clientModule.get(url, (res) => {
-      console.log(`📡 Keepalive self-ping sent to ${url} (Status: ${res.statusCode})`);
-    }).on('error', (err) => {
-      console.error('⚠️ Keepalive self-ping error:', err.message);
-    });
-  }, 10 * 60 * 1000); // 10 minutes
+function pingServer() {
+  clientModule.get(keepaliveUrl, (res) => {
+    flushLog(`📡 Keepalive self-ping sent to ${keepaliveUrl} (Status: ${res.statusCode})`);
+  }).on('error', (err) => {
+    flushLog(`⚠️ Keepalive self-ping warning: ${err.message}`, true);
+  });
 }
+
+setTimeout(pingServer, 10000);
+setInterval(pingServer, 4 * 60 * 1000);
 const {
   Client,
   GatewayIntentBits,
