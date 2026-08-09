@@ -636,7 +636,7 @@ module.exports = {
         'Permissions   : Administrator'
       ]);
 
-      const inviteEmoji = emojis.INVITELINK || emojis.INVITES || '<a:invitelink:1532489591796400228>';
+      const inviteEmoji = '🔗';
 
       const embed = createStyledEmbed({
         title: `${inviteEmoji} Invite ${clientUser.username} to Your Server`,

@@ -124,7 +124,7 @@ function getOrCreateWelcomeConfig(guildId) {
       title: '{gothic:Welcome to the Castle}',
       description: '🖤 Greetings {user}! You have entered {gothic:{server_name}}.\n\n🕯️ Member Count: #{membercount}\n⚜️ Please read rules and enjoy your stay!',
       footer: 'Welcome to our Server',
-      headerText: `${emojis.COUNT || '<a:Count:1532478957591466164>'} MEMBER COUNT: #{membercount}`,
+      headerText: `📊 MEMBER COUNT: #{membercount}`,
       imageUrl: PRESET_BANNERS.gothic,
       joinDmText: '🌸 Welcome to **{server_name}**, {user}! Enjoy your stay!',
       leaveDmText: '📤 Goodbye {user}, we hope to see you back in **{server_name}** soon!',
@@ -312,10 +312,10 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
     { key: 'boostmsg', value: '<#chan> <txt>' }
   ], 20, 22);
 
-  const gearEmoji = emojis.GEAR || '<a:an_bot:1530948362784870510>';
-  const configEmoji = emojis.AUTORESPOND || '<a:autoresponder:1530942573705822409>';
-  const boostEmoji = emojis.BOOST || '<a:BOOST:1532470412217159790>';
-  const mailEmoji = emojis.MODMAIL_ENVELOPE || '<a:modmail:1530942601497284731>';
+  const gearEmoji = '⚙️';
+  const configEmoji = '💬';
+  const boostEmoji = '🚀';
+  const mailEmoji = '📬';
 
   const description =
     `${gearEmoji} **System Status**\n` +
@@ -432,8 +432,8 @@ module.exports = {
         'boostmsg disable : Disable'
       ]);
 
-      const boostEmoji = emojis.BOOST || '<a:BOOST:1532470412217159790>';
-      const gearEmoji = emojis.GEAR || '<a:an_bot:1530948362784870510>';
+      const boostEmoji = '🚀';
+      const gearEmoji = '⚙️';
 
       const embed = createStyledEmbed({
         title: `${boostEmoji} Server Boost Announcement Manager`,
@@ -481,7 +481,7 @@ module.exports = {
         'joindm <text>  : Set DM text'
       ]);
 
-      const mailEmoji = emojis.MODMAIL_ENVELOPE || '<a:modmail:1530942601497284731>';
+      const mailEmoji = '📬';
       const embed = createStyledEmbed({
         title: `${mailEmoji} Join DM Welcome Manager`,
         subtitle: `${guild.name} Private Welcome DMs`,
@@ -524,7 +524,7 @@ module.exports = {
         'leavedm <text>  : Set DM text'
       ]);
 
-      const mailEmoji = emojis.MODMAIL_ENVELOPE || '<a:modmail:1530942601497284731>';
+      const mailEmoji = '📬';
       const embed = createStyledEmbed({
         title: `${mailEmoji} Leave DM Notification Manager`,
         subtitle: `${guild.name} Private Leave DMs`,

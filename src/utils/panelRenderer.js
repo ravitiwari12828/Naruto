@@ -414,11 +414,11 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
   const catColor = CATEGORY_COLORS[cat.value] || 0x5865F2;
 
   if (cat.value === 'fun') {
-    const gameEmoji = emojis.NINJUTSU || emojis.FUN || '<a:fun:1530942586876068003>';
-    const zapEmoji = emojis.ANALYTICS_ZAP || emojis.ZAP || '<a:analytics:1530942545893265518>';
-    const funEmoji = emojis.FUN || '<a:fun:1530942586876068003>';
-    const emotesEmoji = emojis.REACTIONROLES || '<a:reaction_roles:1530942623303335966>';
-    const actionEmoji = emojis.PROFILE || '<a:profile:1530942618585006364>';
+    const gameEmoji = '🔮';
+    const zapEmoji = '⚡';
+    const funEmoji = '🎭';
+    const emotesEmoji = '🎭';
+    const actionEmoji = '👤';
 
     const embed = new EmbedBuilder()
       .setColor(catColor)
@@ -480,10 +480,10 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
       'boostmsg <#chan> <txt>: Boost announce'
     ]);
 
-    const gearEmoji = emojis.GEAR || emojis.TOOLS || '<a:an_bot:1530948362784870510>';
-    const arEmoji = emojis.AUTORESPOND || '<a:autoresponder:1530942573705822409>';
-    const mailEmoji = emojis.MODMAIL_ENVELOPE || '<a:modmail:1530942601497284731>';
-    const welcomeEmoji = emojis.WELCOME || '<a:welcome:1530942654530064394>';
+    const gearEmoji = '⚙️';
+    const arEmoji = '💬';
+    const mailEmoji = '📬';
+    const welcomeEmoji = '👋';
 
     const embed = new EmbedBuilder()
       .setColor(catColor)
