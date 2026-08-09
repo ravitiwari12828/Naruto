@@ -1894,6 +1894,42 @@ client.on('messageCreate', async (message) => {
 
 // Interaction Listener
 client.on('interactionCreate', async (interaction) => {
+  // 🌐 GLOBAL HELP & MODULE PANEL INTERACTION HANDLER
+  if (interaction.customId === 'help_home' || interaction.customId === 'help_delete' || (interaction.isStringSelectMenu() && interaction.customId === 'help_category_select')) {
+    const { CATEGORIES, buildCategoryEmbed, buildDropdownMenu, buildNavigationButtons } = require('./utils/panelRenderer');
+
+    if (interaction.customId === 'help_delete') {
+      await interaction.message?.delete().catch(() => {});
+      return;
+    }
+
+    const botUser = client.user;
+    const botAvatar = botUser ? botUser.displayAvatarURL({ dynamic: true, size: 512 }) : null;
+    const devPortalBanner = client.botBannerURL || null;
+
+    if (interaction.customId === 'help_home') {
+      const { buildMainEmbed } = require('./commands/help');
+      const mainEmbed = buildMainEmbed(interaction, botUser, botAvatar, devPortalBanner);
+      return interaction.update({
+        embeds: [mainEmbed],
+        components: [buildDropdownMenu(), buildNavigationButtons()]
+      }).catch(() => {});
+    }
+
+    if (interaction.isStringSelectMenu() && interaction.customId === 'help_category_select') {
+      const selectedValue = interaction.values[0];
+      const cat = CATEGORIES.find(c => c.value === selectedValue);
+
+      if (cat) {
+        const catEmbed = buildCategoryEmbed(interaction, cat, botUser, botAvatar, devPortalBanner);
+        return interaction.update({
+          embeds: [catEmbed],
+          components: [buildDropdownMenu(), buildNavigationButtons()]
+        }).catch(() => {});
+      }
+    }
+  }
+
   // 1. TICKET CATEGORY SELECT MENU
   if (interaction.isStringSelectMenu() && interaction.customId === 'ticket_category_select') {
     await interaction.deferReply({ flags: 64 }).catch(() => {});

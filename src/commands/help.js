@@ -35,10 +35,13 @@ const EMOJI_MAP = {
   backup: emojis.BACKUP || '<a:backup:1530942578260840568>'
 };
 
-function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
+function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanner) {
+  const clientObj = messageOrInteraction.client;
+  const userObj = messageOrInteraction.author || messageOrInteraction.user;
+
   let totalRegistered = 545;
-  if (message.client.commands && message.client.commands.size > 0) {
-    const uniqueCmds = new Set(message.client.commands.values());
+  if (clientObj.commands && clientObj.commands.size > 0) {
+    const uniqueCmds = new Set(clientObj.commands.values());
     const aliasCount = Array.from(uniqueCmds).reduce((acc, c) => acc + (c.aliases && Array.isArray(c.aliases) ? c.aliases.length : 0), 0);
     totalRegistered = Math.max(517, uniqueCmds.size + aliasCount);
   }
@@ -70,7 +73,7 @@ function buildMainEmbed(message, botUser, botAvatar, devPortalBanner) {
       `${moduleLines}\n\n` +
       `### ${emojis.QUICK_LINKS || '<a:quick_links:1530949796884512810>'} **Quick Links**\n` +
 
-      `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands) • [Support Server](https://discord.gg/ZPKcPreUMT) • [Vote Top.gg](https://top.gg/bot/${message.client.user.id})`
+      `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${clientObj.user.id}&permissions=8&scope=bot%20applications.commands) • [Support Server](https://discord.gg/ZPKcPreUMT) • [Vote Top.gg](https://top.gg/bot/${clientObj.user.id})`
     )
 
     .setFooter({
@@ -170,4 +173,5 @@ module.exports = {
       return message.channel.send({ content: `⚠️ Failed to send help menu: ${err.message}` }).catch(() => {});
     }
   }
-};
+},
+module.exports.buildMainEmbed = buildMainEmbed;
