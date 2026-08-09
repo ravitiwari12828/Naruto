@@ -3322,12 +3322,13 @@ client.on('messageReactionRemove', async (reaction, user) => {
 require('./events/emojisStickers')(client);
 require('./events/serverAuditLogs')(client);
 
-if (process.env.DISCORD_TOKEN && process.env.DISCORD_TOKEN !== 'your_discord_bot_token_here') {
-  client.login(process.env.DISCORD_TOKEN).catch(err => {
-    console.error('Failed to log in:', err.message);
+const token = process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim() : null;
+if (token && token !== 'your_discord_bot_token_here') {
+  client.login(token).catch(err => {
+    flushLog(`❌ [Discord Login Failed]: ${err.message}`, true);
   });
 } else {
-  console.log('\n${emojis.WARNING} DISCORD_TOKEN is not set in .env file!\n');
+  flushLog(`⚠️ DISCORD_TOKEN is not set in environment variables!`, true);
 }
 
 module.exports = client;
