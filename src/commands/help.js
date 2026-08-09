@@ -89,40 +89,41 @@ module.exports = {
   aliases: [],
 
   async execute(message, args) {
-    const author = message.author;
-    let botUser = message.client.user;
-
     try {
-      botUser = await message.client.users.fetch(message.client.user.id, { force: true });
-    } catch (e) {}
+      const author = message.author;
+      let botUser = message.client.user;
 
-    const botAvatar = botUser.displayAvatarURL({ dynamic: true, size: 512 });
-    const devPortalBanner = message.client.botBannerURL || null;
+      try {
+        botUser = await message.client.users.fetch(message.client.user.id, { force: true });
+      } catch (e) {}
 
-    if (args[0]) {
-      const search = args[0].toLowerCase();
-      const cat = CATEGORIES.find(c => c.value === search || c.label.toLowerCase() === search);
-      if (cat) {
-        const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
-        return message.channel.send({
-          embeds: [catEmbed],
-          components: [buildDropdownMenu(), buildNavigationButtons()]
-        });
+      const botAvatar = botUser.displayAvatarURL({ dynamic: true, size: 512 });
+      const devPortalBanner = message.client.botBannerURL || null;
+
+      if (args[0]) {
+        const search = args[0].toLowerCase();
+        const cat = CATEGORIES.find(c => c.value === search || c.label.toLowerCase() === search);
+        if (cat) {
+          const catEmbed = buildCategoryEmbed(message, cat, botUser, botAvatar, devPortalBanner);
+          return message.channel.send({
+            embeds: [catEmbed],
+            components: [buildDropdownMenu(), buildNavigationButtons()]
+          });
+        }
       }
-    }
 
-    const mainEmbed = buildMainEmbed(message, botUser, botAvatar, devPortalBanner);
-    const dropdownRow = buildDropdownMenu();
-    const navRow = buildNavigationButtons();
+      const mainEmbed = buildMainEmbed(message, botUser, botAvatar, devPortalBanner);
+      const dropdownRow = buildDropdownMenu();
+      const navRow = buildNavigationButtons();
 
-    const helpMessage = await message.channel.send({
-      embeds: [mainEmbed],
-      components: [dropdownRow, navRow]
-    });
+      const helpMessage = await message.channel.send({
+        embeds: [mainEmbed],
+        components: [dropdownRow, navRow]
+      });
 
-    const collector = helpMessage.createMessageComponentCollector({
-      time: 300000
-    });
+      const collector = helpMessage.createMessageComponentCollector({
+        time: 300000
+      });
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
@@ -162,5 +163,9 @@ module.exports = {
     collector.on('end', () => {
       helpMessage.edit({ components: [] }).catch(() => {});
     });
+    } catch (err) {
+      console.error('[Help Command Error]', err);
+      return message.channel.send({ content: `⚠️ Failed to send help menu: ${err.message}` }).catch(() => {});
+    }
   }
 };

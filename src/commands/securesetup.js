@@ -16,18 +16,19 @@ module.exports = {
   aliases: ['quicksetup', 'securitysetup', 'setupwizard', 'protectsetup'],
 
   async execute(message, args) {
-    const author = message.author;
-    const guild = message.guild;
-
-    // Admin / Owner check
-    if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-      return message.reply(`${emojis.WARNING} Only Server Owners and Administrators can execute server security setup.`);
-    }
-
-    let clientUser = message.client.user;
     try {
-      clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
-    } catch (e) {}
+      const author = message.author;
+      const guild = message.guild;
+
+      // Admin / Owner check
+      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
+        return message.reply(`${emojis.WARNING} Only Server Owners and Administrators can execute server security setup.`);
+      }
+
+      let clientUser = message.client.user;
+      try {
+        clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
+      } catch (e) {}
 
     // Fetch AntiNuke command module store reference
     const antinukeCmd = message.client.commands.get('antinuke');
@@ -215,5 +216,9 @@ module.exports = {
       const updatedEmbed = buildDashboardEmbed(actionStatus);
       await setupMsg.edit({ embeds: [updatedEmbed], components: buildButtons() });
     });
+    } catch (err) {
+      console.error('[SecureSetup Command Error]', err);
+      return message.channel.send({ content: `⚠️ Failed to send security setup menu: ${err.message}` }).catch(() => {});
+    }
   }
 };
