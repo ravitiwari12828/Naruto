@@ -80,6 +80,10 @@ const PREFIX = process.env.PREFIX || '.';
 const everyonePingViolations = new Map();
 
 const client = new Client({
+  presence: {
+    status: 'online',
+    activities: [{ name: '💬 .help | Naruto Shinobi Bot', type: 3 }]
+  },
   makeCache: Options.cacheWithLimits({
     MessageManager: 25,
     StageInstanceManager: 0,
@@ -185,7 +189,10 @@ client.once('ready', async () => {
   console.log(`• System Prefix : ${PREFIX}`);
   console.log(`==============================================\n`);
 
-  client.user.setActivity('💬 DM me for Support | .help', { type: 3 });
+  client.user.setPresence({
+    status: 'online',
+    activities: [{ name: '💬 DM me for Support | .help', type: 3 }]
+  });
 
   // Startup Cleanup: Sweep and delete leftover empty VoiceMaster temporary channels across all guilds
   setTimeout(() => {
