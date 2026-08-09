@@ -5,17 +5,24 @@ try {
   require('dotenv').config();
 } catch (e) {}
 
+// Instant Unbuffered Render Log Helper (Bypasses stream buffering for zero log delay on Render)
+function flushLog(msg, isError = false) {
+  const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false });
+  const formatted = `[${timeStr}] ${msg}\n`;
+  if (isError) {
+    process.stderr.write(formatted);
+  } else {
+    process.stdout.write(formatted);
+  }
+}
+
 process.on('uncaughtException', (err) => {
-  console.error('\n🚨 [CRITICAL UNCAUGHT EXCEPTION]');
-  console.error('Message:', err.message || err);
-  console.error('Stack:', err.stack || 'No stack trace');
-  console.error('----------------------------------------------\n');
+  flushLog(`🚨 [CRITICAL UNCAUGHT EXCEPTION]: ${err.message || err}`, true);
+  if (err.stack) flushLog(`Stack: ${err.stack}`, true);
 });
 process.on('unhandledRejection', (reason, promise) => {
-  console.error('\n⚠️ [UNHANDLED PROMISE REJECTION]');
-  console.error('Reason:', reason?.message || reason);
-  if (reason?.stack) console.error('Stack:', reason.stack);
-  console.error('----------------------------------------------\n');
+  flushLog(`⚠️ [UNHANDLED PROMISE REJECTION]: ${reason?.message || reason}`, true);
+  if (reason?.stack) flushLog(`Stack: ${reason.stack}`, true);
 });
 
 // Render / Web Hosting Keepalive & Commands Web Dashboard HTTP Server
@@ -109,19 +116,19 @@ client.commands = new Collection();
 
 // Gateway Shard & Connectivity Debug Monitor
 client.on('shardReady', (id) => {
-  console.log(`⚡ [Gateway Connected] Shard #${id} established connection to Discord Gateway! WebSocket Ping: ${client.ws.ping}ms`);
+  flushLog(`⚡ [Gateway Connected] Shard #${id} established connection to Discord Gateway! WebSocket Ping: ${client.ws.ping}ms`);
 });
 client.on('shardDisconnect', (event, id) => {
-  console.warn(`⚠️ [Gateway Disconnect] Shard #${id} disconnected! Code: ${event.code} | Reason: ${event.reason || 'None provided'}`);
+  flushLog(`⚠️ [Gateway Disconnect] Shard #${id} disconnected! Code: ${event.code} | Reason: ${event.reason || 'None provided'}`, true);
 });
 client.on('shardReconnecting', (id) => {
-  console.log(`🔄 [Gateway Reconnecting] Shard #${id} attempting automatic reconnect...`);
+  flushLog(`🔄 [Gateway Reconnecting] Shard #${id} attempting automatic reconnect...`);
 });
 client.on('shardResume', (id, replayedEvents) => {
-  console.log(`✅ [Gateway Resumed] Shard #${id} session resumed! Replayed ${replayedEvents} events.`);
+  flushLog(`✅ [Gateway Resumed] Shard #${id} session resumed! Replayed ${replayedEvents} events.`);
 });
 client.on('shardError', (error, id) => {
-  console.error(`💥 [Gateway Socket Error] Shard #${id}:`, error.message || error);
+  flushLog(`💥 [Gateway Socket Error] Shard #${id}: ${error.message || error}`, true);
 });
 
 // Load Commands Dynamically (Recursively scan subdirectories)
@@ -1904,8 +1911,8 @@ client.on('messageCreate', async (message) => {
 
   const startTime = Date.now();
   const chanName = message.channel ? `#${message.channel.name}` : 'DM';
-  const guildName = message.guild ? message.guild.name : 'Direct Message';
   console.log(`⚡ [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
+  flushLog(`⚡ [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
   db.recordAnalyticsEvent(message.guild ? message.guild.id : 'DM', message.author.id, 'command', 1);
 
   const statsCmd = client.commands.get('stats');
@@ -1916,10 +1923,10 @@ client.on('messageCreate', async (message) => {
   try {
     await command.execute(message, args);
     const latency = Date.now() - startTime;
-    console.log(`✅ [Command Success] .${commandName} completed for ${message.author.tag} in ${chanName} (${latency}ms)`);
+    flushLog(`✅ [Command Success] .${commandName} completed for ${message.author.tag} in ${chanName} (${latency}ms)`);
   } catch (error) {
     const latency = Date.now() - startTime;
-    console.error(`❌ [Command Error] .${commandName} failed for ${message.author.tag} in ${chanName} (${latency}ms):`, error.stack || error.message || error);
+    flushLog(`❌ [Command Error] .${commandName} failed for ${message.author.tag} in ${chanName} (${latency}ms): ${error.stack || error.message || error}`, true);
     const errMsg = error?.message || 'Execution Error';
     message.reply(`${emojis.WARNING} Command \`.${commandName}\` error: \`${errMsg}\``).catch(() => {});
   }
