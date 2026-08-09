@@ -1212,8 +1212,9 @@ client.on('messageDelete', async (message) => {
   }
 });
 
-// Message Listener (DM ModMail, AutoMod, Activity, Autoresponder, Autoreact, Sticky Notes, Commands)
 client.on('messageCreate', async (message) => {
+  if (!message || message.author?.bot) return;
+  flushLog(`📥 [Message Received] Author: ${message.author.tag} (${message.author.id}) | Content: "${message.content || '[EMPTY CONTENT - CHECK MESSAGE CONTENT INTENT]'}" | Channel: #${message.channel?.name || 'DM'}`);
   // 🛡️ STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION
   if (message.guild && (message.content.includes('@everyone') || message.content.includes('@here'))) {
     const antinukeCmd = client.commands.get('antinuke');
