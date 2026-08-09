@@ -78,12 +78,12 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId('setup_antinuke')
           .setLabel('AntiNuke Grid')
-          .setEmoji(emojis.OBJ_AN_SHIELD || '🛡️')
+          .setEmoji('🛡️')
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
           .setCustomId('setup_automod')
           .setLabel('AutoMod & AntiBot')
-          .setEmoji(emojis.OBJ_AN_BOT || '🤖')
+          .setEmoji('🤖')
           .setStyle(ButtonStyle.Primary)
       );
 
@@ -101,7 +101,7 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId('setup_refresh')
           .setLabel('Refresh Status')
-          .setEmoji(emojis.OBJ_REFRESH || '🔄')
+          .setEmoji('🔄')
           .setStyle(ButtonStyle.Secondary)
       );
 

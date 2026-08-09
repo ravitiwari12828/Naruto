@@ -596,12 +596,12 @@ function buildNavigationButtons() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('help_home')
-      .setEmoji(emojis.OBJ_ALL_MODULES)
+      .setEmoji('🏠')
       .setLabel('Home Menu')
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId('help_delete')
-      .setEmoji(emojis.OBJ_REMOVE)
+      .setEmoji('❌')
       .setLabel('Close Panel')
       .setStyle(ButtonStyle.Danger)
   );
