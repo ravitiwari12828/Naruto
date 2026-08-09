@@ -1558,16 +1558,7 @@ client.on('messageCreate', async (message) => {
 
           message.channel.send(`${emojis.MEDITATE || '💤'} **<@${mentionedUser.id}> is currently AFK** (${timeAgo})\n**Reason:** *${afkData.reason}*`).catch(() => {});
 
-          if (afkData.notifyDM !== false) {
-            try {
-              const dmEmbed = createStyledEmbed({
-                title: `🔔 AFK Mention Alert`,
-                description: `You were mentioned by **<@${message.author.id}>** (\`${message.author.username}\`) in **#${message.channel.name}** (**${message.guild.name}**) while AFK!\n\n**Message Content:**\n> ${message.content.slice(0, 500)}`,
-                clientUser: client.user
-              });
-              await mentionedUser.send({ embeds: [dmEmbed] }).catch(() => {});
-            } catch (e) {}
-          }
+          // DM notifications disabled to prevent Discord Anti-Spam DM Quarantine flags
         }
       });
     }
