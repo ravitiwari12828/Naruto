@@ -1878,6 +1878,8 @@ client.on('messageCreate', async (message) => {
     if (helpCmd) return helpCmd.execute(message, []);
   }
 
+  if (usedPrefix === null) return;
+
   let args = [];
   let commandName = '';
 
@@ -1888,6 +1890,8 @@ client.on('messageCreate', async (message) => {
     args = message.content.slice(usedPrefix.length).trim().split(/ +/);
     commandName = args.shift().toLowerCase();
   }
+
+  if (!commandName) return;
 
   const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
   if (!command) return;
