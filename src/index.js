@@ -6,10 +6,16 @@ try {
 } catch (e) {}
 
 process.on('uncaughtException', (err) => {
-  console.error('[Uncaught Exception]:', err.message || err);
+  console.error('\n🚨 [CRITICAL UNCAUGHT EXCEPTION]');
+  console.error('Message:', err.message || err);
+  console.error('Stack:', err.stack || 'No stack trace');
+  console.error('----------------------------------------------\n');
 });
-process.on('unhandledRejection', (reason) => {
-  console.error('[Unhandled Rejection]:', reason?.message || reason);
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('\n⚠️ [UNHANDLED PROMISE REJECTION]');
+  console.error('Reason:', reason?.message || reason);
+  if (reason?.stack) console.error('Stack:', reason.stack);
+  console.error('----------------------------------------------\n');
 });
 
 // Render / Web Hosting Keepalive & Commands Web Dashboard HTTP Server
@@ -101,6 +107,23 @@ const client = new Client({
 
 client.commands = new Collection();
 
+// Gateway Shard & Connectivity Debug Monitor
+client.on('shardReady', (id) => {
+  console.log(`⚡ [Gateway Connected] Shard #${id} established connection to Discord Gateway! WebSocket Ping: ${client.ws.ping}ms`);
+});
+client.on('shardDisconnect', (event, id) => {
+  console.warn(`⚠️ [Gateway Disconnect] Shard #${id} disconnected! Code: ${event.code} | Reason: ${event.reason || 'None provided'}`);
+});
+client.on('shardReconnecting', (id) => {
+  console.log(`🔄 [Gateway Reconnecting] Shard #${id} attempting automatic reconnect...`);
+});
+client.on('shardResume', (id, replayedEvents) => {
+  console.log(`✅ [Gateway Resumed] Shard #${id} session resumed! Replayed ${replayedEvents} events.`);
+});
+client.on('shardError', (error, id) => {
+  console.error(`💥 [Gateway Socket Error] Shard #${id}:`, error.message || error);
+});
+
 // Load Commands Dynamically (Recursively scan subdirectories)
 function loadCommands(dir) {
   if (!fs.existsSync(dir)) return;
@@ -142,9 +165,16 @@ client.once('ready', async () => {
     console.log(`[Developer Portal Banner URL]: ${client.botBannerURL || 'None set'}`);
   } catch (e) {}
 
+  const heapMB = Math.round(process.memoryUsage().heapUsed / 1024 / 1024);
   console.log(`\n==============================================`);
-  console.log(`🍥 Naruto is ONLINE! Logged in as ${client.user.tag}`);
-  console.log(`Prefix: ${PREFIX}`);
+  console.log(`🍥 Naruto Bot is ONLINE & Fully Operational!`);
+  console.log(`• Tag & ID      : ${client.user.tag} (${client.user.id})`);
+  console.log(`• Total Servers : ${client.guilds.cache.size} Guilds`);
+  console.log(`• Total Users   : ${client.users.cache.size} Users`);
+  console.log(`• Gateway Ping  : ${client.ws.ping}ms`);
+  console.log(`• Memory Heap   : ${heapMB} MB / 512 MB Allocation`);
+  console.log(`• Command Count : ${client.commands.size} Commands Loaded`);
+  console.log(`• System Prefix : ${PREFIX}`);
   console.log(`==============================================\n`);
 
   client.user.setActivity('💬 DM me for Support | .help', { type: 3 });
@@ -1872,8 +1902,11 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  console.log(`⚡ [Executing Command] .${commandName} requested by ${message.author.tag}`);
-  db.recordAnalyticsEvent(message.guild.id, message.author.id, 'command', 1);
+  const startTime = Date.now();
+  const chanName = message.channel ? `#${message.channel.name}` : 'DM';
+  const guildName = message.guild ? message.guild.name : 'Direct Message';
+  console.log(`⚡ [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
+  db.recordAnalyticsEvent(message.guild ? message.guild.id : 'DM', message.author.id, 'command', 1);
 
   const statsCmd = client.commands.get('stats');
   if (statsCmd && statsCmd.incrementCommandCount) {
@@ -1882,8 +1915,11 @@ client.on('messageCreate', async (message) => {
 
   try {
     await command.execute(message, args);
+    const latency = Date.now() - startTime;
+    console.log(`✅ [Command Success] .${commandName} completed for ${message.author.tag} in ${chanName} (${latency}ms)`);
   } catch (error) {
-    console.error(`Error executing command ${commandName}:`, error);
+    const latency = Date.now() - startTime;
+    console.error(`❌ [Command Error] .${commandName} failed for ${message.author.tag} in ${chanName} (${latency}ms):`, error.stack || error.message || error);
     const errMsg = error?.message || 'Execution Error';
     message.reply(`${emojis.WARNING} Command \`.${commandName}\` error: \`${errMsg}\``).catch(() => {});
   }
