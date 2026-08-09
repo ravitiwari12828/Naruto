@@ -84,14 +84,31 @@ class ResilientDatabase {
   }
 
   async initMongo(uri) {
+    const connectOptions = {
+      serverSelectionTimeoutMS: 15000,
+      connectTimeoutMS: 15000,
+      family: 4
+    };
+
     try {
       console.log('🍃 [MongoDB Cloud] Connecting to MongoDB Atlas database...');
-      await mongoose.connect(uri, {
-        serverSelectionTimeoutMS: 10000
-      });
+      await mongoose.connect(uri, connectOptions);
       this.useMongo = true;
       console.log('✅ [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
+    } catch (err) {
+      console.log('⚠️ [MongoDB Cloud Notice] Primary DNS SRV lookup retry in 3 seconds...');
+      try {
+        await new Promise(res => setTimeout(res, 3000));
+        await mongoose.connect(uri, connectOptions);
+        this.useMongo = true;
+        console.log('✅ [MongoDB Cloud] Connected successfully on retry! Syncing cloud database state...');
+      } catch (retryErr) {
+        console.error('⚠️ [MongoDB Cloud Error] Could not connect to MongoDB Atlas:', retryErr.message);
+        return;
+      }
+    }
 
+    try {
       // Load master database state from MongoDB Atlas
       const doc = await BotDataModel.findOne({ key: 'master_database' });
       if (doc && doc.data && typeof doc.data === 'object') {
