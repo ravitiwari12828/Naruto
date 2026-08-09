@@ -1,17 +1,15 @@
-try {
-  const v8 = require('v8');
-  v8.setFlagsFromString('--max_old_space_size=128');
-} catch (e) {}
+const fs = require('fs');
+const path = require('path');
 
 try {
   require('dotenv').config();
 } catch (e) {}
 
 process.on('uncaughtException', (err) => {
-  console.error('${emojis.WARNING} [Uncaught Exception]:', err.message || err);
+  console.error('[Uncaught Exception]:', err.message || err);
 });
 process.on('unhandledRejection', (reason) => {
-  console.error('${emojis.WARNING} [Unhandled Rejection]:', reason?.message || reason);
+  console.error('[Unhandled Rejection]:', reason?.message || reason);
 });
 
 // Render / Web Hosting Keepalive & Commands Web Dashboard HTTP Server
@@ -44,10 +42,6 @@ if (process.env.RENDER_EXTERNAL_URL) {
     });
   }, 10 * 60 * 1000); // 10 minutes
 }
-
-
-const fs = require('fs');
-const path = require('path');
 const {
   Client,
   GatewayIntentBits,
