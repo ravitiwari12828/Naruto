@@ -1921,6 +1921,7 @@ client.on('messageCreate', async (message) => {
 
   const startTime = Date.now();
   const chanName = message.channel ? `#${message.channel.name}` : 'DM';
+  const guildName = message.guild ? message.guild.name : 'DM';
   console.log(`⚡ [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
   flushLog(`⚡ [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
   db.recordAnalyticsEvent(message.guild ? message.guild.id : 'DM', message.author.id, 'command', 1);
