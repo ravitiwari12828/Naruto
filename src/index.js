@@ -135,7 +135,7 @@ const commandsPath = path.join(__dirname, 'commands');
 loadCommands(commandsPath);
 
 // Ready Event
-client.once('clientReady', async () => {
+client.once('ready', async () => {
   try {
     initLavalink(client);
   } catch (e) {

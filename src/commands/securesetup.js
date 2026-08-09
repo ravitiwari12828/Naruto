@@ -19,10 +19,13 @@ module.exports = {
     try {
       const author = message.author;
       const guild = message.guild;
+      const { isBotOwner } = require('../utils/owners');
+      const isOwner = guild.ownerId === author.id || isBotOwner(author, message.client);
+      const isAdmin = message.member ? message.member.permissions.has(PermissionsBitField.Flags.Administrator) : false;
 
       // Admin / Owner check
-      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-        return message.reply(`${emojis.WARNING} Only Server Owners and Administrators can execute server security setup.`);
+      if (!isAdmin && !isOwner) {
+        return message.reply(`${emojis.WARNING} Only Server Owners, Administrators, and Bot Owners can execute server security setup.`);
       }
 
       let clientUser = message.client.user;
