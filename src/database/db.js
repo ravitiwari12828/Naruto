@@ -148,9 +148,12 @@ class ResilientDatabase {
   }
 
   saveJSONFileOnly() {
-    try {
-      fs.writeFileSync(jsonDbPath, JSON.stringify(this.data, null, 2), 'utf8');
-    } catch (e) {}
+    if (this.fileSaveTimeout) clearTimeout(this.fileSaveTimeout);
+    this.fileSaveTimeout = setTimeout(() => {
+      try {
+        fs.writeFileSync(jsonDbPath, JSON.stringify(this.data, null, 2), 'utf8');
+      } catch (e) {}
+    }, 1000);
   }
 
   saveJSON() {
