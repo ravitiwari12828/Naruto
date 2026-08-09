@@ -1929,6 +1929,7 @@ client.on('messageCreate', async (message) => {
 client.on('interactionCreate', async (interaction) => {
   // 🌐 GLOBAL HELP & MODULE PANEL INTERACTION HANDLER
   if (interaction.customId === 'help_home' || interaction.customId === 'help_delete' || (interaction.isStringSelectMenu() && interaction.customId === 'help_category_select')) {
+    await interaction.deferUpdate().catch(() => {});
     const { CATEGORIES, buildCategoryEmbed, buildDropdownMenu, buildNavigationButtons } = require('./utils/panelRenderer');
 
     if (interaction.customId === 'help_delete') {
@@ -1943,7 +1944,7 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.customId === 'help_home') {
       const { buildMainEmbed } = require('./commands/help');
       const mainEmbed = buildMainEmbed(interaction, botUser, botAvatar, devPortalBanner);
-      return interaction.update({
+      return interaction.editReply({
         embeds: [mainEmbed],
         components: [buildDropdownMenu(), buildNavigationButtons()]
       }).catch(() => {});
@@ -1955,7 +1956,7 @@ client.on('interactionCreate', async (interaction) => {
 
       if (cat) {
         const catEmbed = buildCategoryEmbed(interaction, cat, botUser, botAvatar, devPortalBanner);
-        return interaction.update({
+        return interaction.editReply({
           embeds: [catEmbed],
           components: [buildDropdownMenu(), buildNavigationButtons()]
         }).catch(() => {});
