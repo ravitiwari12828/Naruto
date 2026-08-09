@@ -580,7 +580,7 @@ function buildDropdownMenu() {
       label: cat.label,
       value: cat.value,
       description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description,
-      emoji: cat.customEmoji || cat.unicodeFallback || '✨'
+      emoji: cat.unicodeFallback || '✨'
     };
   });
 
