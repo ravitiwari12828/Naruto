@@ -1206,6 +1206,16 @@ client.on('messageDelete', async (message) => {
 
 client.on('messageCreate', async (message) => {
   if (!message || message.author?.bot) return;
+
+  // 🔒 GLOBAL MESSAGE DEDUPLICATION LOCK: Prevent duplicate processing across events
+  if (!client.processedMsgLock) client.processedMsgLock = new Set();
+  if (client.processedMsgLock.has(message.id)) return;
+  client.processedMsgLock.add(message.id);
+  if (client.processedMsgLock.size > 1000) {
+    const firstKey = client.processedMsgLock.values().next().value;
+    client.processedMsgLock.delete(firstKey);
+  }
+
   flushLog(`📥 [Message Received] Author: ${message.author.tag} (${message.author.id}) | Content: "${message.content || '[EMPTY CONTENT - CHECK MESSAGE CONTENT INTENT]'}" | Channel: #${message.channel?.name || 'DM'}`);
   // 🛡️ STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION
   if (message.guild && (message.content.includes('@everyone') || message.content.includes('@here'))) {
