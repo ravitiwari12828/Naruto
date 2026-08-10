@@ -137,11 +137,11 @@ const CATEGORIES = [
     label: 'Levels & Shinobi Suite',
     value: 'level',
     description: 'Level System: rank, custom bg, leaderboards, multipliers, role rewards & XP rates',
-    customEmoji: '<:4_trophy_icon:1536273755393884180>',
-    emojiId: '1536273755393884180',
+    customEmoji: '<:rank:1532489533952626688>',
+    emojiId: '1532489533952626688',
     animated: false,
     unicodeFallback: '⭐',
-    heading: '<:4_trophy_icon:1536273755393884180> Level Commands',
+    heading: '<:rank:1532489533952626688> Level Commands',
     commands: [
       'level rank', 'level bg <url|color|reset>',
       'level leaderboard [weekly|monthly]',
@@ -181,9 +181,10 @@ const CATEGORIES = [
     label: 'Giveaways',
     value: 'giveaway',
     description: 'Create, edit & manage server giveaways',
-    customEmoji: '🎁',
+    customEmoji: '<a:gift:1535296210804416634>',
+    emojiId: '1535296210804416634',
     unicodeFallback: '🎁',
-    heading: '🎁 Giveaways Commands',
+    heading: '<a:gift:1535296210804416634> Giveaways Commands',
     commands: [
       'gstart', 'gend <id>', 'greroll <id>', 'gedit <id>', 'gdelete <id>'
     ]
@@ -236,10 +237,10 @@ const CATEGORIES = [
     label: 'Economy & Casino',
     value: 'economy',
     description: 'Virtual currency, gambling, jobs, shop, inventory & marriage',
-    customEmoji: '<a:money_animated:1536260563079004160>',
-    emojiId: '1536260563079004160',
+    customEmoji: '<a:money:1532492249286312048>',
+    emojiId: '1532492249286312048',
     unicodeFallback: '🪙',
-    heading: '<a:money_animated:1536260563079004160> Economy & Casino Suite',
+    heading: '<a:money:1532492249286312048> Economy & Casino Suite',
     commands: [
       'balance', 'deposit', 'withdraw',
       'pay', 'networth', 'leaderboard',
