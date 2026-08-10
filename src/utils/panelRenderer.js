@@ -434,6 +434,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
   const botAvatarURL = (rawAvatar && typeof rawAvatar === 'string' && rawAvatar.startsWith('http')) ? rawAvatar : null;
   const userAvatarURL = (userObj && typeof userObj.displayAvatarURL === 'function') ? userObj.displayAvatarURL({ dynamic: true }) : null;
   const validUserAvatar = (userAvatarURL && typeof userAvatarURL === 'string' && userAvatarURL.startsWith('http')) ? userAvatarURL : null;
+  const catColor = CATEGORY_COLORS[cat.value] || 0x5865F2;
 
   if (cat.value === 'fun') {
     const gameEmoji = '<a:gamecontroller_animated:1536260619832008804>';
