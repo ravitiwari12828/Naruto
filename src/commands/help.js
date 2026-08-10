@@ -50,9 +50,9 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
     .sort((a, b) => a.label.localeCompare(b.label))
     .map(cat => {
       const customEmoji = EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
-      return `# ${customEmoji}  »  **${cat.label}**`;
+      return `### ${customEmoji}  »  **${cat.label}**`;
     })
-    .join('\n'); // Discord H1 headers (#) render extra-large animated emojis & high-visibility bold headers
+    .join('\n'); // Discord H3 headers (###) render medium sleek emojis & bold titles
 
   const { createDynamicBox } = require('../utils/boxBuilder');
 
