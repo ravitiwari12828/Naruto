@@ -50,9 +50,9 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
     .sort((a, b) => a.label.localeCompare(b.label))
     .map(cat => {
       const customEmoji = EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
-      return `### ${customEmoji}  »  ${cat.label}`;
+      return `# ${customEmoji}  »  **${cat.label}**`;
     })
-    .join('\n'); // Discord H3 headers naturally add clean vertical spacing & larger font size
+    .join('\n'); // Discord H1 headers (#) render extra-large animated emojis & high-visibility bold headers
 
   const { createDynamicBox } = require('../utils/boxBuilder');
 

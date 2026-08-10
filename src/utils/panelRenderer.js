@@ -601,12 +601,17 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
 
 function buildDropdownMenu() {
   const options = CATEGORIES.slice().sort((a,b) => a.label.localeCompare(b.label)).map(cat => {
-    return {
+    const opt = {
       label: cat.label,
       value: cat.value,
-      description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description,
-      emoji: cat.unicodeFallback || '✨'
+      description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description
     };
+    if (cat.emojiId) {
+      opt.emoji = { id: cat.emojiId, animated: cat.animated !== false };
+    } else if (cat.unicodeFallback) {
+      opt.emoji = cat.unicodeFallback;
+    }
+    return opt;
   });
 
   return new ActionRowBuilder().addComponents(
@@ -621,12 +626,12 @@ function buildNavigationButtons() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('help_home')
-      .setEmoji('🏠')
+      .setEmoji({ id: '1536260596184383588', animated: true })
       .setLabel('Home Menu')
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId('help_delete')
-      .setEmoji('❌')
+      .setEmoji({ id: '1536260528320548876', animated: true })
       .setLabel('Close Panel')
       .setStyle(ButtonStyle.Danger)
   );
