@@ -42,10 +42,10 @@ const CATEGORIES = [
     label: 'Analytics & Tracking',
     value: 'analytics',
     description: 'Track chat, voice timing, invites, joins/leaves, activity & server counters',
-    customEmoji: '<a:rapid_animated:1536260523501424650>',
-    emojiId: '1536260523501424650',
+    customEmoji: '<a:rapid_animated_15362605235014246:1536620962039210115>',
+    emojiId: '1536620962039210115',
     unicodeFallback: '📊',
-    heading: '<a:rapid_animated:1536260523501424650> Analytics Commands',
+    heading: '<a:rapid_animated_15362605235014246:1536620962039210115> Analytics Commands',
     commands: [
       'analytics', 'userstats', 'activity',
       'topmessages', 'topvoice', 'topinvites',
@@ -57,10 +57,10 @@ const CATEGORIES = [
     label: 'ModMail System',
     value: 'modmail',
     description: 'DM ModMail support threads, staff replies & HTML transcripts',
-    customEmoji: '<a:infox_animated:1536260601339322409>',
-    emojiId: '1536260601339322409',
+    customEmoji: '<a:infox_animated_15362606013393224:1536620879457288252>',
+    emojiId: '1536620879457288252',
     unicodeFallback: '📬',
-    heading: '<a:infox_animated:1536260601339322409> ModMail Commands',
+    heading: '<a:infox_animated_15362606013393224:1536620879457288252> ModMail Commands',
     commands: [
       'modmail setup',
       'r <message>',
@@ -73,10 +73,10 @@ const CATEGORIES = [
     label: 'Tickets',
     value: 'ticket',
     description: 'Support ticket system: setup, claim, close, transcript',
-    customEmoji: '<a:tickety_animated:1536260490865545226>',
-    emojiId: '1536260490865545226',
+    customEmoji: '<a:tickety_animated_153626049086554:1536620995161628692>',
+    emojiId: '1536620995161628692',
     unicodeFallback: '🎟️',
-    heading: '<a:tickety_animated:1536260490865545226> Ticket Commands',
+    heading: '<a:tickety_animated_153626049086554:1536620995161628692> Ticket Commands',
     commands: [
       'ticket setup', 'panel_deploy', 'claim',
       'close', 'reopen', 'add_member',
@@ -87,10 +87,10 @@ const CATEGORIES = [
     label: 'Voice & VoiceMaster',
     value: 'voice',
     description: 'Voice admin, join-to-create temp VCs & VoiceMaster control panel',
-    customEmoji: '<a:microphone_animated:1536260559950061578>',
-    emojiId: '1536260559950061578',
+    customEmoji: '<a:microphone_animated_153626055995:1536620908024701028>',
+    emojiId: '1536620908024701028',
     unicodeFallback: '🔊',
-    heading: '<a:microphone_animated:1536260559950061578> Voice Commands',
+    heading: '<a:microphone_animated_153626055995:1536620908024701028> Voice Commands',
     commands: [
       'vctemp setup', 'vctemp disable', 'vctemp status',
       'voicemaster setup', 'vm name', 'vm limit', 'vm lock', 'vm unlock', 'vm claim',
@@ -104,10 +104,10 @@ const CATEGORIES = [
     label: 'Music Suite',
     value: 'music',
     description: 'Lavalink music player: seek, equalizer, multi-filters, lyrics & 24/7 AFK mode',
-    customEmoji: '<a:musicplayer_animated:1536260565855371304>',
-    emojiId: '1536260565855371304',
+    customEmoji: '<a:musicplayer_animated_15362605658:1536620919013900378>',
+    emojiId: '1536620919013900378',
     unicodeFallback: '🎶',
-    heading: '<a:musicplayer_animated:1536260565855371304> Music Commands',
+    heading: '<a:musicplayer_animated_15362605658:1536620919013900378> Music Commands',
     commands: [
       'play', 'pause', 'resume', 'seek', 'equalizer',
       'filter', 'skip', 'stop', 'queue', 'nowplaying',
@@ -118,10 +118,10 @@ const CATEGORIES = [
     label: 'AntiNuke & Security',
     value: 'antinuke',
     description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, Securesetup & 21 Security Filters',
-    customEmoji: '<a:security_animated:1536260500797521970>',
-    emojiId: '1536260500797521970',
+    customEmoji: '<a:security_animated_15362605007975:1536620975532154990>',
+    emojiId: '1536620975532154990',
     unicodeFallback: '🛡️',
-    heading: '<a:security_animated:1536260500797521970> AntiNuke & Security Commands',
+    heading: '<a:security_animated_15362605007975:1536620975532154990> AntiNuke & Security Commands',
     commands: [
       'securesetup',
       'antinuke', 'antinuke enable', 'antinuke disable',
@@ -137,11 +137,11 @@ const CATEGORIES = [
     label: 'Levels & Shinobi Suite',
     value: 'level',
     description: 'Level System: rank, custom bg, leaderboards, multipliers, role rewards & XP rates',
-    customEmoji: '<:rank:1532489533952626688>',
-    emojiId: '1532489533952626688',
+    customEmoji: '<a:rank:1536620959363112991>',
+    emojiId: '1536620959363112991',
     animated: false,
     unicodeFallback: '⭐',
-    heading: '<:rank:1532489533952626688> Level Commands',
+    heading: '<a:rank:1536620959363112991> Level Commands',
     commands: [
       'level rank', 'level bg <url|color|reset>',
       'level leaderboard [weekly|monthly]',
@@ -156,10 +156,10 @@ const CATEGORIES = [
     label: 'Fun',
     value: 'fun',
     description: 'Naruto-themed fun: truth, dare, vibecheck, rizzmeter & more',
-    customEmoji: '<a:gamecontroller_animated:1536260619832008804>',
-    emojiId: '1536260619832008804',
+    customEmoji: '<a:gamecontroller_animated_15362606:1536620859903442974>',
+    emojiId: '1536620859903442974',
     unicodeFallback: '🎭',
-    heading: '<a:gamecontroller_animated:1536260619832008804> Fun Commands',
+    heading: '<a:gamecontroller_animated_15362606:1536620859903442974> Fun Commands',
     commands: [
       '8ball', 'truth', 'dare', 'wyr', 'pickup',
       'fortune', 'vibecheck', 'mood', 'smartrate', 'rizzmeter',
@@ -181,10 +181,10 @@ const CATEGORIES = [
     label: 'Giveaways',
     value: 'giveaway',
     description: 'Create, edit & manage server giveaways',
-    customEmoji: '<a:gift:1535296210804416634>',
-    emojiId: '1535296210804416634',
+    customEmoji: '<a:gift:1536620862709702677>',
+    emojiId: '1536620862709702677',
     unicodeFallback: '🎁',
-    heading: '<a:gift:1535296210804416634> Giveaways Commands',
+    heading: '<a:gift:1536620862709702677> Giveaways Commands',
     commands: [
       'gstart', 'gend <id>', 'greroll <id>', 'gedit <id>', 'gdelete <id>'
     ]
@@ -237,10 +237,10 @@ const CATEGORIES = [
     label: 'Economy & Casino',
     value: 'economy',
     description: 'Virtual currency, gambling, jobs, shop, inventory & marriage',
-    customEmoji: '<a:money:1532492249286312048>',
-    emojiId: '1532492249286312048',
+    customEmoji: '<a:money_animated_15362605630790041:1536620914500698142>',
+    emojiId: '1536620914500698142',
     unicodeFallback: '🪙',
-    heading: '<a:money:1532492249286312048> Economy & Casino Suite',
+    heading: '<a:money_animated_15362605630790041:1536620914500698142> Economy & Casino Suite',
     commands: [
       'balance', 'deposit', 'withdraw',
       'pay', 'networth', 'leaderboard',
@@ -304,10 +304,10 @@ const CATEGORIES = [
     label: 'AutoMod & AntiBot',
     value: 'automod',
     description: 'Security filters & bot join whitelist',
-    customEmoji: '<a:robot_animated:1536260536587653200>',
-    emojiId: '1536260536587653200',
+    customEmoji: '<a:robot_animated_15362605365876532:1536620971237187615>',
+    emojiId: '1536620971237187615',
     unicodeFallback: '🤖',
-    heading: '<a:robot_animated:1536260536587653200> AutoMod Commands',
+    heading: '<a:robot_animated_15362605365876532:1536620971237187615> AutoMod Commands',
     commands: [
       'automod config', 'antibot config',
       'moderation'
@@ -397,10 +397,10 @@ const CATEGORIES = [
     label: 'Welcome System',
     value: 'welcome',
     description: 'Welcome cards, Join DMs, Leave DMs & Server Boost announcements',
-    customEmoji: '<a:home_animated:1536260596184383588>',
-    emojiId: '1536260596184383588',
+    customEmoji: '<a:openeddooraperture_white_animate:1536620923568922664>',
+    emojiId: '1536620923568922664',
     unicodeFallback: '👋',
-    heading: '<a:home_animated:1536260596184383588> Welcome Commands',
+    heading: '<a:openeddooraperture_white_animate:1536620923568922664> Welcome Commands',
     commands: [
       'welcome setup <#channel> [avatar/imageURL] [text]',
       'welcometest (or .welcomepreview)',
@@ -601,17 +601,12 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
 
 function buildDropdownMenu() {
   const options = CATEGORIES.slice().sort((a,b) => a.label.localeCompare(b.label)).map(cat => {
-    const opt = {
+    return {
       label: cat.label,
       value: cat.value,
-      description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description
+      description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description,
+      emoji: cat.unicodeFallback || '✨'
     };
-    if (cat.emojiId) {
-      opt.emoji = { id: cat.emojiId, animated: cat.animated !== false };
-    } else if (cat.unicodeFallback) {
-      opt.emoji = cat.unicodeFallback;
-    }
-    return opt;
   });
 
   return new ActionRowBuilder().addComponents(
@@ -626,12 +621,12 @@ function buildNavigationButtons() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('help_home')
-      .setEmoji({ id: '1536260596184383588', animated: true })
+      .setEmoji('🏠')
       .setLabel('Home Menu')
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId('help_delete')
-      .setEmoji({ id: '1536260528320548876', animated: true })
+      .setEmoji('❌')
       .setLabel('Close Panel')
       .setStyle(ButtonStyle.Danger)
   );

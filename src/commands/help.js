@@ -29,7 +29,7 @@ const EMOJI_MAP = {
   priority: '<a:rapid_animated:1536260523501424650>',
   reactionrole: '<a:add_animated:1536260677537243257>',
   stickynote: '<a:pencil_animated:1536260549271355412>',
-  profile: '<a:membercard_animated:1536260557789728828>',
+  profile: '<a:file_animated_153626061757953232:1536620854631342100>',
   roles: '<a:crown_animated:1536260629395021834>',
   welcome: '<a:home_animated:1536260596184383588>',
   backup: '<a:cloudcomputing_animated:1536260652514025594>'
@@ -126,9 +126,9 @@ module.exports = {
           components: [dropdownRow, navRow]
         });
       } catch (sendErr) {
-        flushLog(`⚠️ [Help Panel Send Warning]: ${sendErr.message} - Retrying with fallback reply...`, true);
+        console.log(`⚠️ [Help Panel Send Warning]: ${sendErr.message} - Retrying with fallback reply...`);
         helpMessage = await message.reply({ embeds: [mainEmbed] }).catch(err => {
-          flushLog(`❌ [Help Panel Fallback Failed]: ${err.message}`, true);
+          console.log(`❌ [Help Panel Fallback Failed]: ${err.message}`);
           return null;
         });
       }
