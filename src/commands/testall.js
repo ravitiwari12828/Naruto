@@ -104,7 +104,7 @@ module.exports = {
         if (result && typeof result.then === 'function') {
           await Promise.race([
             result,
-            new Promise((_, reject) => setTimeout(() => reject(new Error('Async execution timeout (500ms)')), 500))
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Async execution timeout (1500ms)')), 1500))
           ]).catch(asyncErr => {
             if (asyncErr && !asyncErr.message.includes('timeout') && !asyncErr.message.includes('Unknown') && !asyncErr.message.includes('Missing Permissions')) {
               flawedCmds.push({ name: fullName, error: asyncErr.message || String(asyncErr) });
@@ -130,7 +130,7 @@ module.exports = {
       .setDescription(
         `Audited **${totalCount}** commands${filterModule ? ` in module \`${filterModule}\`` : ''}.\n\n` +
         `✅ **Passed Commands (${passCount}/${totalCount}):**\n` +
-        (passedCmds.length > 0 ? passedCmds.slice(0, 25).map(c => `\`${c}\``).join(', ') + (passedCmds.length > 25 ? ` *+${passedCmds.length - 25} more*` : '') : 'None') + `\n\n` +
+        (passedCmds.length > 0 ? passedCmds.map(c => `\`${c}\``).join(', ') : 'None') + `\n\n` +
         `⚠️ **Flaws / Issues Detected (${flawCount}/${totalCount}):**\n` +
         (flawedCmds.length > 0
           ? flawedCmds.slice(0, 15).map((f, i) => `**${i + 1}. ${f.name}** — \`${f.error}\``).join('\n')
