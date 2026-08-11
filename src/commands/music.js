@@ -210,24 +210,24 @@ function buildMusicActionRows(player = null) {
   const isAutoplay = player?.autoplay || false;
 
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_prev').setEmoji(emojis.OBJ_AN_PREV || '⏮️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏸️').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('music_skip').setEmoji(emojis.OBJ_AN_SKIP || '⏭️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setEmoji(emojis.OBJ_AN_STOP || '⏹️').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('music_prev').setEmoji({ id: '1536620808636604426', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_pause').setEmoji({ id: '1536620931580170270', animated: true }).setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('music_skip').setEmoji({ id: '1536620808636604426', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_stop').setEmoji({ id: '1536620967172907059', animated: true }).setStyle(ButtonStyle.Danger)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_loop').setEmoji(emojis.OBJ_AN_LOOP || '🔁').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_shuffle').setEmoji(emojis.OBJ_AN_SHUFFLE || '🔀').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_volup').setEmoji(emojis.OBJ_AN_VOLUME || '🔊').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_clear').setEmoji(emojis.OBJ_AN_CLEAR || '🔄').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_loop').setEmoji({ id: '1536620997694726194', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_shuffle').setEmoji({ id: '1536620793335652403', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setEmoji({ id: '1536621007274643467', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_clear').setEmoji({ id: '1536620813430562877', animated: true }).setStyle(ButtonStyle.Secondary)
   );
 
   const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_autoplay').setEmoji(emojis.OBJ_AN_AUTOPLAY || '♾️').setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_add').setEmoji(emojis.OBJ_AN_FAVORITE || '❤️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_play').setEmoji(emojis.OBJ_AN_STAR || '⭐').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_lyrics').setEmoji(emojis.OBJ_AN_LYRICS || '💬').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_autoplay').setEmoji({ id: '1536620962039210115', animated: true }).setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_add').setEmoji({ id: '1536620870330753096', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_play').setEmoji({ id: '1536620843029762079', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_lyrics').setEmoji({ id: '1536620926316322917', animated: true }).setStyle(ButtonStyle.Secondary)
   );
 
   let suggestedOptions = [];
@@ -501,7 +501,7 @@ module.exports = {
           } else {
             player.paused = true;
           }
-          return message.reply('⏸️ **Paused** music playback.');
+          return message.reply('<a:pause_animated_15362605443469885:1536620931580170270> **Paused** music playback.');
         } else {
           if (typeof player.resume === 'function') {
             await player.resume();
@@ -510,7 +510,7 @@ module.exports = {
           } else {
             player.paused = false;
           }
-          return message.reply('▶️ **Resumed** music playback.');
+          return message.reply('<a:playbuttton_animated_15362605555:1536620943064043560> **Resumed** music playback.');
         }
       } catch (err) {
         console.error('[Music Pause/Resume Error]', err);
@@ -523,7 +523,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player || (!player.playing && !player.paused)) return message.reply(`${emojis.WARNING} No track currently playing.`);
       await player.skip();
-      return message.reply('⏭️ **Skipped** to next track.');
+      return message.reply('<a:arrowright_animated_153626066340:1536620808636604426> **Skipped** to next track.');
     }
 
     if (['previous', 'prev', 'replay'].includes(invoked)) {
@@ -533,7 +533,7 @@ module.exports = {
         const prevTrack = player.queue.previous[player.queue.previous.length - 1];
         await player.queue.add(prevTrack, 0);
         await player.skip();
-        return message.reply(`⏮️ **Replaying Previous Track:** ${prevTrack.info.title}`);
+        return message.reply(`<a:arrowright_animated_153626066340:1536620808636604426> **Replaying Previous Track:** ${prevTrack.info.title}`);
       }
       await player.seek(0);
       return message.reply('⏮️ Replayed current track from beginning.');
@@ -562,7 +562,7 @@ module.exports = {
         const conn = getVoiceConnection(guildId);
         if (conn) conn.destroy();
       } catch (e) {}
-      return message.reply('⏹️ Music player stopped, queue cleared, and disconnected.');
+      return message.reply('<a:remove_animated_1536260528320548:1536620967172907059> Music player stopped, queue cleared, and disconnected.');
     }
 
     // 5. JOIN / CONNECT
@@ -600,7 +600,28 @@ module.exports = {
             selfDeaf: true
           });
         }
-        return message.reply(`🔊 **Joined Voice Channel:** Successfully connected to <#${channel.id}>!`);
+        const memberCount = channel.members ? channel.members.size : 1;
+        const categoryName = channel.parent ? channel.parent.name : 'GENERAL VC';
+        const botAvatar = clientUser.displayAvatarURL({ dynamic: true, extension: 'png', size: 512 });
+
+        const joinEmbed = new EmbedBuilder()
+          .setColor(0x8B5CF6)
+          .setAuthor({ name: 'Joined Voice Channel', iconURL: 'https://cdn.discordapp.com/emojis/1536620919013900378.gif?size=96' })
+          .setTitle('Connected successfully!')
+          .setThumbnail(botAvatar)
+          .setDescription(
+            `• <a:accept_animated_1536260675276640:1536620799115530270> **Channel:** <#${channel.id}>
+` +
+            `• <a:membercard_animated_153626055778:1536620905738801224> **Members:** ${memberCount} member${memberCount === 1 ? '' : 's'}
+` +
+            `• <a:openfolder_animated_153626057305:1536620926316322917> **Category:** [ 🎵 - ${categoryName} ]
+
+` +
+            `*Use a play command to start music!*`
+          )
+          .setFooter({ text: 'Naruto Shinobi Music Suite' });
+
+        return message.reply({ embeds: [joinEmbed] });
       } catch (err) {
         return message.reply(`${emojis.ERROR} Failed to join voice channel: ${err.message}`);
       }
@@ -653,10 +674,10 @@ module.exports = {
 
       if (player.repeatMode === 'off') {
         player.setRepeatMode('track');
-        return message.reply('🔂 **Loop Mode:** Track Repeat (Current song will repeat).');
+        return message.reply('<a:toggle_animated_1536260493214228:1536620997694726194> **Loop Mode:** Track Repeat (Current song will repeat).');
       } else if (player.repeatMode === 'track') {
         player.setRepeatMode('queue');
-        return message.reply('🔁 **Loop Mode:** Queue Repeat (Entire queue will repeat).');
+        return message.reply('<a:toggle_animated_1536260493214228:1536620997694726194> **Loop Mode:** Queue Repeat (Entire queue will repeat).');
       } else {
         player.setRepeatMode('off');
         return message.reply('➡️ **Loop Mode:** Disabled (Normal playback).');
@@ -668,7 +689,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player || !player.queue.tracks.length) return message.reply(`${emojis.WARNING} Queue is empty or has only 1 track.`);
       player.queue.shuffle();
-      return message.reply('🔀 **Shuffled** the queue randomly!');
+      return message.reply('<a:8_cards_icon_1536273775266504766:1536620793335652403> **Shuffled** the queue randomly!');
     }
 
     // 10. CLEAR QUEUE (.clear)
@@ -676,7 +697,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player) return message.reply(`${emojis.WARNING} No active music player.`);
       player.queue.clear();
-      return message.reply('🔄 **Cleared** all upcoming songs in queue.');
+      return message.reply('<a:bin_animated_1536260672780763146:1536620813430562877> **Cleared** all upcoming songs in queue.');
     }
 
     // 11. REMOVE / MOVE (.remove 3, .move 5 2)
@@ -688,7 +709,7 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Invalid song index. Usage: \`.remove <position>\` (1-${player.queue.tracks.length}).`);
       }
       const removed = player.queue.tracks.splice(idx, 1)[0];
-      return message.reply(`🗑️ Removed **${removed.info.title}** from queue.`);
+      return message.reply(`<a:remove_animated_1536260528320548:1536620967172907059> Removed **${removed.info.title}** from queue.`);
     }
 
     if (['move'].includes(invoked)) {
@@ -711,7 +732,7 @@ module.exports = {
       const targetVol = Math.min(Math.max(1, volNum), 200);
       const player = lavalink?.getPlayer(guildId);
       if (player) await player.setVolume(targetVol);
-      return message.reply(`🔊 Volume set to **${targetVol}%**.`);
+      return message.reply(`🔊 <a:volumeup_animated_15362604803670:1536621007274643467> Volume set to **${targetVol}%**.`);
     }
 
     // 13. SEEK COMMAND (.seek 1:30)
