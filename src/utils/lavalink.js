@@ -60,7 +60,8 @@ function initLavalink(client) {
   });
 
   lavalink.nodeManager.on('error', (node, error) => {
-    console.log(`${emojis.WARNING} [Lavalink] Node error on ${node.id}:`, error?.message || error);
+    const errCode = error?.code || error?.message || 'Connection glitch';
+    console.log(`⚠️ [Lavalink Connection] Node ${node.id} network check (${errCode}) - Auto-reconnecting...`);
   });
 
   // Forward raw gateway voice packets to Lavalink
