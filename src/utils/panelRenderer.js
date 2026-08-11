@@ -89,7 +89,7 @@ const CATEGORIES = [
     description: 'Voice admin, join-to-create temp VCs & VoiceMaster control panel',
     customEmoji: '<a:microphone_animated_153626055995:1536620908024701028>',
     emojiId: '1536620908024701028',
-    unicodeFallback: '🔊',
+    unicodeFallback: '🎙️',
     heading: '<a:microphone_animated_153626055995:1536620908024701028>',
     commands: [
       'vctemp setup', 'vctemp disable', 'vctemp status',
@@ -158,7 +158,7 @@ const CATEGORIES = [
     description: 'Naruto-themed fun: truth, dare, vibecheck, rizzmeter & more',
     customEmoji: '<a:gamecontroller_animated_15362606:1536620859903442974>',
     emojiId: '1536620859903442974',
-    unicodeFallback: '🎭',
+    unicodeFallback: '🎮',
     heading: '<a:gamecontroller_animated_15362606:1536620859903442974>',
     commands: [
       '8ball', 'truth', 'dare', 'wyr', 'pickup',
@@ -239,7 +239,7 @@ const CATEGORIES = [
     description: 'Virtual currency, gambling, jobs, shop, inventory & marriage',
     customEmoji: '<a:money_animated_15362605630790041:1536620914500698142>',
     emojiId: '1536620914500698142',
-    unicodeFallback: '🪙',
+    unicodeFallback: '💰',
     heading: '<a:money_animated_15362605630790041:1536620914500698142>',
     commands: [
       'balance', 'deposit', 'withdraw',
@@ -319,7 +319,7 @@ const CATEGORIES = [
     description: 'AI text answers, image generation & coding assistant',
     customEmoji: '<a:rapid_animated_15362605235014246:1536620962039210115>',
     emojiId: '1536260523501424650',
-    unicodeFallback: '⚡',
+    unicodeFallback: '🚀',
     heading: '<a:rapid_animated_15362605235014246:1536620962039210115>',
     commands: [
       'ask <question>',
@@ -338,7 +338,7 @@ const CATEGORIES = [
     description: 'Self-assignable roles & single-reaction enforcement',
     customEmoji: '<a:add_animated_15362606775372432:1536620799115530270>',
     emojiId: '1536260677537243257',
-    unicodeFallback: '🎭',
+    unicodeFallback: '📌',
     heading: '<a:add_animated_15362606775372432:1536620799115530270>',
     commands: [
       'rr setup',
@@ -355,7 +355,7 @@ const CATEGORIES = [
     description: 'Sticky messages automatically kept at the bottom of channels',
     customEmoji: '<a:pencil_animated_1536260549271355:1536620936122339358>',
     emojiId: '1536260549271355412',
-    unicodeFallback: '📌',
+    unicodeFallback: '📝',
     heading: '<a:pencil_animated_1536260549271355:1536620936122339358>',
     commands: [
       'stickynote add <#channel> <text>',
@@ -369,7 +369,7 @@ const CATEGORIES = [
     description: 'Customize your global user profile & card background',
     customEmoji: '<a:membercard_animated_153626055778:1536620905738801224>',
     emojiId: '1536260557789728828',
-    unicodeFallback: '👤',
+    unicodeFallback: '📇',
     heading: '<a:membercard_animated_153626055778:1536620905738801224>',
     commands: [
       'profile',
@@ -399,7 +399,7 @@ const CATEGORIES = [
     description: 'Welcome cards, Join DMs, Leave DMs & Server Boost announcements',
     customEmoji: '<a:home_animated_153626059618438358:1536620874646421574>',
     emojiId: '1536620923568922664',
-    unicodeFallback: '👋',
+    unicodeFallback: '🏠',
     heading: '<a:home_animated_153626059618438358:1536620874646421574>',
     commands: [
       'welcome setup <#channel> [avatar/imageURL] [text]',
@@ -416,7 +416,7 @@ const CATEGORIES = [
     description: 'Backup & restore server roles, channels, and settings',
     customEmoji: '<a:cloudcomputing_animated_15362606:1536620825795498124>',
     emojiId: '1536260652514025594',
-    unicodeFallback: '💾',
+    unicodeFallback: '☁️',
     heading: '<a:cloudcomputing_animated_15362606:1536620825795498124>',
     commands: [
       'backup save',
