@@ -69,9 +69,9 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
     .setDescription(
       `A feature-packed All-In-One Discord bot built with a **Naruto Shinobi** theme!\n\n` +
       '```\n' + metricsBox + '\n```\n\n' +
-      `## 💃 All Modules\n` +
+      `## <a:Flantic_qt_dance:1536620857739317248> All Modules\n` +
       `${moduleLines}\n\n` +
-      `### 🔗 **Quick Links**\n` +
+      `### <a:linkx_animated_15362605793319363:1536620894380761128> **Quick Links**\n` +
 
       `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${clientObj.user.id}&permissions=8&scope=bot%20applications.commands) • [Support Server](https://discord.gg/ZPKcPreUMT) • [Vote Top.gg](https://top.gg/bot/${clientObj.user.id})`
     )

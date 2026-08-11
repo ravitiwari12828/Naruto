@@ -601,12 +601,22 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
 
 function buildDropdownMenu() {
   const options = CATEGORIES.slice().sort((a,b) => a.label.localeCompare(b.label)).map(cat => {
-    return {
+    const opt = {
       label: cat.label,
       value: cat.value,
-      description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description,
-      emoji: cat.unicodeFallback || '✨'
+      description: cat.description.length > 50 ? cat.description.substring(0, 47) + '...' : cat.description
     };
+    
+    if (cat.customEmoji && cat.customEmoji.includes(':')) {
+      const parts = cat.customEmoji.split(':');
+      const emojiId = parts.pop().replace('>', '');
+      const isAnim = cat.customEmoji.startsWith('<a:');
+      opt.emoji = { id: emojiId, animated: isAnim };
+    } else if (cat.unicodeFallback) {
+      opt.emoji = cat.unicodeFallback;
+    }
+    
+    return opt;
   });
 
   return new ActionRowBuilder().addComponents(
