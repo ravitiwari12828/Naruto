@@ -790,6 +790,18 @@ client.on('channelDelete', async (channel) => {
       }
 
       if (executor && executor.id !== guild.ownerId) {
+        // Ignore deletions performed by the bot itself
+        if (executor.id === client.user.id) return;
+
+        // Ignore temporary VoiceMaster channels & Support Tickets / ModMail channels
+        const chanName = (channel.name || '').toLowerCase();
+        const parentName = (channel.parent?.name || '').toLowerCase();
+
+        const isTempVoice = chanName.includes("'s room") || chanName.startsWith('🔊 ') || chanName.includes('temp') || parentName.includes('custom voice') || parentName.includes('voicemaster');
+        const isTicketOrModmail = chanName.startsWith('ticket-') || chanName.startsWith('modmail-') || chanName.startsWith('support-') || chanName.startsWith('synn-') || parentName.includes('ticket') || parentName.includes('modmail') || parentName.includes('support');
+
+        if (isTempVoice || isTicketOrModmail) return;
+
         const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiChannel');
         const executorMember = await guild.members.fetch(executor.id).catch(() => null);
         const isQuarantined = executorMember ? quarantineCmd?.isMemberInQuarantine(executorMember)?.isQuarantined : false;

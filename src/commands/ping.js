@@ -3,7 +3,7 @@ const emojis = require('../utils/emojis');
 module.exports = {
   name: 'ping',
   description: 'Check bot latency and gateway WebSocket responsiveness',
-  aliases: ['latency', 'test', 'status', 'p'],
+  aliases: ['latency', 'test', 'status'],
 
   async execute(message, args) {
     const start = Date.now();
