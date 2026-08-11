@@ -9,30 +9,30 @@ const {
 } = require('../utils/panelRenderer');
 
 const EMOJI_MAP = {
-  analytics: '<a:rapid_animated_15362605235014246:1536620962039210115>',
-  modmail: '<a:infox_animated_15362606013393224:1536620879457288252>',
-  ticket: '<a:tickety_animated_153626049086554:1536620995161628692>',
-  voice: '<a:microphone_animated_153626055995:1536620908024701028>',
-  music: '<a:musicplayer_animated_15362605658:1536620919013900378>',
-  antinuke: '<a:security_animated_15362605007975:1536620975532154990>',
-  level: '<a:rank:1536620959363112991>',
-  fun: '<a:gamecontroller_animated_15362606:1536620859903442974>',
-  giveaway: '<a:gift:1536620862709702677>',
-  info: '<a:infox_animated_15362606013393224:1536620879457288252>',
-  mod: '<a:kick_animated_153626060684643539:1536620883878223922>',
+  analytics: '📊',
+  modmail: '📬',
+  ticket: '🎟️',
+  voice: '🔊',
+  music: '🎶',
+  antinuke: '🛡️',
+  level: '⭐',
+  fun: '🎲',
+  giveaway: '🎁',
+  info: 'ℹ️',
+  mod: '🔨',
   ninja: '🍥',
-  economy: '<a:money_animated_15362605630790041:1536620914500698142>',
-  channel: '<a:hashtag_animated_153626062452543:1536620867495272448>',
-  autorole: '<a:settings_animated_15362605076469:1536620980162662461>',
-  autoresponder: '<a:code_animated_153626065586120709:1536620828232523806>',
-  automod: '<a:robot_animated_15362605365876532:1536620971237187615>',
-  priority: '<a:rapid_animated_15362605235014246:1536620962039210115>',
+  economy: '💰',
+  channel: '💬',
+  autorole: '⚙️',
+  autoresponder: '🤖',
+  automod: '🛡️',
+  priority: '🚀',
   reactionrole: '📌',
-  stickynote: '<a:pencil_animated_1536260549271355:1536620936122339358>',
-  profile: '<a:file_animated_153626061757953232:1536620854631342100>',
-  roles: '<a:crown_animated_15362606293950218:1536620833332793364>',
-  welcome: '<a:home_animated_153626059618438358:1536620874646421574>',
-  backup: '<a:cloudcomputing_animated_15362606:1536620825795498124>'
+  stickynote: '📝',
+  profile: '📇',
+  roles: '👑',
+  welcome: '🏠',
+  backup: '☁️'
 };
 
 function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanner) {
@@ -49,7 +49,7 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
   const moduleLines = CATEGORIES.slice()
     .sort((a, b) => a.label.localeCompare(b.label))
     .map(cat => {
-      const customEmoji = cat.customEmoji || EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
+      const customEmoji = cat.unicodeFallback || cat.customEmoji || EMOJI_MAP[cat.value] || '✨';
       return `### ${customEmoji}  »  **${cat.label}**`;
     })
     .join('\n'); // Discord H3 headers (###) render medium sleek emojis & bold titles
