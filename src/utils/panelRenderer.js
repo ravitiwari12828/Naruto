@@ -490,23 +490,24 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
     ]);
 
     const editBox = createDynamicBox('EDITABLE TEXT & MARKS', [
-      'welcome description <txt>: Body text',
-      'welcome title <txt>      : Embed title',
-      'welcome color <#hex>     : Border color',
-      'welcome footer <txt>     : Embed footer',
-      'welcome header <txt>     : Outer header'
+      'welcome desc <txt> : Body text',
+      'welcome title <txt>: Title text',
+      'welcome color <#hex>: Border col',
+      'welcome footer <txt>: Footer text',
+      'welcome header <txt>: Header text'
     ]);
 
     const dmsBox = createDynamicBox('DMS & SERVER BOOSTS', [
       'joindm <on/off/txt>   : Private DM',
-      'leavedm <on/off/txt>  : Private leave DM',
-      'boostmsg <#chan> <txt>: Boost announce'
+      'leavedm <on/off> : Leave DM',
+      'boostmsg <#chan> : Boost msg'
     ]);
 
-    const gearEmoji = '⚙️';
-    const arEmoji = '💬';
-    const mailEmoji = '📬';
-    const welcomeEmoji = '👋';
+    const gearEmoji = '<a:settings_animated:1537177506170404905>';
+    const arEmoji = '<a:code_animated:1537177358912725033>';
+    const mailEmoji = '<a:socialmedia_animated:1537177527011774534>';
+    const welcomeEmoji = '<a:welcome_animated:1537179700349243402>';
+    const sparkEmoji = '<a:sparkles_animated:1537179684175872171>';
 
     const embed = new EmbedBuilder()
       .setColor(catColor)
@@ -520,7 +521,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
         '```\n' + editBox + '\n```\n\n' +
         `${mailEmoji} **DMs & Server Boosts**\n` +
         '```\n' + dmsBox + '\n```\n\n' +
-        `✨ **Placeholders:** \`{user}\`, \`{username}\`, \`{server_name}\`, \`{membercount}\``
+        `${sparkEmoji} **Placeholders:** \`{user}\`, \`{username}\`, \`{server_name}\`, \`{membercount}\``
       )
       .setFooter(validUserAvatar ? {
         text: `Requested by ${username} • Type .welcome for setup dashboard`,
@@ -631,12 +632,12 @@ function buildNavigationButtons() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('help_home')
-      .setEmoji('🏠')
+      .setEmoji({ id: '1537177403875401889', animated: true })
       .setLabel('Home Menu')
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId('help_delete')
-      .setEmoji('❌')
+      .setEmoji({ id: '1537177488168456202', animated: true })
       .setLabel('Close Panel')
       .setStyle(ButtonStyle.Danger)
   );

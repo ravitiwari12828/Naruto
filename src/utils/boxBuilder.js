@@ -45,7 +45,7 @@ function formatItemLines(item, maxContentWidth) {
     let keyStr = String(item.key).trim();
     let valStr = item.value !== undefined ? String(item.value).trim() : '';
 
-    const maxKeyWidth = Math.min(26, Math.floor(maxContentWidth * 0.65));
+    const maxKeyWidth = 16;
     if (getVisualWidth(keyStr) > maxKeyWidth) {
       keyStr = keyStr.slice(0, Math.max(1, maxKeyWidth - 1)) + '…';
     }
