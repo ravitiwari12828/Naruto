@@ -105,7 +105,7 @@ function formatItemLines(item, maxContentWidth) {
  */
 function createDynamicBox(title, items = [], minWidth = 24, customMaxWidth = null) {
   // Safe Inner Width: Expanded to 34 chars for wide executive monospaced box alignment
-  const MAX_INNER_WIDTH = customMaxWidth || 34;
+  const MAX_INNER_WIDTH = customMaxWidth || 22;
 
   // Process all items into compliant line strings
   const processedLines = [];
