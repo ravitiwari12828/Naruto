@@ -210,24 +210,24 @@ function buildMusicActionRows(player = null) {
   const isAutoplay = player?.autoplay || false;
 
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_prev').setEmoji({ id: '1536620808636604426', animated: true }).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_pause').setEmoji({ id: '1536620931580170270', animated: true }).setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('music_skip').setEmoji({ id: '1536620808636604426', animated: true }).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setEmoji({ id: '1536620967172907059', animated: true }).setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('music_prev').setEmoji({ id: '1537179645965897749', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_pause').setEmoji({ id: '1537177460469407887', animated: true }).setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('music_skip').setEmoji({ id: '1537179678555770920', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_stop').setEmoji({ id: '1537179686663233536', animated: true }).setStyle(ButtonStyle.Danger)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_loop').setEmoji({ id: '1536620997694726194', animated: true }).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_shuffle').setEmoji({ id: '1536620793335652403', animated: true }).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_volup').setEmoji({ id: '1536621007274643467', animated: true }).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_clear').setEmoji({ id: '1536620813430562877', animated: true }).setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_loop').setEmoji({ id: '1537177536675577856', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_shuffle').setEmoji({ id: '1537179676131205270', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setEmoji({ id: '1537177548121968650', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_clear').setEmoji({ id: '1537179544564531323', animated: true }).setStyle(ButtonStyle.Secondary)
   );
 
   const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_autoplay').setEmoji({ id: '1536620962039210115', animated: true }).setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_add').setEmoji({ id: '1536620870330753096', animated: true }).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_play').setEmoji({ id: '1536620843029762079', animated: true }).setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_lyrics').setEmoji({ id: '1536620926316322917', animated: true }).setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_autoplay').setEmoji({ id: '1537177482006896692', animated: true }).setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_add').setEmoji({ id: '1537177398569738341', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_play').setEmoji({ id: '1537179684175872171', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_lyrics').setEmoji({ id: '1537179663791693844', animated: true }).setStyle(ButtonStyle.Secondary)
   );
 
   let suggestedOptions = [];
@@ -501,7 +501,7 @@ module.exports = {
           } else {
             player.paused = true;
           }
-          return message.reply('<a:pause_animated_15362605443469885:1536620931580170270> **Paused** music playback.');
+          return message.reply('<a:pause_animated:1537177460469407887> **Paused** music playback.');
         } else {
           if (typeof player.resume === 'function') {
             await player.resume();
@@ -510,7 +510,7 @@ module.exports = {
           } else {
             player.paused = false;
           }
-          return message.reply('<a:playbuttton_animated_15362605555:1536620943064043560> **Resumed** music playback.');
+          return message.reply('<a:playbuttton_animated:1537177472771166360> **Resumed** music playback.');
         }
       } catch (err) {
         console.error('[Music Pause/Resume Error]', err);
@@ -523,7 +523,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player || (!player.playing && !player.paused)) return message.reply(`${emojis.WARNING} No track currently playing.`);
       await player.skip();
-      return message.reply('<a:arrowright_animated_153626066340:1536620808636604426> **Skipped** to next track.');
+      return message.reply('<a:skip_animated:1537179678555770920> **Skipped** to next track.');
     }
 
     if (['previous', 'prev', 'replay'].includes(invoked)) {
@@ -533,7 +533,7 @@ module.exports = {
         const prevTrack = player.queue.previous[player.queue.previous.length - 1];
         await player.queue.add(prevTrack, 0);
         await player.skip();
-        return message.reply(`<a:arrowright_animated_153626066340:1536620808636604426> **Replaying Previous Track:** ${prevTrack.info.title}`);
+        return message.reply(`<a:skip_animated:1537179678555770920> **Replaying Previous Track:** ${prevTrack.info.title}`);
       }
       await player.seek(0);
       return message.reply('⏮️ Replayed current track from beginning.');
@@ -562,7 +562,7 @@ module.exports = {
         const conn = getVoiceConnection(guildId);
         if (conn) conn.destroy();
       } catch (e) {}
-      return message.reply('<a:remove_animated_1536260528320548:1536620967172907059> Music player stopped, queue cleared, and disconnected.');
+      return message.reply('<a:stop_animated:1537179686663233536> Music player stopped, queue cleared, and disconnected.');
     }
 
     // 5. JOIN / CONNECT
@@ -709,7 +709,7 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Invalid song index. Usage: \`.remove <position>\` (1-${player.queue.tracks.length}).`);
       }
       const removed = player.queue.tracks.splice(idx, 1)[0];
-      return message.reply(`<a:remove_animated_1536260528320548:1536620967172907059> Removed **${removed.info.title}** from queue.`);
+      return message.reply(`<a:stop_animated:1537179686663233536> Removed **${removed.info.title}** from queue.`);
     }
 
     if (['move'].includes(invoked)) {
@@ -732,7 +732,7 @@ module.exports = {
       const targetVol = Math.min(Math.max(1, volNum), 200);
       const player = lavalink?.getPlayer(guildId);
       if (player) await player.setVolume(targetVol);
-      return message.reply(`🔊 <a:volumeup_animated_15362604803670:1536621007274643467> Volume set to **${targetVol}%**.`);
+      return message.reply(`🔊 <a:volumeup_animated:1537177548121968650> Volume set to **${targetVol}%**.`);
     }
 
     // 13. SEEK COMMAND (.seek 1:30)

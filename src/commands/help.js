@@ -9,30 +9,30 @@ const {
 } = require('../utils/panelRenderer');
 
 const EMOJI_MAP = {
-  analytics: '<a:rapid_animated_15362605235014246:1536620962039210115>',
-  antinuke: '<a:security_animated_15362605007975:1536620975532154990>',
-  autorole: '<a:settings_animated_15362605076469:1536620980162662461>',
-  automod: '<a:robot_animated_15362605365876532:1536620971237187615>',
-  autoresponder: '<a:code_animated_153626065586120709:1536620828232523806>',
-  backup: '<a:cloudcomputing_animated_15362606:1536620825795498124>',
-  channel: '<a:hashtag_animated_153626062452543:1536620867495272448>',
-  economy: '<a:money_animated_15362605630790041:1536620914500698142>',
-  fun: '<a:gamecontroller_animated_15362606:1536620859903442974>',
-  giveaway: '<a:gift:1536620862709702677>',
-  info: '<a:infox_animated_15362606013393224:1536620879457288252>',
-  level: '<a:rank:1536620959363112991>',
-  mod: '<a:kick_animated_153626060684643539:1536620883878223922>',
-  modmail: '<a:infox_animated_15362606013393224:1536620879457288252>',
-  music: '<a:musicplayer_animated_15362605658:1536620919013900378>',
-  ninja: '🍥',
-  priority: '<a:rapid_animated_15362605235014246:1536620962039210115>',
-  profile: '<a:membercard_animated_153626055778:1536620905738801224>',
-  reactionrole: '<a:add_animated_15362606775372432:1536620799115530270>',
-  roles: '<a:crown_animated_15362606293950218:1536620833332793364>',
-  stickynote: '<a:pencil_animated_1536260549271355:1536620936122339358>',
-  ticket: '<a:tickety_animated_153626049086554:1536620995161628692>',
-  voice: '<a:microphone_animated_153626055995:1536620908024701028>',
-  welcome: '<a:home_animated_153626059618438358:1536620874646421574>'
+  analytics: '<a:chart_animated:1537179539514462308>',
+  antinuke: '<a:security_animated:1537177499862171741>',
+  autorole: '<a:settings_animated:1537177506170404905>',
+  automod: '<a:robot_animated:1537177494183088199>',
+  autoresponder: '<a:code_animated:1537177358912725033>',
+  backup: '<a:cloudcomputing_animated:1537177355766865940>',
+  channel: '<a:hashtag_animated:1537177395537248276>',
+  economy: '<a:money_animated:1537177442672709707>',
+  fun: '<a:gamecontroller_animated:1537177388725706802>',
+  giveaway: '<a:gift_animated:1537179583064055931>',
+  info: '<a:infox_animated:1537177409428787251>',
+  level: '<a:rank_animated:1537179656090943538>',
+  mod: '<a:kick_animated:1537177415552602223>',
+  modmail: '<a:openeddooraperture_animated:1537177450411462766>',
+  music: '<a:musicplayer_animated:1537177445428633762>',
+  ninja: '<a:naruto_animated:1537179622024814733>',
+  priority: '<a:rocket_animated:1537179661371707402>',
+  profile: '<a:membercard_animated:1537177436146638993>',
+  reactionrole: '<a:add_animated:1537177324435283998>',
+  roles: '<a:crown_animated:1537177361093500968>',
+  stickynote: '<a:pencil_animated:1537177465829724181>',
+  ticket: '<a:tickety_animated:1537177533961732106>',
+  voice: '<a:microphone_animated:1537177439527112755>',
+  welcome: '<a:welcome_animated:1537179700349243402>'
 };
 
 function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanner) {
@@ -69,9 +69,9 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
     .setDescription(
       `A feature-packed All-In-One Discord bot built with a **Naruto Shinobi** theme!\n\n` +
       '```\n' + metricsBox + '\n```\n\n' +
-      `## <a:Flantic_qt_dance:1536620857739317248> All Modules\n` +
+      `## <a:flantic_dance_animated:1537179577518919811> All Modules\n` +
       `${moduleLines}\n\n` +
-      `### <a:linkx_animated_15362605793319363:1536620894380761128> **Quick Links**\n` +
+      `### <a:linkx_animated:1537177423324512327> **Quick Links**\n` +
 
       `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${clientObj.user.id}&permissions=8&scope=bot%20applications.commands) • [Support Server](https://discord.gg/ZPKcPreUMT) • [Vote Top.gg](https://top.gg/bot/${clientObj.user.id})`
     )
