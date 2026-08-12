@@ -57,7 +57,7 @@ module.exports = {
 
       const listStr = Array.from(globalBotExtraOwners).map((id, i) => `\`${i + 1}.\` <@${id}> (\`${id}\`)`).join('\n') || 'None assigned';
       const embed = createStyledEmbed({
-        title: `👑 Global Bot Extra Owners`,
+        title: `<a:crown_animated:1537177361093500968> Global Bot Extra Owners`,
         subtitle: `Global Bot Developers & System Owners`,
         description: `**Current Bot Extra Owners:**\n${listStr}\n\n**Usage:**\n\`.botextraowner add @user\`\n\`.botextraowner remove @user\``,
         requestedBy: author,
@@ -95,7 +95,7 @@ module.exports = {
 
     const serverList = config && config.extraOwners ? Array.from(config.extraOwners).map((id, i) => `\`${i + 1}.\` <@${id}> (\`${id}\`)`).join('\n') : `<@${guild.ownerId}> (Server Owner)`;
     const embed = createStyledEmbed({
-      title: `👑 Server Extra Owners — ${guild.name}`,
+      title: `<a:crown_animated:1537177361093500968> Server Extra Owners — ${guild.name}`,
       subtitle: `Guild Security Authority`,
       description: `**Server Owner:** <@${guild.ownerId}>\n\n**Appointed Server Extra Owners:**\n${serverList}\n\n**Usage:**\n\`.serverextraowner add @user\`\n\`.serverextraowner remove @user\``,
       requestedBy: author,

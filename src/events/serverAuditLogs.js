@@ -38,7 +38,7 @@ async function fetchAuditLogExecutor(guild, type, targetId = null) {
 module.exports = (client) => {
 
   // ─────────────────────────────────────────
-  // 1. ⚙️ SERVER SETTINGS & FEATURES UPDATED (guildUpdate)
+  // 1. <a:settings_animated:1537177506170404905> SERVER SETTINGS & FEATURES UPDATED (guildUpdate)
   // ─────────────────────────────────────────
   client.on('guildUpdate', async (oldGuild, newGuild) => {
     const key = `guildUpdate:${newGuild.id}:${Date.now().toString().slice(0, -3)}`;
@@ -73,7 +73,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x5865F2)
-      .setTitle(`⚙️ Server Settings Updated`)
+      .setTitle(`<a:settings_animated:1537177506170404905> Server Settings Updated`)
       .setDescription(
         `• **Server:** \`${newGuild.name}\`\n` +
         `• **Updated By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}\n\n` +
@@ -172,7 +172,7 @@ module.exports = (client) => {
   });
 
   // ─────────────────────────────────────────
-  // 3. 📁 CHANNEL EVENTS (channelCreate, channelUpdate, channelDelete)
+  // 3. <a:openfolder_animated:1537177452936437760> CHANNEL EVENTS (channelCreate, channelUpdate, channelDelete)
   // ─────────────────────────────────────────
   client.on('channelCreate', async (channel) => {
     if (!channel.guild) return;
@@ -193,7 +193,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`📁 Channel Created`)
+      .setTitle(`<a:openfolder_animated:1537177452936437760> Channel Created`)
       .setDescription(
         `• **Channel:** <#${channel.id}> (\`${channel.name}\`)\n` +
         `• **Channel ID:** \`${channel.id}\`\n` +
@@ -233,7 +233,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle(`⚙️ Channel Modified / Permissions Updated`)
+      .setTitle(`<a:settings_animated:1537177506170404905> Channel Modified / Permissions Updated`)
       .setDescription(
         `• **Channel:** <#${newChannel.id}> (\`${newChannel.name}\`)\n` +
         `• **Category:** \`${newChannel.parent ? newChannel.parent.name : 'None'}\`\n` +
@@ -375,7 +375,7 @@ module.exports = (client) => {
   });
 
   // ─────────────────────────────────────────
-  // 5. 🔨 BAN & UNBAN EVENTS (guildBanAdd, guildBanRemove)
+  // 5. <a:kick_animated:1537177415552602223> BAN & UNBAN EVENTS (guildBanAdd, guildBanRemove)
   // ─────────────────────────────────────────
   client.on('guildBanAdd', async (ban) => {
     const key = `guildBanAdd:${ban.guild.id}:${ban.user.id}`;
@@ -385,7 +385,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`🔨 Member Banned`)
+      .setTitle(`<a:kick_animated:1537177415552602223> Member Banned`)
       .setDescription(
         `• **Banned User:** <@${ban.user.id}> (\`${ban.user.tag}\`)\n` +
         `• **User ID:** \`${ban.user.id}\`\n` +
@@ -513,7 +513,7 @@ module.exports = (client) => {
   });
 
   // ─────────────────────────────────────────
-  // 7. 🤖 AUTOMOD RULE EVENTS (autoModerationRuleCreate, autoModerationRuleUpdate, autoModerationRuleDelete)
+  // 7. <a:robot_animated:1537177494183088199> AUTOMOD RULE EVENTS (autoModerationRuleCreate, autoModerationRuleUpdate, autoModerationRuleDelete)
   // ─────────────────────────────────────────
   client.on('autoModerationRuleCreate', async (rule) => {
     if (!rule.guild) return;
@@ -528,7 +528,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`${emojis.AUTOMOD || '🤖'} AutoMod Rule Created in Server Settings`)
+      .setTitle(`${emojis.AUTOMOD || '<a:robot_animated:1537177494183088199>'} AutoMod Rule Created in Server Settings`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Rule Name:** \`${rule.name}\`\n` +
@@ -555,7 +555,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x3498DB)
-      .setTitle(`${emojis.AUTOMOD || '🤖'} Discord AutoMod Rule Content Updated`)
+      .setTitle(`${emojis.AUTOMOD || '<a:robot_animated:1537177494183088199>'} Discord AutoMod Rule Content Updated`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Rule Name:** \`${newRule.name}\`\n` +
@@ -579,7 +579,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`${emojis.AUTOMOD || '🤖'} AutoMod Rule Deleted in Server Settings`)
+      .setTitle(`${emojis.AUTOMOD || '<a:robot_animated:1537177494183088199>'} AutoMod Rule Deleted in Server Settings`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Rule Name:** \`${rule.name}\`\n` +

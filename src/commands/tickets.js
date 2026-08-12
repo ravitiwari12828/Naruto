@@ -52,7 +52,7 @@ function getOrCreateTicketConfig(guildId) {
         { id: 'cat_support', name: 'General Support', emoji: emojis.OBJ_TICKETS || '🎫', description: 'Need help or general assistance?' },
         { id: 'cat_promo', name: 'Promotion', emoji: emojis.OBJ_GIVEAWAY || '📢', description: 'Inquire about promotional deals' },
         { id: 'cat_report', name: 'Report', emoji: emojis.OBJ_ANTINUKE || '🚨', description: 'Report a user or server violation' },
-        { id: 'cat_reward', name: 'Reward', emoji: emojis.OBJ_LEVEL || '🎁', description: 'Claim your event or activity rewards' },
+        { id: 'cat_reward', name: 'Reward', emoji: emojis.OBJ_LEVEL || '<a:gift_animated:1537179583064055931>', description: 'Claim your event or activity rewards' },
         { id: 'cat_staff', name: 'Staff Apply', emoji: emojis.OBJ_MOD || '💼', description: 'Apply for staff position' },
         { id: 'cat_server_promo', name: 'Server Promo', emoji: emojis.OBJ_ALL_MODULES || '🌐', description: 'Request server cross-promotions' }
       ]
@@ -96,7 +96,7 @@ async function ensureTicketLogChannels(guild) {
   if (!category) {
     try {
       category = await guild.channels.create({
-        name: '🎟️ · Ticket & ModMail Logs ·',
+        name: '<a:tickety_animated:1537177533961732106> · Ticket & ModMail Logs ·',
         type: ChannelType.GuildCategory,
         permissionOverwrites: [
           { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
@@ -176,7 +176,7 @@ function updateTicketStaffReminderTimer(client, channel, priorityText, claimedSt
       const staffUser = await client.users.fetch(claimedStaffId).catch(() => null);
       if (staffUser) {
         const embed = createStyledEmbed({
-          title: `🎟️ Claimed Ticket Reminder`,
+          title: `<a:tickety_animated:1537177533961732106> Claimed Ticket Reminder`,
           description:
             `Hello **${staffUser.username}**! You claimed ticket **#${channel.name}** in **${channel.guild.name}**.\n\n` +
             `• **Priority:** \`${priorityText}\`\n` +
@@ -224,10 +224,10 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText = 'Low',
 
   const color = priorityColorMap[priorityText] || 0x57F287;
 
-  const ticketEmoji = emojis.TICKETS || '🎟️';
+  const ticketEmoji = emojis.TICKETS || '<a:tickety_animated:1537177533961732106>';
   const profileEmoji = emojis.PROFILE || '👤';
   const zapEmoji = emojis.ANALYTICS_ZAP || emojis.ZAP || '⚡';
-  const crownEmoji = emojis.SPECIAL_ROLES || '👑';
+  const crownEmoji = emojis.SPECIAL_ROLES || '<a:crown_animated:1537177361093500968>';
   const anonEmoji = emojis.PROFILE || '🎭';
 
   return new EmbedBuilder()
@@ -252,7 +252,7 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText = 'Low',
 
 function buildTicketActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket_claim_btn').setEmoji(emojis.OBJ_OWNER || '👑').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_claim_btn').setEmoji(emojis.OBJ_OWNER || '<a:crown_animated:1537177361093500968>').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('ticket_lock_btn').setEmoji(emojis.OBJ_LOCK || '🔒').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('ticket_callstaff_btn').setEmoji(emojis.OBJ_INVITES || '📞').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('ticket_priority_btn').setEmoji(emojis.OBJ_ZAP || '⚡').setStyle(ButtonStyle.Secondary),

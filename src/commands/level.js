@@ -264,7 +264,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL || '⚙️'} Server Leveling System Configuration`,
+        title: `${emojis.LEVEL || '<a:settings_animated:1537177506170404905>'} Server Leveling System Configuration`,
         subtitle: `Shinobi Advanced Server Leveling Engine`,
         description:
           '```\n' + box + '\n```\n\n' +
@@ -398,7 +398,7 @@ module.exports = {
       const customList = (cfg.roleRewards || []).map(r => `Lvl ${r.level} : <@&${r.roleId}>`).join('\n') || 'None configured';
 
       const embed = createStyledEmbed({
-        title: `🎁 Server Role Rewards — ${guild.name}`,
+        title: `<a:gift_animated:1537179583064055931> Server Role Rewards — ${guild.name}`,
         subtitle: `Mode: ${(cfg.roleRewardsMode || 'stack').toUpperCase()} (Stack or Replace)`,
         description:
           `**📜 Configured Custom Role Rewards:**\n${customList}\n\n` +

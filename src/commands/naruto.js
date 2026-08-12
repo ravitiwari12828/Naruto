@@ -596,7 +596,7 @@ module.exports = {
           description:
             `🏮 **Buy Prices**\n` +
             '```\n' + buyBox + '\n```\n\n' +
-            `💰 **Sell Values**\n` +
+            `<a:money_animated:1537177442672709707> **Sell Values**\n` +
             '```\n' + sellBox + '\n```\n\n' +
             `🎒 **Max Inventory Capacity**\n` +
             '```\n' + capBox + '\n```\n\n' +
@@ -656,7 +656,7 @@ module.exports = {
         return message.reply(`${emojis.SUCCESS || '✅'} **PURCHASE SUCCESSFUL!** Purchased \`${qty}x ${item.name}\` for **${totalCost} Ryo**! Balance: \`${userData.ryo - totalCost} Ryo\`.`);
       }
 
-      // 💰 SELL ITEMS FOR RYO (.ninja sell <item> [quantity])
+      // <a:money_animated:1537177442672709707> SELL ITEMS FOR RYO (.ninja sell <item> [quantity])
       if (action === 'sell') {
         const p1 = args[1 + argIndexOffset];
         const p2 = args[2 + argIndexOffset];
@@ -858,7 +858,7 @@ module.exports.handleMessageXP = async function(message) {
           const role = message.guild.roles.cache.get(reward.roleId);
           if (role) {
             await message.member.roles.add(role).catch(() => {});
-            roleMsg = `\n🎁 You earned the **${role.name}** role reward!`;
+            roleMsg = `\n<a:gift_animated:1537179583064055931> You earned the **${role.name}** role reward!`;
           }
         }
       }

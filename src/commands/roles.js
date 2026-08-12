@@ -182,7 +182,7 @@ module.exports = {
       serverRoleConfigs.set(guildId, config);
 
       const embed = createStyledEmbed({
-        title: `🔊 In-VC Role Configured`,
+        title: `<a:volumeup_animated:1537177548121968650> In-VC Role Configured`,
         description: `Members joining Voice Channels will automatically receive <@&${role.id}>!`,
         requestedBy: author,
         clientUser

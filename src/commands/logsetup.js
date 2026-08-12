@@ -101,9 +101,9 @@ module.exports = {
 
       return createStyledEmbed({
         title: `${emojis.SCROLL || '📜'} Audit Logging System Architecture`,
-        subtitle: `${emojis.SHIELD || '🛡️'} Server Event & Moderation Logging Grid`,
+        subtitle: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Server Event & Moderation Logging Grid`,
         description:
-          `**${emojis.SHIELD || '🛡️'} Security Logs Category**\n` +
+          `**${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Security Logs Category**\n` +
           `\`\`\`\n` +
           `naruto-logs         : ${resolve('narutologs', 'unifiedChanId', 'naruto-logs')}\n` +
           `naruto-automod-logs : ${resolve('automod', 'automodLogs', 'naruto-automod-logs')}\n` +
@@ -112,7 +112,7 @@ module.exports = {
           `naruto-security-logs: ${resolve('antinuke', 'securityLogs', 'naruto-security-logs')}\n` +
           `naruto-mod-logs     : ${resolve('modlogs', 'modLogs', 'naruto-mod-logs')}\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TOOLS || '⚙️'} Server Audit Logs Category**\n` +
+          `**${emojis.TOOLS || '<a:settings_animated:1537177506170404905>'} Server Audit Logs Category**\n` +
           `\`\`\`\n` +
           `server-logs   : ${resolve('server', 'messageLogs', 'server-logs')}\n` +
           `message-logs  : ${resolve('messages', 'messageLogs', 'message-logs')}\n` +
@@ -122,7 +122,7 @@ module.exports = {
           `voice-logs    : ${resolve('voice', 'voiceLogs', 'voice-logs')}\n` +
           `join-leave-logs: ${resolve('joinleave', 'joinleaveLogs', 'join-leave-logs')}\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TICKETS || '🎟️'} Ticket & ModMail Logs Category**\n` +
+          `**${emojis.TICKETS || '<a:tickety_animated:1537177533961732106>'} Ticket & ModMail Logs Category**\n` +
           `\`\`\`\n` +
           `ticket-logs        : ${resolve('ticketlogs', 'ticketLogs', 'ticket-logs')}\n` +
           `modmail-logs       : ${resolve('modmaillogs', 'modmailLogs', 'modmail-logs')}\n` +
@@ -219,7 +219,7 @@ module.exports = {
 
         const categoryStructure = [
           {
-            name: '🛡️ · Security Logs ·',
+            name: '<a:security_animated:1537177499862171741> · Security Logs ·',
             channels: [
               { key: 'narutologs', name: 'naruto-logs' },
               { key: 'automod', name: 'naruto-automod-logs' },
@@ -231,7 +231,7 @@ module.exports = {
             ]
           },
           {
-            name: '📁 · Server Audit Logs ·',
+            name: '<a:openfolder_animated:1537177452936437760> · Server Audit Logs ·',
             channels: [
               { key: 'server', name: 'server-logs' },
               { key: 'messages', name: 'message-logs' },
@@ -243,7 +243,7 @@ module.exports = {
             ]
           },
           {
-            name: '🎟️ · Ticket & ModMail Logs ·',
+            name: '<a:tickety_animated:1537177533961732106> · Ticket & ModMail Logs ·',
             channels: [
               { key: 'ticketlogs', name: 'ticket-logs' },
               { key: 'transcripts', name: 'ticket-transcripts' },

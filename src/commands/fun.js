@@ -10,7 +10,7 @@ const GAUGE_TITLES = {
   wasted: { title: '💀 Battle Wasted Level', emoji: '💀' },
   powerlevel: { title: '⚡ Power Level Scan', emoji: '⚡' },
   coolrate: { title: '❄️ Coolness Rate', emoji: '❄️' },
-  bonk: { title: '🔨 Bonk Level', emoji: '🔨' }
+  bonk: { title: '<a:kick_animated:1537177415552602223> Bonk Level', emoji: '<a:kick_animated:1537177415552602223>' }
 };
 
 function renderGaugeBox(cmdName, score = null) {
@@ -70,13 +70,13 @@ function getAssessmentText(cmdName, score, targetUser, author, user2) {
     return score > 80 ? '😤 **Sasuke-level Coolness** & Cold Aura 🔥' : score > 50 ? '📖 **Kakashi Mysterious Reading Vibes** ⚡' : '💪 **Rock Lee without eyebrows energy!**';
   }
   if (cmdName === 'bonk') {
-    return score > 80 ? '🔨 **MAXIMUM BONK LEVEL** — Sent to Shinobi Jail!' : score > 50 ? '⚠️ **High Energy Detected** — Caution advised!' : '😇 **Pure Soul** — Pure Konoha Shinobi!';
+    return score > 80 ? '<a:kick_animated:1537177415552602223> **MAXIMUM BONK LEVEL** — Sent to Shinobi Jail!' : score > 50 ? '⚠️ **High Energy Detected** — Caution advised!' : '😇 **Pure Soul** — Pure Konoha Shinobi!';
   }
   return '✨ Scan completed!';
 }
 
 function renderGaugeResultEmbed(cmdName, targetUser, userWhoClicked, clientUser, score, author = targetUser, user2 = null) {
-  const info = GAUGE_TITLES[cmdName] || { title: 'Level Calculator', emoji: '📊' };
+  const info = GAUGE_TITLES[cmdName] || { title: 'Level Calculator', emoji: '<a:chart_animated:1537179539514462308>' };
   const assessment = getAssessmentText(cmdName, score, targetUser, author, user2);
 
   const activeEmbed = createStyledEmbed({
@@ -103,7 +103,7 @@ function renderGaugeResultEmbed(cmdName, targetUser, userWhoClicked, clientUser,
 }
 
 async function sendInteractiveGaugeCalculator(message, cmdName, targetUser, author, clientUser, user2 = null) {
-  const info = GAUGE_TITLES[cmdName] || { title: 'Level Calculator', emoji: '📊' };
+  const info = GAUGE_TITLES[cmdName] || { title: 'Level Calculator', emoji: '<a:chart_animated:1537179539514462308>' };
 
   const initialEmbed = createStyledEmbed({
     title: `${info.emoji} ${info.title} — ${targetUser.username}`,
@@ -226,7 +226,7 @@ const FORTUNES = [
   'A quiet day will bring unexpected power. Meditate and trust the process. 🧘',
   'Your strength will be tested soon, but Konoha stands with you. 🍃',
   'Romance may bloom from an unexpected direction — open your eyes like a Byakugan. 👁️',
-  'Financial rewards are on the horizon — keep grinding those quests. 💰',
+  'Financial rewards are on the horizon — keep grinding those quests. <a:money_animated:1537177442672709707>',
   'A long-lost ally will return to your side when you need them most. 🤝',
   'Your next jutsu attempt will exceed all expectations. Go beyond your limits. ⚡',
   'The universe whispers: believe it! Your time is coming. 🍥',
@@ -246,7 +246,7 @@ const MEMES_MAP = {
   drake: { title: '👔 Drake Hotline Bling Meme', template: 'drake' },
   distractedbf: { title: '👀 Distracted Boyfriend Meme', template: 'disastergirl' },
   communismcat: { title: '☭ Our Communism Meme', template: 'cat' },
-  eject: { title: '🚀 Among Us Eject Meme', template: 'eject' },
+  eject: { title: '<a:rocket_animated:1537179661371707402> Among Us Eject Meme', template: 'eject' },
   emergencymeeting: { title: '🚨 Emergency Meeting Meme', template: 'meeting' },
   headpat: { title: '✋ Headpat Anime Meme', template: 'pat' },
   tradeoffer: { title: '🤝 Trade Offer Meme', template: 'trade' },
@@ -719,7 +719,7 @@ async function fetchActionAnimeGif(action) {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 📊 Gauge Scanner
+    // <a:chart_animated:1537179539514462308> Gauge Scanner
     if (invoked === 'gauge') {
       const gaugeTypes = ['smartrate', 'rizzmeter', 'wanted', 'wasted', 'powerlevel', 'coolrate', 'bonk'];
       const chosenGauge = pick(gaugeTypes);

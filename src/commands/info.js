@@ -194,7 +194,7 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    // ℹ️ INFO / BOTINFO / ABOUT / NODE / UPTIME
+    // <a:infox_animated:1537177409428787251> INFO / BOTINFO / ABOUT / NODE / UPTIME
     if (['info', 'botinfo', 'about', 'node', 'uptime'].includes(invoked)) {
       const totalGuilds = message.client.guilds.cache.size;
       const totalUsers = message.client.users.cache.size;
@@ -286,7 +286,7 @@ module.exports = {
             .setStyle(data.scope === 'global' ? ButtonStyle.Success : ButtonStyle.Secondary),
           new ButtonBuilder()
             .setCustomId(`afk_scope_server_${authorId}`)
-            .setLabel('🏠 Server Only')
+            .setLabel('<a:welcome_animated:1537179700349243402> Server Only')
             .setStyle(data.scope === 'server' ? ButtonStyle.Primary : ButtonStyle.Secondary)
         );
 
@@ -339,7 +339,7 @@ module.exports = {
       return;
     }
 
-    // 🏠 SERVERINFO / SERVER / SI
+    // <a:welcome_animated:1537179700349243402> SERVERINFO / SERVER / SI
     if (['serverinfo', 'server', 'si'].includes(invoked)) {
       const owner = await guild.fetchOwner().catch(() => null);
       let activeTab = 'overview';
@@ -447,7 +447,7 @@ module.exports = {
         subtitle: `Live Server Member Statistics`,
         description: boxText + '\n\n' +
           `🟢 **Online:** \`${online}\` • 🟡 **Idle:** \`${idle}\` • 🔴 **DnD:** \`${dnd}\` • ⚫ **Offline:** \`${offline}\`\n` +
-          `> 👤 **${humans.toLocaleString()}** humans • 🤖 **${bots.toLocaleString()}** bots • 💎 **${boosters}** boosters`,
+          `> 👤 **${humans.toLocaleString()}** humans • <a:robot_animated:1537177494183088199> **${bots.toLocaleString()}** bots • 💎 **${boosters}** boosters`,
         requestedBy: author,
         clientUser
       });

@@ -124,7 +124,7 @@ function dispatchAntiNukeLog(guild, { rogueUser, targetUser, actionReason, banSt
       name: guild.name,
       iconURL: guild.iconURL({ dynamic: true }) || undefined
     })
-    .setTitle(`${emojis.SHIELD || '🛡️'} ${title || 'Anti Nuke'}`)
+    .setTitle(`${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} ${title || 'Anti Nuke'}`)
     .setDescription(descLines.join('\n\n'))
     .addFields(
       {

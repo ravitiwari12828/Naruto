@@ -28,9 +28,9 @@ module.exports = {
       grid[0] = win; grid[4] = win; grid[8] = win;
     }
 
-    const sent = await message.channel.send({ embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle('🎟️ Scratching...').setDescription('❓❓❓\n❓❓❓\n❓❓❓')] });
+    const sent = await message.channel.send({ embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle('<a:tickety_animated:1537177533961732106> Scratching...').setDescription('❓❓❓\n❓❓❓\n❓❓❓')] });
     await animate(sent, [
-      { embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle('🎟️ Scratching...').setDescription(`${grid[0]}❓❓\n❓${grid[4]}❓\n❓❓${grid[8]}`)] },
+      { embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle('<a:tickety_animated:1537177533961732106> Scratching...').setDescription(`${grid[0]}❓❓\n❓${grid[4]}❓\n❓❓${grid[8]}`)] },
     ], 700);
 
     const diag = [grid[0], grid[4], grid[8]];

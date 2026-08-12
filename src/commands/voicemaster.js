@@ -56,7 +56,7 @@ function buildDeviceProofBox(title, items) {
  * Builds the Custom Voice Channels deployment embed with device-proof 28-char box.
  */
 function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
-  const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`🔊 ✨ 「 Join to Create 」`';
+  const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`<a:volumeup_animated:1537177548121968650> ✨ 「 Join to Create 」`';
 
   const perkBox = buildDeviceProofBox('PERKS COMPARISON', [
     'Member  : Size Max 5',
@@ -74,7 +74,7 @@ function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
     .setTitle(`Custom Voice Channels`)
     .setDescription(
       `Looking to escape from public calls? Create your own private channel and have control over every aspect of it.\n\n` +
-      `ℹ️ **How to Create a Channel:**\n` +
+      `<a:infox_animated:1537177409428787251> **How to Create a Channel:**\n` +
       `${emojis.PRIZE_1} **Join** ${triggerMention}\n` +
       `${emojis.PRIZE_2} **Wait** *patiently* for channel to be created\n` +
       `${emojis.PRIZE_3} **Type** \`.vc help\` in your channel to edit settings\n\n` +
@@ -155,8 +155,8 @@ function buildChannelCreatedEmbed(member) {
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
     .setAuthor({ name: 'Channel Created', iconURL: user.displayAvatarURL({ dynamic: true }) })
-    .setTitle('📕 Welcome to your 🔊 Channel')
-    .setDescription('📝 Use **.vc help** to edit your settings ⚙️')
+    .setTitle('📕 Welcome to your <a:volumeup_animated:1537177548121968650> Channel')
+    .setDescription('<a:pencil_animated:1537177465829724181> Use **.vc help** to edit your settings <a:settings_animated:1537177506170404905>')
     .setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
 
   return embed;
@@ -198,13 +198,13 @@ module.exports = {
       try {
         // Create Category
         const category = await guild.channels.create({
-          name: '🔊 Custom Voice Calls',
+          name: '<a:volumeup_animated:1537177548121968650> Custom Voice Calls',
           type: ChannelType.GuildCategory
         });
 
         // Create Trigger VC
         const triggerChan = await guild.channels.create({
-          name: '🔊 ✨ 「 Join to Create 」',
+          name: '<a:volumeup_animated:1537177548121968650> ✨ 「 Join to Create 」',
           type: ChannelType.GuildVoice,
           parent: category.id
         });
@@ -235,11 +235,11 @@ module.exports = {
         await statusMsg.delete().catch(() => {});
 
         const confirmEmbed = createStyledEmbed({
-          title: `🔊 Custom Voice Channels Deployed!`,
+          title: `<a:volumeup_animated:1537177548121968650> Custom Voice Channels Deployed!`,
           subtitle: `${guild.name} Temporary Voice Channels Active`,
           fields: [
             { name: `➕ Join Channel`, value: `<#${triggerChan.id}>`, inline: true },
-            { name: `🎮 Control Interface`, value: `<#${interfaceChan.id}>`, inline: true }
+            { name: `<a:gamecontroller_animated:1537177388725706802> Control Interface`, value: `<#${interfaceChan.id}>`, inline: true }
           ],
           requestedBy: author,
           clientUser

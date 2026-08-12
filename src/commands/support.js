@@ -42,7 +42,7 @@ module.exports = {
         .setLabel('Invite Bot')
         .setURL(`https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands`)
         .setStyle(ButtonStyle.Link)
-        .setEmoji(emojis.OBJ_AN_BOT || '🤖')
+        .setEmoji(emojis.OBJ_AN_BOT || '<a:robot_animated:1537177494183088199>')
     );
 
     return message.channel.send({ embeds: [embed], components: [row] });

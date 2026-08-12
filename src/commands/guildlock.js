@@ -102,8 +102,8 @@ module.exports = {
       subtitle: `Bot Owner Security & Access Control`,
       fields: [
         { name: '${emojis.GEAR} Private Lockdown Status', value: botLockStore.lockdownEnabled ? '`ENABLED 🔒 (Private Mode)`' : '`DISABLED 🔓 (Public Mode)`', inline: true },
-        { name: '🏠 Authorized Servers', value: `\`${botLockStore.whitelistedGuilds.size}\` Whitelisted Guilds`, inline: true },
-        { name: '👑 Active Servers', value: `\`${client.guilds.cache.size}\` Servers Joined`, inline: true }
+        { name: '<a:welcome_animated:1537179700349243402> Authorized Servers', value: `\`${botLockStore.whitelistedGuilds.size}\` Whitelisted Guilds`, inline: true },
+        { name: '<a:crown_animated:1537177361093500968> Active Servers', value: `\`${client.guilds.cache.size}\` Servers Joined`, inline: true }
       ],
       description:
         `**Bot Owner Commands:**\n` +

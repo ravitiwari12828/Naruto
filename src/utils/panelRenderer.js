@@ -44,7 +44,7 @@ const CATEGORIES = [
     description: 'Track chat, voice timing, invites, joins/leaves, activity & server counters',
     customEmoji: '<a:chart_animated:1537179539514462308>',
     emojiId: '1536620962039210115',
-    unicodeFallback: '📊',
+    unicodeFallback: '<a:chart_animated:1537179539514462308>',
     heading: '<a:chart_animated:1537179539514462308>',
     commands: [
       'analytics', 'userstats', 'activity',
@@ -59,7 +59,7 @@ const CATEGORIES = [
     description: 'DM ModMail support threads, staff replies & HTML transcripts',
     customEmoji: '<a:openeddooraperture_animated:1537177450411462766>',
     emojiId: '1536620879457288252',
-    unicodeFallback: '📬',
+    unicodeFallback: '<a:openeddooraperture_animated:1537177450411462766>',
     heading: '<a:openeddooraperture_animated:1537177450411462766>',
     commands: [
       'modmail setup',
@@ -75,7 +75,7 @@ const CATEGORIES = [
     description: 'Support ticket system: setup, claim, close, transcript',
     customEmoji: '<a:tickety_animated:1537177533961732106>',
     emojiId: '1536620995161628692',
-    unicodeFallback: '🎟️',
+    unicodeFallback: '<a:tickety_animated:1537177533961732106>',
     heading: '<a:tickety_animated:1537177533961732106>',
     commands: [
       'ticket setup', 'panel_deploy', 'claim',
@@ -89,7 +89,7 @@ const CATEGORIES = [
     description: 'Voice admin, join-to-create temp VCs & VoiceMaster control panel',
     customEmoji: '<a:microphone_animated:1537177439527112755>',
     emojiId: '1536620908024701028',
-    unicodeFallback: '🎙️',
+    unicodeFallback: '<a:microphone_animated:1537177439527112755>',
     heading: '<a:microphone_animated:1537177439527112755>',
     commands: [
       'vctemp setup', 'vctemp disable', 'vctemp status',
@@ -106,7 +106,7 @@ const CATEGORIES = [
     description: 'Lavalink music player: seek, equalizer, multi-filters, lyrics & 24/7 AFK mode',
     customEmoji: '<a:musicplayer_animated:1537177445428633762>',
     emojiId: '1536620919013900378',
-    unicodeFallback: '🎶',
+    unicodeFallback: '<a:musicplayer_animated:1537177445428633762>',
     heading: '<a:musicplayer_animated:1537177445428633762>',
     commands: [
       'play', 'pause', 'resume', 'seek', 'equalizer',
@@ -120,7 +120,7 @@ const CATEGORIES = [
     description: 'AntiNuke, PanicMode, Whitelist, ExtraOwner, Securesetup & 21 Security Filters',
     customEmoji: '<a:security_animated:1537177499862171741>',
     emojiId: '1536620975532154990',
-    unicodeFallback: '🛡️',
+    unicodeFallback: '<a:security_animated:1537177499862171741>',
     heading: '<a:security_animated:1537177499862171741>',
     commands: [
       'securesetup',
@@ -158,7 +158,7 @@ const CATEGORIES = [
     description: 'Naruto-themed fun: truth, dare, vibecheck, rizzmeter & more',
     customEmoji: '<a:gamecontroller_animated:1537177388725706802>',
     emojiId: '1536620859903442974',
-    unicodeFallback: '🎮',
+    unicodeFallback: '<a:gamecontroller_animated:1537177388725706802>',
     heading: '<a:gamecontroller_animated:1537177388725706802>',
     commands: [
       '8ball', 'truth', 'dare', 'wyr', 'pickup',
@@ -183,7 +183,7 @@ const CATEGORIES = [
     description: 'Create, edit & manage server giveaways',
     customEmoji: '<a:gift_animated:1537179583064055931>',
     emojiId: '1536620862709702677',
-    unicodeFallback: '🎁',
+    unicodeFallback: '<a:gift_animated:1537179583064055931>',
     heading: '<a:gift_animated:1537179583064055931>',
     commands: [
       'gstart', 'gend <id>', 'greroll <id>', 'gedit <id>', 'gdelete <id>'
@@ -195,7 +195,7 @@ const CATEGORIES = [
     description: 'Bot stats, ping, serverinfo, userinfo, avatar, banner, embed builder & invite',
     customEmoji: '<a:infox_animated:1537177409428787251>',
     emojiId: '1536260601339322409',
-    unicodeFallback: 'ℹ️',
+    unicodeFallback: '<a:infox_animated:1537177409428787251>',
     heading: '<a:infox_animated:1537177409428787251>',
     commands: [
       'help', 'info', 'ping', 'uptime', 'invite',
@@ -209,7 +209,7 @@ const CATEGORIES = [
     description: 'Kick, ban, unban, timeout, purge, warn, fakepermissions & limits',
     customEmoji: '<a:kick_animated:1537177415552602223>',
     emojiId: '1536260606846435398',
-    unicodeFallback: '🔨',
+    unicodeFallback: '<a:kick_animated:1537177415552602223>',
     heading: '<a:kick_animated:1537177415552602223>',
     commands: [
       'ban', 'unban', 'kick', 'timeout', 'untimeout',
@@ -239,7 +239,7 @@ const CATEGORIES = [
     description: 'Virtual currency, gambling, jobs, shop, inventory & marriage',
     customEmoji: '<a:money_animated:1537177442672709707>',
     emojiId: '1536620914500698142',
-    unicodeFallback: '💰',
+    unicodeFallback: '<a:money_animated:1537177442672709707>',
     heading: '<a:money_animated:1537177442672709707>',
     commands: [
       'balance', 'deposit', 'withdraw',
@@ -274,7 +274,7 @@ const CATEGORIES = [
     description: 'Auto-role rules & massrole assignment',
     customEmoji: '<a:settings_animated:1537177506170404905>',
     emojiId: '1536260507646951534',
-    unicodeFallback: '⚙️',
+    unicodeFallback: '<a:settings_animated:1537177506170404905>',
     heading: '<a:settings_animated:1537177506170404905>',
     commands: [
       'automation',
@@ -306,7 +306,7 @@ const CATEGORIES = [
     description: 'Security filters & bot join whitelist',
     customEmoji: '<a:robot_animated:1537177494183088199>',
     emojiId: '1536620971237187615',
-    unicodeFallback: '🤖',
+    unicodeFallback: '<a:robot_animated:1537177494183088199>',
     heading: '<a:robot_animated:1537177494183088199>',
     commands: [
       'automod config', 'antibot config',
@@ -319,7 +319,7 @@ const CATEGORIES = [
     description: 'AI text answers, image generation & coding assistant',
     customEmoji: '<a:rocket_animated:1537179661371707402>',
     emojiId: '1536260523501424650',
-    unicodeFallback: '🚀',
+    unicodeFallback: '<a:rocket_animated:1537179661371707402>',
     heading: '<a:rocket_animated:1537179661371707402>',
     commands: [
       'ask <question>',
@@ -338,7 +338,7 @@ const CATEGORIES = [
     description: 'Self-assignable roles & single-reaction enforcement',
     customEmoji: '<a:add_animated:1537177324435283998>',
     emojiId: '1536260677537243257',
-    unicodeFallback: '📌',
+    unicodeFallback: '<a:add_animated:1537177324435283998>',
     heading: '<a:add_animated:1537177324435283998>',
     commands: [
       'rr setup',
@@ -355,7 +355,7 @@ const CATEGORIES = [
     description: 'Sticky messages automatically kept at the bottom of channels',
     customEmoji: '<a:pencil_animated:1537177465829724181>',
     emojiId: '1536260549271355412',
-    unicodeFallback: '📝',
+    unicodeFallback: '<a:pencil_animated:1537177465829724181>',
     heading: '<a:pencil_animated:1537177465829724181>',
     commands: [
       'stickynote add <#channel> <text>',
@@ -385,7 +385,7 @@ const CATEGORIES = [
     description: 'Friend, girl, guest, official, vip, invcrole & autonick',
     customEmoji: '<a:crown_animated:1537177361093500968>',
     emojiId: '1536260629395021834',
-    unicodeFallback: '👑',
+    unicodeFallback: '<a:crown_animated:1537177361093500968>',
     heading: '<a:crown_animated:1537177361093500968>',
     commands: [
       'autonick', 'friend', 'girl',
@@ -399,7 +399,7 @@ const CATEGORIES = [
     description: 'Welcome cards, Join DMs, Leave DMs & Server Boost announcements',
     customEmoji: '<a:welcome_animated:1537179700349243402>',
     emojiId: '1536620923568922664',
-    unicodeFallback: '🏠',
+    unicodeFallback: '<a:welcome_animated:1537179700349243402>',
     heading: '<a:welcome_animated:1537179700349243402>',
     commands: [
       'welcome setup <#channel> [avatar/imageURL] [text]',
@@ -416,7 +416,7 @@ const CATEGORIES = [
     description: 'Backup & restore server roles, channels, and settings',
     customEmoji: '<a:cloudcomputing_animated:1537177355766865940>',
     emojiId: '1536260652514025594',
-    unicodeFallback: '☁️',
+    unicodeFallback: '<a:cloudcomputing_animated:1537177355766865940>',
     heading: '<a:cloudcomputing_animated:1537177355766865940>',
     commands: [
       'backup save',
@@ -538,10 +538,10 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
     const embed = new EmbedBuilder()
       .setColor(catColor)
       .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
-      .setTitle(`${emojis.MUSIC || '🎶'} Music Player Suite & Control Panel`)
+      .setTitle(`${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} Music Player Suite & Control Panel`)
       .setDescription(
         `Welcome **${username}**! Below is the executive suite for **Music**.\n\n` +
-        `${emojis.MUSIC || '🎵'} **Playback Controls**\n` +
+        `${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} **Playback Controls**\n` +
         `\`\`\`\n` +
         `.play <song>  - Play a track or resume queue\n` +
         `.pause        - Pause current track\n` +

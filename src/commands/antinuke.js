@@ -298,7 +298,7 @@ function renderAntinukeDashboard(config, author, clientUser) {
     '```\n' + boxGate + '\n```\n\n' +
     `**${emojis.AN_QUARANTINE} Auto Quarantine Guard**\n` +
     '```\n' + boxQuarantine + '\n```\n\n' +
-    `**👑 Registered Extra Owners**\n` +
+    `**<a:crown_animated:1537177361093500968> Registered Extra Owners**\n` +
     `${extraOwnersList}`;
 
   return createStyledEmbed({
@@ -573,7 +573,7 @@ module.exports = {
         ]);
 
         const embed = createStyledEmbed({
-          title: `🛡️ Whitelist Granular Event Audit — ${user.username}`,
+          title: `<a:security_animated:1537177499862171741> Whitelist Granular Event Audit — ${user.username}`,
           subtitle: `Realtime Permission Bypass Audit for ${guild.name}`,
           description:
             `**Target User:** <@${user.id}> (\`${user.tag}\`)\n` +
@@ -687,7 +687,7 @@ module.exports = {
           ]);
 
           const updatedEmbed = createStyledEmbed({
-            title: `🛡️ Whitelist Granular Event Audit — ${user.username}`,
+            title: `<a:security_animated:1537177499862171741> Whitelist Granular Event Audit — ${user.username}`,
             subtitle: `Realtime Permission Bypass Audit for ${guild.name}`,
             description:
               `**Target User:** <@${user.id}> (\`${user.tag}\`)\n` +
@@ -865,20 +865,20 @@ module.exports = {
       if (action === 'add' && user) {
         config.extraOwners.add(user.id);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`👑 Added **${user.tag}** as Extra Owner with full security bypass permissions!`);
+        return message.reply(`<a:crown_animated:1537177361093500968> Added **${user.tag}** as Extra Owner with full security bypass permissions!`);
       }
 
       if (action === 'remove' && user) {
         config.extraOwners.delete(user.id);
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`👑 Removed **${user.tag}** from Extra Owners.`);
+        return message.reply(`<a:crown_animated:1537177361093500968> Removed **${user.tag}** from Extra Owners.`);
       }
 
       const list = Array.from(config.extraOwners).map(id => `• <@${id}> (\`${id}\`)`).join('\n') || '*No Extra Owners assigned.*';
       return message.reply({
         embeds: [
           createStyledEmbed({
-            title: `👑 Server Extra Owners`,
+            title: `<a:crown_animated:1537177361093500968> Server Extra Owners`,
             description: `**Current Extra Owners:**\n${list}\n\n**Usage:**\n\`.extraowner add @user\`\n\`.extraowner remove @user\``,
             requestedBy: author,
             clientUser

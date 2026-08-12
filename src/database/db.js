@@ -105,7 +105,7 @@ class ResilientDatabase {
         this.useMongo = true;
         console.log('✅ [MongoDB Cloud] Connected successfully via direct connection! Syncing cloud database state...');
       } catch (retryErr) {
-        console.log('ℹ️ [Local High-Speed Database Active] Running seamlessly on local JSON database.');
+        console.log('<a:infox_animated:1537177409428787251> [Local High-Speed Database Active] Running seamlessly on local JSON database.');
         return;
       }
     }
@@ -135,7 +135,7 @@ class ResilientDatabase {
             }
           }
         }
-        console.log('☁️ [MongoDB Cloud] Successfully restored all guild data, levels, autoreacts & settings from cloud!');
+        console.log('<a:cloudcomputing_animated:1537177355766865940> [MongoDB Cloud] Successfully restored all guild data, levels, autoreacts & settings from cloud!');
         this.saveJSONFileOnly();
       }
 
@@ -148,7 +148,7 @@ class ResilientDatabase {
         { data: this.data, updatedAt: new Date() },
         { upsert: true }
       );
-      console.log('☁️ [MongoDB Cloud] Master cloud database backup active!');
+      console.log('<a:cloudcomputing_animated:1537177355766865940> [MongoDB Cloud] Master cloud database backup active!');
     } catch (err) {
       console.error('⚠️ [MongoDB Cloud Error] Failed to connect to MongoDB Atlas:', err.message);
     }

@@ -36,7 +36,7 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(0x00E5FF)
-        .setTitle('☁️ 5TB Google Drive Backup Completed')
+        .setTitle('<a:cloudcomputing_animated:1537177355766865940> 5TB Google Drive Backup Completed')
         .setDescription('```\n' + box + '\n```\n>>> ' + res.message)
         .setFooter({ text: 'Automated 24h cloud backup active • Naruto Suite' });
 
@@ -92,7 +92,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(0x00E5FF)
-      .setTitle('☁️ 5TB Google Drive Automated Backup Dashboard')
+      .setTitle('<a:cloudcomputing_animated:1537177355766865940> 5TB Google Drive Automated Backup Dashboard')
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         '**Available Commands:**\n' +

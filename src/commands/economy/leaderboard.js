@@ -43,7 +43,7 @@ module.exports = {
     const top10 = guildRows.slice(0, 10);
 
     if (!top10.length) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.embedColor).setDescription(`${emojis.INFO || 'ℹ️'} No economy data found for this server yet.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.embedColor).setDescription(`${emojis.INFO || '<a:infox_animated:1537177409428787251>'} No economy data found for this server yet.`)] });
     }
 
     const desc = top10.map((r, i) => `${MEDALS[i] || `**${i + 1}.**`} <@${r.userId}> — **${fmt(r.total)}** ${emojis.coin}\n-# Wallet: ${fmt(r.balance)} • Bank: ${fmt(r.bank)}`).join('\n\n');

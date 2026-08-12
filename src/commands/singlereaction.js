@@ -33,7 +33,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.AN_ROLE || '⚙️'} Single Reaction Mode Hub`,
+        title: `${emojis.AN_ROLE || '<a:settings_animated:1537177506170404905>'} Single Reaction Mode Hub`,
         subtitle: `Enforce One Active Reaction & Auto-React Per Channel`,
         description:
           `**What is Single Reaction Mode?**\n` +
@@ -134,7 +134,7 @@ module.exports = {
       }).join('\n');
 
       const embed = createStyledEmbed({
-        title: `${emojis.AN_SHIELD || '🛡️'} Single Reaction Active Channels (${activeChannels.length})`,
+        title: `${emojis.AN_SHIELD || '<a:security_animated:1537177499862171741>'} Single Reaction Active Channels (${activeChannels.length})`,
         description: lines,
         requestedBy: author,
         clientUser

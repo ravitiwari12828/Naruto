@@ -124,11 +124,11 @@ function getOrCreateWelcomeConfig(guildId) {
       title: '{gothic:Welcome to the Castle}',
       description: '🖤 Greetings {user}! You have entered {gothic:{server_name}}.\n\n🕯️ Member Count: #{membercount}\n⚜️ Please read rules and enjoy your stay!',
       footer: 'Welcome to our Server',
-      headerText: `📊 MEMBER COUNT: #{membercount}`,
+      headerText: `<a:chart_animated:1537179539514462308> MEMBER COUNT: #{membercount}`,
       imageUrl: PRESET_BANNERS.gothic,
       joinDmText: '🌸 Welcome to **{server_name}**, {user}! Enjoy your stay!',
       leaveDmText: '📤 Goodbye {user}, we hope to see you back in **{server_name}** soon!',
-      boostText: '🚀 **{user}** boosted **{server_name}**!'
+      boostText: '<a:rocket_animated:1537179661371707402> **{user}** boosted **{server_name}**!'
     });
   }
   return welcomeConfigs.get(guildId);
@@ -312,10 +312,10 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
     { key: 'boostmsg', value: '<#chan> <txt>' }
   ], 20, 22);
 
-  const gearEmoji = '⚙️';
+  const gearEmoji = '<a:settings_animated:1537177506170404905>';
   const configEmoji = '💬';
-  const boostEmoji = '🚀';
-  const mailEmoji = '📬';
+  const boostEmoji = '<a:rocket_animated:1537179661371707402>';
+  const mailEmoji = '<a:openeddooraperture_animated:1537177450411462766>';
 
   const description =
     `${gearEmoji} **System Status**\n` +
@@ -432,8 +432,8 @@ module.exports = {
         'boostmsg disable : Disable'
       ]);
 
-      const boostEmoji = '🚀';
-      const gearEmoji = '⚙️';
+      const boostEmoji = '<a:rocket_animated:1537179661371707402>';
+      const gearEmoji = '<a:settings_animated:1537177506170404905>';
 
       const embed = createStyledEmbed({
         title: `${boostEmoji} Server Boost Announcement Manager`,
@@ -481,7 +481,7 @@ module.exports = {
         'joindm <text>  : Set DM text'
       ]);
 
-      const mailEmoji = '📬';
+      const mailEmoji = '<a:openeddooraperture_animated:1537177450411462766>';
       const embed = createStyledEmbed({
         title: `${mailEmoji} Join DM Welcome Manager`,
         subtitle: `${guild.name} Private Welcome DMs`,
@@ -524,7 +524,7 @@ module.exports = {
         'leavedm <text>  : Set DM text'
       ]);
 
-      const mailEmoji = '📬';
+      const mailEmoji = '<a:openeddooraperture_animated:1537177450411462766>';
       const embed = createStyledEmbed({
         title: `${mailEmoji} Leave DM Notification Manager`,
         subtitle: `${guild.name} Private Leave DMs`,
@@ -606,14 +606,14 @@ module.exports = {
         welcomeConfigs.set(guild.id, config);
         return message.reply(`${emojis.SUCCESS} **Card Render Mode Set to**: \`Rich Embed Banner\`! Type \`.welcometest\` to preview.`);
       }
-      return message.reply(`ℹ️ Usage: \`.welcome card <canvas / embed>\``);
+      return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome card <canvas / embed>\``);
     }
 
     // 4. EDIT BANNER IMAGE (.welcome image <url>)
     if (sub === 'image' || sub === 'banner' || sub === 'img') {
       const url = args[1];
       if (!url || !url.match(/^https?:\/\/.+/i)) {
-        return message.reply(`ℹ️ Usage: \`.welcome image <https://direct-image-url.jpg>\``);
+        return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome image <https://direct-image-url.jpg>\``);
       }
       config.imageUrl = url;
       welcomeConfigs.set(guild.id, config);
@@ -624,7 +624,7 @@ module.exports = {
     if (sub === 'description' || sub === 'desc' || sub === 'body') {
       const text = args.slice(1).join(' ');
       if (!text) {
-        return message.reply(`ℹ️ Usage: \`.welcome description <your editable markdown text>\`\nPlaceholders: \`{user}\`, \`{username}\`, \`{server_name}\`, \`{membercount}\`, \`{gothic:Text}\`, \`{smallcaps:Text}\`, \`{script:Text}\``);
+        return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome description <your editable markdown text>\`\nPlaceholders: \`{user}\`, \`{username}\`, \`{server_name}\`, \`{membercount}\`, \`{gothic:Text}\`, \`{smallcaps:Text}\`, \`{script:Text}\``);
       }
       config.description = text;
       welcomeConfigs.set(guild.id, config);
@@ -635,7 +635,7 @@ module.exports = {
     if (sub === 'title') {
       const text = args.slice(1).join(' ');
       if (!text) {
-        return message.reply(`ℹ️ Usage: \`.welcome title <your title text>\``);
+        return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome title <your title text>\``);
       }
       config.title = text;
       welcomeConfigs.set(guild.id, config);
@@ -646,7 +646,7 @@ module.exports = {
     if (sub === 'color' || sub === 'hex') {
       const hex = args[1];
       if (!hex || !hex.match(/^#?[0-9a-fA-F]{6}$/)) {
-        return message.reply(`ℹ️ Usage: \`.welcome color #800020\` or \`#FFD1DC\` or \`#00FFFF\``);
+        return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome color #800020\` or \`#FFD1DC\` or \`#00FFFF\``);
       }
       config.color = hex.startsWith('#') ? hex : '#' + hex;
       welcomeConfigs.set(guild.id, config);
@@ -657,7 +657,7 @@ module.exports = {
     if (sub === 'footer') {
       const text = args.slice(1).join(' ');
       if (!text) {
-        return message.reply(`ℹ️ Usage: \`.welcome footer <your footer text>\``);
+        return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome footer <your footer text>\``);
       }
       config.footer = text;
       welcomeConfigs.set(guild.id, config);

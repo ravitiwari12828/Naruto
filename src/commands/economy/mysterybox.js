@@ -19,7 +19,7 @@ module.exports = {
     }
     eco.balance -= PRICE;
 
-    const sent = await message.channel.send({ embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle('🎁 Opening Mystery Box...').setDescription('❓❓❓')] });
+    const sent = await message.channel.send({ embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle('<a:gift_animated:1537179583064055931> Opening Mystery Box...').setDescription('❓❓❓')] });
     await new Promise((r) => setTimeout(r, 1500));
 
     const roll = Math.random();
@@ -27,19 +27,19 @@ module.exports = {
     if (roll < 0.4) {
       const coins = Math.floor(Math.random() * 200) + 50;
       eco.balance += coins;
-      embed = new EmbedBuilder().setColor(config.successColor).setTitle('🎁 Mystery Box Opened!').setDescription(`You found **${fmt(coins)}** ${emojis.coin}!`);
+      embed = new EmbedBuilder().setColor(config.successColor).setTitle('<a:gift_animated:1537179583064055931> Mystery Box Opened!').setDescription(`You found **${fmt(coins)}** ${emojis.coin}!`);
     } else if (roll < 0.7) {
       const category = ['fish', 'hunt', 'mine', 'chop', 'dig'][Math.floor(Math.random() * 5)];
       const drop = items.randomResourceByCategory(category, 0.15);
       addItem(eco, drop.id, 1);
       const rarity = items.RARITIES[drop.rarity];
-      embed = new EmbedBuilder().setColor(rarity.color).setTitle('🎁 Mystery Box Opened!').setDescription(`You found a **${drop.emoji} ${drop.name}** (${rarity.label})!`);
+      embed = new EmbedBuilder().setColor(rarity.color).setTitle('<a:gift_animated:1537179583064055931> Mystery Box Opened!').setDescription(`You found a **${drop.emoji} ${drop.name}** (${rarity.label})!`);
     } else if (roll < 0.92) {
       const gems = Math.floor(Math.random() * 3) + 1;
       eco.gems = (eco.gems || 0) + gems;
-      embed = new EmbedBuilder().setColor(0xE91E63).setTitle('🎁 Mystery Box Opened!').setDescription(`Jackpot! You found **${gems}** ${emojis.gem} gems!`);
+      embed = new EmbedBuilder().setColor(0xE91E63).setTitle('<a:gift_animated:1537179583064055931> Mystery Box Opened!').setDescription(`Jackpot! You found **${gems}** ${emojis.gem} gems!`);
     } else {
-      embed = new EmbedBuilder().setColor(config.warnColor).setTitle('🎁 Mystery Box Opened!').setDescription('Just an old sock. Better luck next time.');
+      embed = new EmbedBuilder().setColor(config.warnColor).setTitle('<a:gift_animated:1537179583064055931> Mystery Box Opened!').setDescription('Just an old sock. Better luck next time.');
     }
 
     db.setEconomy(message.guild.id, message.author.id, eco);

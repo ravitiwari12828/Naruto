@@ -31,7 +31,7 @@ function handValue(hand) {
 }
 
 function fmtHand(hand, hideSecond = false) {
-  if (hideSecond) return `\`[ ${hand[0].s} ${hand[0].r} ]\` \`[ 🎴 ? ]\``;
+  if (hideSecond) return `\`[ ${hand[0].s} ${hand[0].r} ]\` \`[ <a:membercard_animated:1537177436146638993> ? ]\``;
   return hand.map(c => `\`[ ${c.s} ${c.r} ]\``).join(' ');
 }
 
@@ -64,7 +64,7 @@ module.exports = {
       .setAuthor({ name: `${message.author.username}'s Blackjack Game`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
       .setTitle(`🃏 OwO Blackjack Table`)
       .addFields(
-        { name: `🤖 Dealer (${finished ? handValue(dealer) : '?'})`, value: fmtHand(dealer, !finished), inline: false },
+        { name: `<a:robot_animated:1537177494183088199> Dealer (${finished ? handValue(dealer) : '?'})`, value: fmtHand(dealer, !finished), inline: false },
         { name: `👤 You (${handValue(player)})`, value: fmtHand(player), inline: false },
       )
       .setDescription(resultText || 'Hit to draw a card, Stand to stay, or Double your bet!')

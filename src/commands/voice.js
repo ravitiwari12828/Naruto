@@ -46,7 +46,7 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setColor(0x5865F2)
         .setAuthor({ name: 'Channel Settings', iconURL: author.displayAvatarURL({ dynamic: true }) })
-        .setTitle(`🔊 ${chan.name}`)
+        .setTitle(`<a:volumeup_animated:1537177548121968650> ${chan.name}`)
         .setDescription(
           `• **Channel ID:** \`${chan.id}\`\n` +
           `• **User Limit:** \`${chan.userLimit || 'Unlimited'}\`\n` +
@@ -200,7 +200,7 @@ module.exports = {
     // 12. .vc activity
     if (sub === 'activity') {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} You must be connected to a Voice Channel!`);
-      return message.reply(`🎮 Open Discord Voice Controls to launch YouTube Watch Together, Poker, or Chess in **${voiceState.channel.name}**!`);
+      return message.reply(`<a:gamecontroller_animated:1537177388725706802> Open Discord Voice Controls to launch YouTube Watch Together, Poker, or Chess in **${voiceState.channel.name}**!`);
     }
 
     // Default: Voice Help Embed

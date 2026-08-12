@@ -128,7 +128,7 @@ module.exports = {
       });
 
       await guild.channels.create({
-        name: '👑・hokage-team-info',
+        name: '<a:crown_animated:1537177361093500968>・hokage-team-info',
         type: ChannelType.GuildText,
         parent: infoCat.id,
         permissionOverwrites: readOnlyOverwrites
@@ -147,7 +147,7 @@ module.exports = {
       const updateCat = await guild.channels.create({ name: '「 📰 · NINJA SCROLLS & NEWS 」', type: ChannelType.GuildCategory });
 
       await guild.channels.create({ name: '📢・anbu-announcements', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
-      await guild.channels.create({ name: '🚀・jutsu-bot-updates', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
+      await guild.channels.create({ name: '<a:rocket_animated:1537179661371707402>・jutsu-bot-updates', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
       await guild.channels.create({ name: '🟢・konoha-status', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
       await guild.channels.create({ name: '📜・patch-changelogs', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
       await guild.channels.create({ name: '🎉・ryo-giveaways', type: ChannelType.GuildText, parent: updateCat.id });
@@ -159,9 +159,9 @@ module.exports = {
 
       await guild.channels.create({ name: '💬・ninja-lounge', type: ChannelType.GuildText, parent: generalCat.id });
       await guild.channels.create({ name: '🖼️・scroll-art-media', type: ChannelType.GuildText, parent: generalCat.id });
-      await guild.channels.create({ name: '🤖・jutsu-commands', type: ChannelType.GuildText, parent: generalCat.id });
-      await guild.channels.create({ name: '🎶・bijuu-music-playground', type: ChannelType.GuildText, parent: generalCat.id });
-      await guild.channels.create({ name: '🎮・shinobi-rpg-games', type: ChannelType.GuildText, parent: generalCat.id });
+      await guild.channels.create({ name: '<a:robot_animated:1537177494183088199>・jutsu-commands', type: ChannelType.GuildText, parent: generalCat.id });
+      await guild.channels.create({ name: '<a:musicplayer_animated:1537177445428633762>・bijuu-music-playground', type: ChannelType.GuildText, parent: generalCat.id });
+      await guild.channels.create({ name: '<a:gamecontroller_animated:1537177388725706802>・shinobi-rpg-games', type: ChannelType.GuildText, parent: generalCat.id });
 
       // ─────────────────────────────────────────
       // 5. CATEGORY 4: ANBU SUPPORT DESK (TICKETS)
@@ -169,7 +169,7 @@ module.exports = {
       const supportCat = await guild.channels.create({ name: '「 🏮 · ANBU SUPPORT DESK 」', type: ChannelType.GuildCategory });
 
       const ticketChan = await guild.channels.create({
-        name: '🎟️・request-assistance',
+        name: '<a:tickety_animated:1537177533961732106>・request-assistance',
         type: ChannelType.GuildText,
         parent: supportCat.id,
         permissionOverwrites: readOnlyOverwrites
@@ -213,7 +213,7 @@ module.exports = {
       // 8. CATEGORY 7: HOKAGE & ANBU COUNCIL (LOCKED)
       // ─────────────────────────────────────────
       const staffCat = await guild.channels.create({
-        name: '「 👑 · HOKAGE & ANBU COUNCIL 」',
+        name: '「 <a:crown_animated:1537177361093500968> · HOKAGE & ANBU COUNCIL 」',
         type: ChannelType.GuildCategory,
         permissionOverwrites: [
           { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -223,7 +223,7 @@ module.exports = {
       });
 
       await guild.channels.create({ name: '🔒・anbu-staff-headquarters', type: ChannelType.GuildText, parent: staffCat.id });
-      await guild.channels.create({ name: '👑・hokage-owner-sanctuary', type: ChannelType.GuildText, parent: staffCat.id });
+      await guild.channels.create({ name: '<a:crown_animated:1537177361093500968>・hokage-owner-sanctuary', type: ChannelType.GuildText, parent: staffCat.id });
       await guild.channels.create({ name: '🔒 ANBU Command VC', type: ChannelType.GuildVoice, parent: staffCat.id });
 
       // ─────────────────────────────────────────
@@ -232,7 +232,7 @@ module.exports = {
       const voiceCat = await guild.channels.create({ name: '「 🎧 · RAMEN SHOP VC AREA 」', type: ChannelType.GuildCategory });
 
       await guild.channels.create({ name: '🎧 Nine-Tails Music VC', type: ChannelType.GuildVoice, parent: voiceCat.id });
-      await guild.channels.create({ name: '🔊 Ichiraku Ramen VC', type: ChannelType.GuildVoice, parent: voiceCat.id });
+      await guild.channels.create({ name: '<a:volumeup_animated:1537177548121968650> Ichiraku Ramen VC', type: ChannelType.GuildVoice, parent: voiceCat.id });
 
       const logsCat = await guild.channels.create({
         name: '「 ${emojis.SHIELD} · ANBU AUDIT LOGS 」',
@@ -279,14 +279,14 @@ module.exports = {
         { id: 'cat_support', name: 'General Support', emoji: '🎫', description: 'Need help or general assistance?' },
         { id: 'cat_promo', name: 'Promotion', emoji: '📢', description: 'Inquire about promotional deals' },
         { id: 'cat_report', name: 'Report', emoji: '🚨', description: 'Report a user or server violation' },
-        { id: 'cat_reward', name: 'Reward', emoji: '🎁', description: 'Claim your event or activity rewards' },
+        { id: 'cat_reward', name: 'Reward', emoji: '<a:gift_animated:1537179583064055931>', description: 'Claim your event or activity rewards' },
         { id: 'cat_staff', name: 'Staff Apply', emoji: '💼', description: 'Apply for staff position' },
         { id: 'cat_server_promo', name: 'Server Promo', emoji: '🌐', description: 'Request server cross-promotions' }
       ];
 
       const ticketPanelEmbed = new EmbedBuilder()
         .setColor(0x00FFBB)
-        .setTitle(`🎟️ ${guild.name} Private Support Desk`)
+        .setTitle(`<a:tickety_animated:1537177533961732106> ${guild.name} Private Support Desk`)
         .setDescription(
           `Welcome to **${guild.name}** Support Center!\n\n` +
           `Select a category from the dropdown menu below to open a private support ticket.\n\n` +
@@ -322,7 +322,7 @@ module.exports = {
           `• <@&${vipRole.id}> | <@&${premiumRole.id}> | <@&${noPrefixRole.id}>\n\n` +
           `**Deployed Sections:**\n` +
           `• 📜 <#${aboutChan.id}> & <#${aboutPremium.id}>\n` +
-          `• 🎟️ <#${ticketChan.id}> with live Interactive Support Ticket Panel\n` +
+          `• <a:tickety_animated:1537177533961732106> <#${ticketChan.id}> with live Interactive Support Ticket Panel\n` +
           `• ⭐ Locked VIP, Premium & No-Prefix Sanctuary\n` +
           `• 🔒 Locked Staff & Owner Headquarters`,
         requestedBy: author,

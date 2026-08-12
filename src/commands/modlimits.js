@@ -145,7 +145,7 @@ function dispatchLimitLog(guild, { actionTitle, executor, target, details, remai
 
   const embed = new EmbedBuilder()
     .setColor(0xED4245)
-    .setTitle(`${emojis.SHIELD || '🛡️'} ${actionTitle}`)
+    .setTitle(`${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} ${actionTitle}`)
     .setDescription(descLines.join('\n'))
     .setThumbnail(executor ? executor.displayAvatarURL({ dynamic: true }) : (guild.iconURL({ dynamic: true }) || undefined))
     .setFooter({ text: `Naruto Limit System | ${cleanActionName}` })
@@ -244,7 +244,7 @@ module.exports = {
         if (!isOwner) {
           return message.reply(
             `${emojis.WARNING} Non-owner Administrators can set action limits up to **3 per 24 Hours** max.\n` +
-            `👑 Only the **Server Owner** can set limits up to **5 per 24 Hours**!`
+            `<a:crown_animated:1537177361093500968> Only the **Server Owner** can set limits up to **5 per 24 Hours**!`
           );
         } else {
           return message.reply(`${emojis.WARNING} Server Owner can set action limits up to **5 per 24 Hours** max.`);
@@ -256,7 +256,7 @@ module.exports = {
 
       // Dispatch limit logger embed for edit
       dispatchLimitLog(guild, {
-        actionTitle: '⚙️ Action Limit Configured',
+        actionTitle: '<a:settings_animated:1537177506170404905> Action Limit Configured',
         executor: author,
         details: `Set **${matchedKey}** limit to **\`${newLimit} actions / 24 Hours\`**`,
         remaining: newLimit

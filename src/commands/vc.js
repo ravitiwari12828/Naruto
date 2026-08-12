@@ -157,7 +157,7 @@ module.exports = {
           '\n```';
 
         const embed = createStyledEmbed({
-          title: `${emojis.SHIELD || '🛡️'} Voice Channel Filter View`,
+          title: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Voice Channel Filter View`,
           description: boxText + '\n\n• **No channels or categories are whitelisted or blacklisted.** All voice channels are currently being tracked for voice time activity.',
           requestedBy: author,
           clientUser
@@ -179,7 +179,7 @@ module.exports = {
         if (wlVcCats.length > 0) details += `\n✅ **Whitelisted Voice Categories:** ${wlVcCats.map(id => `\`${id}\``).join(', ')}`;
 
         const embed = createStyledEmbed({
-          title: `${emojis.SHIELD || '🛡️'} Voice Channel Filter View`,
+          title: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Voice Channel Filter View`,
           description: boxText + details,
           requestedBy: author,
           clientUser
@@ -322,13 +322,13 @@ module.exports = {
     ]);
 
     const embed = createStyledEmbed({
-      title: `${emojis.VOICE || '🎙️'} Shinobi Voice Tracking Panel`,
+      title: `${emojis.VOICE || '<a:microphone_animated:1537177439527112755>'} Shinobi Voice Tracking Panel`,
       subtitle: `Admin Voice Minutes Management & VC Filters`,
       description:
         '```\n' + infoBox + '\n```\n\n' +
-        `${emojis.ANALYTICS_ZAP || '⚙️'} **Voice Time Modifiers**\n` +
+        `${emojis.ANALYTICS_ZAP || '<a:settings_animated:1537177506170404905>'} **Voice Time Modifiers**\n` +
         '```\n' + cmdBox + '\n```\n\n' +
-        `${emojis.SHIELD || '🛡️'} **Voice Channel & Category Filters**\n` +
+        `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} **Voice Channel & Category Filters**\n` +
         '```\n' + filterBox + '\n```',
       requestedBy: author,
       clientUser

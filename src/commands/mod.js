@@ -252,7 +252,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 5. 🔊 UNMUTE
+    // 5. <a:volumeup_animated:1537177548121968650> UNMUTE
     if (invoked === 'unmute') {
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Timeout Members');
 
@@ -278,7 +278,7 @@ module.exports = {
       });
 
       const embed = createStyledEmbed({
-        title: `🔊 User Unmuted [Case #${cData.caseId}]`,
+        title: `<a:volumeup_animated:1537177548121968650> User Unmuted [Case #${cData.caseId}]`,
         description: `**${target.user.tag}** can speak again in the village!`,
         requestedBy: message.author,
         clientUser
@@ -373,7 +373,7 @@ module.exports = {
       return;
     }
 
-    // 9. 🤖 PURGEBOTS
+    // 9. <a:robot_animated:1537177494183088199> PURGEBOTS
     if (invoked === 'purgebots') {
       if (!author.permissions.has(PermissionsBitField.Flags.ManageMessages)) return missingPerms(message, 'Manage Messages');
 
@@ -385,7 +385,7 @@ module.exports = {
       const count = botMessages.size;
 
       const embed = createStyledEmbed({
-        title: `${emojis.AN_BOT || '🤖'} Bot Messages Purged`,
+        title: `${emojis.AN_BOT || '<a:robot_animated:1537177494183088199>'} Bot Messages Purged`,
         description: `**${count}** bot message(s) cleared from ${message.channel}.`,
         requestedBy: message.author,
         clientUser
@@ -395,7 +395,7 @@ module.exports = {
 
       dispatchLog(guild, 'modlogs', {
         color: 0xE67E22,
-        title: `🤖 Bot Messages Purged`,
+        title: `<a:robot_animated:1537177494183088199> Bot Messages Purged`,
         description:
           `• **Channel:** ${message.channel} (\`#${message.channel.name}\`)\n` +
           `• **Bot Messages Deleted:** \`${count}\`\n` +
@@ -612,7 +612,7 @@ module.exports = {
         const bots = guild.members.cache.filter(m => m.user.bot);
         const lines = [...bots.values()].slice(0, 25).map(b => `• <@${b.id}> (\`${b.user.tag}\`)`);
         const embed = createStyledEmbed({
-          title: `🤖 Server Bots List`,
+          title: `<a:robot_animated:1537177494183088199> Server Bots List`,
           description: lines.join('\n') || '*No bots in server.*',
           requestedBy: message.author, clientUser,
           footerText: `Total Bots: ${bots.size}`
@@ -802,7 +802,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 15. 🛡️ CASE / CASES / MODLOGS (.case <id> | .cases [@user] | .modlogs [#channel])
+    // 15. <a:security_animated:1537177499862171741> CASE / CASES / MODLOGS (.case <id> | .cases [@user] | .modlogs [#channel])
     if (['case', 'cases', 'modlogs', 'modlog', 'caseinfo'].includes(invoked)) {
       const targetChan = message.mentions.channels.first();
       const firstArg = args[0]?.toLowerCase();
@@ -837,7 +837,7 @@ module.exports = {
         ]);
 
         const embed = createStyledEmbed({
-          title: `${emojis.MOD || '🛡️'} Moderation Log Channel Configured`,
+          title: `${emojis.MOD || '<a:security_animated:1537177499862171741>'} Moderation Log Channel Configured`,
           description:
             `Successfully set **${chanToSet}** as the primary Moderation Audit Log channel for **${guild.name}**!\n\n` +
             '```\n' + box + '\n```',

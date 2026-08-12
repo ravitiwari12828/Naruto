@@ -52,7 +52,7 @@ module.exports = {
       .setTitle(`🎲 Dice Duel`)
       .addFields(
         { name: `👤 Your Roll (${playerTotal})`, value: `${DICE_EMOJIS[p1]} + ${DICE_EMOJIS[p2]} = **${playerTotal}**`, inline: true },
-        { name: `🤖 Bot's Roll (${botTotal})`, value: `${DICE_EMOJIS[b1]} + ${DICE_EMOJIS[b2]} = **${botTotal}**`, inline: true }
+        { name: `<a:robot_animated:1537177494183088199> Bot's Roll (${botTotal})`, value: `${DICE_EMOJIS[b1]} + ${DICE_EMOJIS[b2]} = **${botTotal}**`, inline: true }
       )
       .setDescription(resultText)
       .setFooter({ text: `New Wallet Balance: ${fmt(eco.balance)} ${emojis.coin}` })

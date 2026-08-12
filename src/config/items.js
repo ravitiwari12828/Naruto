@@ -29,7 +29,7 @@ const RESOURCES = {
 
 const JOBS = {
   genin: { id: 'genin', name: 'Leaf Genin', emoji: '🍃', salary: 400, description: 'Perform D-rank village missions' },
-  chunin: { id: 'chunin', name: 'Chunin Squad Leader', emoji: '🛡️', salary: 850, description: 'Lead tactical C-rank missions' },
+  chunin: { id: 'chunin', name: 'Chunin Squad Leader', emoji: '<a:security_animated:1537177499862171741>', salary: 850, description: 'Lead tactical C-rank missions' },
   jonin: { id: 'jonin', name: 'Elite Jonin Commander', emoji: '⚔️', salary: 1800, description: 'Execute S-rank secret missions' },
   ramen_chef: { id: 'ramen_chef', name: 'Ichiraku Master Chef', emoji: '🍜', salary: 1200, description: 'Cook world-famous ramen' },
   medical_ninja: { id: 'medical_ninja', name: 'Medical Shinobi', emoji: '🩺', salary: 1500, description: 'Heal injured shinobi' },

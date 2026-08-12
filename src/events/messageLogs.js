@@ -110,7 +110,7 @@ module.exports = (client) => {
       // Add Attachments Field
       if (attachmentList.length > 0) {
         logEmbed.addFields({
-          name: `📁 Attachments / Media Files (${attachmentList.length})`,
+          name: `<a:openfolder_animated:1537177452936437760> Attachments / Media Files (${attachmentList.length})`,
           value: attachmentList.join('\n').slice(0, 1024)
         });
       }
@@ -147,7 +147,7 @@ module.exports = (client) => {
   });
 
   // ─────────────────────────────────────────
-  // 📝 MESSAGE EDIT / UPDATE LOGGER
+  // <a:pencil_animated:1537177465829724181> MESSAGE EDIT / UPDATE LOGGER
   // ─────────────────────────────────────────
   client.on('messageUpdate', async (oldMessage, newMessage) => {
     try {
@@ -169,7 +169,7 @@ module.exports = (client) => {
 
       const editEmbed = new EmbedBuilder()
         .setColor(0xFEE75C) // Warning Gold
-        .setTitle(`📝 Message Edited in #${channel ? channel.name : 'Unknown'}`)
+        .setTitle(`<a:pencil_animated:1537177465829724181> Message Edited in #${channel ? channel.name : 'Unknown'}`)
         .setDescription(
           '```\n' + infoBox + '\n```\n\n' +
           `• **Author:** <@${author.id}> (\`${author.tag}\`)\n` +

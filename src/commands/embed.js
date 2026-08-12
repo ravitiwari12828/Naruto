@@ -106,9 +106,9 @@ function buildControlPanel(draft, guild, author, clientUser) {
   ], 20, 22);
 
   const desc =
-    `⚙️ **Draft Status**\n` +
+    `<a:settings_animated:1537177506170404905> **Draft Status**\n` +
     '```\n' + draftBox + '\n```\n\n' +
-    `📝 **Builder Commands** *(prefix with \`.embed <cmd>\`)*\n` +
+    `<a:pencil_animated:1537177465829724181> **Builder Commands** *(prefix with \`.embed <cmd>\`)*\n` +
     '```\n' + cmdBox + '\n```\n\n' +
     `> *Use \`.embed preview\` to see your embed before sending.*`;
 

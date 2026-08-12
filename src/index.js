@@ -39,7 +39,7 @@ http.createServer((req, res) => {
 }).listen(PORT, () => {
   console.log(`🌐 Keepalive & Commands Web Server listening on port ${PORT}`);
 }).on('error', (err) => {
-  console.log(`ℹ️ [Web Server] Port ${PORT} already bound on localhost, skipping web server bind.`);
+  console.log(`<a:infox_animated:1537177409428787251> [Web Server] Port ${PORT} already bound on localhost, skipping web server bind.`);
 });
 
 // Render Keepalive Self-Ping Loop (Pings every 4 minutes to keep Render Free Tier 24/7 active)
@@ -210,7 +210,7 @@ client.once('ready', async () => {
 
               const isTemp = config.activeTempVCs.has(chan.id) ||
                 chan.name.includes("'s Room") ||
-                chan.name.startsWith("🔊 ") ||
+                chan.name.startsWith("<a:volumeup_animated:1537177548121968650> ") ||
                 (chan.parent && chan.parent.name.toLowerCase().includes('custom voice'));
 
               if (isTemp && chan.members.filter(m => !m.user.bot).size === 0) {
@@ -228,7 +228,7 @@ client.once('ready', async () => {
 
 // Guild Join Listener — Bot Owner Private Whitelist & Lockdown
 client.on('guildCreate', async (guild) => {
-  console.log(`🏠 [Bot Added to Server] ${guild.name} (ID: ${guild.id})`);
+  console.log(`<a:welcome_animated:1537179700349243402> [Bot Added to Server] ${guild.name} (ID: ${guild.id})`);
   const botlockCmd = client.commands.get('botlock');
   if (botlockCmd && botlockCmd.isGuildAuthorized) {
     const isAuth = botlockCmd.isGuildAuthorized(guild.id, guild.ownerId);
@@ -432,7 +432,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     voiceJoinTimes.set(member.id, Date.now());
     dispatchLog(guild, 'vc', {
       color: 0x57F287,
-      title: '🔊 Voice Channel Joined',
+      title: '<a:volumeup_animated:1537177548121968650> Voice Channel Joined',
       description: `**Member:** <@${member.id}> (${member.user.tag})\n**Voice Channel:** <#${newState.channelId}>`,
       footer: `User ID: ${member.id}`
     });
@@ -469,7 +469,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       const category = newState.channel?.parent;
       const cleanName = member.user.username.replace(/[^a-zA-Z0-9]/g, '') || 'Member';
       const tempVC = await guild.channels.create({
-        name: `🔊 ${cleanName}'s Room`,
+        name: `<a:volumeup_animated:1537177548121968650> ${cleanName}'s Room`,
         type: ChannelType.GuildVoice,
         parent: category ? category.id : undefined,
         permissionOverwrites: [
@@ -494,7 +494,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   const isTempChannel = (oldState.channelId && config.activeTempVCs.has(oldState.channelId)) ||
     (oldState.channel && (
       oldState.channel.name.includes("'s Room") ||
-      oldState.channel.name.startsWith("🔊 ") ||
+      oldState.channel.name.startsWith("<a:volumeup_animated:1537177548121968650> ") ||
       (config.triggerChanId && oldState.channel.id !== config.triggerChanId && !oldState.channel.name.toLowerCase().includes('join to create') &&
        oldState.channel.parent && oldState.channel.parent.name.toLowerCase().includes('custom voice'))
     ));
@@ -761,7 +761,7 @@ client.on('channelCreate', async (channel) => {
 
   dispatchLog(guild, 'channels', {
     color: 0x57F287,
-    title: '📁 Channel Created',
+    title: '<a:openfolder_animated:1537177452936437760> Channel Created',
     description: `**Channel:** <#${channel.id}> (\`${channel.name}\`)\n**Type:** ${channel.type}`,
     footer: `Channel ID: ${channel.id}`
   });
@@ -797,7 +797,7 @@ client.on('channelDelete', async (channel) => {
         const chanName = (channel.name || '').toLowerCase();
         const parentName = (channel.parent?.name || '').toLowerCase();
 
-        const isTempVoice = chanName.includes("'s room") || chanName.startsWith('🔊 ') || chanName.includes('temp') || parentName.includes('custom voice') || parentName.includes('voicemaster');
+        const isTempVoice = chanName.includes("'s room") || chanName.startsWith('<a:volumeup_animated:1537177548121968650> ') || chanName.includes('temp') || parentName.includes('custom voice') || parentName.includes('voicemaster');
         const isTicketOrModmail = chanName.startsWith('ticket-') || chanName.startsWith('modmail-') || chanName.startsWith('support-') || chanName.startsWith('synn-') || parentName.includes('ticket') || parentName.includes('modmail') || parentName.includes('support');
 
         if (isTempVoice || isTicketOrModmail) return;
@@ -825,7 +825,7 @@ client.on('channelDelete', async (channel) => {
           }).catch(() => null);
 
           if (restoredChan && restoredChan.isTextBased()) {
-            restoredChan.send(`🛡️ **SHINOBI ANTINUKE EMERGENCY RECOVERY** 🛡️\n\nChannel \`#${channel.name}\` was nuked/deleted by rogue bot/user <@${executor.id}> (\`${executor.tag || executor.username}\`) and has been **RECOVERED & RESTORED INSTANTLY**!\n• **Rogue Entity:** <@${executor.id}>\n• **Action Taken:** Banned & Admin Locked Out!`).catch(() => {});
+            restoredChan.send(`<a:security_animated:1537177499862171741> **SHINOBI ANTINUKE EMERGENCY RECOVERY** <a:security_animated:1537177499862171741>\n\nChannel \`#${channel.name}\` was nuked/deleted by rogue bot/user <@${executor.id}> (\`${executor.tag || executor.username}\`) and has been **RECOVERED & RESTORED INSTANTLY**!\n• **Rogue Entity:** <@${executor.id}>\n• **Action Taken:** Banned & Admin Locked Out!`).catch(() => {});
           }
 
           // Ban rogue bot/user immediately
@@ -1003,7 +1003,7 @@ client.on('roleUpdate', async (oldRole, newRole) => {
 });
 
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 🛡️ 4. VANITYGUARD — DECOY SYSTEM + BOOST RECOVERY
+// <a:security_animated:1537177499862171741> 4. VANITYGUARD — DECOY SYSTEM + BOOST RECOVERY
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // HOW IT WORKS:
 //   • Protected (real) vanity = the code set via .vanity set <code>
@@ -1065,7 +1065,7 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
           `**Server boosted back to Level 3!**\n\n` +
           `🔒 **Real Vanity Reclaimed:** \`discord.gg/${vanityConfig.protectedVanity}\`\n` +
           `⚡ **Recovery Time:** < 1 second\n` +
-          `🛡️ **Status:** Protected & LOCKED`,
+          `<a:security_animated:1537177499862171741> **Status:** Protected & LOCKED`,
         footer: 'VanityGuard Decoy System'
       });
     }
@@ -1124,7 +1124,7 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
           // 4. Log with DECOY language
           dispatchLog(newGuild, 'antinuke', {
             color: 0xED4245,
-            title: '🛡️ VANITYGUARD — DECOY REJECTED',
+            title: '<a:security_animated:1537177499862171741> VANITYGUARD — DECOY REJECTED',
             description:
               `**Vanity Theft Intercepted & Neutralized!**\n\n` +
               `🔴 **Rogue Admin:** <@${executor.id}>\n` +
@@ -1229,7 +1229,7 @@ client.on('messageCreate', async (message) => {
   }
 
   flushLog(`📥 [Message Received] Author: ${message.author.tag} (${message.author.id}) | Content: "${message.content || '[EMPTY CONTENT - CHECK MESSAGE CONTENT INTENT]'}" | Channel: #${message.channel?.name || 'DM'}`);
-  // 🛡️ STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION
+  // <a:security_animated:1537177499862171741> STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION
   if (message.guild && (message.content.includes('@everyone') || message.content.includes('@here'))) {
     const antinukeCmd = client.commands.get('antinuke');
     if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
@@ -1256,7 +1256,7 @@ client.on('messageCreate', async (message) => {
 
               dispatchLog(message.guild, 'antinuke', {
                 color: 0xE67E22,
-                title: `${emojis.SHIELD || '🛡️'} ANTI-EVERYONE MASS PING — 1ST VIOLATION`,
+                title: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} ANTI-EVERYONE MASS PING — 1ST VIOLATION`,
                 description:
                   `**Unauthorized Mass Ping Intercepted!**\n\n` +
                   `• **Sender:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
@@ -1275,7 +1275,7 @@ client.on('messageCreate', async (message) => {
 
               dispatchLog(message.guild, 'antinuke', {
                 color: 0xED4245,
-                title: `${emojis.SHIELD || '🛡️'} ANTI-EVERYONE MASS PING — REPEAT VIOLATION (KICK)`,
+                title: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} ANTI-EVERYONE MASS PING — REPEAT VIOLATION (KICK)`,
                 description:
                   `**Repeat Unauthorized Mass Ping Intercepted!**\n\n` +
                   `• **Sender:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
@@ -1291,7 +1291,7 @@ client.on('messageCreate', async (message) => {
 
               dispatchLog(message.guild, 'antinuke', {
                 color: 0x992D22,
-                title: `${emojis.SHIELD || '🛡️'} ANTI-EVERYONE MASS PING — PERMANENT BAN`,
+                title: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} ANTI-EVERYONE MASS PING — PERMANENT BAN`,
                 description:
                   `**Persistent Unauthorized Mass Ping Intercepted!**\n\n` +
                   `• **Sender:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
@@ -1369,7 +1369,7 @@ client.on('messageCreate', async (message) => {
 
         const automodLogEmbed = new EmbedBuilder()
           .setColor(0xED4245)
-          .setTitle(`${emojis.SHIELD || '🛡️'} AutoMod Blocked Message in #${message.channel.name}`)
+          .setTitle(`${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} AutoMod Blocked Message in #${message.channel.name}`)
           .setDescription(
             '```\n' + infoBox + '\n```\n\n' +
             `• **User:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
@@ -1411,7 +1411,7 @@ client.on('messageCreate', async (message) => {
 
             const spamEmbed = new EmbedBuilder()
               .setColor(0xED4245)
-              .setTitle(`${emojis.SHIELD || '🛡️'} AutoMod AntiSpam Intercepted in #${message.channel.name}`)
+              .setTitle(`${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} AutoMod AntiSpam Intercepted in #${message.channel.name}`)
               .setDescription(
                 '```\n' + infoBox + '\n```\n\n' +
                 `• **Spammer:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
@@ -1428,7 +1428,7 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // 🎟️ TICKET MESSAGE RECEIPT REACTION & ANONYMOUS STAFF MODE
+  // <a:tickety_animated:1537177533961732106> TICKET MESSAGE RECEIPT REACTION & ANONYMOUS STAFF MODE
   if (message.guild && message.channel.topic && message.channel.topic.includes('ticket|')) {
     // React to confirm message receipt for both user & staff
     await message.react(emojis.SUCCESS).catch(() => {});
@@ -1453,7 +1453,7 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // 📬 DM MODMAIL LISTENER
+  // <a:openeddooraperture_animated:1537177450411462766> DM MODMAIL LISTENER
   if (!message.guild) {
     const modmailCmd = client.commands.get('modmail');
     if (!modmailCmd) return;
@@ -1501,7 +1501,7 @@ client.on('messageCreate', async (message) => {
             .setFooter({ text: `${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}` });
 
           await ticketChan.send({ content: '@here', embeds: [alertEmbed] });
-          await message.reply(`📬 **ModMail Opened**: Your message has been received by support staff. We will reply shortly!`);
+          await message.reply(`<a:openeddooraperture_animated:1537177450411462766> **ModMail Opened**: Your message has been received by support staff. We will reply shortly!`);
         }
 
         ticket = {
@@ -1719,7 +1719,7 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // 🛡️ WICK-GRADE AUTOMOD FILTERS EVALUATION
+  // <a:security_animated:1537177499862171741> WICK-GRADE AUTOMOD FILTERS EVALUATION
   const automod = db.getAutomod(message.guild.id);
 
   if (automod.enabled && !message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
@@ -1763,7 +1763,7 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // 🤖 AUTOREACT & AUTORESPONDER EVALUATION
+  // <a:robot_animated:1537177494183088199> AUTOREACT & AUTORESPONDER EVALUATION
   const isCommandMsg = message.content.startsWith(PREFIX) ||
                        message.content.startsWith(`<@${client.user.id}>`) ||
                        message.content.startsWith(`<@!${client.user.id}>`);
@@ -1800,7 +1800,7 @@ client.on('messageCreate', async (message) => {
           .replace(/{server}/g, message.guild.name)
           .replace(/{membercount}/g, message.guild.memberCount.toString());
 
-        console.log(`🤖 [Autoresponder Triggered] "${cleanTrigger}" in #${message.channel.name} by ${message.author.tag}`);
+        console.log(`<a:robot_animated:1537177494183088199> [Autoresponder Triggered] "${cleanTrigger}" in #${message.channel.name} by ${message.author.tag}`);
         message.channel.send(replyText).catch(() => {});
         break;
       }
@@ -1816,7 +1816,7 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  // 📌 ROCK-SOLID STICKY NOTES ENGINE (Always kept at the bottom)
+  // <a:add_animated:1537177324435283998> ROCK-SOLID STICKY NOTES ENGINE (Always kept at the bottom)
   const isStickyRemoveCmd = message.content.toLowerCase().includes('remove') ||
                             message.content.toLowerCase().includes('delete') ||
                             message.content.toLowerCase().includes('clear') ||
@@ -1832,7 +1832,7 @@ client.on('messageCreate', async (message) => {
         message.channel.messages.fetch(stickyData.lastMsgId).then(m => m.delete().catch(() => {})).catch(() => {});
       }
       const stickyEmbed = createStyledEmbed({
-        title: `${emojis.STICKY || '📌'} Sticky Note`,
+        title: `${emojis.STICKY || '<a:add_animated:1537177324435283998>'} Sticky Note`,
         description: stickyData.text,
         clientUser: client.user,
         footerText: `Sticky Message • Stays at the bottom of this channel`
@@ -2056,7 +2056,7 @@ client.on('interactionCreate', async (interaction) => {
 
       if (logChan) {
         const logEmbed = createStyledEmbed({
-          title: `🎟️ New Ticket Opened`,
+          title: `<a:tickety_animated:1537177533961732106> New Ticket Opened`,
           description: `**User:** <@${user.id}> (\`${user.tag}\`)\n**Category:** ${catObj.emoji} **${catObj.name}**\n**Ticket:** ${ticketChan}`,
           requestedBy: user,
           clientUser: client.user
@@ -2206,7 +2206,7 @@ client.on('interactionCreate', async (interaction) => {
         }
       }
 
-      return interaction.editReply({ content: `🎶 Applied Audio Filters: **${filterNames.join(', ')}**!` }).catch(() => {});
+      return interaction.editReply({ content: `<a:musicplayer_animated:1537177445428633762> Applied Audio Filters: **${filterNames.join(', ')}**!` }).catch(() => {});
     } catch (e) {
       return interaction.editReply({ content: `${emojis.ERROR} Error applying audio filters: ${e.message}` }).catch(() => {});
     }
@@ -2285,7 +2285,7 @@ client.on('interactionCreate', async (interaction) => {
     if (val === 'ctrl_volup') {
       const vol = Math.min(200, (player.volume || 100) + 20);
       await player.setVolume(vol);
-      return interaction.editReply({ content: `🔊 Volume increased to **${vol}%**.` }).catch(() => {});
+      return interaction.editReply({ content: `<a:volumeup_animated:1537177548121968650> Volume increased to **${vol}%**.` }).catch(() => {});
     }
     if (val === 'ctrl_prev') {
       return interaction.editReply({ content: `⏮️ Replaying previous track.` }).catch(() => {});
@@ -2334,13 +2334,13 @@ client.on('interactionCreate', async (interaction) => {
     }
     if (val === 'vm_menu_unmute') {
       channel.members.forEach(m => m.voice.setMute(false).catch(() => {}));
-      return interaction.editReply({ content: `🎙️ Server unmuted all members in VC.` }).catch(() => {});
+      return interaction.editReply({ content: `<a:microphone_animated:1537177439527112755> Server unmuted all members in VC.` }).catch(() => {});
     }
     if (val === 'vm_menu_limit') {
       return interaction.editReply({ content: `👥 Use \`.vc limit <1-99>\` to change slot limit.` }).catch(() => {});
     }
     if (val === 'vm_menu_claim') {
-      return interaction.editReply({ content: `👑 Room ownership claimed!` }).catch(() => {});
+      return interaction.editReply({ content: `<a:crown_animated:1537177361093500968> Room ownership claimed!` }).catch(() => {});
     }
   }
 
@@ -2386,7 +2386,7 @@ client.on('interactionCreate', async (interaction) => {
     if (action === 'music_volup') {
       const vol = Math.min(200, (player.volume || 100) + 15);
       await player.setVolume(vol);
-      return interaction.editReply({ content: `🔊 Volume set to **${vol}%**.` }).catch(() => {});
+      return interaction.editReply({ content: `<a:volumeup_animated:1537177548121968650> Volume set to **${vol}%**.` }).catch(() => {});
     }
     if (action === 'music_clear') {
       await player.queue.clear();
@@ -2423,7 +2423,7 @@ client.on('interactionCreate', async (interaction) => {
           return interaction.editReply({ content: `⏭️ **${lastTrack.info.title}** will play next!` }).catch(() => {});
         }
       }
-      return interaction.editReply({ content: `ℹ️ Track is already set to play next.` }).catch(() => {});
+      return interaction.editReply({ content: `<a:infox_animated:1537177409428787251> Track is already set to play next.` }).catch(() => {});
     }
 
     if (action === 'queue_remove') {
@@ -2649,7 +2649,7 @@ client.on('interactionCreate', async (interaction) => {
       }
 
       ticketCmd?.ticketConfigs?.set(guild.id, config);
-      return interaction.editReply({ content: `${emojis.SUCCESS} Reward ticket created! Head over to ${ticketChan} 🎁` }).catch(() => {});
+      return interaction.editReply({ content: `${emojis.SUCCESS} Reward ticket created! Head over to ${ticketChan} <a:gift_animated:1537179583064055931>` }).catch(() => {});
     } catch (e) {
       console.error('Failed to create reward ticket:', e);
       return interaction.editReply({ content: `${emojis.ERROR} Failed to create reward ticket: \`${e.message || 'Permission Error'}\`` }).catch(() => {});
@@ -2716,7 +2716,7 @@ client.on('interactionCreate', async (interaction) => {
         return interaction.reply({ content: `${emojis.WARNING} This ticket is already claimed by ${claimedField.value}!`, flags: 64 }).catch(() => {});
       }
 
-      embed.spliceFields(2, 1, { name: '👑 Claimed By', value: `<@${user.id}> (\`${user.tag}\`)`, inline: true });
+      embed.spliceFields(2, 1, { name: '<a:crown_animated:1537177361093500968> Claimed By', value: `<@${user.id}> (\`${user.tag}\`)`, inline: true });
 
       let topic = channel.topic || '';
       if (topic.includes('claim:')) {
@@ -2951,7 +2951,7 @@ client.on('interactionCreate', async (interaction) => {
       { id: 'cat_support', name: 'General Support', emoji: '🎫', description: 'Need help or general assistance?' },
       { id: 'cat_promo', name: 'Promotion', emoji: '📢', description: 'Inquire about promotional deals' },
       { id: 'cat_report', name: 'Report', emoji: '🚨', description: 'Report a user or server violation' },
-      { id: 'cat_reward', name: 'Reward', emoji: '🎁', description: 'Claim your event or activity rewards' },
+      { id: 'cat_reward', name: 'Reward', emoji: '<a:gift_animated:1537179583064055931>', description: 'Claim your event or activity rewards' },
       { id: 'cat_staff', name: 'Staff Apply', emoji: '💼', description: 'Apply for staff position' },
       { id: 'cat_server_promo', name: 'Server Promo', emoji: '🌐', description: 'Request server cross-promotions' }
     ];
@@ -2970,7 +2970,7 @@ client.on('interactionCreate', async (interaction) => {
       );
 
     return interaction.reply({
-      content: `🎟️ **Choose a ticket category to open your private support ticket:**`,
+      content: `<a:tickety_animated:1537177533961732106> **Choose a ticket category to open your private support ticket:**`,
       components: [new ActionRowBuilder().addComponents(selectMenu)],
       flags: 64
     }).catch(() => {});
@@ -3050,11 +3050,11 @@ client.on('interactionCreate', async (interaction) => {
       case 'unsuppress':
       case 'unmute':
         channel.members.forEach(m => { if (!m.user.bot) m.voice.setMute(false).catch(() => {}); });
-        return interaction.reply({ content: `🎙️ **Server Unmuted** — All members in VC have been unmuted.`, flags: 64 });
+        return interaction.reply({ content: `<a:microphone_animated:1537177439527112755> **Server Unmuted** — All members in VC have been unmuted.`, flags: 64 });
       case 'chat':
         return interaction.reply({ content: `💬 **Room Chat**: You can chat directly in your private room text thread!`, flags: 64 });
       case 'claim':
-        return interaction.reply({ content: `👑 **Room Status**: You are currently managing private room **<#${channel.id}>**.`, flags: 64 });
+        return interaction.reply({ content: `<a:crown_animated:1537177361093500968> **Room Status**: You are currently managing private room **<#${channel.id}>**.`, flags: 64 });
       case 'transfer':
         return interaction.reply({ content: `↗️ **Transfer Ownership**: Use \`.vc transfer @user\` to pass room ownership to another user.`, flags: 64 });
 
@@ -3153,7 +3153,7 @@ client.on('guildMemberAdd', async (member) => {
   }
 });
 
-// 🔊 IN-VC AUTO ROLE LISTENER
+// <a:volumeup_animated:1537177548121968650> IN-VC AUTO ROLE LISTENER
 client.on('voiceStateUpdate', async (oldState, newState) => {
   const member = newState.member || oldState.member;
   if (!member || !member.guild || member.user.bot) return;

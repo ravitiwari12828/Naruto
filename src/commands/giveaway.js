@@ -43,7 +43,7 @@ async function collectEligibleUsers(client, gw) {
 function buildActiveEmbed(prizeRaw, winnerCount, endTimestamp, id, hostId, participantCount, clientUser) {
   const PING = emojis.GIVEAWAY_PING || '🎉';
   const CUP = emojis.GOLD_CUP || '🏆';
-  const GIFT = emojis.GIVEAWAY || '🎁';
+  const GIFT = emojis.GIVEAWAY || '<a:gift_animated:1537179583064055931>';
   const DOT = emojis.DOT || '•';
 
   const embed = new EmbedBuilder()
@@ -412,7 +412,7 @@ module.exports = {
       } else if (field === 'price' || field === 'prize') {
         gw.prize = rawValue;
         giveaways.set(id, gw);
-        successMsg = `🎁 **Prize updated** to: **${rawValue}**`;
+        successMsg = `<a:gift_animated:1537179583064055931> **Prize updated** to: **${rawValue}**`;
 
       } else if (field === 'winners') {
         const newCount = parseInt(rawValue, 10);

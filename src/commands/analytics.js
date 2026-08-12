@@ -123,7 +123,7 @@ function buildUserMetricRow(activeCat) {
     new ButtonBuilder()
       .setCustomId('ucat_voice')
       .setLabel('Voice')
-      .setEmoji(emojis.OBJ_VOICE || '🔊')
+      .setEmoji(emojis.OBJ_VOICE || '<a:volumeup_animated:1537177548121968650>')
       .setStyle(activeCat === 'voice' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_invites')

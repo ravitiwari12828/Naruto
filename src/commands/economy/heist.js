@@ -47,7 +47,7 @@ module.exports = {
         if (vaultSuccess) {
           const payout = ENTRY_FEE * (2.5 + Math.random());
           eco.balance += Math.floor(payout);
-          results.push(`💰 <@${userId}> nets **${fmt(Math.floor(payout - ENTRY_FEE))}** coins`);
+          results.push(`<a:money_animated:1537177442672709707> <@${userId}> nets **${fmt(Math.floor(payout - ENTRY_FEE))}** coins`);
         } else {
           results.push(`🚔 <@${userId}> lost their **${fmt(ENTRY_FEE)}** coin entry fee`);
         }

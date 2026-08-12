@@ -208,7 +208,7 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId(`confirm_restore_${backupId}`)
           .setLabel('Confirm Restore')
-          .setEmoji('🛡️')
+          .setEmoji('<a:security_animated:1537177499862171741>')
           .setStyle(ButtonStyle.Danger),
         new ButtonBuilder()
           .setCustomId(`cancel_restore_${backupId}`)

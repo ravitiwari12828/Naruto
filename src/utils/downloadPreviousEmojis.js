@@ -123,7 +123,7 @@ function downloadFile(url, filepath) {
 }
 
 async function startDownload() {
-  console.log(`🚀 Starting download of ${emojiList.length} previous bot animated emojis to Desktop...`);
+  console.log(`<a:rocket_animated:1537179661371707402> Starting download of ${emojiList.length} previous bot animated emojis to Desktop...`);
   let downloadedCount = 0;
 
   for (const item of emojiList) {

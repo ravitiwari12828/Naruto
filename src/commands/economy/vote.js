@@ -29,7 +29,7 @@ module.exports = {
       .setColor(config.successColor)
       .setTitle(`${emojis.sparkle || '✨'} Vote Reward Claimed!`)
       .setDescription(`Thank you for voting for **Naruto Bot**!\n\n` +
-                      `🎁 Reward Received: **+${fmt(VOTE_REWARD)}** ${emojis.coin} & **+1** 💎 Gem!`)
+                      `<a:gift_animated:1537179583064055931> Reward Received: **+${fmt(VOTE_REWARD)}** ${emojis.coin} & **+1** 💎 Gem!`)
       .addFields({ name: `Wallet Balance`, value: `**${fmt(eco.balance)}** ${emojis.coin}`, inline: true })
       .setFooter({ text: 'You can vote every 12 hours for bonuses!' })
       .setTimestamp();

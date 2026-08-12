@@ -42,9 +42,9 @@ async function refreshGuildCounters(guild) {
     let newName = null;
     if (item.type === 'total') newName = `👥 Total Members: ${totalMembers.toLocaleString()}`;
     else if (item.type === 'users') newName = `👤 Users: ${userCount.toLocaleString()}`;
-    else if (item.type === 'bots') newName = `🤖 Bots: ${botCount.toLocaleString()}`;
+    else if (item.type === 'bots') newName = `<a:robot_animated:1537177494183088199> Bots: ${botCount.toLocaleString()}`;
     else if (item.type === 'online') newName = `🟢 Online: ${onlineCount.toLocaleString()}`;
-    else if (item.type === 'boosters') newName = `🚀 Boosters: ${boosterCount.toLocaleString()}`;
+    else if (item.type === 'boosters') newName = `<a:rocket_animated:1537179661371707402> Boosters: ${boosterCount.toLocaleString()}`;
     else if (item.type === 'goal' && item.goal) newName = `🎯 Goal: ${totalMembers}/${item.goal}`;
 
     if (newName && channel.name !== newName) {
@@ -80,7 +80,7 @@ module.exports = {
       try {
         // Create Category
         const category = await guild.channels.create({
-          name: '📊 SERVER STATS',
+          name: '<a:chart_animated:1537179539514462308> SERVER STATS',
           type: ChannelType.GuildCategory,
           permissionOverwrites: [
             {
@@ -104,7 +104,7 @@ module.exports = {
         });
 
         const cBots = await guild.channels.create({
-          name: `🤖 Bots: ${botCount.toLocaleString()}`,
+          name: `<a:robot_animated:1537177494183088199> Bots: ${botCount.toLocaleString()}`,
           type: ChannelType.GuildVoice,
           parent: category.id
         });
@@ -127,13 +127,13 @@ module.exports = {
         });
 
         const box = createDynamicBox('COUNTER SETUP COMPLETE', [
-          { key: 'Category', value: '📊 SERVER STATS' },
+          { key: 'Category', value: '<a:chart_animated:1537179539514462308> SERVER STATS' },
           { key: 'Counters', value: 'Total, Users, Bots, Goal' },
           { key: 'Status  ', value: 'ACTIVE (Auto-Updates)' }
         ]);
 
         const embed = createStyledEmbed({
-          title: `📊 Server Stats Counter Channels Configured`,
+          title: `<a:chart_animated:1537179539514462308> Server Stats Counter Channels Configured`,
           description: '```\n' + box + '\n```\n*Counter channels auto-update as members join & leave!*',
           requestedBy: author,
           clientUser
@@ -156,13 +156,13 @@ module.exports = {
 
       const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
       const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('btn_counter_setup').setLabel('Setup Default Counters').setEmoji(emojis.SUCCESS || '📊').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId('btn_counter_setup').setLabel('Setup Default Counters').setEmoji(emojis.SUCCESS || '<a:chart_animated:1537179539514462308>').setStyle(ButtonStyle.Success),
         new ButtonBuilder().setCustomId('btn_counter_refresh').setLabel('Refresh Now').setEmoji(emojis.OBJ_REFRESH || '🔄').setStyle(ButtonStyle.Primary),
         new ButtonBuilder().setCustomId('btn_counter_reset').setLabel('Reset Counters').setEmoji(emojis.DISABLED || '🗑️').setStyle(ButtonStyle.Danger)
       );
 
       const embed = createStyledEmbed({
-        title: `📊 Active Server Counter Channels — ${guild.name}`,
+        title: `<a:chart_animated:1537179539514462308> Active Server Counter Channels — ${guild.name}`,
         subtitle: `Real-time Voice & Goal Counter Channel Suite`,
         description:
           `${list}\n\n` +
@@ -203,14 +203,14 @@ module.exports = {
             const userCount = Math.max(0, totalMembers - botCount);
 
             const category = await guild.channels.create({
-              name: '📊 SERVER STATS',
+              name: '<a:chart_animated:1537179539514462308> SERVER STATS',
               type: ChannelType.GuildCategory,
               permissionOverwrites: [{ id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.Connect] }]
             });
 
             const cTotal = await guild.channels.create({ name: `👥 Total Members: ${totalMembers.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
             const cUsers = await guild.channels.create({ name: `👤 Users: ${userCount.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
-            const cBots = await guild.channels.create({ name: `🤖 Bots: ${botCount.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
+            const cBots = await guild.channels.create({ name: `<a:robot_animated:1537177494183088199> Bots: ${botCount.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
 
             const nextGoal = Math.ceil((totalMembers + 1) / 100) * 100 || 500;
             const cGoal = await guild.channels.create({ name: `🎯 Goal: ${totalMembers}/${nextGoal}`, type: ChannelType.GuildVoice, parent: category.id });
@@ -225,7 +225,7 @@ module.exports = {
               ];
             });
 
-            return interaction.followUp({ content: `📊 Server Stats Counter channels successfully created!`, flags: 64 });
+            return interaction.followUp({ content: `<a:chart_animated:1537179539514462308> Server Stats Counter channels successfully created!`, flags: 64 });
           } catch (err) {
             return interaction.followUp({ content: `Failed to create counters: ${err.message}`, flags: 64 });
           }

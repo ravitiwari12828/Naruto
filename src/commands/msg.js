@@ -134,7 +134,7 @@ module.exports = {
           '\n```';
 
         const embed = createStyledEmbed({
-          title: `${emojis.SHIELD || '🛡️'} Message Channel Filter View`,
+          title: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Message Channel Filter View`,
           description: boxText + '\n\n• **No channels or categories are whitelisted or blacklisted.** All text channels are currently being tracked for message activity.',
           requestedBy: author,
           clientUser
@@ -156,7 +156,7 @@ module.exports = {
         if (wlCats.length > 0) details += `\n✅ **Whitelisted Categories:** ${wlCats.map(id => `\`${id}\``).join(', ')}`;
 
         const embed = createStyledEmbed({
-          title: `${emojis.SHIELD || '🛡️'} Message Channel Filter View`,
+          title: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Message Channel Filter View`,
           description: boxText + details,
           requestedBy: author,
           clientUser
@@ -301,9 +301,9 @@ module.exports = {
       subtitle: `Admin Message Stats Management & Channel Filters`,
       description:
         '```\n' + infoBox + '\n```\n\n' +
-        `${emojis.ANALYTICS_ZAP || '⚙️'} **Message Stats Modifiers**\n` +
+        `${emojis.ANALYTICS_ZAP || '<a:settings_animated:1537177506170404905>'} **Message Stats Modifiers**\n` +
         '```\n' + cmdBox + '\n```\n\n' +
-        `${emojis.SHIELD || '🛡️'} **Channel & Category Filters**\n` +
+        `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} **Channel & Category Filters**\n` +
         '```\n' + filterBox + '\n```',
       requestedBy: author,
       clientUser

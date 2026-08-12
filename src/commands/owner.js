@@ -37,7 +37,7 @@ module.exports = {
       .setDescription(
         `Welcome **${author.username}**! Below is your executive management suite for **Bot Owner Controls**.\n` +
         `Type any command below in your server to execute.\n\n` +
-        `**${emojis.PREMIUM || '👑'} Premium Management**\n` +
+        `**${emojis.PREMIUM || '<a:crown_animated:1537177361093500968>'} Premium Management**\n` +
         `\`\`\`\n` +
         `.premium activate [guildId] [7d/30d/1y/lifetime]\n` +
         `.premium revoke <guildId>\n` +
@@ -59,13 +59,13 @@ module.exports = {
         `.botlock remove <guildId>\n` +
         `.botlock list\n` +
         `\`\`\`\n\n` +
-        `**${emojis.OWNER_CROWN || '👑'} Extra Owner & Security Delegation**\n` +
+        `**${emojis.OWNER_CROWN || '<a:crown_animated:1537177361093500968>'} Extra Owner & Security Delegation**\n` +
         `\`\`\`\n` +
         `.extraowner add @user\n` +
         `.extraowner remove @user\n` +
         `.extraowner list\n` +
         `\`\`\`\n\n` +
-        `**${emojis.ANTINUKE || '🛡️'} Emergency Panic & Executive Mass Deletion**\n` +
+        `**${emojis.ANTINUKE || '<a:security_animated:1537177499862171741>'} Emergency Panic & Executive Mass Deletion**\n` +
         `\`\`\`\n` +
         `.panicmode enable\n` +
         `.panicmode disable\n` +

@@ -60,7 +60,7 @@ module.exports = {
         `*Click any button below to trigger immediate server protection setup!*`;
 
       return createStyledEmbed({
-        title: `${emojis.AN_SHIELD || emojis.SHIELD || '🛡️'} One-Click Server Security & Protection Setup`,
+        title: `${emojis.AN_SHIELD || emojis.SHIELD || '<a:security_animated:1537177499862171741>'} One-Click Server Security & Protection Setup`,
         subtitle: `Shinobi Defense Grid Wizard`,
         description,
         requestedBy: author,
@@ -78,12 +78,12 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId('setup_antinuke')
           .setLabel('AntiNuke Grid')
-          .setEmoji('🛡️')
+          .setEmoji('<a:security_animated:1537177499862171741>')
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
           .setCustomId('setup_automod')
           .setLabel('AutoMod & AntiBot')
-          .setEmoji('🤖')
+          .setEmoji('<a:robot_animated:1537177494183088199>')
           .setStyle(ButtonStyle.Primary)
       );
 

@@ -129,7 +129,7 @@ function buildModmailOverviewRow() {
     new ButtonBuilder()
       .setCustomId('mm_active')
       .setLabel('Active Tickets')
-      .setEmoji('📬')
+      .setEmoji('<a:openeddooraperture_animated:1537177450411462766>')
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('mm_transcripts')
@@ -181,7 +181,7 @@ module.exports = {
       if (!category) {
         try {
           category = await guild.channels.create({
-            name: '📬 ModMail Tickets',
+            name: '<a:openeddooraperture_animated:1537177450411462766> ModMail Tickets',
             type: ChannelType.GuildCategory,
             permissionOverwrites: [
               { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
@@ -213,7 +213,7 @@ module.exports = {
       return message.reply({
         embeds: [
           createStyledEmbed({
-            title: `📬 ModMail System Deployed Successfully`,
+            title: `<a:openeddooraperture_animated:1537177450411462766> ModMail System Deployed Successfully`,
             description:
               `• **ModMail Category**: ${category ? `<#${category.id}>` : '`Created`'}\n` +
               `• **HTML Transcript Channel**: ${transcriptChan ? `<#${transcriptChan.id}>` : '`Created`'}\n\n` +
@@ -381,7 +381,7 @@ module.exports = {
         if (!category) {
           try {
             category = await guild.channels.create({
-              name: '📬 ModMail Tickets',
+              name: '<a:openeddooraperture_animated:1537177450411462766> ModMail Tickets',
               type: ChannelType.GuildCategory,
               permissionOverwrites: [{ id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }]
             });
@@ -404,7 +404,7 @@ module.exports = {
         modmailConfigs.set(guild.id, config);
         await i.reply({ content: `${emojis.SUCCESS} ModMail system deployed successfully!`, ephemeral: true });
       } else if (i.customId === 'mm_active') {
-        await i.reply({ content: `📬 Current Active ModMail Tickets in server: **${activeCount}**`, ephemeral: true });
+        await i.reply({ content: `<a:openeddooraperture_animated:1537177450411462766> Current Active ModMail Tickets in server: **${activeCount}**`, ephemeral: true });
       } else if (i.customId === 'mm_transcripts') {
         const chan = config.transcriptChanId ? `<#${config.transcriptChanId}>` : 'None';
         await i.reply({ content: `📜 HTML ModMail Transcripts Channel: ${chan}`, ephemeral: true });

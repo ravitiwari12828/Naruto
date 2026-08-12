@@ -28,14 +28,14 @@ module.exports = {
     let finalMultiplier = 1.00;
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('crash_cashout').setLabel('CASHOUT').setEmoji('💰').setStyle(ButtonStyle.Success)
+      new ButtonBuilder().setCustomId('crash_cashout').setLabel('CASHOUT').setEmoji('<a:money_animated:1537177442672709707>').setStyle(ButtonStyle.Success)
     );
 
     const getEmbed = (multiplier, status = 'Rising...') => new EmbedBuilder()
       .setColor(status.includes('CRASHED') ? config.errorColor : status.includes('CASHED') ? config.successColor : config.embedColor)
       .setAuthor({ name: `${message.author.username}'s Crash Rocket`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-      .setTitle(`🚀 Crash Game`)
-      .setDescription(`\`\`\`\n  🚀 Rocket Status: ${status}\n  Current Multipliers: ${multiplier.toFixed(2)}x\n  Potential Payout: ${fmt(Math.floor(bet * multiplier))} coins\n\`\`\``)
+      .setTitle(`<a:rocket_animated:1537179661371707402> Crash Game`)
+      .setDescription(`\`\`\`\n  <a:rocket_animated:1537179661371707402> Rocket Status: ${status}\n  Current Multipliers: ${multiplier.toFixed(2)}x\n  Potential Payout: ${fmt(Math.floor(bet * multiplier))} coins\n\`\`\``)
       .setFooter({ text: `Bet: ${fmt(bet)} ${emojis.coin}` });
 
     const sent = await message.channel.send({ embeds: [getEmbed(currentMultiplier)], components: [row] });

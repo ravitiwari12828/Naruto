@@ -35,9 +35,9 @@ module.exports = {
     function buildDashboardEmbed(actionText = '') {
       return createStyledEmbed({
         title: `${emojis.SCROLL || '📜'} Server Audit & Event Logging Suite`,
-        subtitle: `${emojis.SHIELD || '🛡️'} Clean & Dedicated Event Routing`,
+        subtitle: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Clean & Dedicated Event Routing`,
         description:
-          `**${emojis.SHIELD || '🛡️'} Security Logs Category**\n` +
+          `**${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Security Logs Category**\n` +
           `\`\`\`\n` +
           `naruto-logs          ✓\n` +
           `naruto-automod-logs  ✓\n` +
@@ -47,7 +47,7 @@ module.exports = {
           `naruto-limit-logs    ✓\n` +
           `naruto-mod-logs      ✓\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TOOLS || '⚙️'} Server Audit Logs Category**\n` +
+          `**${emojis.TOOLS || '<a:settings_animated:1537177506170404905>'} Server Audit Logs Category**\n` +
           `\`\`\`\n` +
           `server-logs      ✓\n` +
           `message-logs     ✓\n` +
@@ -57,7 +57,7 @@ module.exports = {
           `voice-logs       ✓\n` +
           `join-leave-logs  ✓\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TICKETS || '🎟️'} Ticket & ModMail Logs Category**\n` +
+          `**${emojis.TICKETS || '<a:tickety_animated:1537177533961732106>'} Ticket & ModMail Logs Category**\n` +
           `\`\`\`\n` +
           `ticket-logs         ✓\n` +
           `ticket-transcripts  ✓\n` +
@@ -111,7 +111,7 @@ module.exports = {
       if (interaction.customId === 'advlog_deploy_all') {
         const categoryStructure = [
           {
-            name: '🛡️ · Security Logs ·',
+            name: '<a:security_animated:1537177499862171741> · Security Logs ·',
             channels: [
               { key: 'narutologs', name: 'naruto-logs' },
               { key: 'automod', name: 'naruto-automod-logs' },
@@ -123,7 +123,7 @@ module.exports = {
             ]
           },
           {
-            name: '📁 · Server Audit Logs ·',
+            name: '<a:openfolder_animated:1537177452936437760> · Server Audit Logs ·',
             channels: [
               { key: 'server', name: 'server-logs' },
               { key: 'messages', name: 'message-logs' },
@@ -135,7 +135,7 @@ module.exports = {
             ]
           },
           {
-            name: '🎟️ · Ticket & ModMail Logs ·',
+            name: '<a:tickety_animated:1537177533961732106> · Ticket & ModMail Logs ·',
             channels: [
               { key: 'ticketlogs', name: 'ticket-logs' },
               { key: 'transcripts', name: 'ticket-transcripts' },

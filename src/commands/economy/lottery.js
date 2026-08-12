@@ -31,7 +31,7 @@ module.exports = {
     await message.channel.send({
       embeds: [new EmbedBuilder()
         .setColor(won ? config.successColor : config.errorColor)
-        .setTitle('🎟️ Lottery Draw')
+        .setTitle('<a:tickety_animated:1537177533961732106> Lottery Draw')
         .setDescription(`You picked **${pick}** — the draw was **${draw}**.\n\n${won ? `${emojis.success} JACKPOT! You won **${fmt(TICKET_PRICE * 8)}** coins!` : `${emojis.error} No match. Better luck next time.`}`)
         .setFooter({ text: `New balance: ${fmt(eco.balance)} coins` })],
     });
