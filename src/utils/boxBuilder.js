@@ -138,10 +138,11 @@ function createDynamicBox(title, items = [], minWidth = 24, customMaxWidth = nul
   }
 
   processedLines.forEach(lineStr => {
-    if (getVisualWidth(lineStr) > contentWidth) {
-      lineStr = lineStr.slice(0, Math.max(1, contentWidth - 1)) + '…';
+    let cleanLine = lineStr;
+    while (getVisualWidth(cleanLine) > contentWidth && cleanLine.length > 0) {
+      cleanLine = cleanLine.slice(0, -1);
     }
-    boxLines.push('│ ' + padVisualEnd(lineStr, contentWidth) + ' │');
+    boxLines.push('│ ' + padVisualEnd(cleanLine, contentWidth) + ' │');
   });
 
   boxLines.push(bottomBorder);

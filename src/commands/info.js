@@ -206,22 +206,18 @@ module.exports = {
       const memUsage = (process.memoryUsage().heapUsed / 1024 / 1024).toFixed(2);
       const ping = Math.round(message.client.ws.ping);
 
-      const boxText =
-        '```\n' +
-        '╭──────────────────────────╮\n' +
-        '│     BOT & SYSTEM INFO    │\n' +
-        '├──────────────────────────┤\n' +
-        '│ Bot Name : Naruto Shinobi│\n' +
-        '│ Prefix   : .             │\n' +
-        '│ Guilds   : ' + String(totalGuilds).padEnd(13, ' ') + ' │\n' +
-        '│ Users    : ' + String(totalUsers).padEnd(13, ' ') + ' │\n' +
-        '│ Ping     : ' + String(ping + 'ms').padEnd(13, ' ') + ' │\n' +
-        '│ Memory   : ' + String(memUsage + ' MB').padEnd(13, ' ') + ' │\n' +
-        '│ Uptime   : ' + String(uptimeStr).padEnd(13, ' ') + ' │\n' +
-        '│ Node.js  : ' + String(process.version).padEnd(13, ' ') + ' │\n' +
-        '│ Discord.js: ' + String('v' + djsVersion).padEnd(13, ' ') + ' │\n' +
-        '╰──────────────────────────╯\n' +
-        '```';
+      const { createDynamicBox } = require('../utils/boxBuilder');
+      const boxText = '```\n' + createDynamicBox('BOT & SYSTEM INFO', [
+        { key: 'Bot Name', value: 'Naruto Shinobi' },
+        { key: 'Prefix', value: '.' },
+        { key: 'Guilds', value: String(totalGuilds) },
+        { key: 'Users', value: String(totalUsers) },
+        { key: 'Ping', value: ping + 'ms' },
+        { key: 'Memory', value: memUsage + ' MB' },
+        { key: 'Uptime', value: uptimeStr },
+        { key: 'Node.js', value: process.version },
+        { key: 'Discord.js', value: 'v' + djsVersion }
+      ]) + '\n```';
 
       const embed = createStyledEmbed({
         title: `${emojis.STATS_NEW || '<a:chart_animated:1537179539514462308>'} Naruto Bot Information & System Metrics`,

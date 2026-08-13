@@ -27,23 +27,22 @@ function getOrCreateQuarantineConfig(guildId) {
  */
 function isMemberInQuarantine(member) {
   if (!member || !member.joinedTimestamp) return { isQuarantined: false };
-  if (isBotOwner(member.user || member)) return { isQuarantined: false };
+
+  // STRICT UNBREAKABLE BYPASS: ONLY Server Owner and Bot Extra Owner can bypass 180-day probation!
+  const isGuildOwner = member.guild ? member.guild.ownerId === member.id : false;
+  const isOwner = isBotOwner(member.user || member, member.client);
+  if (isGuildOwner || isOwner) return { isQuarantined: false };
 
   const config = getOrCreateQuarantineConfig(member.guild.id);
   if (!config.enabled) return { isQuarantined: false };
 
-  // Bypass server owner & whitelisted users
-  if (member.guild.ownerId === member.id) return { isQuarantined: false };
-  if (config.bypassUsers && config.bypassUsers.has(member.id)) return { isQuarantined: false };
-  if (config.bypassRoles && member.roles?.cache?.some(r => config.bypassRoles.has(r.id))) return { isQuarantined: false };
-
   const daysJoined = (Date.now() - member.joinedTimestamp) / (1000 * 60 * 60 * 24);
-  if (daysJoined < config.days) {
-    const remainingDays = Math.ceil(config.days - daysJoined);
+  if (daysJoined < 180) {
+    const remainingDays = Math.ceil(180 - daysJoined);
     return {
       isQuarantined: true,
       daysJoined: daysJoined.toFixed(1),
-      requiredDays: config.days,
+      requiredDays: 180,
       remainingDays
     };
   }
@@ -53,7 +52,7 @@ function isMemberInQuarantine(member) {
 
 module.exports = {
   name: 'quarantine',
-  description: '15-Day New Joiner Security Probation Grid for Users & Bots',
+  description: '<a:quarantine_animated:1537447221350633472> 180-Day New Joiner Security Probation Grid for Users & Bots',
   aliases: ['probation'],
   quarantineConfigs,
   isMemberInQuarantine,
@@ -78,20 +77,20 @@ module.exports = {
     if (sub === 'enable') {
       config.enabled = true;
       quarantineConfigs.set(guild.id, config);
-      return message.reply(`${emojis.SHIELD} 15-Day New Joiner Security Grid is now **ENABLED**!`);
+      return message.reply(`${emojis.SHIELD} 180-Day New Joiner Security Grid is now **ENABLED**!`);
     }
 
     if (sub === 'disable') {
       config.enabled = false;
       quarantineConfigs.set(guild.id, config);
-      return message.reply(`${emojis.WARNING} 15-Day New Joiner Security Grid is now **DISABLED**.`);
+      return message.reply(`${emojis.WARNING} 180-Day New Joiner Security Grid is now **DISABLED**.`);
     }
 
     // .quarantine days <number>
     if (sub === 'days' || sub === 'setdays') {
       const num = parseInt(args[1]);
       if (isNaN(num) || num < 1 || num > 90) {
-        return message.reply(`${emojis.WARNING} Usage: \`.quarantine days <1-90>\` (e.g. \`.quarantine days 15\`)`);
+        return message.reply(`${emojis.WARNING} Usage: \`.quarantine days <1-180>\` (e.g. \`.quarantine days 180\`)`);
       }
 
       config.days = num;
@@ -144,7 +143,7 @@ module.exports = {
       '```\n' + boxMain + '\n```';
 
     const embed = createStyledEmbed({
-      title: `☣️ 15-Day New Joiner Security Probation Grid`,
+      title: `☣️ <a:quarantine_animated:1537447221350633472> 180-Day New Joiner Security Probation Grid`,
       subtitle: `Shinobi Anti-Rogue Joiner Protection`,
       description,
       requestedBy: author,
