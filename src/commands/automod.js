@@ -224,19 +224,19 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
   const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
   const buttonRow1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('am_btn_spam').setEmoji(emojis.OBJ_AN_SPAM || '<a:code_animated:1537177358912725033>').setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_invites').setEmoji(emojis.OBJ_AN_WEBHOOK || '📢').setStyle(f.inviteLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji(emojis.OBJ_AN_SHIELD || '<a:security_animated:1537177499862171741>').setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_nsfw').setEmoji(emojis.OBJ_AN_PANIC || '🔞').setStyle(f.nsfwLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_words').setEmoji(emojis.OBJ_AN_ROLE || '🔤').setStyle(f.profanity ? ButtonStyle.Success : ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('am_btn_spam').setEmoji('🛑').setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_invites').setEmoji('🔗').setStyle(f.inviteLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji('🛡️').setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_nsfw').setEmoji('🔞').setStyle(f.nsfwLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_words').setEmoji('🔤').setStyle(f.profanity ? ButtonStyle.Success : ButtonStyle.Secondary)
   );
 
   const buttonRow2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('am_btn_confirm').setEmoji(emojis.OBJ_AN_WHITELIST || '<a:pencil_animated:1537177465829724181>').setStyle(m.moderatorConfirmation !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_dm').setEmoji(emojis.OBJ_AN_BOT || '<a:openeddooraperture_animated:1537177450411462766>').setStyle(m.alwaysDmPunished !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_anon').setEmoji(emojis.OBJ_AN_ROLE || '🎭').setStyle(m.hideStaffIdentity ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_purge').setEmoji(emojis.OBJ_AN_BAN || '🗑️').setStyle(m.autoPurgeMessages ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_refresh').setEmoji(emojis.OBJ_REFRESH || '🔄').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('am_btn_confirm').setEmoji('✍️').setStyle(m.moderatorConfirmation !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_dm').setEmoji('📩').setStyle(m.alwaysDmPunished !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_anon').setEmoji('🎭').setStyle(m.hideStaffIdentity ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_purge').setEmoji('🗑️').setStyle(m.autoPurgeMessages ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_refresh').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
   );
 
   return [selectRow, buttonRow1, buttonRow2];

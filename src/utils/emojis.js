@@ -298,6 +298,20 @@ const EMOJI_IDS = {
 };
 
 const FALLBACK_MAP = {
+  AN_BAN: '<a:banuser_animated:1537177336007364709>',
+  AN_KICK: '<a:kick_animated:1537177415552602223>',
+  AN_BOT: '<a:robot_animated:1537177494183088199>',
+  AN_CHANNEL: '<a:openfolder_animated:1537177452936437760>',
+  AN_ROLE: '<a:crown_animated:1537177361093500968>',
+  AN_WEBHOOK: '<a:webhook_animated:1537177550990741534>',
+  AN_SPAM: '<a:disabled_animated:1537177373613629542>',
+  AN_SHIELD: '<a:security_animated:1537177499862171741>',
+  AN_RAID: '<a:battle_animated:1537177338427605064>',
+  AN_GUILD: '<a:home_animated:1537177403875401889>',
+  AN_JOINGATE: '<a:joingate_animated:1537179596334698627>',
+  AN_QUARANTINE: '<a:prisoner_animated:1537177476147576993>',
+  AN_WHITELIST: '<a:check_animated:1537177345633550347>',
+  AN_PANIC: '<a:kaboom_animated:1537179599228637226>',
   WARNING: '<a:wrong_animated:1537179702928875631>',
   WARNING_ICON: '<a:wrong_animated:1537179702928875631>',
   ERROR: '<a:wrong_animated:1537179702928875631>',

@@ -291,7 +291,7 @@ function renderAntinukeDashboard(config, author, clientUser) {
     `• ${emojis.AN_JOINGATE} **JoinGate**: Bot Add & Account Age Join Protection\n` +
     `• ${emojis.AN_QUARANTINE} **Quarantine**: Dangerous Admin Perm Auto-Quarantine\n` +
     `• ${emojis.AN_WHITELIST} **Whitelist**: Open Granular Whitelist Delegation Hub\n` +
-    `• ${emojis.AN_BAN}${emojis.AN_KICK}${emojis.AN_BOT}${emojis.AN_CHANNEL}${emojis.AN_ROLE}${emojis.AN_WEBHOOK}${emojis.AN_SPAM}${emojis.AN_SHIELD}${emojis.AN_RAID}${emojis.AN_GUILD} **Filters**: Action Interception Toggles (Ban, Kick, Bot, Channel, Role, Webhook, Spam, Everyone, Raid, Guild)\n\n` +
+    `• ${emojis.AN_BAN} ${emojis.AN_KICK} ${emojis.AN_BOT} ${emojis.AN_CHANNEL} ${emojis.AN_ROLE} ${emojis.AN_WEBHOOK} ${emojis.AN_SPAM} ${emojis.AN_SHIELD} ${emojis.AN_RAID} ${emojis.AN_GUILD} **Filters**: Action Interception Toggles (Ban, Kick, Bot, Channel, Role, Webhook, Spam, Everyone, Raid, Guild)\n\n` +
     `**${emojis.AN_SHIELD} Main System Status**\n` +
     '```\n' + boxMain + '\n```\n\n' +
     `**${emojis.AN_JOINGATE} Join Gate Security**\n` +
