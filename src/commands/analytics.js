@@ -269,7 +269,14 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
   const label = TIMEFRAME_NAMES[timeframeKey] || 'All Time';
   const sTf = db.getUserAnalyticsStats(guild.id, targetUser.id, windowMs);
   const sLife = db.getUserAnalyticsStats(guild.id, targetUser.id, null);
-  const dbUser = db.getUser(targetUser.id);
+  const dbUser = db.getUser(targetUser.id, guild.id);
+
+  const totalMsgs = Math.max(dbUser.messages || 0, sLife.messages || 0, sTf.messages || 0);
+  const totalVcSecs = Math.max(dbUser.voiceSeconds || 0, sLife.voiceSeconds || 0, sTf.voiceSeconds || 0);
+  const totalInvs = Math.max(dbUser.invites || 0, sLife.invites || 0, sTf.invites || 0);
+
+  const periodMsgs = timeframeKey === 'lifetime' ? totalMsgs : (sTf.messages || 0);
+  const periodVcSecs = timeframeKey === 'lifetime' ? totalVcSecs : (sTf.voiceSeconds || 0);
 
   let titleText = 'USER ACTIVITY STATS';
   let rows = [];
@@ -279,16 +286,16 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
     rows = [
       { key: 'Username', val: targetUser.username },
       { key: 'Timeframe', val: label },
-      { key: 'Period Msg', val: `${sTf.messages.toLocaleString()} msgs` },
-      { key: 'Total Msgs', val: `${(dbUser.messages || sLife.messages || 0).toLocaleString()} msgs` }
+      { key: 'Period Msg', val: `${periodMsgs.toLocaleString()} msgs` },
+      { key: 'Total Msgs', val: `${totalMsgs.toLocaleString()} msgs` }
     ];
   } else if (activeCat === 'voice') {
     titleText = 'USER VOICE BREAKDOWN';
     rows = [
       { key: 'Username', val: targetUser.username },
       { key: 'Timeframe', val: label },
-      { key: 'Period Vc', val: formatDuration(sTf.voiceSeconds) },
-      { key: 'Total Vc', val: formatDuration(dbUser.voiceSeconds || sLife.voiceSeconds || 0) }
+      { key: 'Period Vc', val: formatDuration(periodVcSecs) },
+      { key: 'Total Vc', val: formatDuration(totalVcSecs) }
     ];
   } else if (activeCat === 'invites') {
     titleText = 'USER INVITES BREAKDOWN';
@@ -296,13 +303,13 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
       { key: 'Username', val: targetUser.username },
       { key: 'Timeframe', val: label },
       { key: 'Period Inv', val: `${sTf.invites.toLocaleString()} joins` },
-      { key: 'Total Inv', val: `${(dbUser.invites || sLife.invites || 0).toLocaleString()} joins` }
+      { key: 'Total Inv', val: `${totalInvs.toLocaleString()} joins` }
     ];
   } else if (activeCat === 'shinobi' || activeCat === 'rank') {
     titleText = 'SHINOBI RANK PROGRESS';
     rows = [
       { key: 'Username', val: targetUser.username },
-      { key: 'Rank', val: dbUser.rank || 'Student' },
+      { key: 'Rank', val: dbUser.rank || 'Academy Student' },
       { key: 'Level', val: `Lvl ${dbUser.level || 1}` },
       { key: 'XP Points', val: `${(dbUser.xp || 0).toLocaleString()} XP` }
     ];
@@ -311,11 +318,11 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
     titleText = 'USER ACTIVITY STATS';
     rows = [
       { key: 'Username', val: targetUser.username },
-      { key: 'Messages', val: `${(sTf.messages || 0).toLocaleString()} msgs` },
-      { key: 'Voice', val: formatDuration(sTf.voiceSeconds || 0) },
-      { key: 'Invites', val: `${(dbUser.invites || sLife.invites || 0).toLocaleString()} joins` },
+      { key: 'Messages', val: `${periodMsgs.toLocaleString()} msgs` },
+      { key: 'Voice', val: formatDuration(periodVcSecs) },
+      { key: 'Invites', val: `${totalInvs.toLocaleString()} joins` },
       { key: 'Level', val: `Lvl ${dbUser.level || 1}` },
-      { key: 'Rank', val: dbUser.rank || 'Student' }
+      { key: 'Rank', val: dbUser.rank || 'Academy Student' }
     ];
   }
 

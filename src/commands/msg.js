@@ -184,7 +184,7 @@ module.exports = {
 
       const delta = Math.abs(amount);
       db.addMessage(target.id, delta);
-      const userData = db.getUser(target.id);
+      const userData = db.getUser(target.id, message.guild.id);
 
       const boxText =
         '```\n' +
@@ -225,7 +225,7 @@ module.exports = {
 
       const delta = -Math.abs(amount);
       db.addMessage(target.id, delta);
-      const userData = db.getUser(target.id);
+      const userData = db.getUser(target.id, message.guild.id);
 
       const boxText =
         '```\n' +

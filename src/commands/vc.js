@@ -207,7 +207,7 @@ module.exports = {
 
       const secondsDelta = Math.abs(minutes) * 60;
       db.addVoiceTime(target.id, secondsDelta);
-      const userData = db.getUser(target.id);
+      const userData = db.getUser(target.id, message.guild.id);
       const totalMins = Math.floor((userData.voiceSeconds || 0) / 60);
 
       const boxText =
@@ -249,7 +249,7 @@ module.exports = {
 
       const secondsDelta = -Math.abs(minutes) * 60;
       db.addVoiceTime(target.id, secondsDelta);
-      const userData = db.getUser(target.id);
+      const userData = db.getUser(target.id, message.guild.id);
       const totalMins = Math.floor((userData.voiceSeconds || 0) / 60);
 
       const boxText =

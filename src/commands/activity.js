@@ -20,7 +20,7 @@ module.exports = {
 
     const sub = args[0] ? args[0].toLowerCase() : null;
     const targetUser = (message.mentions?.users && typeof message.mentions.users.first === 'function' ? message.mentions.users.first() : null) || author;
-    const userData = db.getUser(targetUser.id);
+    const userData = db.getUser(targetUser.id, message.guild.id);
 
     if (invoked === 'guildactivity' || sub === 'server' || sub === 'guild') {
       const totalMsgs = Object.values(db.data.users).reduce((acc, u) => acc + (u.messages || 0), 0);
