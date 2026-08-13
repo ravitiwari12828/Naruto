@@ -223,20 +223,20 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
 
   const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
-  const buttonRow1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('am_btn_spam').setEmoji('🛑').setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_invites').setEmoji('🔗').setStyle(f.inviteLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji('🛡️').setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_nsfw').setEmoji('🔞').setStyle(f.nsfwLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_words').setEmoji('🔤').setStyle(f.profanity ? ButtonStyle.Success : ButtonStyle.Secondary)
+    const buttonRow1 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('am_btn_spam').setEmoji({ id: '1537531213374423231', animated: true }).setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_invites').setEmoji({ id: '1537531164649070642', animated: true }).setStyle(f.inviteLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji({ id: '1537531328554074242', animated: true }).setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_nsfw').setEmoji({ id: '1537531210576961717', animated: true }).setStyle(f.nsfwLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_words').setEmoji({ id: '1537531124425957386', animated: true }).setStyle(f.profanity ? ButtonStyle.Success : ButtonStyle.Secondary)
   );
 
-  const buttonRow2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('am_btn_confirm').setEmoji('✍️').setStyle(m.moderatorConfirmation !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_dm').setEmoji('📩').setStyle(m.alwaysDmPunished !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_anon').setEmoji('🎭').setStyle(m.hideStaffIdentity ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_purge').setEmoji('🗑️').setStyle(m.autoPurgeMessages ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('am_btn_refresh').setEmoji('🔄').setStyle(ButtonStyle.Secondary)
+    const buttonRow2 = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('am_btn_confirm').setEmoji({ id: '1537531515704057987', animated: true }).setStyle(m.moderatorConfirmation !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_dm').setEmoji({ id: '1537531121884201081', animated: true }).setStyle(m.alwaysDmPunished !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_anon').setEmoji({ id: '1537531263705944064', animated: true }).setStyle(m.hideStaffIdentity ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_purge').setEmoji({ id: '1537531482430771280', animated: true }).setStyle(m.autoPurgeMessages ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_refresh').setEmoji({ id: '1537530785228398693', animated: true }).setStyle(ButtonStyle.Secondary)
   );
 
   return [selectRow, buttonRow1, buttonRow2];
