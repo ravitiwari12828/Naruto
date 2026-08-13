@@ -84,7 +84,7 @@ const everyonePingViolations = new Map();
 const client = new Client({
   presence: {
     status: 'online',
-    activities: [{ name: '<a:code_animated:1537177358912725033> .help | Naruto Shinobi Bot', type: 3 }]
+    activities: [{ name: '💻 .help | Naruto Shinobi Bot', type: 3 }]
   },
   makeCache: Options.cacheWithLimits({
     MessageManager: 25,
@@ -193,7 +193,7 @@ client.once('ready', async () => {
 
   client.user.setPresence({
     status: 'online',
-    activities: [{ name: '<a:code_animated:1537177358912725033> DM me for Support | .help', type: 3 }]
+    activities: [{ name: '💻 DM me for Support | .help', type: 3 }]
   });
 
   // Startup Cleanup: Sweep and delete leftover empty VoiceMaster temporary channels across all guilds

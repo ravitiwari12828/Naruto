@@ -62,8 +62,8 @@ module.exports = {
           try {
             const testEmbed = new EmbedBuilder()
               .setColor(0x7E0808)
-              .setTitle(`<a:accept_animated:1537177319603703969> Log Test: ${item.title}`)
-              .setDescription(`Automated verification test sent by **Naruto Bot** to confirm <#${channel.id}> is active.`)
+              .setTitle(`✅ Log Test: ${item.title}`)
+              .setDescription(`Automated verification test sent by **Naruto Bot** to confirm **#${channel.name}** is active.`)
               .addFields([
                 { name: 'Channel Name', value: `#${channel.name}`, inline: true },
                 { name: 'Channel ID', value: `\`${channel.id}\``, inline: true },
@@ -73,7 +73,7 @@ module.exports = {
               .setTimestamp();
 
             await channel.send({ embeds: [testEmbed] });
-            results.push(`<a:accept_animated:1537177319603703969> **#${item.name}**: Connected & Working (<#${channel.id}>)`);
+            results.push(`✅ **#${item.name}**: Connected & Working (**#${channel.name}**)`);
           } catch (err) {
             results.push(`<a:wrong_animated:1537179702928875631> **#${item.name}**: Permission Error (\`${err.message}\`)`);
           }
