@@ -435,7 +435,78 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
   const validUserAvatar = (userAvatarURL && typeof userAvatarURL === 'string' && userAvatarURL.startsWith('http')) ? userAvatarURL : null;
   const catColor = CATEGORY_COLORS[cat.value] || 0x5865F2;
 
-  // Executive Dynamic Codeblock Box Layout for ALL categories
+  // SPECIAL FORMATTING FOR ECONOMY CATEGORY SUB-GROUPS
+  if (cat.value === 'economy') {
+    const bankBox = createDynamicBox('BANKING & WEALTH MANAGEMENT', [
+      '.balance     - Check wallet & bank balance',
+      '.deposit     - Deposit ryo into bank',
+      '.withdraw    - Withdraw ryo from bank',
+      '.pay         - Transfer ryo to user',
+      '.networth    - View total assets & net worth',
+      '.leaderboard - Top richest members'
+    ]);
+
+    const casinoBox = createDynamicBox('CASINO & GAMBLING ARENA', [
+      '.blackjack   - Play 21 card game',
+      '.plinko      - Drop balls for multipliers',
+      '.crash       - Multiplier rocket game',
+      '.roulette    - Spin the roulette wheel',
+      '.dice        - Roll high-stakes dice',
+      '.higherlower - Guess higher or lower'
+    ]);
+
+    const jobsBox = createDynamicBox('JOBS & RESOURCE HARVESTING', [
+      '.work        - Earn salary from your job',
+      '.job         - Choose Shinobi profession',
+      '.mine        - Mine rare gems & minerals',
+      '.dig         - Dig for buried treasure',
+      '.fish        - Catch rare sea creatures',
+      '.chop        - Harvest timber & wood',
+      '.hunt        - Hunt wild forest beasts',
+      '.crime       - Risk high-stakes robbery'
+    ]);
+
+    const rewardsBox = createDynamicBox('DAILY REWARDS & COMMERCE', [
+      '.daily       - Claim daily ryo allowance',
+      '.weekly      - Claim weekly ninja bonus',
+      '.monthly     - Claim monthly VIP reward',
+      '.shop        - View Shinobi market items',
+      '.buy         - Purchase market goods',
+      '.sell        - Sell inventory items',
+      '.inventory   - View owned items & gear'
+    ]);
+
+    const lifestyleBox = createDynamicBox('COMPANIONS, MARRIAGE & STOCKS', [
+      '.pet         - Adopt & feed loyal pets',
+      '.marry       - Propose & manage marriage',
+      '.stocks      - Trade in ninja stock market',
+      '.quest       - Complete daily ninja quests'
+    ]);
+
+    const embed = new EmbedBuilder()
+      .setColor(catColor)
+      .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
+      .setTitle(`${cat.heading} Economy & Casino Executive Hub`)
+      .setDescription(
+        `# ${cat.heading} Economy & Casino Executive Hub\n` +
+        `Welcome **${username}**! Below is the categorized command suite for **Economy & Casino**.\n\n` +
+        '```\n' + bankBox + '\n```\n\n' +
+        '```\n' + casinoBox + '\n```\n\n' +
+        '```\n' + jobsBox + '\n```\n\n' +
+        '```\n' + rewardsBox + '\n```\n\n' +
+        '```\n' + lifestyleBox + '\n```'
+      )
+      .setFooter(validUserAvatar ? {
+        text: `Requested by ${username} • Total ${cat.commands.length} commands`,
+        iconURL: validUserAvatar
+      } : { text: `Requested by ${username} • Total ${cat.commands.length} commands` });
+
+    if (botAvatarURL) embed.setThumbnail(botAvatarURL);
+    if (devPortalBanner) embed.setImage(devPortalBanner);
+    return embed;
+  }
+
+  // Executive Dynamic Codeblock Box Layout for ALL other categories
   const displayCmds = cat.commands.map(cmd => '.' + cmd);
   let rawTitle = cat.label.includes('&') ? cat.label.split('&')[0].trim() : cat.label;
   rawTitle = rawTitle.toUpperCase() + ' COMMANDS';
