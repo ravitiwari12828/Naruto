@@ -55,27 +55,17 @@ module.exports = (client) => {
       const createdAgo = createdUnix ? `<t:${createdUnix}:R>` : 'Unknown';
 
       let description =
-        `│ **Channel:** #${channel ? channel.name : 'unknown'} (<#${channel ? channel.id : '0'}>)
-` +
-        `│ **Message ID:** ${message.id}
-` +
-        `│ **Message author:** @${author ? author.username : 'Unknown'} ( <@${author ? author.id : '0'}> )
-` +
+        `│ **Channel:** #${channel ? channel.name : 'unknown'} (<#${channel ? channel.id : '0'}>)\n` +
+        `│ **Message ID:** ${message.id}\n` +
+        `│ **Message author:** @${author ? author.username : 'Unknown'} ( <@${author ? author.id : '0'}> )\n` +
         `│ **Message created:** ${createdAgo}`;
 
       if (textContent) {
-        description += `
-│
-│ **Content:**
->>> ${textContent.slice(0, 900)}`;
+        description += `\n│\n│ **Content:**\n>>> ${textContent.slice(0, 900)}`;
       }
 
       if (attachmentNames.length > 0) {
-        description += `
-│
-│ **${attachmentNames.length} Attachment(s)**
-` + attachmentNames.join('
-');
+        description += `\n│\n│ **${attachmentNames.length} Attachment(s)**\n` + attachmentNames.join('\n');
       }
 
       const logEmbed = new EmbedBuilder()
@@ -119,7 +109,7 @@ module.exports = (client) => {
         const timeStr = formatDate(m.createdTimestamp || Date.now());
         const userTag = m.author ? `@${m.author.username}` : '@unknown';
         const userId = m.author ? m.author.id : 'unknown';
-        const content = m.content || (m.attachments.size > 0 ? Array.from(m.attachments.values()).map(a => a.url).join('\n') : '[No Text Content]');
+        const content = m.content || (m.attachments?.size > 0 ? Array.from(m.attachments.values()).map(a => a.url).join('\n') : '[No Text Content]');
         return `[${timeStr}] ${userTag} (${userId})\n${content}\nID: ${m.id}\n`;
       }).join('\n');
 
@@ -165,21 +155,12 @@ module.exports = (client) => {
       }
 
       const description =
-        `│ **Channel:** #${channel ? channel.name : 'unknown'} (<#${channel ? channel.id : '0'}>)
-` +
-        `│ **Message ID:** ${newMessage.id}
-` +
-        `│ **Message author:** @${author ? author.username : 'Unknown'} ( <@${author ? author.id : '0'}> )
-` +
-        `│ **Jump to Message:** [Click Here](${newMessage.url})
-
-` +
-        `**Before (Original):**
-${oldContent ? `>>> ${oldContent.slice(0, 900)}` : '*[Empty / Attachment Only]*'}
-
-` +
-        `**After (Edited):**
-${newContent ? `>>> ${newContent.slice(0, 900)}` : '*[Empty / Attachment Only]*'}`;
+        `│ **Channel:** #${channel ? channel.name : 'unknown'} (<#${channel ? channel.id : '0'}>)\n` +
+        `│ **Message ID:** ${newMessage.id}\n` +
+        `│ **Message author:** @${author ? author.username : 'Unknown'} ( <@${author ? author.id : '0'}> )\n` +
+        `│ **Jump to Message:** [Click Here](${newMessage.url})\n\n` +
+        `**Before (Original):**\n${oldContent ? `>>> ${oldContent.slice(0, 900)}` : '*[Empty / Attachment Only]*'}\n\n` +
+        `**After (Edited):**\n${newContent ? `>>> ${newContent.slice(0, 900)}` : '*[Empty / Attachment Only]*'}`;
 
       const editEmbed = new EmbedBuilder()
         .setColor(0xFEE75C) // Gold
