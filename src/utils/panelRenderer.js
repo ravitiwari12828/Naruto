@@ -436,6 +436,34 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
   const validUserAvatar = (userAvatarURL && typeof userAvatarURL === 'string' && userAvatarURL.startsWith('http')) ? userAvatarURL : null;
   const catColor = CATEGORY_COLORS[cat.value] || 0x5865F2;
 
+  // Executive Dynamic Codeblock Box Layout for ALL categories
+  const displayCmds = cat.commands.map(cmd => '.' + cmd);
+  let rawTitle = cat.label.includes('&') ? cat.label.split('&')[0].trim() : cat.label;
+  rawTitle = rawTitle.toUpperCase() + ' COMMANDS';
+
+  const boxStr = createDynamicBox(rawTitle, displayCmds);
+
+  const embed = new EmbedBuilder()
+    .setColor(catColor)
+    .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
+    .setTitle(`${cat.heading} ${cat.label}`)
+    .setDescription(
+      `Welcome **${username}**! Below is the executive suite for **${cat.label}**.\n` +
+      `Type any command below in your server to execute.\n\n` +
+      '```\n' + boxStr + '\n```'
+    )
+    .setFooter(validUserAvatar ? {
+      text: `Requested by ${username} • Total ${cat.commands.length} commands`,
+      iconURL: validUserAvatar
+    } : { text: `Requested by ${username} • Total ${cat.commands.length} commands` });
+
+  if (botAvatarURL) embed.setThumbnail(botAvatarURL);
+  if (devPortalBanner) embed.setImage(devPortalBanner);
+  return embed;
+}
+
+function _unusedLegacyBuildCategory(messageOrInteraction, cat, botUser, botAvatar, devPortalBanner) {
+
   if (cat.value === 'fun') {
     const gameEmoji = '<a:gamecontroller_animated:1537177388725706802>';
     const zapEmoji = '<a:rapid_animated:1537177482006896692>';
@@ -610,11 +638,11 @@ function buildDropdownMenu() {
     
     if (cat.customEmoji && cat.customEmoji.includes(':')) {
       const parts = cat.customEmoji.split(':');
-      const emojiId = parts.pop().replace('>', '');
+      const emojiId = parts[parts.length - 1].replace('>', '').trim();
       const isAnim = cat.customEmoji.startsWith('<a:');
       opt.emoji = { id: emojiId, animated: isAnim };
-    } else if (cat.unicodeFallback) {
-      opt.emoji = cat.unicodeFallback;
+    } else {
+      opt.emoji = { id: '1537179684175872171', animated: true };
     }
     
     return opt;

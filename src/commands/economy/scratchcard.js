@@ -1,51 +1,87 @@
 const { EmbedBuilder } = require('discord.js');
 const db = require('../../database/db');
-const config = require('../../config');
 const emojis = require('../../utils/emojis');
-const { animate } = require('../../utils/funCore');
-const { fmt } = require('../../utils/economyCore');
 
 const PRICE = 100;
-const SYMBOLS = ['🍒', '🍋', '<a:dimond_animated:1537177370719551498>', '<a:rank_animated:1537179656090943538>', '<a:signal_animated:1537177512365260911>', '💀'];
-const PAYOUTS = { '🍒': 2, '🍋': 3, '<a:signal_animated:1537177512365260911>': 5, '<a:rank_animated:1537179656090943538>': 10, '<a:dimond_animated:1537177370719551498>': 25, '💀': 0 };
+const SYMBOLS = ['🍒', '🍋', '💎', '⭐', '⚡', '💀'];
+const PAYOUTS = { '🍒': 2, '🍋': 3, '⚡': 5, '⭐': 10, '💎': 25, '💀': 0 };
 
 module.exports = {
   name: 'scratchcard',
   description: 'Buy and scratch an instant-win scratchcard.',
-  usage: '.scratchcard',
+  aliases: ['scratch', 'scratchcard'],
   cooldown: 5000,
+
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);
     if (eco.balance < PRICE) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} A scratchcard costs **${fmt(PRICE)}** ${emojis.coin}.`)] });
+      return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} A scratchcard costs **${PRICE}** coins. You only have **${eco.balance}** coins.`);
     }
+
     eco.balance -= PRICE;
 
     const grid = Array.from({ length: 9 }, () => SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]);
-    // guarantee a fair chance at a real match by occasionally forcing three-of-a-kind
-    if (Math.random() < 0.3) {
-      const win = SYMBOLS[Math.floor(Math.random() * (SYMBOLS.length - 1))]; // exclude skull from forced wins
+    if (Math.random() < 0.35) {
+      const win = SYMBOLS[Math.floor(Math.random() * (SYMBOLS.length - 1))];
       grid[0] = win; grid[4] = win; grid[8] = win;
     }
 
-    const sent = await message.channel.send({ embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle('<a:tickety_animated:1537177533961732106> Scratching...').setDescription('❓❓❓\n❓❓❓\n❓❓❓')] });
-    await animate(sent, [
-      { embeds: [new EmbedBuilder().setColor(config.embedColor).setTitle('<a:tickety_animated:1537177533961732106> Scratching...').setDescription(`${grid[0]}❓❓\n❓${grid[4]}❓\n❓❓${grid[8]}`)] },
-    ], 700);
+    const initialEmbed = new EmbedBuilder()
+      .setColor(0xF1C40F)
+      .setTitle('<a:tickety_animated:1537177533961732106> Shinobi Scratchcard')
+      .setDescription(
+        `**Scratching card for ${message.author.username}...**\n\n` +
+        `❓ ❓ ❓\n` +
+        `❓ ❓ ❓\n` +
+        `❓ ❓ ❓\n\n` +
+        `*Scratching in progress...*`
+      )
+      .setFooter({ text: `Cost: ${PRICE} coins` });
+
+    const sent = await message.channel.send({ embeds: [initialEmbed] });
+
+    await new Promise(r => setTimeout(r, 1000));
+
+    const stepEmbed = new EmbedBuilder()
+      .setColor(0xF1C40F)
+      .setTitle('<a:tickety_animated:1537177533961732106> Shinobi Scratchcard')
+      .setDescription(
+        `**Scratching card for ${message.author.username}...**\n\n` +
+        `${grid[0]} ❓ ❓\n` +
+        `❓ ${grid[4]} ❓\n` +
+        `❓ ❓ ${grid[8]}\n\n` +
+        `*Revealing diagonal chakra pattern...*`
+      );
+
+    await sent.edit({ embeds: [stepEmbed] }).catch(() => {});
+
+    await new Promise(r => setTimeout(r, 1000));
 
     const diag = [grid[0], grid[4], grid[8]];
     const match = diag[0] === diag[1] && diag[1] === diag[2] ? diag[0] : null;
     const payout = match ? PRICE * PAYOUTS[match] : 0;
+
     eco.balance += payout;
     db.setEconomy(message.guild.id, message.author.id, eco);
 
-    const rows = [grid.slice(0, 3).join(''), grid.slice(3, 6).join(''), grid.slice(6, 9).join('')].join('\n');
-    await sent.edit({
-      embeds: [new EmbedBuilder()
-        .setColor(payout > 0 ? config.successColor : config.errorColor)
-        .setTitle(payout > 0 ? `${emojis.success} Winner!` : `${emojis.error} No Match`)
-        .setDescription(`${rows}\n\n${payout > 0 ? `Matched **${match}** on the diagonal — won **${fmt(payout)}** coins!` : 'Better luck next time!'}`)
-        .setFooter({ text: `New balance: ${fmt(eco.balance)} coins` })],
-    });
-  },
+    const fullGridStr =
+      `${grid[0]} ${grid[1]} ${grid[2]}\n` +
+      `${grid[3]} ${grid[4]} ${grid[5]}\n` +
+      `${grid[6]} ${grid[7]} ${grid[8]}`;
+
+    const finalEmbed = new EmbedBuilder()
+      .setColor(payout > 0 ? 0x2ECC71 : 0xED4245)
+      .setTitle(payout > 0 ? '<a:tada_party_animated:1537179689381134356> Instant Scratchcard WINNER!' : '<a:wrong_animated:1537179702928875631> No Match — Better Luck Next Time')
+      .setDescription(
+        `**${message.author.username}'s Scratchcard Result:**\n\n` +
+        `${fullGridStr}\n\n` +
+        (payout > 0
+          ? `🎉 **MATCHED 3x ${match} ON DIAGONAL!**\n> You won **${payout}** coins!`
+          : `💔 **No diagonal match.** You lost **${PRICE}** coins.`)
+      )
+      .setFooter({ text: `New Balance: ${eco.balance} coins` })
+      .setTimestamp();
+
+    await sent.edit({ embeds: [finalEmbed] }).catch(() => {});
+  }
 };
