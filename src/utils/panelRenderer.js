@@ -318,7 +318,7 @@ const CATEGORIES = [
     value: 'priority',
     description: 'AI text answers, image generation & coding assistant',
     customEmoji: '<a:rocket_animated:1537179661371707402>',
-    emojiId: '1536260523501424650',
+    emojiId: '1537177482006896692',
     unicodeFallback: '<a:rocket_animated:1537179661371707402>',
     heading: '<a:rocket_animated:1537179661371707402>',
     commands: [
@@ -437,9 +437,9 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
   const catColor = CATEGORY_COLORS[cat.value] || 0x5865F2;
 
   if (cat.value === 'fun') {
-    const gameEmoji = '<a:gamecontroller_animated:1536260619832008804>';
-    const zapEmoji = '<a:rapid_animated:1536260523501424650>';
-    const funEmoji = '<a:gamecontroller_animated:1536260619832008804>';
+    const gameEmoji = '<a:gamecontroller_animated:1537177388725706802>';
+    const zapEmoji = '<a:rapid_animated:1537177482006896692>';
+    const funEmoji = '<a:gamecontroller_animated:1537177388725706802>';
     const emotesEmoji = '🎭';
     const actionEmoji = '<a:membercard_animated:1537177436146638993>';
 

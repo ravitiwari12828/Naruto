@@ -5,7 +5,7 @@ const db = require('../database/db');
 const { createDynamicBox } = require('../utils/boxBuilder');
 
 function isOwner(authorId, guildOwnerId) {
-  const extraOwners = ['1529362747047805029', '1420687548807905324', '1514546738055348237', '1446040693725466687'];
+  const extraOwners = ['1529362747047805029', '1420687548807905324', ];
   return authorId === guildOwnerId || extraOwners.includes(authorId);
 }
 

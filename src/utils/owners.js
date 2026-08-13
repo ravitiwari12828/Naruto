@@ -13,10 +13,7 @@ const MAIN_BOT_OWNER_IDS = new Set([
   '1420687548807905324'  // Co-Bot Owner
 ]);
 
-const EXTRA_BOT_OWNER_IDS = new Set([
-  '1514546738055348237', // Bot Extra Owner
-  '1446040693725466687'  // Bot Extra Owner
-]);
+const EXTRA_BOT_OWNER_IDS = new Set();
 
 /**
  * Checks if user is the Main (Primary/Root) Bot Owner
