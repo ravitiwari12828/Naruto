@@ -73,7 +73,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x5865F2)
-      .setTitle(`⚙️ Server Settings Updated`)
+      .setTitle(`<a:settings_animated:1537177506170404905> Server Settings Updated`)
       .setDescription(
         `• **Server:** \`${newGuild.name}\`\n` +
         `• **Updated By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}\n\n` +
@@ -96,7 +96,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`🎭 Role Created`)
+      .setTitle(`<a:add_animated:1537177324435283998> Role Created`)
       .setDescription(
         `• **Role:** <@&${role.id}> (**${role.name}**)\n` +
         `• **Role ID:** \`${role.id}\`\n` +
@@ -141,7 +141,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle(`🎭 Role Modified`)
+      .setTitle(`<a:pencil_animated:1537177465829724181> Role Modified`)
       .setDescription(
         `• **Role:** <@&${newRole.id}> (**${newRole.name}**)\n` +
         `• **Modified By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}\n\n` +
@@ -160,7 +160,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`🗑️ Role Deleted`)
+      .setTitle(`<a:bin_animated:1537177340390416434> Role Deleted`)
       .setDescription(
         `• **Role Name:** \`${role.name}\`\n` +
         `• **Role ID:** \`${role.id}\`\n` +
@@ -193,7 +193,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`📁 Channel Created`)
+      .setTitle(`<a:openfolder_animated:1537177452936437760> Channel Created`)
       .setDescription(
         `• **Channel:** <#${channel.id}> (\`${channel.name}\`)\n` +
         `• **Channel ID:** \`${channel.id}\`\n` +
@@ -233,7 +233,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle(`⚙️ Channel Modified / Permissions Updated`)
+      .setTitle(`<a:pencil_animated:1537177465829724181> Channel Modified / Permissions Updated`)
       .setDescription(
         `• **Channel:** <#${newChannel.id}> (\`${newChannel.name}\`)\n` +
         `• **Category:** \`${newChannel.parent ? newChannel.parent.name : 'None'}\`\n` +
@@ -255,7 +255,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`🗑️ Channel Deleted`)
+      .setTitle(`<a:bin_animated:1537177340390416434> Channel Deleted`)
       .setDescription(
         `• **Channel Name:** \`${channel.name}\`\n` +
         `• **Channel ID:** \`${channel.id}\`\n` +
@@ -285,7 +285,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`${emojis.WELCOME || '📥'} User Joined Server`)
+      .setTitle(`<a:membercard_animated:1537177436146638993> User Joined Server`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **User:** <@${member.id}> (\`${member.user.tag}\`)\n` +
@@ -310,7 +310,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`📤 User Left Server`)
+      .setTitle(`<a:logout_animated:1537177433193848967> User Left Server`)
       .setDescription(
         `• **User:** <@${member.id}> (\`${member.user.tag}\`)\n` +
         (joinedUnix ? `• **Joined Server:** <t:${joinedUnix}:R> (<t:${joinedUnix}:f>)\n` : '') +
@@ -362,7 +362,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x3498DB)
-      .setTitle(`🎭 Member Role / Profile Updated`)
+      .setTitle(`<a:membercard_animated:1537177436146638993> Member Role / Profile Updated`)
       .setDescription(
         `• **Member:** <@${newMember.id}> (\`${newMember.user.tag}\`)\n\n` +
         `**Changes:**\n${changes.join('\n')}\n\n` +
@@ -385,7 +385,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`🔨 Member Banned`)
+      .setTitle(`<a:banuser_animated:1537177336007364709> Member Banned`)
       .setDescription(
         `• **Banned User:** <@${ban.user.id}> (\`${ban.user.tag}\`)\n` +
         `• **User ID:** \`${ban.user.id}\`\n` +
@@ -405,7 +405,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`🔓 Member Unbanned`)
+      .setTitle(`<a:unlock_animated:1537177539297157150> Member Unbanned`)
       .setDescription(
         `• **Unbanned User:** <@${ban.user.id}> (\`${ban.user.tag}\`)\n` +
         `• **User ID:** \`${ban.user.id}\`\n` +
@@ -435,7 +435,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`${emojis.INVITELINK || '✉️'} Invite Created in Server Settings`)
+      .setTitle(`<a:linkx_animated:1537177423324512327> Invite Created in Server Settings`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Invite Link:** \`https://discord.gg/${invite.code}\`\n` +
@@ -465,7 +465,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`${emojis.REMOVE || '🗑️'} Invite Deleted in Server Settings`)
+      .setTitle(`<a:bin_animated:1537177340390416434> Invite Deleted in Server Settings`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Invite Code:** \`discord.gg/${invite.code}\`\n` +
@@ -498,7 +498,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Invite Link Posted in Chat`)
+      .setTitle(`<a:wrong_animated:1537179702928875631> Invite Link Posted in Chat`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Author:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
@@ -528,7 +528,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`${emojis.AUTOMOD || '<a:robot_animated:1537177494183088199>'} AutoMod Rule Created in Server Settings`)
+      .setTitle(`<a:robot_animated:1537177494183088199> AutoMod Rule Created in Server Settings`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Rule Name:** \`${rule.name}\`\n` +
@@ -555,7 +555,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x3498DB)
-      .setTitle(`${emojis.AUTOMOD || '<a:robot_animated:1537177494183088199>'} Discord AutoMod Rule Content Updated`)
+      .setTitle(`<a:robot_animated:1537177494183088199> Discord AutoMod Rule Content Updated`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Rule Name:** \`${newRule.name}\`\n` +
@@ -579,7 +579,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`${emojis.AUTOMOD || '<a:robot_animated:1537177494183088199>'} AutoMod Rule Deleted in Server Settings`)
+      .setTitle(`<a:bin_animated:1537177340390416434> AutoMod Rule Deleted in Server Settings`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Rule Name:** \`${rule.name}\`\n` +
