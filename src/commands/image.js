@@ -103,6 +103,28 @@ module.exports = {
 
     const promptText = args.join(' ').trim();
 
+    // Strict NSFW / Explicit Content Guardrail (Discord TOS & Safety Policy Enforcement)
+    const nsfwRegex = /\b(naked|nude|nudity|boobs|boob|vagina|vaginas|penis|dick|pussy|sex|sexual|sexually|porn|porno|pornographic|erotic|nsfw|hentai|strip|topless|bottomless|genitals|genital|clitoris|anus|nipple|nipples|orgasm|masturbate|intercourse|explicit|uncensored|vagina)\b/i;
+    if (nsfwRegex.test(promptText)) {
+      const nsfwEmbed = createStyledEmbed({
+        title: `<a:wrong_animated:1537179702928875631> NSFW / Explicit Content Blocked`,
+        subtitle: `Safety Policy & Discord TOS Enforcement`,
+        description:
+          `**Your prompt was blocked by the AI Safety Guardrail!**
+
+` +
+          `• **Reason:** Detected explicit NSFW / adult keywords.
+` +
+          `• **Policy:** Generation of explicit nudity, pornographic composition, or sexual content is **strictly prohibited** for all users (including Premium Users and Bot Owners) to ensure full compliance with Discord TOS.
+
+` +
+          `*Please refine your prompt to adhere to community safety guidelines.*`,
+        requestedBy: author,
+        clientUser
+      });
+      return message.reply({ embeds: [nsfwEmbed] });
+    }
+
     // Check limit before prompt check to inform user of their tier & quota
     const limitCheck = checkImageLimit(author.id, guild?.id, client, author);
 
