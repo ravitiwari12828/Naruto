@@ -1,3 +1,4 @@
+const { createDynamicBox } = require('../utils/panelRenderer');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { PermissionsBitField } = require('discord.js');

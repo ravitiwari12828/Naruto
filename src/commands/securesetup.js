@@ -1,3 +1,4 @@
+const { createDynamicBox } = require('../utils/panelRenderer');
 const {
   ActionRowBuilder,
   ButtonBuilder,

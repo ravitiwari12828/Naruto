@@ -1,3 +1,4 @@
+const { createDynamicBox } = require('../utils/panelRenderer');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { createAdaptiveButton } = require('../utils/buttonTheme');

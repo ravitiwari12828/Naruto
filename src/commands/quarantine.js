@@ -1,3 +1,4 @@
+const { createDynamicBox } = require('../utils/panelRenderer');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const { PermissionsBitField } = require('discord.js');
 const { isBotOwner } = require('../utils/owners');
