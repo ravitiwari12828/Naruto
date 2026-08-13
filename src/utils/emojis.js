@@ -4,6 +4,17 @@
  */
 
 const CUSTOM = {
+  whitelist_animated: '<a:whitelist_animated:1537447233472036964>',
+  sticky_animated: '<a:sticky_animated:1537447230007550062>',
+  refresh_animated: '<a:refresh_animated:1537447225679020133>',
+  quarantine_animated: '<a:quarantine_animated:1537447221350633472>',
+  nsfw_animated: '<a:nsfw_animated:1537447217076633600>',
+  notify_animated: '<a:notify_animated:1537447213318283324>',
+  modmail_animated: '<a:modmail_animated:1537447208553811999>',
+  fun_animated: '<a:fun_animated:1537447200362070126>',
+  blacklist_animated: '<a:blacklist_animated:1537447195882553404>',
+  backup_animated: '<a:backup_animated:1537447192325922897>',
+  antinuke_animated: '<a:antinuke_animated:1537447188823805972>',
   youtube_animated: '<a:youtube_animated:1537179705470492693>',
   wrong_animated: '<a:wrong_animated:1537179702928875631>',
   welcome_animated: '<a:welcome_animated:1537179700349243402>',
@@ -298,6 +309,17 @@ const EMOJI_IDS = {
 };
 
 const FALLBACK_MAP = {
+  WHITELIST: '<a:whitelist_animated:1537447233472036964>',
+  STICKY: '<a:sticky_animated:1537447230007550062>',
+  REFRESH: '<a:refresh_animated:1537447225679020133>',
+  QUARANTINE: '<a:quarantine_animated:1537447221350633472>',
+  NSFW: '<a:nsfw_animated:1537447217076633600>',
+  NOTIFY: '<a:notify_animated:1537447213318283324>',
+  MODMAIL: '<a:modmail_animated:1537447208553811999>',
+  FUN: '<a:fun_animated:1537447200362070126>',
+  BLACKLIST: '<a:blacklist_animated:1537447195882553404>',
+  BACKUP: '<a:backup_animated:1537447192325922897>',
+  ANTINUKE: '<a:antinuke_animated:1537447188823805972>',
   AN_BAN: '<a:banuser_animated:1537177336007364709>',
   AN_KICK: '<a:kick_animated:1537177415552602223>',
   AN_BOT: '<a:robot_animated:1537177494183088199>',
