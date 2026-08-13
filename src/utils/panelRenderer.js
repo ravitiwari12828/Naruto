@@ -696,6 +696,7 @@ async function renderModuleHelpPanel(message, categoryValue) {
 module.exports = {
   CATEGORIES,
   CATEGORY_COLORS,
+  createDynamicBox,
   buildCategoryEmbed,
   buildDropdownMenu,
   buildNavigationButtons,
