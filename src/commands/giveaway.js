@@ -91,8 +91,8 @@ function buildEndedEmbed(gw, winnerMentions, clientUser) {
     new ButtonBuilder()
       .setCustomId(`gw_claim_${gw.id}`)
       .setLabel('Claim Reward')
-      .setEmoji('🎉')
-      .setStyle(ButtonStyle.Success)
+      .setEmoji({ id: '1537179583064055931', animated: true })
+      .setStyle(ButtonStyle.Secondary)
   );
 
   return { embed, claimBtn };
@@ -197,8 +197,8 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId(`gw_enter_${id}`)
           .setLabel('Enter Giveaway')
-          .setEmoji('🎉')
-          .setStyle(ButtonStyle.Success)
+          .setEmoji({ id: '1537179583064055931', animated: true })
+          .setStyle(ButtonStyle.Secondary)
       );
 
       const msg = await message.channel.send({ embeds: [embed], components: [enterBtn] });
