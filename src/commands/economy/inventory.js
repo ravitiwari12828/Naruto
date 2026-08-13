@@ -28,7 +28,7 @@ module.exports = {
 
     let totalValue = 0;
     const lines = entries.map(([id, qty]) => {
-      const item = items.findItem(id) || { id, name: id, emoji: '📦', price: 100 };
+      const item = items.findItem(id) || { id, name: id, emoji: '<a:openfolder_animated:1537177452936437760>', price: 100 };
       const sellPrice = item.sell || Math.floor((item.price || 100) * 0.75) || 50;
       const val = sellPrice * qty;
       totalValue += val;

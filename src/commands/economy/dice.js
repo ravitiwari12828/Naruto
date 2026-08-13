@@ -49,9 +49,9 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(delta > 0 ? config.successColor : delta < 0 ? config.errorColor : config.warnColor)
-      .setTitle(`🎲 Dice Duel`)
+      .setTitle(`<a:dice_animated:1537179565800292533> Dice Duel`)
       .addFields(
-        { name: `👤 Your Roll (${playerTotal})`, value: `${DICE_EMOJIS[p1]} + ${DICE_EMOJIS[p2]} = **${playerTotal}**`, inline: true },
+        { name: `<a:membercard_animated:1537177436146638993> Your Roll (${playerTotal})`, value: `${DICE_EMOJIS[p1]} + ${DICE_EMOJIS[p2]} = **${playerTotal}**`, inline: true },
         { name: `<a:robot_animated:1537177494183088199> Bot's Roll (${botTotal})`, value: `${DICE_EMOJIS[b1]} + ${DICE_EMOJIS[b2]} = **${botTotal}**`, inline: true }
       )
       .setDescription(resultText)

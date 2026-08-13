@@ -38,8 +38,8 @@ module.exports = {
 
     const initialEmbed = new EmbedBuilder()
       .setColor(config.embedColor)
-      .setTitle(`🔴 Plinko Pinball Drop`)
-      .setDescription(`\`\`\`\n  🔴 Plinko Ball Released...\n  ${path.join(' ')}\n\`\`\``)
+      .setTitle(`<a:wrong_animated:1537179702928875631> Plinko Pinball Drop`)
+      .setDescription(`\`\`\`\n  <a:wrong_animated:1537179702928875631> Plinko Ball Released...\n  ${path.join(' ')}\n\`\`\``)
       .setFooter({ text: `Bet: ${fmt(bet)} coins` });
 
     const sent = await message.channel.send({ embeds: [initialEmbed] });
@@ -49,7 +49,7 @@ module.exports = {
     eco.balance += payout;
     db.setEconomy(message.guild.id, message.author.id, eco);
 
-    const slotsFormatted = MULTIPLIERS.map((m, idx) => (idx === slotIndex ? `[🎯 ${m}x]` : `${m}x`)).join(' | ');
+    const slotsFormatted = MULTIPLIERS.map((m, idx) => (idx === slotIndex ? `[<a:target_animated:1537179692174545037> ${m}x]` : `${m}x`)).join(' | ');
     const isWin = payout >= bet;
 
     const resultEmbed = new EmbedBuilder()

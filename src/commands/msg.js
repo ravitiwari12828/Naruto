@@ -43,7 +43,7 @@ module.exports = {
 
       if (targetType && action) {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-          return message.reply(`⚠️ Only Administrators can manage message channel & category filters.`);
+          return message.reply(`<a:wrong_animated:1537179702928875631> Only Administrators can manage message channel & category filters.`);
         }
 
         const config = db.getAutomod(guild.id);
@@ -60,12 +60,12 @@ module.exports = {
 
         if (targetType === 'channel') {
           const chan = mentionChan || (guild.channels?.cache?.get ? guild.channels.cache.get(targetInput) : null);
-          if (!chan) return message.reply(`⚠️ Please mention a valid channel or provide a channel ID.`);
+          if (!chan) return message.reply(`<a:wrong_animated:1537179702928875631> Please mention a valid channel or provide a channel ID.`);
           targetId = chan.id;
           targetName = chan.name;
         } else {
           const catId = targetInput?.replace(/[<#>]/g, '');
-          if (!catId) return message.reply(`⚠️ Please provide a valid category ID.`);
+          if (!catId) return message.reply(`<a:wrong_animated:1537179702928875631> Please provide a valid category ID.`);
           const category = guild.channels?.cache?.get ? guild.channels.cache.get(catId) : null;
           targetId = catId;
           targetName = category ? category.name : catId;
@@ -97,7 +97,7 @@ module.exports = {
           '\n```';
 
         const embed = createStyledEmbed({
-          title: `${isAdd ? '🚫' : '✅'} Message Filter Updated`,
+          title: `${isAdd ? '<a:disabled_animated:1537177373613629542>' : '<a:accept_animated:1537177319603703969>'} Message Filter Updated`,
           description: boxText,
           requestedBy: author,
           clientUser
@@ -150,10 +150,10 @@ module.exports = {
           '\n```';
 
         let details = '';
-        if (blChans.length > 0) details += `\n🚫 **Blacklisted Channels:** ${blChans.map(id => `<#${id}>`).join(', ')}`;
-        if (blCats.length > 0) details += `\n🚫 **Blacklisted Categories:** ${blCats.map(id => `\`${id}\``).join(', ')}`;
-        if (wlChans.length > 0) details += `\n✅ **Whitelisted Channels:** ${wlChans.map(id => `<#${id}>`).join(', ')}`;
-        if (wlCats.length > 0) details += `\n✅ **Whitelisted Categories:** ${wlCats.map(id => `\`${id}\``).join(', ')}`;
+        if (blChans.length > 0) details += `\n<a:disabled_animated:1537177373613629542> **Blacklisted Channels:** ${blChans.map(id => `<#${id}>`).join(', ')}`;
+        if (blCats.length > 0) details += `\n<a:disabled_animated:1537177373613629542> **Blacklisted Categories:** ${blCats.map(id => `\`${id}\``).join(', ')}`;
+        if (wlChans.length > 0) details += `\n<a:accept_animated:1537177319603703969> **Whitelisted Channels:** ${wlChans.map(id => `<#${id}>`).join(', ')}`;
+        if (wlCats.length > 0) details += `\n<a:accept_animated:1537177319603703969> **Whitelisted Categories:** ${wlCats.map(id => `\`${id}\``).join(', ')}`;
 
         const embed = createStyledEmbed({
           title: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Message Channel Filter View`,
@@ -170,7 +170,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (invoked === 'addmessages' || sub === 'add') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-        return message.reply(`⚠️ Only Administrators can modify user message counts.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Only Administrators can modify user message counts.`);
       }
 
       const startIndex = invoked === 'addmessages' ? 0 : 1;
@@ -179,7 +179,7 @@ module.exports = {
       const amount = parseInt(amountStr, 10);
 
       if (!target || isNaN(amount)) {
-        return message.reply(`⚠️ Usage: \`.msg add <@user|userId> <amount>\` (Example: \`.msg add @user 100\`)`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.msg add <@user|userId> <amount>\` (Example: \`.msg add @user 100\`)`);
       }
 
       const delta = Math.abs(amount);
@@ -197,7 +197,7 @@ module.exports = {
         '\n```';
 
       const embed = createStyledEmbed({
-        title: `${emojis.SUCCESS || '✅'} Message Count Added`,
+        title: `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Message Count Added`,
         description: boxText,
         requestedBy: author,
         clientUser
@@ -211,7 +211,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (invoked === 'removemessages' || sub === 'remove' || sub === 'rm') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-        return message.reply(`⚠️ Only Administrators can modify user message counts.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Only Administrators can modify user message counts.`);
       }
 
       const startIndex = invoked === 'removemessages' ? 0 : 1;
@@ -220,7 +220,7 @@ module.exports = {
       const amount = parseInt(amountStr, 10);
 
       if (!target || isNaN(amount)) {
-        return message.reply(`⚠️ Usage: \`.msg remove <@user|userId> <amount>\` (Example: \`.msg remove @user 50\`)`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.msg remove <@user|userId> <amount>\` (Example: \`.msg remove @user 50\`)`);
       }
 
       const delta = -Math.abs(amount);
@@ -238,7 +238,7 @@ module.exports = {
         '\n```';
 
       const embed = createStyledEmbed({
-        title: `${emojis.SUCCESS || '✅'} Message Count Reduced`,
+        title: `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Message Count Reduced`,
         description: boxText,
         requestedBy: author,
         clientUser
@@ -252,7 +252,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (invoked === 'clearmsgs' || sub === 'clear' || sub === 'reset') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-        return message.reply(`⚠️ Only Administrators can clear message stats.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Only Administrators can clear message stats.`);
       }
       const target = message.mentions.users.first();
       db.clearMessages(target ? target.id : null);
@@ -297,7 +297,7 @@ module.exports = {
     ]);
 
     const embed = createStyledEmbed({
-      title: `${emojis.MESSAGES || '💬'} Shinobi Message Tracking Panel`,
+      title: `${emojis.MESSAGES || '<a:code_animated:1537177358912725033>'} Shinobi Message Tracking Panel`,
       subtitle: `Admin Message Stats Management & Channel Filters`,
       description:
         '```\n' + infoBox + '\n```\n\n' +

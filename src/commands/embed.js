@@ -143,7 +143,7 @@ module.exports = {
   async execute(message, args) {
     // Permission: Manage Messages minimum
     if (!message.member.permissions.has(PermissionsBitField.Flags.ManageMessages)) {
-      return message.reply(`⚠️ You need **Manage Messages** permission to use the embed builder.`);
+      return message.reply(`<a:wrong_animated:1537179702928875631> You need **Manage Messages** permission to use the embed builder.`);
     }
 
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -183,11 +183,11 @@ module.exports = {
         : message.channel;
 
       if (!targetChan) {
-        return message.reply(`⚠️ No target channel set. Use \`.embed channel <#channel>\` first, or mention a channel with \`.embed send <#channel>\`.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> No target channel set. Use \`.embed channel <#channel>\` first, or mention a channel with \`.embed send <#channel>\`.`);
       }
 
       if (!draft.title && !draft.description) {
-        return message.reply(`⚠️ Your embed has no **title** or **description**. Add some content first!\n> Use \`.embed title <text>\` or \`.embed desc <text>\``);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Your embed has no **title** or **description**. Add some content first!\n> Use \`.embed title <text>\` or \`.embed desc <text>\``);
       }
 
       const previewEmbed = buildPreviewEmbed(draft, guild);
@@ -195,7 +195,7 @@ module.exports = {
       try {
         await targetChan.send({ embeds: [previewEmbed] });
       } catch (err) {
-        return message.reply(`❌ Failed to send embed to <#${targetChan.id}>. Make sure I have **Send Messages** permission there.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Failed to send embed to <#${targetChan.id}>. Make sure I have **Send Messages** permission there.`);
       }
 
       const confirmBox = createDynamicBox('EMBED SENT', [
@@ -205,7 +205,7 @@ module.exports = {
       ], 20, 22);
 
       const confirmEmbed = createStyledEmbed({
-        title: `${emojis.SUCCESS || '✅'} Embed Sent Successfully!`,
+        title: `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Embed Sent Successfully!`,
         description: '```\n' + confirmBox + '\n```\n\n> Draft has been kept. Use `.embed reset` to clear it.',
         requestedBy: author,
         clientUser
@@ -219,9 +219,9 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'title') {
       const text = args.slice(1).join(' ');
-      if (!text) return message.reply(`⚠️ Usage: \`.embed title <your embed title>\``);
+      if (!text) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed title <your embed title>\``);
       draft.title = text.slice(0, 256);
-      return message.reply(`${emojis.SUCCESS || '✅'} **Embed title set to:** ${draft.title}`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Embed title set to:** ${draft.title}`);
     }
 
     // ─────────────────────────────────────────
@@ -229,9 +229,9 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'description' || sub === 'desc' || sub === 'body') {
       const text = args.slice(1).join(' ');
-      if (!text) return message.reply(`⚠️ Usage: \`.embed desc <description text>\`\n> Supports markdown: **bold**, *italic*, \`code\`, newlines with \\n`);
+      if (!text) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed desc <description text>\`\n> Supports markdown: **bold**, *italic*, \`code\`, newlines with \\n`);
       draft.description = text.replace(/\\n/g, '\n').slice(0, 4096);
-      return message.reply(`${emojis.SUCCESS || '✅'} **Embed description updated** (${draft.description.length} chars)`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Embed description updated** (${draft.description.length} chars)`);
     }
 
     // ─────────────────────────────────────────
@@ -240,10 +240,10 @@ module.exports = {
     if (sub === 'color' || sub === 'colour' || sub === 'hex') {
       const hex = args[1];
       if (!hex || !isValidHex(hex)) {
-        return message.reply(`⚠️ Usage: \`.embed color #FF7A00\`\n> Must be a valid hex code like \`#FF7A00\`, \`#7289DA\`, \`#FFFFFF\``);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed color #FF7A00\`\n> Must be a valid hex code like \`#FF7A00\`, \`#7289DA\`, \`#FFFFFF\``);
       }
       draft.color = hex.startsWith('#') ? hex : '#' + hex;
-      return message.reply(`${emojis.SUCCESS || '✅'} **Embed color set to:** \`${draft.color}\``);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Embed color set to:** \`${draft.color}\``);
     }
 
     // ─────────────────────────────────────────
@@ -256,10 +256,10 @@ module.exports = {
       const url = urlArg || attachment?.url;
 
       if (!url || !isValidUrl(url)) {
-        return message.reply(`⚠️ Usage: \`.embed image <https://image-url.jpg>\`\n> Or attach an image to the message!`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed image <https://image-url.jpg>\`\n> Or attach an image to the message!`);
       }
       draft.imageUrl = url;
-      return message.reply(`${emojis.SUCCESS || '✅'} **Embed image set!** The image will appear at the bottom of the embed.`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Embed image set!** The image will appear at the bottom of the embed.`);
     }
 
     // ─────────────────────────────────────────
@@ -271,10 +271,10 @@ module.exports = {
       const url = urlArg || attachment?.url;
 
       if (!url || !isValidUrl(url)) {
-        return message.reply(`⚠️ Usage: \`.embed thumbnail <https://image-url.jpg>\`\n> Or attach an image to the message!`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed thumbnail <https://image-url.jpg>\`\n> Or attach an image to the message!`);
       }
       draft.thumbnailUrl = url;
-      return message.reply(`${emojis.SUCCESS || '✅'} **Embed thumbnail set!** The thumbnail will appear in the top-right corner.`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Embed thumbnail set!** The thumbnail will appear in the top-right corner.`);
     }
 
     // ─────────────────────────────────────────
@@ -282,9 +282,9 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'footer') {
       const text = args.slice(1).join(' ');
-      if (!text) return message.reply(`⚠️ Usage: \`.embed footer <footer text>\``);
+      if (!text) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed footer <footer text>\``);
       draft.footer = text.slice(0, 2048);
-      return message.reply(`${emojis.SUCCESS || '✅'} **Embed footer set to:** ${draft.footer}`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Embed footer set to:** ${draft.footer}`);
     }
 
     // ─────────────────────────────────────────
@@ -292,7 +292,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'author') {
       const rest = args.slice(1).join(' ');
-      if (!rest) return message.reply(`⚠️ Usage: \`.embed author <name> [icon-url]\`\n> Example: \`.embed author Naruto Uzumaki https://...\``);
+      if (!rest) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed author <name> [icon-url]\`\n> Example: \`.embed author Naruto Uzumaki https://...\``);
       
       // Check if last part is a URL
       const parts = rest.split(' ');
@@ -304,7 +304,7 @@ module.exports = {
         draft.authorName = rest.slice(0, 256);
         draft.authorIcon = '';
       }
-      return message.reply(`${emojis.SUCCESS || '✅'} **Embed author set to:** ${draft.authorName}${draft.authorIcon ? ` (with icon)` : ''}`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Embed author set to:** ${draft.authorName}${draft.authorIcon ? ` (with icon)` : ''}`);
     }
 
     // ─────────────────────────────────────────
@@ -312,13 +312,13 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'field' || sub === 'addfield') {
       if (draft.fields.length >= 25) {
-        return message.reply(`⚠️ Maximum of **25 fields** per embed reached. Use \`.embed clearfields\` to remove all fields.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Maximum of **25 fields** per embed reached. Use \`.embed clearfields\` to remove all fields.`);
       }
 
       const rest = args.slice(1).join(' ');
       if (!rest || !rest.includes('|')) {
         return message.reply(
-          `⚠️ Usage: \`.embed field <Field Name> | <Field Value> [inline]\`\n` +
+          `<a:wrong_animated:1537179702928875631> Usage: \`.embed field <Field Name> | <Field Value> [inline]\`\n` +
           `> Example: \`.embed field Rank | Hokage inline\`\n` +
           `> Add \`inline\` at the end to place fields side-by-side.`
         );
@@ -333,11 +333,11 @@ module.exports = {
         : fieldValueRaw.trim().slice(0, 1024);
 
       if (!fieldName) fieldName = '\u200b';
-      if (!fieldValue) return message.reply(`⚠️ Field value cannot be empty.`);
+      if (!fieldValue) return message.reply(`<a:wrong_animated:1537179702928875631> Field value cannot be empty.`);
 
       draft.fields.push({ name: fieldName, value: fieldValue.replace(/\\n/g, '\n'), inline: isInline });
       return message.reply(
-        `${emojis.SUCCESS || '✅'} **Field #${draft.fields.length} added:** \`${fieldName}\`${isInline ? ' *(inline)*' : ''}\n` +
+        `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Field #${draft.fields.length} added:** \`${fieldName}\`${isInline ? ' *(inline)*' : ''}\n` +
         `> Total: **${draft.fields.length}/25** fields`
       );
     }
@@ -348,7 +348,7 @@ module.exports = {
     if (sub === 'clearfields' || sub === 'removefields') {
       const count = draft.fields.length;
       draft.fields = [];
-      return message.reply(`${emojis.SUCCESS || '✅'} **All ${count} field(s) cleared** from your draft.`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **All ${count} field(s) cleared** from your draft.`);
     }
 
     // ─────────────────────────────────────────
@@ -357,10 +357,10 @@ module.exports = {
     if (sub === 'removefield' || sub === 'deletefield') {
       const idx = parseInt(args[1], 10);
       if (isNaN(idx) || idx < 1 || idx > draft.fields.length) {
-        return message.reply(`⚠️ Usage: \`.embed removefield <1–${draft.fields.length}>\``);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed removefield <1–${draft.fields.length}>\``);
       }
       const removed = draft.fields.splice(idx - 1, 1);
-      return message.reply(`${emojis.SUCCESS || '✅'} **Field #${idx} removed:** \`${removed[0]?.name}\``);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Field #${idx} removed:** \`${removed[0]?.name}\``);
     }
 
     // ─────────────────────────────────────────
@@ -369,10 +369,10 @@ module.exports = {
     if (sub === 'channel' || sub === 'target') {
       const chan = message.mentions.channels.first() || guild.channels.cache.get(args[1]);
       if (!chan || chan.type !== ChannelType.GuildText) {
-        return message.reply(`⚠️ Usage: \`.embed channel <#text-channel>\``);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed channel <#text-channel>\``);
       }
       draft.targetChannelId = chan.id;
-      return message.reply(`${emojis.SUCCESS || '✅'} **Target channel set to:** <#${chan.id}>`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Target channel set to:** <#${chan.id}>`);
     }
 
     // ─────────────────────────────────────────
@@ -380,7 +380,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'preview' || sub === 'test' || sub === 'view') {
       if (!draft.title && !draft.description && draft.fields.length === 0) {
-        return message.reply(`⚠️ Your draft is empty! Add a title or description first.\n> Use \`.embed title <text>\` or \`.embed desc <text>\``);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Your draft is empty! Add a title or description first.\n> Use \`.embed title <text>\` or \`.embed desc <text>\``);
       }
 
       const previewEmbed = buildPreviewEmbed(draft, guild);
@@ -399,7 +399,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'reset' || sub === 'clear' || sub === 'wipe') {
       clearDraft(guild.id, author.id);
-      return message.reply(`${emojis.SUCCESS || '✅'} **Embed draft cleared.** Start fresh with \`.embed\``);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Embed draft cleared.** Start fresh with \`.embed\``);
     }
 
     // ─────────────────────────────────────────
@@ -407,16 +407,16 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'save') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`⚠️ Only **Administrators** can save embed templates.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Only **Administrators** can save embed templates.`);
       }
 
       const saveName = args.slice(1).join('-').toLowerCase().replace(/[^a-z0-9\-_]/g, '').slice(0, 32);
-      if (!saveName) return message.reply(`⚠️ Usage: \`.embed save <name>\`\n> Example: \`.embed save welcome-rules\``);
+      if (!saveName) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed save <name>\`\n> Example: \`.embed save welcome-rules\``);
 
       if (!savedEmbeds.has(guild.id)) savedEmbeds.set(guild.id, new Map());
       savedEmbeds.get(guild.id).set(saveName, JSON.parse(JSON.stringify(draft)));
 
-      return message.reply(`${emojis.SUCCESS || '✅'} **Embed saved as:** \`${saveName}\`\n> Use \`.embed post ${saveName} <#channel>\` to send it anytime!`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Embed saved as:** \`${saveName}\`\n> Use \`.embed post ${saveName} <#channel>\` to send it anytime!`);
     }
 
     // ─────────────────────────────────────────
@@ -424,11 +424,11 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'post' || sub === 'load') {
       const saveName = args[1]?.toLowerCase();
-      if (!saveName) return message.reply(`⚠️ Usage: \`.embed post <name> [#channel]\``);
+      if (!saveName) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed post <name> [#channel]\``);
 
       const guildSaved = savedEmbeds.get(guild.id);
       if (!guildSaved || !guildSaved.has(saveName)) {
-        return message.reply(`❌ No saved embed named \`${saveName}\`. Use \`.embed list\` to see saved embeds.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> No saved embed named \`${saveName}\`. Use \`.embed list\` to see saved embeds.`);
       }
 
       const savedDraft = guildSaved.get(saveName);
@@ -440,10 +440,10 @@ module.exports = {
       try {
         await chan.send({ embeds: [postEmbed] });
       } catch {
-        return message.reply(`❌ Failed to send embed to <#${chan.id}>. Check bot permissions.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Failed to send embed to <#${chan.id}>. Check bot permissions.`);
       }
 
-      return message.reply(`${emojis.SUCCESS || '✅'} **Saved embed \`${saveName}\` posted to** <#${chan.id}>!`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Saved embed \`${saveName}\` posted to** <#${chan.id}>!`);
     }
 
     // ─────────────────────────────────────────
@@ -480,19 +480,19 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'delete' || sub === 'remove' || invoked === 'embeddelete') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-        return message.reply(`⚠️ Only **Administrators** can delete saved embed templates.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Only **Administrators** can delete saved embed templates.`);
       }
 
       const saveName = args[1]?.toLowerCase();
-      if (!saveName) return message.reply(`⚠️ Usage: \`.embed delete <name>\``);
+      if (!saveName) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed delete <name>\``);
 
       const guildSaved = savedEmbeds.get(guild.id);
       if (!guildSaved || !guildSaved.has(saveName)) {
-        return message.reply(`❌ No saved embed named \`${saveName}\`.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> No saved embed named \`${saveName}\`.`);
       }
 
       guildSaved.delete(saveName);
-      return message.reply(`${emojis.SUCCESS || '✅'} **Saved embed \`${saveName}\` deleted.**`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Saved embed \`${saveName}\` deleted.**`);
     }
 
     // ─────────────────────────────────────────
@@ -504,7 +504,7 @@ module.exports = {
       const text = args.slice(chan ? 2 : 1).join(' ');
 
       if (!text) {
-        return message.reply(`⚠️ Usage: \`.embed quicksend [#channel] <your message text>\``);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.embed quicksend [#channel] <your message text>\``);
       }
 
       const targetChan = chan || message.channel;
@@ -515,9 +515,9 @@ module.exports = {
 
       try {
         await targetChan.send({ embeds: [qEmbed] });
-        await message.react('✅').catch(() => {});
+        await message.react('<a:accept_animated:1537177319603703969>').catch(() => {});
       } catch {
-        return message.reply(`❌ Failed to send embed to <#${targetChan.id}>.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Failed to send embed to <#${targetChan.id}>.`);
       }
 
       return;

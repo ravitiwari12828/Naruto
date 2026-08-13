@@ -298,30 +298,30 @@ const EMOJI_IDS = {
 };
 
 const FALLBACK_MAP = {
-  WARNING: '⚠️',
-  WARNING_ICON: '⚠️',
-  ERROR: '❌',
-  SUCCESS: '✅',
+  WARNING: '<a:wrong_animated:1537179702928875631>',
+  WARNING_ICON: '<a:wrong_animated:1537179702928875631>',
+  ERROR: '<a:wrong_animated:1537179702928875631>',
+  SUCCESS: '<a:accept_animated:1537177319603703969>',
   INFO: '<a:infox_animated:1537177409428787251>',
   SHIELD: '<a:security_animated:1537177499862171741>',
   GEAR: '<a:settings_animated:1537177506170404905>',
   MUSIC: '<a:musicplayer_animated:1537177445428633762>',
   VOICE: '<a:microphone_animated:1537177439527112755>',
   TICKETS: '<a:tickety_animated:1537177533961732106>',
-  LEVEL: '⭐',
-  RANK: '⭐',
-  MESSAGES: '💬',
-  PROFILE: '📇',
+  LEVEL: '<a:rank_animated:1537179656090943538>',
+  RANK: '<a:rank_animated:1537179656090943538>',
+  MESSAGES: '<a:code_animated:1537177358912725033>',
+  PROFILE: '<a:membercard_animated:1537177436146638993>',
   WELCOME: '<a:welcome_animated:1537179700349243402>',
   BACKUP: '<a:cloudcomputing_animated:1537177355766865940>',
   ROLES: '<a:crown_animated:1537177361093500968>',
   GIVEAWAY: '<a:gift_animated:1537179583064055931>',
-  SPARKLES: '✨',
-  ZAP: '⚡',
-  LOADING: '⏳',
-  DISABLED: '🚫',
-  ENABLED: '🟢',
-  TOOLS: '🛠️'
+  SPARKLES: '<a:sparkles_animated:1537179684175872171>',
+  ZAP: '<a:rapid_animated:1537177482006896692>',
+  LOADING: '<a:hourglass_animated:1537179590982631575>',
+  DISABLED: '<a:disabled_animated:1537177373613629542>',
+  ENABLED: '<a:accept_animated:1537177319603703969>',
+  TOOLS: '<a:utility_animated:1537177542040231937>'
 };
 
 const baseExports = {
@@ -351,7 +351,7 @@ const emojisProxy = new Proxy(baseExports, {
           return obj;
         }
       }
-      return { name: '✨' };
+      return EMOJI_IDS.sparkles_animated || { id: '1537179684175872171', animated: true };
     }
 
     // Handle string key lookups
@@ -362,7 +362,7 @@ const emojisProxy = new Proxy(baseExports, {
       }
     }
 
-    return FALLBACK_MAP[prop] || '✨';
+    return FALLBACK_MAP[prop] || '<a:sparkles_animated:1537179684175872171>';
   }
 });
 

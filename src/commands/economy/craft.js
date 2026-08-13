@@ -31,7 +31,7 @@ module.exports = {
     const eco = db.economy(message.guild.id, message.author.id);
     const missing = Object.entries(recipe.needs).filter(([id, qty]) => countItem(eco, id) < qty);
     if (missing.length) {
-      const list = Object.entries(recipe.needs).map(([id, qty]) => `${countItem(eco, id) >= qty ? '✅' : '❌'} ${id}: ${countItem(eco, id)}/${qty}`).join('\n');
+      const list = Object.entries(recipe.needs).map(([id, qty]) => `${countItem(eco, id) >= qty ? '<a:accept_animated:1537177319603703969>' : '<a:wrong_animated:1537179702928875631>'} ${id}: ${countItem(eco, id)}/${qty}`).join('\n');
       return message.reply({
         embeds: [new EmbedBuilder().setColor(config.errorColor).setTitle(`${emojis.tools} Missing Materials`).setDescription(list)],
       });

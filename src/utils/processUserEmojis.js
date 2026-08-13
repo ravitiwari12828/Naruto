@@ -133,12 +133,12 @@ async function processAll() {
     const ok = await downloadFile(url, filepath);
     if (ok) {
       downloaded++;
-      console.log(`✅ Downloaded: ${filename}`);
+      console.log(`<a:accept_animated:1537177319603703969> Downloaded: ${filename}`);
     } else {
-      console.log(`⚠️ Failed/404: ${filename}`);
+      console.log(`<a:wrong_animated:1537179702928875631> Failed/404: ${filename}`);
     }
   }
-  console.log(`🎉 Downloaded ${downloaded}/${parsedList.length} custom emojis to Desktop: ${desktopDir}`);
+  console.log(`<a:tada_party_animated:1537179689381134356> Downloaded ${downloaded}/${parsedList.length} custom emojis to Desktop: ${desktopDir}`);
 }
 
 processAll();

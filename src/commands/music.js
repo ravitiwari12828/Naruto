@@ -154,9 +154,9 @@ const { isGuildPremium, isUserPremium } = require('./premium');
 function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
   const isPrem = (guildId && isGuildPremium(guildId)) || (author && isUserPremium(author.id));
   const maxQueue = isPrem ? 200 : 50;
-  const queueType = isPrem ? 'Premium Tier ✨' : 'Standard Tier';
+  const queueType = isPrem ? 'Premium Tier <a:sparkles_animated:1537179684175872171>' : 'Standard Tier';
   const statusText = isPrem ? 'Premium active <a:crown_animated:1537177361093500968>' : 'Free Tier (50 max)';
-  const footerNote = isPrem ? '*Premium features unlocked ⭐*' : '*Upgrade to Premium for 200 max queue*';
+  const footerNote = isPrem ? '*Premium features unlocked <a:rank_animated:1537179656090943538>*' : '*Upgrade to Premium for 200 max queue*';
 
   const title = track?.info?.title || 'Unknown Track';
   const artist = track?.info?.author || 'Unknown Artist';
@@ -169,18 +169,18 @@ function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
     .setTitle(`${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} Added to Queue`)
     .setThumbnail(artworkUrl)
     .setDescription(
-      `### ${emojis.SPARKLES || '✨'} Track Information\n\n` +
+      `### ${emojis.SPARKLES || '<a:sparkles_animated:1537179684175872171>'} Track Information\n\n` +
       `• ${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} **Title:** ${title}\n` +
       `• ${emojis.AN_LYRICS || '🎤'} **Artist:** ${artist}\n` +
       `• ${emojis.AN_LOOP || '⏱️'} **Duration:** \`${durationStr}\`\n` +
-      `• ${emojis.ANALYTICS_ZAP || '⚡'} **Status:** Position #${position}\n\n` +
+      `• ${emojis.ANALYTICS_ZAP || '<a:rapid_animated:1537177482006896692>'} **Status:** Position #${position}\n\n` +
       `*Track has been queued successfully*\n\n` +
       `---\n\n` +
       `### ${emojis.STATS || '<a:chart_animated:1537179539514462308>'} Queue Information\n\n` +
-      `• ${emojis.AN_STAR || '📍'} **Position:** #${position}\n` +
+      `• ${emojis.AN_STAR || '<a:target_animated:1537179692174545037>'} **Position:** #${position}\n` +
       `• ${emojis.OWNER_CROWN || '<a:crown_animated:1537177361093500968>'} **Queue Type:** ${queueType}\n` +
-      `• ${emojis.ANALYTICS_ZAP || '📈'} **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
-      `• ${emojis.AN_STAR || '🌟'} **Status:** ${statusText}\n\n` +
+      `• ${emojis.ANALYTICS_ZAP || '<a:chart_animated:1537179539514462308>'} **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
+      `• ${emojis.AN_STAR || '<a:sparkles_animated:1537179684175872171>'} **Status:** ${statusText}\n\n` +
       `${footerNote}`
     )
     .setTimestamp();
@@ -240,7 +240,7 @@ function buildMusicActionRows(player = null) {
         label,
         value: `sug_dyn_${idx}`,
         description: desc,
-        emoji: '✨'
+        emoji: '<a:sparkles_animated:1537179684175872171>'
       };
     });
   }
@@ -250,25 +250,25 @@ function buildMusicActionRows(player = null) {
       { label: 'Naruto Shippuden OP 3 - Blue Bird', value: 'sug_bluebird', description: 'Recommended Naruto Anime OST', emoji: '🍥' },
       { label: 'Naruto Shippuden OP 16 - Silhouette', value: 'sug_silhouette', description: 'Recommended Naruto Anime OST', emoji: '🍥' },
       { label: 'Naruto OST - Sadness and Sorrow', value: 'sug_sadness', description: 'Recommended Naruto Emotional Track', emoji: '🍥' },
-      { label: 'Heeriye - Jasleen Royal & Arijit Singh', value: 'sug_heeriye', description: 'Trending Acoustic Pop', emoji: '✨' },
-      { label: 'Tere Baare Mein Jab Socha - Jagjit Singh', value: 'sug_jagjit', description: 'Trending Ghazal Classic', emoji: '✨' }
+      { label: 'Heeriye - Jasleen Royal & Arijit Singh', value: 'sug_heeriye', description: 'Trending Acoustic Pop', emoji: '<a:sparkles_animated:1537179684175872171>' },
+      { label: 'Tere Baare Mein Jab Socha - Jagjit Singh', value: 'sug_jagjit', description: 'Trending Ghazal Classic', emoji: '<a:sparkles_animated:1537179684175872171>' }
     ];
   }
 
   const suggestedSelect = new StringSelectMenuBuilder()
     .setCustomId('music_suggested_select')
-    .setPlaceholder('✨ Suggested songs...')
+    .setPlaceholder('<a:sparkles_animated:1537179684175872171> Suggested songs...')
     .addOptions(suggestedOptions);
 
   const row4 = new ActionRowBuilder().addComponents(suggestedSelect);
 
   const filterSelect = new StringSelectMenuBuilder()
     .setCustomId('music_filter_select')
-    .setPlaceholder('✨ Select a music filter to apply...')
+    .setPlaceholder('<a:sparkles_animated:1537179684175872171> Select a music filter to apply...')
     .setMinValues(1)
     .setMaxValues(5)
     .addOptions([
-      { label: 'Reset Filters', value: 'filter_reset', description: 'Disable all active audio effects', emoji: emojis.OBJ_AN_RESET_FILTER || '🚫' },
+      { label: 'Reset Filters', value: 'filter_reset', description: 'Disable all active audio effects', emoji: emojis.OBJ_AN_RESET_FILTER || '<a:disabled_animated:1537177373613629542>' },
       { label: 'Bass Boost', value: 'filter_bassboost', description: 'Deep, rich low-frequency amplification', emoji: emojis.OBJ_AN_BASSBOOST || '<a:volumeup_animated:1537177548121968650>' },
       { label: '8D Audio', value: 'filter_8d', description: 'Immersive 360-degree spatial audio panning', emoji: emojis.OBJ_AN_8D_AUDIO || '🎧' },
       { label: 'Nightcore', value: 'filter_nightcore', description: 'Upbeat tempo & increased vocal pitch', emoji: emojis.OBJ_AN_NIGHTCORE || '🌙' },
@@ -722,7 +722,7 @@ module.exports = {
       }
       const item = player.queue.tracks.splice(from, 1)[0];
       player.queue.tracks.splice(to, 0, item);
-      return message.reply(`📦 Moved **${item.info.title}** to position **#${to + 1}**.`);
+      return message.reply(`<a:openfolder_animated:1537177452936437760> Moved **${item.info.title}** to position **#${to + 1}**.`);
     }
 
     // 12. VOLUME CONTROL (.volume 1-200)
@@ -811,10 +811,10 @@ module.exports = {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} Join the target VC to enable 24/7 AFK mode!`);
       if (afkStore.has(guildId)) {
         afkStore.delete(guildId);
-        return message.reply(`🔴 **24/7 Mode Disabled**: Bot will auto-disconnect when VC is empty.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> **24/7 Mode Disabled**: Bot will auto-disconnect when VC is empty.`);
       } else {
         afkStore.set(guildId, { voiceChannelId: voiceState.channel.id, textChannelId: message.channel.id });
-        return message.reply(`🟢 **24/7 Mode Enabled**: Bot will stay connected to **<#${voiceState.channel.id}>** 24/7!`);
+        return message.reply(`<a:accept_animated:1537177319603703969> **24/7 Mode Enabled**: Bot will stay connected to **<#${voiceState.channel.id}>** 24/7!`);
       }
     }
 
@@ -823,7 +823,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player) return message.reply(`${emojis.WARNING} No active music player!`);
       player.autoplay = !player.autoplay;
-      const status = player.autoplay ? '🟢 **ENABLED**' : '🔴 **DISABLED**';
+      const status = player.autoplay ? '<a:accept_animated:1537177319603703969> **ENABLED**' : '<a:wrong_animated:1537179702928875631> **DISABLED**';
       return message.reply(`♾️ **Autoplay Mode:** ${status}! ${player.autoplay ? '(Auto-queuing recommended tracks when queue ends)' : ''}`);
     }
 
@@ -879,7 +879,7 @@ module.exports = {
         if (!player.playing && !player.paused) {
           await player.play();
         }
-        return message.reply(`⭐ **Queued ${queuedCount} Favorite Songs** into queue!`);
+        return message.reply(`<a:rank_animated:1537179656090943538> **Queued ${queuedCount} Favorite Songs** into queue!`);
       }
 
       const favs = db.getFavorites(author.id);
@@ -915,7 +915,7 @@ module.exports = {
         `.shuffle         - Shuffle queue tracks\n` +
         `.seek <seconds>  - Seek to specific timestamp\n` +
         `\`\`\`\n\n` +
-        `**✨ Advanced Features**\n` +
+        `**<a:sparkles_animated:1537179684175872171> Advanced Features**\n` +
         `\`\`\`\n` +
         `.247             - Toggle 24/7 Voice Channel Stay\n` +
         `.autoplay        - Toggle smart autoplay recommendations\n` +

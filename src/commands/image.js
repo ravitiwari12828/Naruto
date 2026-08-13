@@ -95,15 +95,15 @@ module.exports = {
 
     if (!promptText) {
       const embed = createStyledEmbed({
-        title: `${emojis.PRIORITY || '🎨'} AI Image Generation Engine`,
+        title: `${emojis.PRIORITY || '<a:paint_animated:1537177457403363389>'} AI Image Generation Engine`,
         description:
           `Generate high-definition AI artwork & realistic scenes directly from a text prompt!\n\n` +
           `**Usage:** \`.imagine <your detailed prompt>\`\n` +
           `**Example:** \`.imagine A woman sitting by a window holding a cup with a cat on her lap\`\n\n` +
           `**⏰ Generation Quotas (24-Hour Window):**\n` +
           `• **Free Tier:** \`1 Image / 24 Hours\`\n` +
-          `• **Premium Tier:** \`3 Images / 24 Hours\` ${emojis.AN_STAR || '⭐'}\n\n` +
-          `*Your Current Status: **${limitCheck.isPremium ? '💎 Premium User (3 Max)' : 'Free User (1 Max)'}** (${limitCheck.used}/${limitCheck.maxAllowed} used)*`,
+          `• **Premium Tier:** \`3 Images / 24 Hours\` ${emojis.AN_STAR || '<a:rank_animated:1537179656090943538>'}\n\n` +
+          `*Your Current Status: **${limitCheck.isPremium ? '<a:dimond_animated:1537177370719551498> Premium User (3 Max)' : 'Free User (1 Max)'}** (${limitCheck.used}/${limitCheck.maxAllowed} used)*`,
         requestedBy: author,
         clientUser
       });
@@ -113,11 +113,11 @@ module.exports = {
     // Enforce 24-Hour Limit
     if (!limitCheck.allowed) {
       const resetUnix = Math.floor(limitCheck.resetAt / 1000);
-      const tierText = limitCheck.isPremium ? '💎 **Premium Tier (3 Images Max)**' : '⭐ **Free Tier (1 Image Max)**';
+      const tierText = limitCheck.isPremium ? '<a:dimond_animated:1537177370719551498> **Premium Tier (3 Images Max)**' : '<a:rank_animated:1537179656090943538> **Free Tier (1 Image Max)**';
       const upgradeNotice = !limitCheck.isPremium ? '\n\n💡 *Tip: Upgrade to **Premium** to unlock **3 Image Generations per 24 hours**!*' : '';
 
       return message.reply(
-        `${emojis.WARNING || '⏳'} **24-Hour Limit Reached!** (${limitCheck.used}/${limitCheck.maxAllowed} used)\n` +
+        `${emojis.WARNING || '<a:hourglass_animated:1537179590982631575>'} **24-Hour Limit Reached!** (${limitCheck.used}/${limitCheck.maxAllowed} used)\n` +
         `You have reached your 24-hour AI image generation limit.\n\n` +
         `• **Tier:** ${tierText}\n` +
         `• **Next Available Generation:** <t:${resetUnix}:R> (<t:${resetUnix}:f>)${upgradeNotice}`
@@ -125,7 +125,7 @@ module.exports = {
     }
 
     const initialMsg = await message.reply(
-      `${emojis.LOADING || '🎨'} **Rendering High-Definition AI Artwork...** *(Please wait...)*`
+      `${emojis.LOADING || '<a:paint_animated:1537177457403363389>'} **Rendering High-Definition AI Artwork...** *(Please wait...)*`
     );
 
     try {
@@ -161,11 +161,11 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(0x5865F2)
-        .setTitle(`${emojis.SPARKLES || '🎨'} AI Image Generation`)
+        .setTitle(`${emojis.SPARKLES || '<a:paint_animated:1537177457403363389>'} AI Image Generation`)
         .setDescription(
           `**Prompt:**\n\`\`\`\n${promptText}\n\`\`\`\n` +
           `• **Generated For:** <@${author.id}>\n` +
-          `• **Quota:** \`${newUsed} / ${limitCheck.maxAllowed} used in 24 Hours\` ${limitCheck.isPremium ? '💎 (Premium)' : ''}`
+          `• **Quota:** \`${newUsed} / ${limitCheck.maxAllowed} used in 24 Hours\` ${limitCheck.isPremium ? '<a:dimond_animated:1537177370719551498> (Premium)' : ''}`
         )
         .setImage('attachment://ai_artwork.png')
         .setFooter({
@@ -176,13 +176,13 @@ module.exports = {
 
       await initialMsg.delete().catch(() => {});
       return message.channel.send({
-        content: `🎨 **Here is your AI artwork, <@${author.id}>!**`,
+        content: `<a:paint_animated:1537177457403363389> **Here is your AI artwork, <@${author.id}>!**`,
         embeds: [embed],
         files: [attachment]
       });
     } catch (err) {
       console.error('[Image Gen Error]:', err);
-      return initialMsg.edit(`${emojis.WARNING || '⚠️'} Could not generate AI image: \`${err.message || 'Rendering Timeout'}\`. Please try again later!`);
+      return initialMsg.edit(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Could not generate AI image: \`${err.message || 'Rendering Timeout'}\`. Please try again later!`);
     }
   }
 };

@@ -113,12 +113,12 @@ function buildUserMetricRow(activeCat) {
     new ButtonBuilder()
       .setCustomId('ucat_all')
       .setLabel('Overview')
-      .setEmoji(emojis.OBJ_PROFILE || '👤')
+      .setEmoji(emojis.OBJ_PROFILE || '<a:membercard_animated:1537177436146638993>')
       .setStyle(activeCat === 'all' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_messages')
       .setLabel('Msgs')
-      .setEmoji(emojis.OBJ_MESSAGES || '💬')
+      .setEmoji(emojis.OBJ_MESSAGES || '<a:code_animated:1537177358912725033>')
       .setStyle(activeCat === 'messages' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_voice')

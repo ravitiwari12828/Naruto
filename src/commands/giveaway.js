@@ -41,8 +41,8 @@ async function collectEligibleUsers(client, gw) {
 
 // Builds the rich ACTIVE giveaway embed
 function buildActiveEmbed(prizeRaw, winnerCount, endTimestamp, id, hostId, participantCount, clientUser) {
-  const PING = emojis.GIVEAWAY_PING || '🎉';
-  const CUP = emojis.GOLD_CUP || '🏆';
+  const PING = emojis.GIVEAWAY_PING || '<a:tada_party_animated:1537179689381134356>';
+  const CUP = emojis.GOLD_CUP || '<a:prize_1_animated:1537179648465834044>';
   const GIFT = emojis.GIVEAWAY || '<a:gift_animated:1537179583064055931>';
   const DOT = emojis.DOT || '•';
 
@@ -69,7 +69,7 @@ function buildActiveEmbed(prizeRaw, winnerCount, endTimestamp, id, hostId, parti
 
 // Builds the ENDED giveaway embed + Claim Reward button
 function buildEndedEmbed(gw, winnerMentions, clientUser) {
-  const CUP = emojis.GOLD_CUP || '🏆';
+  const CUP = emojis.GOLD_CUP || '<a:prize_1_animated:1537179648465834044>';
   const isMultiple = winnerMentions.includes('\n');
 
   const embed = new EmbedBuilder()
@@ -100,8 +100,8 @@ function buildEndedEmbed(gw, winnerMentions, clientUser) {
 
 // Builds the REROLLED giveaway embed
 function buildRerolledEmbed(gw, winnerMentions, clientUser) {
-  const DICE = emojis.DICE || '🎲';
-  const CUP = emojis.GOLD_CUP || '🏆';
+  const DICE = emojis.DICE || '<a:dice_animated:1537179565800292533>';
+  const CUP = emojis.GOLD_CUP || '<a:prize_1_animated:1537179648465834044>';
   const isMultiple = winnerMentions.includes(',');
 
   const embed = new EmbedBuilder()
@@ -109,7 +109,7 @@ function buildRerolledEmbed(gw, winnerMentions, clientUser) {
     .setTitle(`${DICE}  GIVEAWAY REROLLED`)
     .setDescription(
       `> **${gw.prize}**\n\n` +
-      `✨ **New ${isMultiple ? 'Winners' : 'Winner'}:**\n${winnerMentions}\n\n` +
+      `<a:sparkles_animated:1537179684175872171> **New ${isMultiple ? 'Winners' : 'Winner'}:**\n${winnerMentions}\n\n` +
       `Congratulations on the reroll! Claim your prize from <@${gw.hostId}>.`
     )
     .setFooter({
@@ -238,14 +238,14 @@ module.exports = {
 
         const { embed: endEmbed, claimBtn } = buildEndedEmbed(gw, winnerMentions, clientUser);
         chan.send({
-          content: `${emojis.GIVEAWAY_PING || '🎉'} **Giveaway ended!** ${winners.map(w => `<@${w.id}>`).join(', ')} won **${gw.prize}**!`,
+          content: `${emojis.GIVEAWAY_PING || '<a:tada_party_animated:1537179689381134356>'} **Giveaway ended!** ${winners.map(w => `<@${w.id}>`).join(', ')} won **${gw.prize}**!`,
           embeds: [endEmbed],
           components: [claimBtn]
         });
       }, duration);
 
       const confirmMsg = await message.channel.send(
-        `${emojis.GIVEAWAY_PING || '🎉'} Giveaway **\`${id}\`** created! Ends in **${timeRaw}**!`
+        `${emojis.GIVEAWAY_PING || '<a:tada_party_animated:1537179689381134356>'} Giveaway **\`${id}\`** created! Ends in **${timeRaw}**!`
       );
       if (confirmMsg && typeof confirmMsg.delete === 'function') {
         setTimeout(() => confirmMsg.delete().catch(() => {}), 4000);
@@ -280,7 +280,7 @@ module.exports = {
 
       const { embed: endEmbed, claimBtn } = buildEndedEmbed(gw, winnerMentions, clientUser);
       return message.channel.send({
-        content: `${emojis.GIVEAWAY_PING || '🎉'} **Giveaway ended!** ${winners.map(w => `<@${w.id}>`).join(', ')} won **${gw.prize}**!`,
+        content: `${emojis.GIVEAWAY_PING || '<a:tada_party_animated:1537179689381134356>'} **Giveaway ended!** ${winners.map(w => `<@${w.id}>`).join(', ')} won **${gw.prize}**!`,
         embeds: [endEmbed],
         components: [claimBtn]
       });
@@ -310,7 +310,7 @@ module.exports = {
 
       const rerollEmbed = buildRerolledEmbed(gw, winnerMentions, clientUser);
       return message.channel.send({
-        content: `${emojis.DICE || '🎲'} **Rerolled!** ${winners.map(w => `<@${w.id}>`).join(', ')} is the new winner of **${gw.prize}**!`,
+        content: `${emojis.DICE || '<a:dice_animated:1537179565800292533>'} **Rerolled!** ${winners.map(w => `<@${w.id}>`).join(', ')} is the new winner of **${gw.prize}**!`,
         embeds: [rerollEmbed]
       });
     }
@@ -321,7 +321,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'delete') {
       if (!message.member.permissions.has(8n) && message.guild.ownerId !== message.author.id) {
-        return message.reply(`⚠️ Only **Administrators** can delete giveaways.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Only **Administrators** can delete giveaways.`);
       }
 
       const isDirect2 = invoked === 'gdelete';
@@ -351,7 +351,7 @@ module.exports = {
         }
       } catch (e) {}
 
-      return message.reply(`${emojis.SUCCESS || '✅'} Giveaway \`${id}\` has been **deleted**.`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Giveaway \`${id}\` has been **deleted**.`);
     }
 
     // ─────────────────────────────────────────
@@ -360,7 +360,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'edit') {
       if (!message.member.permissions.has(8n) && message.guild.ownerId !== message.author.id) {
-        return message.reply(`⚠️ Only **Administrators** can edit giveaways.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Only **Administrators** can edit giveaways.`);
       }
 
       // Determine format: .gedit <id> <field> <value> OR .giveaway edit <field> <id> <value>
@@ -419,7 +419,7 @@ module.exports = {
         if (isNaN(newCount) || newCount < 1) return message.reply(`${emojis.WARNING} Winner count must be a number ≥ 1.`);
         gw.winnerCount = newCount;
         giveaways.set(id, gw);
-        successMsg = `🏆 **Winner count updated** to **${newCount}**!`;
+        successMsg = `<a:prize_1_animated:1537179648465834044> **Winner count updated** to **${newCount}**!`;
 
       } else {
         return message.reply(`${emojis.WARNING} Unknown field \`${field}\`. Valid fields: \`duration\`, \`host\`, \`price\`, \`winners\``);
@@ -441,7 +441,7 @@ module.exports = {
         }
       } catch (e) {}
 
-      return message.reply(`${emojis.SUCCESS || '✅'} Giveaway \`${id}\` edited! ${successMsg}`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Giveaway \`${id}\` edited! ${successMsg}`);
     }
 
     // .giveaway list
@@ -452,12 +452,12 @@ module.exports = {
       }
 
       const lines = all.map(gw =>
-        `${gw.ended ? emojis.GOLD_CUP || '🏆' : emojis.GIVEAWAY_PING || '🎉'} **${gw.prize}** — \`${gw.id}\` — ${gw.ended ? 'Ended' : `<t:${Math.floor(gw.endTime / 1000)}:R>`}`
+        `${gw.ended ? emojis.GOLD_CUP || '<a:prize_1_animated:1537179648465834044>' : emojis.GIVEAWAY_PING || '<a:tada_party_animated:1537179689381134356>'} **${gw.prize}** — \`${gw.id}\` — ${gw.ended ? 'Ended' : `<t:${Math.floor(gw.endTime / 1000)}:R>`}`
       );
 
       const embed = new EmbedBuilder()
         .setColor(0xFF6B35)
-        .setTitle(`${emojis.GIVEAWAY_PING || '🎉'}  All Giveaways`)
+        .setTitle(`${emojis.GIVEAWAY_PING || '<a:tada_party_animated:1537179689381134356>'}  All Giveaways`)
         .setDescription(lines.join('\n'))
         .setFooter({ text: `Total: ${all.length} giveaway(s)`, iconURL: clientUser?.displayAvatarURL?.() || undefined })
         .setTimestamp();

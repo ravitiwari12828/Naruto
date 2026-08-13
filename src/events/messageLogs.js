@@ -142,7 +142,7 @@ module.exports = (client) => {
 
       dispatchLog(message.guild, 'messages', logEmbed);
     } catch (err) {
-      console.error('⚠️ [Message Delete Log Error]:', err.message);
+      console.error('<a:wrong_animated:1537179702928875631> [Message Delete Log Error]:', err.message);
     }
   });
 
@@ -184,7 +184,7 @@ module.exports = (client) => {
 
       dispatchLog(oldMessage.guild, 'messages', editEmbed);
     } catch (err) {
-      console.error('⚠️ [Message Edit Log Error]:', err.message);
+      console.error('<a:wrong_animated:1537179702928875631> [Message Edit Log Error]:', err.message);
     }
   });
 };

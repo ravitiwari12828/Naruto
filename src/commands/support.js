@@ -37,7 +37,7 @@ module.exports = {
         .setLabel('Join Support Server')
         .setURL(SUPPORT_SERVER_INVITE)
         .setStyle(ButtonStyle.Link)
-        .setEmoji(emojis.OBJ_AN_WEBHOOK || '💬'),
+        .setEmoji(emojis.OBJ_AN_WEBHOOK || '<a:code_animated:1537177358912725033>'),
       new ButtonBuilder()
         .setLabel('Invite Bot')
         .setURL(`https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands`)

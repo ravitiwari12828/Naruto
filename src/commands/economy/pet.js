@@ -46,9 +46,9 @@ module.exports = {
           .setTitle(`${species.emoji} New Pet Adopted!`)
           .setDescription(`Congratulations! You adopted a **${species.name}**!`)
           .addFields(
-            { name: 'Power', value: `⚡ ${species.basePower || 30}`, inline: true },
+            { name: 'Power', value: `<a:rapid_animated:1537177482006896692> ${species.basePower || 30}`, inline: true },
             { name: 'Rarity', value: `${species.rarity || '⚪ Common'}`, inline: true },
-            { name: 'Perk', value: `✨ ${species.perk}`, inline: true }
+            { name: 'Perk', value: `<a:sparkles_animated:1537179684175872171> ${species.perk}`, inline: true }
           )
           .setFooter({ text: 'Use .pet to view your pet stats or .battle to train!' })],
       });
@@ -56,22 +56,22 @@ module.exports = {
 
     if (!eco.pets?.length) {
       return message.channel.send({
-        embeds: [new EmbedBuilder().setColor(config.embedColor).setDescription(`${emojis.pet || '🐾'} You don't have a pet yet. Type \`.pet adopt\` to adopt a new pet!`)],
+        embeds: [new EmbedBuilder().setColor(config.embedColor).setDescription(`${emojis.pet || '<a:pet_paw_animated:1537179634159067229>'} You don't have a pet yet. Type \`.pet adopt\` to adopt a new pet!`)],
       });
     }
 
     const list = eco.pets.map((p, i) => {
-      const sp = items.PET_SPECIES[p.species] || { emoji: '🐾', rarity: '⚪ Common', basePower: 30 };
+      const sp = items.PET_SPECIES[p.species] || { emoji: '<a:pet_paw_animated:1537179634159067229>', rarity: '⚪ Common', basePower: 30 };
       const power = p.power || sp.basePower || 30;
       const rarity = p.rarity || sp.rarity || '⚪ Common';
-      return `${i === eco.activePet ? '⭐' : '▫️'} ${sp.emoji} **${p.name}** — Lv.${p.level} (${p.xp}/${xpNeeded(p.level)} XP)\n` +
-             `-# Rarity: ${rarity} • Power: ⚡ ${power} • HP: ❤️ ${p.hp || 100}/100`;
+      return `${i === eco.activePet ? '<a:rank_animated:1537179656090943538>' : '▫️'} ${sp.emoji} **${p.name}** — Lv.${p.level} (${p.xp}/${xpNeeded(p.level)} XP)\n` +
+             `-# Rarity: ${rarity} • Power: <a:rapid_animated:1537177482006896692> ${power} • HP: ❤️ ${p.hp || 100}/100`;
     }).join('\n\n');
 
     await message.channel.send({
       embeds: [new EmbedBuilder()
         .setColor(config.embedColor)
-        .setTitle(`🐾 ${message.author.username}'s Shinobi Companions`)
+        .setTitle(`<a:pet_paw_animated:1537179634159067229> ${message.author.username}'s Shinobi Companions`)
         .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
         .setDescription(list)
         .setFooter({ text: 'Type .pet adopt to adopt another companion!' })],

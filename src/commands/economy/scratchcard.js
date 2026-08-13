@@ -6,8 +6,8 @@ const { animate } = require('../../utils/funCore');
 const { fmt } = require('../../utils/economyCore');
 
 const PRICE = 100;
-const SYMBOLS = ['🍒', '🍋', '💎', '⭐', '🔔', '💀'];
-const PAYOUTS = { '🍒': 2, '🍋': 3, '🔔': 5, '⭐': 10, '💎': 25, '💀': 0 };
+const SYMBOLS = ['🍒', '🍋', '<a:dimond_animated:1537177370719551498>', '<a:rank_animated:1537179656090943538>', '<a:signal_animated:1537177512365260911>', '💀'];
+const PAYOUTS = { '🍒': 2, '🍋': 3, '<a:signal_animated:1537177512365260911>': 5, '<a:rank_animated:1537179656090943538>': 10, '<a:dimond_animated:1537177370719551498>': 25, '💀': 0 };
 
 module.exports = {
   name: 'scratchcard',

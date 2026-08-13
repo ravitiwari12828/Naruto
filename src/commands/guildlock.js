@@ -46,7 +46,7 @@ module.exports = {
     if (sub === 'enable' || sub === 'on') {
       botLockStore.lockdownEnabled = true;
       const embed = createStyledEmbed({
-        title: `🔒 Private Server Lockdown Enabled`,
+        title: `<a:key_lock_animated:1537179601493561404> Private Server Lockdown Enabled`,
         description: `The bot will now automatically leave any new server that is **NOT whitelisted** by the Bot Owner!`,
         requestedBy: author,
         clientUser
@@ -57,7 +57,7 @@ module.exports = {
     if (sub === 'disable' || sub === 'off') {
       botLockStore.lockdownEnabled = false;
       const embed = createStyledEmbed({
-        title: `🔓 Public Server Access Enabled`,
+        title: `<a:unlock_animated:1537177539297157150> Public Server Access Enabled`,
         description: `Anyone can now add the bot to their server without pre-authorization.`,
         requestedBy: author,
         clientUser
@@ -88,7 +88,7 @@ module.exports = {
       const list = Array.from(botLockStore.whitelistedGuilds).map((id, i) => `\`#${i + 1}\` Server ID: \`${id}\``).join('\n') || '*No server IDs explicitly whitelisted.*';
 
       const embed = createStyledEmbed({
-        title: `📜 Authorized Whitelisted Servers`,
+        title: `<a:scroll_animated:1537179663791693844> Authorized Whitelisted Servers`,
         description: list,
         requestedBy: author,
         clientUser
@@ -98,10 +98,10 @@ module.exports = {
 
     // Default Status Overview Card
     const embed = createStyledEmbed({
-      title: `🔒 Private Server Join Authorization System`,
+      title: `<a:key_lock_animated:1537179601493561404> Private Server Join Authorization System`,
       subtitle: `Bot Owner Security & Access Control`,
       fields: [
-        { name: '${emojis.GEAR} Private Lockdown Status', value: botLockStore.lockdownEnabled ? '`ENABLED 🔒 (Private Mode)`' : '`DISABLED 🔓 (Public Mode)`', inline: true },
+        { name: '${emojis.GEAR} Private Lockdown Status', value: botLockStore.lockdownEnabled ? '`ENABLED <a:key_lock_animated:1537179601493561404> (Private Mode)`' : '`DISABLED <a:unlock_animated:1537177539297157150> (Public Mode)`', inline: true },
         { name: '<a:welcome_animated:1537179700349243402> Authorized Servers', value: `\`${botLockStore.whitelistedGuilds.size}\` Whitelisted Guilds`, inline: true },
         { name: '<a:crown_animated:1537177361093500968> Active Servers', value: `\`${client.guilds.cache.size}\` Servers Joined`, inline: true }
       ],

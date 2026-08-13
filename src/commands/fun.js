@@ -8,7 +8,7 @@ const GAUGE_TITLES = {
   shipname: { title: '🚢 Shinobi Ship Name', emoji: '🚢' },
   wanted: { title: '🤠 Bingo Book Wanted Level', emoji: '🤠' },
   wasted: { title: '💀 Battle Wasted Level', emoji: '💀' },
-  powerlevel: { title: '⚡ Power Level Scan', emoji: '⚡' },
+  powerlevel: { title: '<a:rapid_animated:1537177482006896692> Power Level Scan', emoji: '<a:rapid_animated:1537177482006896692>' },
   coolrate: { title: '❄️ Coolness Rate', emoji: '❄️' },
   bonk: { title: '<a:kick_animated:1537177415552602223> Bonk Level', emoji: '<a:kick_animated:1537177415552602223>' }
 };
@@ -46,33 +46,33 @@ function renderGaugeBox(cmdName, score = null) {
 
 function getAssessmentText(cmdName, score, targetUser, author, user2) {
   if (cmdName === 'smartrate') {
-    return score > 80 ? '🧠 **Super Genius** — Shikamaru IQ: 200+' : score > 50 ? '📜 **Above Average** — Kakashi-level reading speed' : '🌿 **Dense as a Rock** — Might Guy energy!';
+    return score > 80 ? '🧠 **Super Genius** — Shikamaru IQ: 200+' : score > 50 ? '<a:scroll_animated:1537179663791693844> **Above Average** — Kakashi-level reading speed' : '🌿 **Dense as a Rock** — Might Guy energy!';
   }
   if (cmdName === 'rizzmeter') {
-    return score > 80 ? '🔥 **Full Minato Yellow Flash Charm Unlocked**' : score > 50 ? '⚡ **Solid Chunin-Level Rizz**' : '🥹 **Naruto before Hinata noticed him**';
+    return score > 80 ? '<a:fire_animated:1537179571697352774> **Full Minato Yellow Flash Charm Unlocked**' : score > 50 ? '<a:rapid_animated:1537177482006896692> **Solid Chunin-Level Rizz**' : '🥹 **Naruto before Hinata noticed him**';
   }
   if (cmdName === 'shipname') {
     const name1 = author.username.slice(0, Math.ceil(author.username.length / 2));
     const name2 = (user2 || author).username.slice(Math.floor((user2 || author).username.length / 2));
     const ship = name1 + name2;
-    return `🚢 **Ship Name:** \`${ship}\`\n\n` + (score >= 80 ? '🌸 A love story worthy of a Naruto ending arc!' : score >= 50 ? '⚡ There is potential — keep fighting for it!' : '💔 Awkward silence in Ichiraku ramen...');
+    return `🚢 **Ship Name:** \`${ship}\`\n\n` + (score >= 80 ? '<a:cherry_blossom_animated:1537179542148620299> A love story worthy of a Naruto ending arc!' : score >= 50 ? '<a:rapid_animated:1537177482006896692> There is potential — keep fighting for it!' : '💔 Awkward silence in Ichiraku ramen...');
   }
   if (cmdName === 'wanted') {
-    return score > 80 ? '☠️ **S-Rank Rogue Ninja** — Maximum Bounty! Report to Hokage!' : score > 50 ? '📜 **B-Rank Wanted** — Watch out for ANBU Black Ops' : '🌱 **Low-Level Rascal** — Only stole ramen!';
+    return score > 80 ? '☠️ **S-Rank Rogue Ninja** — Maximum Bounty! Report to Hokage!' : score > 50 ? '<a:scroll_animated:1537179663791693844> **B-Rank Wanted** — Watch out for ANBU Black Ops' : '🌱 **Low-Level Rascal** — Only stole ramen!';
   }
   if (cmdName === 'wasted') {
-    return score > 80 ? '💀 **CRITICAL WASTED** — Defeated by a forbidden jutsu!' : score > 50 ? '⚔️ **Severe Battle Damage** — Needs Medical Ninja!' : '🍃 **Minor Scratches** — Ready for next mission!';
+    return score > 80 ? '💀 **CRITICAL WASTED** — Defeated by a forbidden jutsu!' : score > 50 ? '<a:battle_animated:1537177338427605064> **Severe Battle Damage** — Needs Medical Ninja!' : '<a:leaf_animated:1537179616400375939> **Minor Scratches** — Ready for next mission!';
   }
   if (cmdName === 'powerlevel') {
-    return score > 80 ? '🔥 **BEYOND HOKAGE LEVEL** — Divine Chakra Unlocked!' : score > 50 ? '🏯 **Jonin / Kage-Class Shinobi** ⚔️' : '🌿 **Genin Level** — Keep training!';
+    return score > 80 ? '<a:fire_animated:1537179571697352774> **BEYOND HOKAGE LEVEL** — Divine Chakra Unlocked!' : score > 50 ? '🏯 **Jonin / Kage-Class Shinobi** <a:battle_animated:1537177338427605064>' : '🌿 **Genin Level** — Keep training!';
   }
   if (cmdName === 'coolrate') {
-    return score > 80 ? '😤 **Sasuke-level Coolness** & Cold Aura 🔥' : score > 50 ? '📖 **Kakashi Mysterious Reading Vibes** ⚡' : '💪 **Rock Lee without eyebrows energy!**';
+    return score > 80 ? '😤 **Sasuke-level Coolness** & Cold Aura <a:fire_animated:1537179571697352774>' : score > 50 ? '📖 **Kakashi Mysterious Reading Vibes** <a:rapid_animated:1537177482006896692>' : '💪 **Rock Lee without eyebrows energy!**';
   }
   if (cmdName === 'bonk') {
-    return score > 80 ? '<a:kick_animated:1537177415552602223> **MAXIMUM BONK LEVEL** — Sent to Shinobi Jail!' : score > 50 ? '⚠️ **High Energy Detected** — Caution advised!' : '😇 **Pure Soul** — Pure Konoha Shinobi!';
+    return score > 80 ? '<a:kick_animated:1537177415552602223> **MAXIMUM BONK LEVEL** — Sent to Shinobi Jail!' : score > 50 ? '<a:wrong_animated:1537179702928875631> **High Energy Detected** — Caution advised!' : '😇 **Pure Soul** — Pure Konoha Shinobi!';
   }
-  return '✨ Scan completed!';
+  return '<a:sparkles_animated:1537179684175872171> Scan completed!';
 }
 
 function renderGaugeResultEmbed(cmdName, targetUser, userWhoClicked, clientUser, score, author = targetUser, user2 = null) {
@@ -94,7 +94,7 @@ function renderGaugeResultEmbed(cmdName, targetUser, userWhoClicked, clientUser,
     new ButtonBuilder()
       .setCustomId(`gauge_done_${cmdName}`)
       .setLabel(`Scan Complete (${score}%)`)
-      .setEmoji('✅')
+      .setEmoji('<a:accept_animated:1537177319603703969>')
       .setStyle(ButtonStyle.Success)
       .setDisabled(true)
   );
@@ -195,7 +195,7 @@ const DARE_D = [
 ];
 
 const WOULD_YOU_RATHER = [
-  'Have the Sharingan 👁️ OR the Rinnegan 🔮?',
+  'Have the Sharingan <a:sharingan_animated:1537179668703084654> OR the Rinnegan 🔮?',
   'Fight Madara at full power OR Kaguya Otsutsuki?',
   'Be a jinchuriki of the Nine-Tails OR the Eight-Tails?',
   'Have unlimited chakra but be forbidden from using ninjutsu OR use any jutsu but only 10 times a day?',
@@ -208,12 +208,12 @@ const WOULD_YOU_RATHER = [
 ];
 
 const PICKUP_LINES = [
-  'Are you a Rasengan? Because you\'ve been spinning in my mind all day. 🌀',
+  'Are you a Rasengan? Because you\'ve been spinning in my mind all day. <a:rasengan_animated:1537179658800463992>',
   'I must have eaten the food at Ichiraku\'s because I\'m totally ramen-tic about you. 🍜',
-  'Are you the Nine-Tails? Because you\'ve got my chakra going wild. 🦊',
+  'Are you the Nine-Tails? Because you\'ve got my chakra going wild. <a:fox_animated:1537179580450742292>',
   'My heart beats faster than Rock Lee\'s taijutsu when I see you. 💚',
-  'Are you a Sharingan? Because I can\'t stop staring into your eyes. 👁️',
-  'Are you a shadow clone? Because whenever I\'m alone, I still see you everywhere. 🌀',
+  'Are you a Sharingan? Because I can\'t stop staring into your eyes. <a:sharingan_animated:1537179668703084654>',
+  'Are you a shadow clone? Because whenever I\'m alone, I still see you everywhere. <a:rasengan_animated:1537179658800463992>',
   'You must be a Sage because your beauty is on another level. 🐸',
   'Are you from the Land of Waves? Because every time I see you, a bridge connects our hearts. 🌊',
   'Even Kakashi would put down his book to read the story of us. 📖',
@@ -221,20 +221,20 @@ const PICKUP_LINES = [
 ];
 
 const FORTUNES = [
-  'A great mission awaits you — your chakra is aligned with destiny. 🌟',
+  'A great mission awaits you — your chakra is aligned with destiny. <a:sparkles_animated:1537179684175872171>',
   'Beware of a false ally. Not every shinobi wears their face with honour. 🎭',
   'A quiet day will bring unexpected power. Meditate and trust the process. 🧘',
-  'Your strength will be tested soon, but Konoha stands with you. 🍃',
-  'Romance may bloom from an unexpected direction — open your eyes like a Byakugan. 👁️',
+  'Your strength will be tested soon, but Konoha stands with you. <a:leaf_animated:1537179616400375939>',
+  'Romance may bloom from an unexpected direction — open your eyes like a Byakugan. <a:sharingan_animated:1537179668703084654>',
   'Financial rewards are on the horizon — keep grinding those quests. <a:money_animated:1537177442672709707>',
-  'A long-lost ally will return to your side when you need them most. 🤝',
-  'Your next jutsu attempt will exceed all expectations. Go beyond your limits. ⚡',
+  'A long-lost ally will return to your side when you need them most. <a:welcome_animated:1537179700349243402>',
+  'Your next jutsu attempt will exceed all expectations. Go beyond your limits. <a:rapid_animated:1537177482006896692>',
   'The universe whispers: believe it! Your time is coming. 🍥',
-  'Danger lurks in comfort zones. Break free and discover your true rank. 🔥'
+  'Danger lurks in comfort zones. Break free and discover your true rank. <a:fire_animated:1537179571697352774>'
 ];
 
-const VIBES = ['🔥 Chaotic Shinobi', '😤 Revenge Arc Energy', '✨ Main Character Aura', '🌸 Sakura Useless Energy', '🦊 Nine-Tails Unleashed', '😴 Shikamaru Mode (Too Troublesome)', '😤 Sasuke Uchiha Cold Energy', '🌀 Rasengan Gyaat', '🍜 Ramen-Powered', '🥹 Emotional Backstory Incoming'];
-const MOODS   = ['⚡ Ready to take on the Akatsuki', '😴 Shikamaru-level lazy today', '🔥 Full Might Guy Eight Gates mode', '🍜 Just hungry for Ichiraku ramen', '😤 Full Sasuke brooding mode', '🌸 Cherry blossom chill vibes', '🦊 Nine-Tails chakra leaking slightly', '🧘 Sage mode meditation energy', '😂 Naruto laughing at his own jokes', '💀 Rock Lee without his eyebrows energy'];
+const VIBES = ['<a:fire_animated:1537179571697352774> Chaotic Shinobi', '😤 Revenge Arc Energy', '<a:sparkles_animated:1537179684175872171> Main Character Aura', '<a:cherry_blossom_animated:1537179542148620299> Sakura Useless Energy', '<a:fox_animated:1537179580450742292> Nine-Tails Unleashed', '😴 Shikamaru Mode (Too Troublesome)', '😤 Sasuke Uchiha Cold Energy', '<a:rasengan_animated:1537179658800463992> Rasengan Gyaat', '🍜 Ramen-Powered', '🥹 Emotional Backstory Incoming'];
+const MOODS   = ['<a:rapid_animated:1537177482006896692> Ready to take on the Akatsuki', '😴 Shikamaru-level lazy today', '<a:fire_animated:1537179571697352774> Full Might Guy Eight Gates mode', '🍜 Just hungry for Ichiraku ramen', '😤 Full Sasuke brooding mode', '<a:cherry_blossom_animated:1537179542148620299> Cherry blossom chill vibes', '<a:fox_animated:1537179580450742292> Nine-Tails chakra leaking slightly', '🧘 Sage mode meditation energy', '😂 Naruto laughing at his own jokes', '💀 Rock Lee without his eyebrows energy'];
 const SMART   = ['Super Genius — Shikamaru IQ: 200+', 'Above Average — Kakashi-level reading speed', 'Street Smart — Naruto\'s pure instinct', 'You\'d pass the Chunin Exams on charm alone', 'Barely Passing — but you make it look good', 'Galaxy Brain — Minato-level tactical thinking', 'Book Smart — could rival Sakura\'s medical knowledge', 'Dense as a Rock — Might Guy doesn\'t need brains!'];
 const RIZO    = ['0% — Naruto before Hinata noticed him', '20% — You tried. Lee acknowledges the effort.', '40% — Solid Chunin-level rizz', '60% — Kakashi-tier mysterious appeal', '80% — Sasuke dark aura rizz activated', '99% — Full Minato Yellow Flash charm unlocked', '100% — Even the Nine-Tails would blush'];
 
@@ -249,7 +249,7 @@ const MEMES_MAP = {
   eject: { title: '<a:rocket_animated:1537179661371707402> Among Us Eject Meme', template: 'eject' },
   emergencymeeting: { title: '🚨 Emergency Meeting Meme', template: 'meeting' },
   headpat: { title: '✋ Headpat Anime Meme', template: 'pat' },
-  tradeoffer: { title: '🤝 Trade Offer Meme', template: 'trade' },
+  tradeoffer: { title: '<a:welcome_animated:1537179700349243402> Trade Offer Meme', template: 'trade' },
   waddle: { title: '🦆 Duck Waddle Meme', template: 'duck' }
 };
 
@@ -280,7 +280,7 @@ const EMOTES_MAP = {
 const ACTIONS_MAP = {
   cuddle: '🤗 cuddled',
   hug: '🫂 gave a warm hug to',
-  kiss: '💋 kissed',
+  kiss: '<a:kiss_animated:1537179607562850315> kissed',
   lick: '👅 licked',
   nom: '😋 nommed on',
   pat: '✋ patted the head of',
@@ -289,14 +289,14 @@ const ACTIONS_MAP = {
   stare: '👀 stared intensely at',
   highfive: '🙌 gave a high five to',
   bite: '🦷 bit',
-  greet: '👋 greeted',
+  greet: '<a:wave_animated:1537179697421492304> greeted',
   punch: '👊 punched',
-  handholding: '🤝 held hands with',
+  handholding: '<a:welcome_animated:1537179700349243402> held hands with',
   tickle: '👉 tickled',
-  kill: '⚔️ executed jutsu on',
+  kill: '<a:battle_animated:1537177338427605064> executed jutsu on',
   hold: '🤲 held',
   pats: '✋ patted',
-  wave: '👋 waved at',
+  wave: '<a:wave_animated:1537179697421492304> waved at',
   boop: '👉 booped the nose of',
   snuggle: '🤗 snuggled with',
   bully: '👿 playfully bullied'
@@ -531,7 +531,7 @@ async function fetchActionAnimeGif(action) {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 💬 Truth
+    // <a:code_animated:1537177358912725033> Truth
     if (invoked === 'truth') {
       const q = pick(TRUTH_Q);
       const boxPanel = createDynamicBox('SHINOBI TRUTH CHALLENGE', [
@@ -541,7 +541,7 @@ async function fetchActionAnimeGif(action) {
       ]);
 
       const embed = createStyledEmbed({
-        title: `📜 Shinobi Truth Challenge`,
+        title: `<a:scroll_animated:1537179663791693844> Shinobi Truth Challenge`,
         description: '```\n' + boxPanel + '\n```\n\n' +
           `**Question:**\n> **${q}**`,
         requestedBy: author,
@@ -550,7 +550,7 @@ async function fetchActionAnimeGif(action) {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 🎯 Dare
+    // <a:target_animated:1537179692174545037> Dare
     if (invoked === 'dare') {
       const d = pick(DARE_D);
       const boxPanel = createDynamicBox('SHINOBI DARE CHALLENGE', [
@@ -560,7 +560,7 @@ async function fetchActionAnimeGif(action) {
       ]);
 
       const embed = createStyledEmbed({
-        title: `⚡ Shinobi Dare Challenge`,
+        title: `<a:rapid_animated:1537177482006896692> Shinobi Dare Challenge`,
         description: '```\n' + boxPanel + '\n```\n\n' +
           `**Your Dare:**\n> **${d}**`,
         requestedBy: author,
@@ -579,7 +579,7 @@ async function fetchActionAnimeGif(action) {
       ]);
 
       const embed = createStyledEmbed({
-        title: `⚔️ Shinobi Dilemma — Would You Rather?`,
+        title: `<a:battle_animated:1537177338427605064> Shinobi Dilemma — Would You Rather?`,
         description: '```\n' + boxPanel + '\n```\n\n' +
           `**Dilemma:**\n> **${wyr}**`,
         requestedBy: author,
@@ -626,7 +626,7 @@ async function fetchActionAnimeGif(action) {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ✨ Vibe Check
+    // <a:sparkles_animated:1537179684175872171> Vibe Check
     if (invoked === 'vibecheck') {
       const vibe = pick(VIBES);
       const boxPanel = createDynamicBox('VIBE CHECK SCANNER', [
@@ -635,7 +635,7 @@ async function fetchActionAnimeGif(action) {
       ]);
 
       const embed = createStyledEmbed({
-        title: `✨ Vibe Check — ${targetUser.username}`,
+        title: `<a:sparkles_animated:1537179684175872171> Vibe Check — ${targetUser.username}`,
         description: '```\n' + boxPanel + '\n```\n\n' +
           `• **Current Vibe:** **${vibe}**\n\n` +
           `*The village has spoken. Accept your fate.*`,
@@ -699,7 +699,7 @@ async function fetchActionAnimeGif(action) {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 🎲 Dice Roll
+    // <a:dice_animated:1537179565800292533> Dice Roll
     if (invoked === 'roll') {
       const maxVal = parseInt(args[0]) || 100;
       const rollVal = Math.floor(Math.random() * maxVal) + 1;
@@ -710,7 +710,7 @@ async function fetchActionAnimeGif(action) {
       ]);
 
       const embed = createStyledEmbed({
-        title: `🎲 Dice Roll — ${rollVal} / ${maxVal}`,
+        title: `<a:dice_animated:1537179565800292533> Dice Roll — ${rollVal} / ${maxVal}`,
         description: '```\n' + boxPanel + '\n```\n\n' +
           `• **Result:** **${rollVal}** (out of 1–${maxVal})`,
         requestedBy: author,
@@ -758,7 +758,7 @@ async function fetchActionAnimeGif(action) {
       return sendInteractiveGaugeCalculator(message, 'wasted', targetUser, author, clientUser);
     }
 
-    // ⚡ Power Level
+    // <a:rapid_animated:1537177482006896692> Power Level
     if (invoked === 'powerlevel') {
       return sendInteractiveGaugeCalculator(message, 'powerlevel', targetUser, author, clientUser);
     }

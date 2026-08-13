@@ -65,7 +65,7 @@ module.exports = {
 
       if (targetType && action) {
         if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-          return message.reply(`⚠️ Only Administrators can manage voice channel & category filters.`);
+          return message.reply(`<a:wrong_animated:1537179702928875631> Only Administrators can manage voice channel & category filters.`);
         }
 
         const config = db.getAutomod(guild.id);
@@ -82,12 +82,12 @@ module.exports = {
 
         if (targetType === 'channel') {
           const chan = mentionChan || (guild.channels?.cache?.get ? guild.channels.cache.get(targetInput) : null);
-          if (!chan) return message.reply(`⚠️ Please mention a valid voice channel or provide a channel ID.`);
+          if (!chan) return message.reply(`<a:wrong_animated:1537179702928875631> Please mention a valid voice channel or provide a channel ID.`);
           targetId = chan.id;
           targetName = chan.name;
         } else {
           const catId = targetInput?.replace(/[<#>]/g, '');
-          if (!catId) return message.reply(`⚠️ Please provide a valid category ID.`);
+          if (!catId) return message.reply(`<a:wrong_animated:1537179702928875631> Please provide a valid category ID.`);
           const category = guild.channels?.cache?.get ? guild.channels.cache.get(catId) : null;
           targetId = catId;
           targetName = category ? category.name : catId;
@@ -119,7 +119,7 @@ module.exports = {
           '\n```';
 
         const embed = createStyledEmbed({
-          title: `${isAdd ? '🚫' : '✅'} Voice Filter Updated`,
+          title: `${isAdd ? '<a:disabled_animated:1537177373613629542>' : '<a:accept_animated:1537177319603703969>'} Voice Filter Updated`,
           description: boxText,
           requestedBy: author,
           clientUser
@@ -173,10 +173,10 @@ module.exports = {
           '\n```';
 
         let details = '';
-        if (blVc.length > 0) details += `\n🚫 **Blacklisted Voice Channels:** ${blVc.map(id => `<#${id}>`).join(', ')}`;
-        if (blVcCats.length > 0) details += `\n🚫 **Blacklisted Voice Categories:** ${blVcCats.map(id => `\`${id}\``).join(', ')}`;
-        if (wlVc.length > 0) details += `\n✅ **Whitelisted Voice Channels:** ${wlVc.map(id => `<#${id}>`).join(', ')}`;
-        if (wlVcCats.length > 0) details += `\n✅ **Whitelisted Voice Categories:** ${wlVcCats.map(id => `\`${id}\``).join(', ')}`;
+        if (blVc.length > 0) details += `\n<a:disabled_animated:1537177373613629542> **Blacklisted Voice Channels:** ${blVc.map(id => `<#${id}>`).join(', ')}`;
+        if (blVcCats.length > 0) details += `\n<a:disabled_animated:1537177373613629542> **Blacklisted Voice Categories:** ${blVcCats.map(id => `\`${id}\``).join(', ')}`;
+        if (wlVc.length > 0) details += `\n<a:accept_animated:1537177319603703969> **Whitelisted Voice Channels:** ${wlVc.map(id => `<#${id}>`).join(', ')}`;
+        if (wlVcCats.length > 0) details += `\n<a:accept_animated:1537177319603703969> **Whitelisted Voice Categories:** ${wlVcCats.map(id => `\`${id}\``).join(', ')}`;
 
         const embed = createStyledEmbed({
           title: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Voice Channel Filter View`,
@@ -193,7 +193,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (invoked === 'addvctime' || sub === 'add') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-        return message.reply(`⚠️ Only Administrators can modify user voice time.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Only Administrators can modify user voice time.`);
       }
 
       const startIndex = invoked === 'addvctime' ? 0 : 1;
@@ -202,7 +202,7 @@ module.exports = {
       const minutes = parseInt(amountStr, 10);
 
       if (!target || isNaN(minutes)) {
-        return message.reply(`⚠️ Usage: \`.vc add <@user|userId> <minutes>\` (Example: \`.vc add @user 3300\`)`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.vc add <@user|userId> <minutes>\` (Example: \`.vc add @user 3300\`)`);
       }
 
       const secondsDelta = Math.abs(minutes) * 60;
@@ -221,7 +221,7 @@ module.exports = {
         '\n```';
 
       const embed = createStyledEmbed({
-        title: `${emojis.SUCCESS || '✅'} Voice Time Added`,
+        title: `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Voice Time Added`,
         description: boxText,
         requestedBy: author,
         clientUser
@@ -235,7 +235,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (invoked === 'reducevctime' || sub === 'remove' || sub === 'rm') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-        return message.reply(`⚠️ Only Administrators can modify user voice time.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Only Administrators can modify user voice time.`);
       }
 
       const startIndex = invoked === 'reducevctime' ? 0 : 1;
@@ -244,7 +244,7 @@ module.exports = {
       const minutes = parseInt(amountStr, 10);
 
       if (!target || isNaN(minutes)) {
-        return message.reply(`⚠️ Usage: \`.vc remove <@user|userId> <minutes>\` (Example: \`.vc remove @user 60\`)`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.vc remove <@user|userId> <minutes>\` (Example: \`.vc remove @user 60\`)`);
       }
 
       const secondsDelta = -Math.abs(minutes) * 60;
@@ -263,7 +263,7 @@ module.exports = {
         '\n```';
 
       const embed = createStyledEmbed({
-        title: `${emojis.SUCCESS || '✅'} Voice Time Reduced`,
+        title: `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Voice Time Reduced`,
         description: boxText,
         requestedBy: author,
         clientUser
@@ -277,7 +277,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (invoked === 'clearvoice' || sub === 'clear' || sub === 'reset') {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-        return message.reply(`⚠️ Only Administrators can clear voice stats.`);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Only Administrators can clear voice stats.`);
       }
       const target = message.mentions.users.first();
       db.clearVoiceTime(target ? target.id : null);

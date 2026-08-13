@@ -6,8 +6,8 @@ const { fmt } = require('../../utils/economyCore');
 
 const CATEGORIES = {
   tools: { label: 'Gathering Tools', emoji: '🧰', data: items.TOOLS },
-  consumables: { label: 'Potions & Boosters', emoji: '🧪', data: items.CONSUMABLES },
-  resources: { label: 'Trade Resources', emoji: '💎', data: items.RESOURCES }
+  consumables: { label: 'Potions & Boosters', emoji: '<a:potion_alchemy_animated:1537179643449446581>', data: items.CONSUMABLES },
+  resources: { label: 'Trade Resources', emoji: '<a:dimond_animated:1537177370719551498>', data: items.RESOURCES }
 };
 
 function buildShopEmbed(catKey) {

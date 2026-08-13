@@ -161,7 +161,7 @@ module.exports = {
 
     // Default Profile Help
     const embed = createStyledEmbed({
-      title: `${emojis.RULERS_CARD || '👤'} Profile Suite`,
+      title: `${emojis.RULERS_CARD || '<a:membercard_animated:1537177436146638993>'} Profile Suite`,
       description:
         `Welcome **${author.username}**! Fetch aesthetic dynamic anime avatars and banners.\n\n` +
         `**🖼️ Dynamic Avatar Commands**\n` +

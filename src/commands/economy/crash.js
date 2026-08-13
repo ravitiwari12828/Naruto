@@ -71,7 +71,7 @@ module.exports = {
         collector.stop();
         if (!cashedOut) {
           await sent.edit({
-            embeds: [getEmbed(crashAt, `💥 CRASHED AT ${crashAt.toFixed(2)}x (Lost -${fmt(bet)} coins)`)],
+            embeds: [getEmbed(crashAt, `<a:kaboom_animated:1537179599228637226> CRASHED AT ${crashAt.toFixed(2)}x (Lost -${fmt(bet)} coins)`)],
             components: []
           }).catch(() => {});
         }

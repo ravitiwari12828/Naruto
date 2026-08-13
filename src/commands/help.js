@@ -49,7 +49,7 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
   const moduleLines = CATEGORIES.slice()
     .sort((a, b) => a.label.localeCompare(b.label))
     .map(cat => {
-      const customEmoji = cat.customEmoji || EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
+      const customEmoji = cat.customEmoji || EMOJI_MAP[cat.value] || cat.unicodeFallback || '<a:sparkles_animated:1537179684175872171>';
       return `## ${customEmoji} **${cat.label}**`;
     })
     .join('\n'); // Discord H3 headers (###) render medium sleek emojis & bold titles
@@ -126,9 +126,9 @@ module.exports = {
           components: [dropdownRow, navRow]
         });
       } catch (sendErr) {
-        console.log(`⚠️ [Help Panel Send Warning]: ${sendErr.message} - Retrying with fallback reply...`);
+        console.log(`<a:wrong_animated:1537179702928875631> [Help Panel Send Warning]: ${sendErr.message} - Retrying with fallback reply...`);
         helpMessage = await message.reply({ embeds: [mainEmbed] }).catch(err => {
-          console.log(`❌ [Help Panel Fallback Failed]: ${err.message}`);
+          console.log(`<a:wrong_animated:1537179702928875631> [Help Panel Fallback Failed]: ${err.message}`);
           return null;
         });
       }
@@ -181,7 +181,7 @@ module.exports = {
     });
     } catch (err) {
       console.error('[Help Command Error]', err);
-      return message.channel.send({ content: `⚠️ Failed to send help menu: ${err.message}` }).catch(() => {});
+      return message.channel.send({ content: `<a:wrong_animated:1537179702928875631> Failed to send help menu: ${err.message}` }).catch(() => {});
     }
   }
 },

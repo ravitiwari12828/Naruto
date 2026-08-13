@@ -32,7 +32,7 @@ module.exports = {
     await message.channel.send({
       embeds: [new EmbedBuilder()
         .setColor(won ? config.successColor : config.errorColor)
-        .setTitle('📉 Limbo')
+        .setTitle('<a:chart_animated:1537179539514462308> Limbo')
         .setDescription(`Target: **${target}x** (win chance ~${(winChance * 100).toFixed(1)}%)\n\n${won ? `${emojis.success} You hit it! Won **${fmt(payout)}** coins!` : `${emojis.error} Missed. Lost **${fmt(bet)}** coins.`}`)
         .setFooter({ text: `New balance: ${fmt(eco.balance)} coins` })],
     });

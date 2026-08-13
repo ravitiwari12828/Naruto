@@ -4,7 +4,7 @@ const config = require('../../config');
 const emojis = require('../../utils/emojis');
 const { fmt } = require('../../utils/economyCore');
 
-const MEDALS = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+const MEDALS = ['<a:prize_1_animated:1537179648465834044>', '<a:prize_2_animated:1537179651087007774>', '<a:prize_3_animated:1537179653750652948>', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
 
 module.exports = {
   name: 'leaderboard',

@@ -39,7 +39,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (invoked === 'botextraowner' || invoked === 'botowner' || sub === 'bot') {
       if (!isBotOwner(author)) {
-        return message.reply(`${emojis.WARNING || '⚠️'} **Access Denied**: Only **Bot Developers/Owners** can manage Bot Extra Owners!`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Access Denied**: Only **Bot Developers/Owners** can manage Bot Extra Owners!`);
       }
 
       const action = (invoked === 'botextraowner' || invoked === 'botowner' ? args[0] : args[1])?.toLowerCase();
@@ -47,12 +47,12 @@ module.exports = {
 
       if (action === 'add' && targetUser) {
         globalBotExtraOwners.add(targetUser.id);
-        return message.reply(`${emojis.SUCCESS || '✅'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been added as a **Bot Extra Owner**!`);
+        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been added as a **Bot Extra Owner**!`);
       }
 
       if ((action === 'remove' || action === 'del') && targetUser) {
         globalBotExtraOwners.delete(targetUser.id);
-        return message.reply(`${emojis.SUCCESS || '✅'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been removed from **Bot Extra Owners**.`);
+        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been removed from **Bot Extra Owners**.`);
       }
 
       const listStr = Array.from(globalBotExtraOwners).map((id, i) => `\`${i + 1}.\` <@${id}> (\`${id}\`)`).join('\n') || 'None assigned';
@@ -71,7 +71,7 @@ module.exports = {
     // ─────────────────────────────────────────
     const isServerOwner = guild.ownerId === author.id;
     if (!isServerOwner) {
-      return message.reply(`${emojis.WARNING || '⚠️'} **Access Denied**: Only the **Server Owner** (<@${guild.ownerId}>) can manage Server Extra Owners for this guild!`);
+      return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Access Denied**: Only the **Server Owner** (<@${guild.ownerId}>) can manage Server Extra Owners for this guild!`);
     }
 
     const action = sub;
@@ -82,7 +82,7 @@ module.exports = {
         config.extraOwners.add(targetUser.id);
         antinukeCmd.antinukeConfigs.set(guild.id, config);
       }
-      return message.reply(`${emojis.SUCCESS || '✅'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been appointed as a **Server Extra Owner** for **${guild.name}**!`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been appointed as a **Server Extra Owner** for **${guild.name}**!`);
     }
 
     if ((action === 'remove' || action === 'del') && targetUser) {
@@ -90,7 +90,7 @@ module.exports = {
         config.extraOwners.delete(targetUser.id);
         antinukeCmd.antinukeConfigs.set(guild.id, config);
       }
-      return message.reply(`${emojis.SUCCESS || '✅'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been removed from **Server Extra Owners**.`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been removed from **Server Extra Owners**.`);
     }
 
     const serverList = config && config.extraOwners ? Array.from(config.extraOwners).map((id, i) => `\`${i + 1}.\` <@${id}> (\`${id}\`)`).join('\n') : `<@${guild.ownerId}> (Server Owner)`;

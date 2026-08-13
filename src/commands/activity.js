@@ -37,7 +37,7 @@ module.exports = {
         '\n```';
 
       const embed = createStyledEmbed({
-        title: `${emojis.ANALYTICS_ZAP || '📈'} Server Activity Overview`,
+        title: `${emojis.ANALYTICS_ZAP || '<a:chart_animated:1537179539514462308>'} Server Activity Overview`,
         description: boxText,
         requestedBy: message.author,
         clientUser
@@ -59,7 +59,7 @@ module.exports = {
       '\n```';
 
     const embed = createStyledEmbed({
-      title: `${emojis.ANALYTICS_ZAP || '📈'} ${targetUser.username}'s Activity Card`,
+      title: `${emojis.ANALYTICS_ZAP || '<a:chart_animated:1537179539514462308>'} ${targetUser.username}'s Activity Card`,
       description: boxText,
       requestedBy: message.author,
       clientUser

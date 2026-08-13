@@ -469,7 +469,7 @@ module.exports = {
         await target.roles.add(roleMention);
         const embed = createStyledEmbed({
           title: `🎭 Role Added`,
-          description: `✅ Added **${roleMention.name}** to ${target}`,
+          description: `<a:accept_animated:1537177319603703969> Added **${roleMention.name}** to ${target}`,
           requestedBy: message.author, clientUser
         });
         return message.channel.send({ embeds: [embed] });
@@ -559,7 +559,7 @@ module.exports = {
                 title: `⏱️ TempRole Expired`,
                 description:
                   `⏰ **Temp Role Auto-Removed!**\n\n` +
-                  `👤 **Member:** ${target}\n` +
+                  `<a:membercard_animated:1537177436146638993> **Member:** ${target}\n` +
                   `🎭 **Role:** **${roleMention.name}**\n` +
                   `📋 **Reason:** Duration expired after **${durationStr}**`,
                 requestedBy: message.author,
@@ -576,10 +576,10 @@ module.exports = {
       const embed = createStyledEmbed({
         title: `⏱️ Temp Role Added`,
         description:
-          `✅ Added **${roleMention.name}** to ${target}\n\n` +
+          `<a:accept_animated:1537177319603703969> Added **${roleMention.name}** to ${target}\n\n` +
           `**Duration:** ${durationStr}\n` +
           `**Expires:** <t:${expiresTimestamp}:R> (<t:${expiresTimestamp}:f>)\n` +
-          `**Auto-Remove:** ✅ Bot will automatically remove this role when it expires.`,
+          `**Auto-Remove:** <a:accept_animated:1537177319603703969> Bot will automatically remove this role when it expires.`,
         requestedBy: message.author,
         clientUser
       });
@@ -604,7 +604,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 13. 📜 LIST (bans, bots, admins, mutes)
+    // 13. <a:scroll_animated:1537179663791693844> LIST (bans, bots, admins, mutes)
     if (invoked === 'list') {
       const sub = args[0]?.toLowerCase();
 
@@ -653,7 +653,7 @@ module.exports = {
       );
 
       const embed = createStyledEmbed({
-        title: `📜 Bingo Book — Banned Users`,
+        title: `<a:scroll_animated:1537179663791693844> Bingo Book — Banned Users`,
         description: lines.join('\n'),
         requestedBy: message.author,
         clientUser,

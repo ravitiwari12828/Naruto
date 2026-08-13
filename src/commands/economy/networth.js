@@ -15,7 +15,7 @@ module.exports = {
     message.channel.send({
       embeds: [new EmbedBuilder()
         .setColor(config.embedColor)
-        .setTitle(`${emojis.RULERS_CARD || emojis.chart || '💳'} ${target.username}'s Net Worth`)
+        .setTitle(`${emojis.RULERS_CARD || emojis.chart || '<a:wallet_animated:153717964875807834>'} ${target.username}'s Net Worth`)
         .setThumbnail(target.displayAvatarURL())
         .addFields(
           { name: `${emojis.money} Wallet`, value: `${fmt(acc.balance)}`, inline: true },

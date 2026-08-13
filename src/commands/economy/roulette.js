@@ -42,7 +42,7 @@ module.exports = {
     eco.balance += payout;
     db.setEconomy(message.guild.id, message.author.id, eco);
 
-    const colorEmoji = landedColor === 'red' ? '🔴' : landedColor === 'black' ? '⚫' : '🟢';
+    const colorEmoji = landedColor === 'red' ? '<a:wrong_animated:1537179702928875631>' : landedColor === 'black' ? '⚫' : '<a:accept_animated:1537177319603703969>';
 
     const embed = new EmbedBuilder()
       .setColor(won ? config.successColor : config.errorColor)

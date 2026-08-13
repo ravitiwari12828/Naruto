@@ -126,12 +126,12 @@ module.exports = {
     const renderOverview = () => new EmbedBuilder()
       .setColor(flawCount > 0 ? config.warnColor : config.successColor)
       .setAuthor({ name: 'System Diagnostic Suite', iconURL: message.client.user.displayAvatarURL() })
-      .setTitle(`🧪 Command Diagnostic & Flaw Report`)
+      .setTitle(`<a:potion_alchemy_animated:1537179643449446581> Command Diagnostic & Flaw Report`)
       .setDescription(
         `Audited **${totalCount}** commands${filterModule ? ` in module \`${filterModule}\`` : ''}.\n\n` +
-        `✅ **Passed Commands (${passCount}/${totalCount}):**\n` +
+        `<a:accept_animated:1537177319603703969> **Passed Commands (${passCount}/${totalCount}):**\n` +
         (passedCmds.length > 0 ? passedCmds.map(c => `\`${c}\``).join(', ') : 'None') + `\n\n` +
-        `⚠️ **Flaws / Issues Detected (${flawCount}/${totalCount}):**\n` +
+        `<a:wrong_animated:1537179702928875631> **Flaws / Issues Detected (${flawCount}/${totalCount}):**\n` +
         (flawedCmds.length > 0
           ? flawedCmds.slice(0, 15).map((f, i) => `**${i + 1}. ${f.name}** — \`${f.error}\``).join('\n')
           : `${emojis.success} All commands passed cleanly with 0 flaws!`)

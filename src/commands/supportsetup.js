@@ -30,7 +30,7 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const statusMsg = await message.channel.send(`⏳ **Building Konoha Shinobi Support Server Architecture...**`);
+    const statusMsg = await message.channel.send(`<a:hourglass_animated:1537179590982631575> **Building Konoha Shinobi Support Server Architecture...**`);
 
     try {
       // ─────────────────────────────────────────
@@ -107,7 +107,7 @@ module.exports = {
       const infoCat = await guild.channels.create({ name: '「 🍥 · HOKAGE MANDATE 」', type: ChannelType.GuildCategory });
 
       const aboutChan = await guild.channels.create({
-        name: '📜・shinobi-rules',
+        name: '<a:scroll_animated:1537179663791693844>・shinobi-rules',
         type: ChannelType.GuildText,
         parent: infoCat.id,
         permissionOverwrites: readOnlyOverwrites
@@ -121,7 +121,7 @@ module.exports = {
       });
 
       const aboutPremium = await guild.channels.create({
-        name: '💎・chakra-premium',
+        name: '<a:dimond_animated:1537177370719551498>・chakra-premium',
         type: ChannelType.GuildText,
         parent: infoCat.id,
         permissionOverwrites: readOnlyOverwrites
@@ -135,7 +135,7 @@ module.exports = {
       });
 
       await guild.channels.create({
-        name: '⚡・rasengan-noprefix',
+        name: '<a:rapid_animated:1537177482006896692>・rasengan-noprefix',
         type: ChannelType.GuildText,
         parent: infoCat.id,
         permissionOverwrites: readOnlyOverwrites
@@ -148,16 +148,16 @@ module.exports = {
 
       await guild.channels.create({ name: '📢・anbu-announcements', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
       await guild.channels.create({ name: '<a:rocket_animated:1537179661371707402>・jutsu-bot-updates', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
-      await guild.channels.create({ name: '🟢・konoha-status', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
-      await guild.channels.create({ name: '📜・patch-changelogs', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
-      await guild.channels.create({ name: '🎉・ryo-giveaways', type: ChannelType.GuildText, parent: updateCat.id });
+      await guild.channels.create({ name: '<a:accept_animated:1537177319603703969>・konoha-status', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
+      await guild.channels.create({ name: '<a:scroll_animated:1537179663791693844>・patch-changelogs', type: ChannelType.GuildText, parent: updateCat.id, permissionOverwrites: readOnlyOverwrites });
+      await guild.channels.create({ name: '<a:tada_party_animated:1537179689381134356>・ryo-giveaways', type: ChannelType.GuildText, parent: updateCat.id });
 
       // ─────────────────────────────────────────
       // 4. CATEGORY 3: KONOHA PLAZA (GENERAL AREA)
       // ─────────────────────────────────────────
-      const generalCat = await guild.channels.create({ name: '「 ⛩️ · KONOHA PLAZA 」', type: ChannelType.GuildCategory });
+      const generalCat = await guild.channels.create({ name: '「 <a:shinto_shrine_animated:1537179670943109311> · KONOHA PLAZA 」', type: ChannelType.GuildCategory });
 
-      await guild.channels.create({ name: '💬・ninja-lounge', type: ChannelType.GuildText, parent: generalCat.id });
+      await guild.channels.create({ name: '<a:code_animated:1537177358912725033>・ninja-lounge', type: ChannelType.GuildText, parent: generalCat.id });
       await guild.channels.create({ name: '🖼️・scroll-art-media', type: ChannelType.GuildText, parent: generalCat.id });
       await guild.channels.create({ name: '<a:robot_animated:1537177494183088199>・jutsu-commands', type: ChannelType.GuildText, parent: generalCat.id });
       await guild.channels.create({ name: '<a:musicplayer_animated:1537177445428633762>・bijuu-music-playground', type: ChannelType.GuildText, parent: generalCat.id });
@@ -182,18 +182,18 @@ module.exports = {
       // ─────────────────────────────────────────
       // 6. CATEGORY 5: TECHNICIANS DACT LABS
       // ─────────────────────────────────────────
-      const techCat = await guild.channels.create({ name: '「 ⚡ · SHINOBI DACT LABS 」', type: ChannelType.GuildCategory });
+      const techCat = await guild.channels.create({ name: '「 <a:rapid_animated:1537177482006896692> · SHINOBI DACT LABS 」', type: ChannelType.GuildCategory });
 
       await guild.channels.create({ name: '🐍・python-jutsu', type: ChannelType.GuildText, parent: techCat.id });
       await guild.channels.create({ name: '${emojis.SHIELD}・cyber-defense', type: ChannelType.GuildText, parent: techCat.id });
-      await guild.channels.create({ name: '⚡・javascript-jutsu', type: ChannelType.GuildText, parent: techCat.id });
+      await guild.channels.create({ name: '<a:rapid_animated:1537177482006896692>・javascript-jutsu', type: ChannelType.GuildText, parent: techCat.id });
       await guild.channels.create({ name: '${emojis.GEAR}・java-jutsu', type: ChannelType.GuildText, parent: techCat.id });
 
       // ─────────────────────────────────────────
       // 7. CATEGORY 6: SANIN & VIP VAULT (LOCKED)
       // ─────────────────────────────────────────
       const vipCat = await guild.channels.create({
-        name: '「 💎 · SANIN & VIP VAULT 」',
+        name: '「 <a:dimond_animated:1537177370719551498> · SANIN & VIP VAULT 」',
         type: ChannelType.GuildCategory,
         permissionOverwrites: [
           { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] },
@@ -205,9 +205,9 @@ module.exports = {
         ]
       });
 
-      await guild.channels.create({ name: '⭐・sanin-vip-lounge', type: ChannelType.GuildText, parent: vipCat.id });
-      await guild.channels.create({ name: '💎・kyuubi-premium-vault', type: ChannelType.GuildText, parent: vipCat.id });
-      await guild.channels.create({ name: '⚡・minato-noprefix-sanctuary', type: ChannelType.GuildText, parent: vipCat.id });
+      await guild.channels.create({ name: '<a:rank_animated:1537179656090943538>・sanin-vip-lounge', type: ChannelType.GuildText, parent: vipCat.id });
+      await guild.channels.create({ name: '<a:dimond_animated:1537177370719551498>・kyuubi-premium-vault', type: ChannelType.GuildText, parent: vipCat.id });
+      await guild.channels.create({ name: '<a:rapid_animated:1537177482006896692>・minato-noprefix-sanctuary', type: ChannelType.GuildText, parent: vipCat.id });
 
       // ─────────────────────────────────────────
       // 8. CATEGORY 7: HOKAGE & ANBU COUNCIL (LOCKED)
@@ -222,9 +222,9 @@ module.exports = {
         ]
       });
 
-      await guild.channels.create({ name: '🔒・anbu-staff-headquarters', type: ChannelType.GuildText, parent: staffCat.id });
+      await guild.channels.create({ name: '<a:key_lock_animated:1537179601493561404>・anbu-staff-headquarters', type: ChannelType.GuildText, parent: staffCat.id });
       await guild.channels.create({ name: '<a:crown_animated:1537177361093500968>・hokage-owner-sanctuary', type: ChannelType.GuildText, parent: staffCat.id });
-      await guild.channels.create({ name: '🔒 ANBU Command VC', type: ChannelType.GuildVoice, parent: staffCat.id });
+      await guild.channels.create({ name: '<a:key_lock_animated:1537179601493561404> ANBU Command VC', type: ChannelType.GuildVoice, parent: staffCat.id });
 
       // ─────────────────────────────────────────
       // 9. CATEGORY 8: RAMEN SHOP VC & LOGS
@@ -251,7 +251,7 @@ module.exports = {
       // POPULATE EMBEDS & TICKET PANEL
       // ─────────────────────────────────────────
       const rulesEmbed = createStyledEmbed({
-        title: `📜 Konoha Shinobi Support Headquarters Rules`,
+        title: `<a:scroll_animated:1537179663791693844> Konoha Shinobi Support Headquarters Rules`,
         subtitle: `Official Village Directives & Community Guidelines`,
         description:
           `1. **Respect Fellow Shinobi**: Courtesy is mandatory across all channels.\n` +
@@ -314,17 +314,17 @@ module.exports = {
 
       // Final Success Message
       const completeEmbed = createStyledEmbed({
-        title: `🎉 Konoha Shinobi Support Server Built Successfully!`,
+        title: `<a:tada_party_animated:1537179689381134356> Konoha Shinobi Support Server Built Successfully!`,
         subtitle: `9 Categories, 25+ Styled Channels & 6 Custom Roles Deployed`,
         description:
           `**Custom Created Roles:**\n` +
           `• <@&${ownerRole.id}> | <@&${staffRole.id}> | <@&${ticketStaffRole.id}>\n` +
           `• <@&${vipRole.id}> | <@&${premiumRole.id}> | <@&${noPrefixRole.id}>\n\n` +
           `**Deployed Sections:**\n` +
-          `• 📜 <#${aboutChan.id}> & <#${aboutPremium.id}>\n` +
+          `• <a:scroll_animated:1537179663791693844> <#${aboutChan.id}> & <#${aboutPremium.id}>\n` +
           `• <a:tickety_animated:1537177533961732106> <#${ticketChan.id}> with live Interactive Support Ticket Panel\n` +
-          `• ⭐ Locked VIP, Premium & No-Prefix Sanctuary\n` +
-          `• 🔒 Locked Staff & Owner Headquarters`,
+          `• <a:rank_animated:1537179656090943538> Locked VIP, Premium & No-Prefix Sanctuary\n` +
+          `• <a:key_lock_animated:1537179601493561404> Locked Staff & Owner Headquarters`,
         requestedBy: author,
         clientUser
       });

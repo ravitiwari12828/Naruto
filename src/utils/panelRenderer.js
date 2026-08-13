@@ -140,7 +140,7 @@ const CATEGORIES = [
     customEmoji: '<a:rank_animated:1537179656090943538>',
     emojiId: '1536620959363112991',
     animated: false,
-    unicodeFallback: '⭐',
+    unicodeFallback: '<a:rank_animated:1537179656090943538>',
     heading: '<a:rank_animated:1537179656090943538>',
     commands: [
       'level rank', 'level bg <url|color|reset>',
@@ -259,7 +259,7 @@ const CATEGORIES = [
     description: 'Lock, unlock, hide and mass lockdown channels',
     customEmoji: '<a:hashtag_animated:1537177395537248276>',
     emojiId: '1536260624525430845',
-    unicodeFallback: '💬',
+    unicodeFallback: '<a:code_animated:1537177358912725033>',
     heading: '<a:hashtag_animated:1537177395537248276>',
     commands: [
       'lock', 'unlock',
@@ -289,7 +289,7 @@ const CATEGORIES = [
     description: 'Custom trigger replies & auto-reactions',
     customEmoji: '<a:code_animated:1537177358912725033>',
     emojiId: '1536260655861207091',
-    unicodeFallback: '💬',
+    unicodeFallback: '<a:code_animated:1537177358912725033>',
     heading: '<a:code_animated:1537177358912725033>',
     commands: [
       'autoresponder config',
@@ -369,7 +369,7 @@ const CATEGORIES = [
     description: 'Customize your global user profile & card background',
     customEmoji: '<a:membercard_animated:1537177436146638993>',
     emojiId: '1536260557789728828',
-    unicodeFallback: '📇',
+    unicodeFallback: '<a:membercard_animated:1537177436146638993>',
     heading: '<a:membercard_animated:1537177436146638993>',
     commands: [
       'profile',
@@ -441,7 +441,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
     const zapEmoji = '<a:rapid_animated:1536260523501424650>';
     const funEmoji = '<a:gamecontroller_animated:1536260619832008804>';
     const emotesEmoji = '🎭';
-    const actionEmoji = '👤';
+    const actionEmoji = '<a:membercard_animated:1537177436146638993>';
 
     const embed = new EmbedBuilder()
       .setColor(catColor)
@@ -559,7 +559,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
         `.seek <secs>  - Seek to specific timestamp\n` +
         `.clear        - Clear the entire queue\n` +
         `\`\`\`\n\n` +
-        `${emojis.ANALYTICS_ZAP || emojis.ZAP || '✨'} **Advanced Features**\n` +
+        `${emojis.ANALYTICS_ZAP || emojis.ZAP || '<a:sparkles_animated:1537179684175872171>'} **Advanced Features**\n` +
         `\`\`\`\n` +
         `.volume <0-200>  - Set playback volume\n` +
         `.247             - Toggle 24/7 voice stay\n` +

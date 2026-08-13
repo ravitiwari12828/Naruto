@@ -34,7 +34,7 @@ module.exports = {
 
     function buildDashboardEmbed(actionText = '') {
       return createStyledEmbed({
-        title: `${emojis.SCROLL || '📜'} Server Audit & Event Logging Suite`,
+        title: `${emojis.SCROLL || '<a:scroll_animated:1537179663791693844>'} Server Audit & Event Logging Suite`,
         subtitle: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Clean & Dedicated Event Routing`,
         description:
           `**${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Security Logs Category**\n` +
@@ -65,7 +65,7 @@ module.exports = {
           `modmail-transcripts ✓\n` +
           `\`\`\`\n\n` +
           `Active Mapped: \`${store.channels.size}\` channels\n` +
-          (actionText ? `\n> ${emojis.SUCCESS || '✅'} **Status:** ${actionText}\n` : '') +
+          (actionText ? `\n> ${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Status:** ${actionText}\n` : '') +
           `\n*Existing server log channels will be automatically re-used to prevent duplicate channels!*`,
         requestedBy: author,
         clientUser
@@ -101,7 +101,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: `${emojis.ERROR || '❌'} Only the administrator can use these buttons.`, ephemeral: true });
+        return interaction.reply({ content: `${emojis.ERROR || '<a:wrong_animated:1537179702928875631>'} Only the administrator can use these buttons.`, ephemeral: true });
       }
 
       await interaction.deferUpdate();

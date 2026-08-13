@@ -80,7 +80,7 @@ function renderMiscSettingsEmbed(config, guild, author, clientUser) {
       `Welcome **${author.username}**! Configure global server moderation settings.\n\n` +
       '```\n' + statusBox + '\n```\n' +
       '```\n' + cmdBox + '\n```\n\n' +
-      `**📜 Channel Mappings:**\n` +
+      `**<a:scroll_animated:1537179663791693844> Channel Mappings:**\n` +
       `• Logs Channel: ${logsChan}\n` +
       `• ModLogs Channel: ${modlogsChan}\n` +
       `• Quarantine Role: ${quarRole}`,
@@ -195,7 +195,7 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
         label: 'AutoMod Filters',
         value: 'tab_filters',
         description: 'AntiSpam, Invites, Links, NSFW & Words',
-        emoji: emojis.OBJ_AN_SPAM || '💬',
+        emoji: emojis.OBJ_AN_SPAM || '<a:code_animated:1537177358912725033>',
         default: activeTab === 'filters'
       },
       {
@@ -224,7 +224,7 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
   const selectRow = new ActionRowBuilder().addComponents(selectMenu);
 
   const buttonRow1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('am_btn_spam').setEmoji(emojis.OBJ_AN_SPAM || '💬').setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('am_btn_spam').setEmoji(emojis.OBJ_AN_SPAM || '<a:code_animated:1537177358912725033>').setStyle(f.antiSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('am_btn_invites').setEmoji(emojis.OBJ_AN_WEBHOOK || '📢').setStyle(f.inviteLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('am_btn_malicious').setEmoji(emojis.OBJ_AN_SHIELD || '<a:security_animated:1537177499862171741>').setStyle(f.maliciousLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('am_btn_nsfw').setEmoji(emojis.OBJ_AN_PANIC || '🔞').setStyle(f.nsfwLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
@@ -264,12 +264,12 @@ module.exports = {
     if (invoked === 'antispam') {
       config.antiSpam = !config.antiSpam;
       db.saveAutomod(guild.id, config);
-      return message.reply(`${emojis.SUCCESS || '✅'} **AntiSpam Filter**: ${config.antiSpam ? '`ENABLED`' : '`DISABLED`'}`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **AntiSpam Filter**: ${config.antiSpam ? '`ENABLED`' : '`DISABLED`'}`);
     }
     if (invoked === 'antilink' || invoked === 'antiinvite') {
       config.inviteLinks = !config.inviteLinks;
       db.saveAutomod(guild.id, config);
-      return message.reply(`${emojis.SUCCESS || '✅'} **AntiLink / Invite Filter**: ${config.inviteLinks ? '`ENABLED`' : '`DISABLED`'}`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **AntiLink / Invite Filter**: ${config.inviteLinks ? '`ENABLED`' : '`DISABLED`'}`);
     }
     if (invoked === 'am') sub = 'filters';
 
@@ -378,7 +378,7 @@ module.exports = {
           `Welcome **${author.username}**! Below is your server **AntiBot Security Grid**.\n\n` +
           '```\n' + box + '\n```\n\n' +
           `**${emojis.AN_BOT || '<a:robot_animated:1537177494183088199>'} Whitelisted Authorized Bots:**\n${botList}\n\n` +
-          `**${emojis.ANALYTICS_ZAP || '⚡'} Management Commands:**\n` +
+          `**${emojis.ANALYTICS_ZAP || '<a:rapid_animated:1537177482006896692>'} Management Commands:**\n` +
           `\`\`\`\n.antibot wl @bot   - Whitelist bot\n.antibot unwl @bot - Remove bot whitelist\n\`\`\``,
         requestedBy: author,
         clientUser
@@ -533,7 +533,7 @@ module.exports = {
         if (id === 'am_btn_spam') {
           config.antiSpam = !config.antiSpam;
           db.updateAutomod(guild.id, 'antiSpam', config.antiSpam);
-          responseMsg = `${emojis.AN_SPAM || '💬'} **AntiSpam Filter** is now **${config.antiSpam ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_SPAM || '<a:code_animated:1537177358912725033>'} **AntiSpam Filter** is now **${config.antiSpam ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_invites') {
           config.inviteLinks = !config.inviteLinks;
           db.updateAutomod(guild.id, 'inviteLinks', config.inviteLinks);

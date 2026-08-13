@@ -124,7 +124,7 @@ function buildModmailOverviewRow() {
     new ButtonBuilder()
       .setCustomId('mm_setup')
       .setLabel('Deploy Setup')
-      .setEmoji('🛠️')
+      .setEmoji('<a:utility_animated:1537177542040231937>')
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('mm_active')
@@ -134,12 +134,12 @@ function buildModmailOverviewRow() {
     new ButtonBuilder()
       .setCustomId('mm_transcripts')
       .setLabel('Transcripts')
-      .setEmoji('📜')
+      .setEmoji('<a:scroll_animated:1537179663791693844>')
       .setStyle(ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('mm_refresh')
       .setLabel('Refresh')
-      .setEmoji('⚡')
+      .setEmoji('<a:rapid_animated:1537177482006896692>')
       .setStyle(ButtonStyle.Success)
   );
 }
@@ -284,7 +284,7 @@ module.exports = {
         return message.reply(`${emojis.WARNING} This command can only be used inside an active ModMail ticket channel or thread!`);
       }
 
-      await message.reply(`🔒 Closing ModMail ticket in **5 seconds**...`);
+      await message.reply(`<a:key_lock_animated:1537179601493561404> Closing ModMail ticket in **5 seconds**...`);
 
       const targetUser = await message.client.users.fetch(targetUserId).catch(() => null);
       const htmlBuffer = generateHTMLModmailTranscript(targetUser ? targetUser.username : 'user', targetTicket.messages, author.tag, reason);
@@ -350,7 +350,7 @@ module.exports = {
       const attachment = new AttachmentBuilder(htmlBuffer, { name: filename });
 
       return message.reply({
-        content: `📜 **HTML Transcript Generated for Ticket:**`,
+        content: `<a:scroll_animated:1537179663791693844> **HTML Transcript Generated for Ticket:**`,
         files: [attachment]
       });
     }
@@ -407,7 +407,7 @@ module.exports = {
         await i.reply({ content: `<a:openeddooraperture_animated:1537177450411462766> Current Active ModMail Tickets in server: **${activeCount}**`, ephemeral: true });
       } else if (i.customId === 'mm_transcripts') {
         const chan = config.transcriptChanId ? `<#${config.transcriptChanId}>` : 'None';
-        await i.reply({ content: `📜 HTML ModMail Transcripts Channel: ${chan}`, ephemeral: true });
+        await i.reply({ content: `<a:scroll_animated:1537179663791693844> HTML ModMail Transcripts Channel: ${chan}`, ephemeral: true });
       }
 
       const updatedConfig = getOrCreateModmailConfig(guild.id);

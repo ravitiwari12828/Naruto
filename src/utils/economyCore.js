@@ -74,7 +74,7 @@ function buildGatherCommand({ name, description, verb, emoji, category, cooldown
       const cdKey = `last_${name}`;
       const cd = cooldownLeft(eco.cooldowns?.[cdKey], cooldownMs);
       if (!cd.ready) {
-        return message.reply(`${emojis.WARNING || '⏳'} You need to rest from ${verb}. Try again in **${cd.text}**.`);
+        return message.reply(`${emojis.WARNING || '<a:hourglass_animated:1537179590982631575>'} You need to rest from ${verb}. Try again in **${cd.text}**.`);
       }
 
       if (!eco.cooldowns) eco.cooldowns = {};

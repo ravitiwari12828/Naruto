@@ -285,7 +285,7 @@ function renderAntinukeDashboard(config, author, clientUser) {
 
   const description =
     `Welcome **${author.username}**! Below is your executive **AntiNuke & Security Control Suite**.\n\n` +
-    `**📜 Control Button Guide:**\n` +
+    `**<a:scroll_animated:1537179663791693844> Control Button Guide:**\n` +
     `• ${emojis.AN_SHIELD} **Shield**: Master AntiNuke Guard *(Auto-creates/deletes \`AntiNuke Bypass\` role)*\n` +
     `• ${emojis.AN_PANIC} **Panic**: Emergency Lockdown Mode (Levels 1-3)\n` +
     `• ${emojis.AN_JOINGATE} **JoinGate**: Bot Add & Account Age Join Protection\n` +
@@ -362,12 +362,12 @@ function renderPanicComponents(config) {
     new ButtonBuilder()
       .setCustomId('an_enable_all')
       .setLabel('Enable All Filters')
-      .setEmoji(emojis.SUCCESS || '🟢')
+      .setEmoji(emojis.SUCCESS || '<a:accept_animated:1537177319603703969>')
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId('an_disable_all')
       .setLabel('Disable All Filters')
-      .setEmoji(emojis.DISABLED || '🔴')
+      .setEmoji(emojis.DISABLED || '<a:wrong_animated:1537179702928875631>')
       .setStyle(ButtonStyle.Danger),
     new ButtonBuilder()
       .setCustomId('an_refresh')
@@ -433,17 +433,17 @@ module.exports = {
       if (toggle === 'noavatar' || toggle === 'avatar') {
         jg.antiNoAvatar = !jg.antiNoAvatar;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`🚪 **JoinGate No Avatar Gate** is now **${jg.antiNoAvatar ? 'ENABLED' : 'DISABLED'}**.`);
+        return message.reply(`<a:openeddooraperture_animated:1537177450411462766> **JoinGate No Avatar Gate** is now **${jg.antiNoAvatar ? 'ENABLED' : 'DISABLED'}**.`);
       }
       if (toggle === 'unverifiedbot' || toggle === 'unverified') {
         jg.antiUnverifiedBot = !jg.antiUnverifiedBot;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`🚪 **JoinGate Anti-Unverified Bot** is now **${jg.antiUnverifiedBot ? 'ENABLED' : 'DISABLED'}**.`);
+        return message.reply(`<a:openeddooraperture_animated:1537177450411462766> **JoinGate Anti-Unverified Bot** is now **${jg.antiUnverifiedBot ? 'ENABLED' : 'DISABLED'}**.`);
       }
       if (toggle === 'adname' || toggle === 'advertising') {
         jg.antiAdvertisingName = !jg.antiAdvertisingName;
         antinukeConfigs.set(guild.id, config);
-        return message.reply(`🚪 **JoinGate Advertising Name Gate** is now **${jg.antiAdvertisingName ? 'ENABLED' : 'DISABLED'}**.`);
+        return message.reply(`<a:openeddooraperture_animated:1537177450411462766> **JoinGate Advertising Name Gate** is now **${jg.antiAdvertisingName ? 'ENABLED' : 'DISABLED'}**.`);
       }
       if (toggle === 'accage' || toggle === 'accountage') {
         jg.antiAccountAge = !jg.antiAccountAge;
@@ -455,7 +455,7 @@ module.exports = {
 
       const description =
         `Welcome **${author.username}**! Below are your **Join Gate Security Controls**.\n\n` +
-        `**🚪 Join Gate Status**\n` +
+        `**<a:openeddooraperture_animated:1537177450411462766> Join Gate Status**\n` +
         `\`\`\`\n` +
         `Bot Additions Protection: ${jg.antiBotAdd ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
         `Unverified Bot Gate     : ${jg.antiUnverifiedBot ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
@@ -463,7 +463,7 @@ module.exports = {
         `Advertising Name Gate   : ${jg.antiAdvertisingName ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
         `Minimum Account Age     : ${jg.antiAccountAge ? `ENABLED (${jg.minAccountAgeDays} Days)` : 'DISABLED [OFF]'}\n` +
         `\`\`\`\n\n` +
-        `**⚡ Commands to Toggle**\n` +
+        `**<a:rapid_animated:1537177482006896692> Commands to Toggle**\n` +
         `\`\`\`\n` +
         `.antinuke joingate noavatar\n` +
         `.antinuke joingate unverified\n` +
@@ -472,7 +472,7 @@ module.exports = {
         `\`\`\``;
 
       const embed = createStyledEmbed({
-        title: `🚪 Join Gate Security Controls`,
+        title: `<a:openeddooraperture_animated:1537177450411462766> Join Gate Security Controls`,
         description,
         requestedBy: author,
         clientUser
@@ -510,7 +510,7 @@ module.exports = {
         `Public Roles Guard     : ${aq.monitorPublicRoles ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
         `Channel Perm Overwrite : ${aq.monitorChannelPerms ? 'ENABLED [OK]' : 'DISABLED [OFF]'}\n` +
         `\`\`\`\n\n` +
-        `**⚡ Commands to Toggle**\n` +
+        `**<a:rapid_animated:1537177482006896692> Commands to Toggle**\n` +
         `\`\`\`\n` +
         `.antinuke quarantine strict\n` +
         `.antinuke quarantine member\n` +
@@ -713,7 +713,7 @@ module.exports = {
           antinukeConfigs.set(guild.id, config);
 
           const embed = createStyledEmbed({
-            title: `👥 Member Whitelisted with Granular Perms`,
+            title: `<a:membercard_animated:1537177436146638993> Member Whitelisted with Granular Perms`,
             description:
               `**User:** <@${user.id}> (\`${user.tag}\`)\n` +
               `**Granted Permissions:** ${formatUserPerms(grantedPerms)}\n\n` +
@@ -755,7 +755,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `🔴 Whitelisted Users — ${guild.name}`,
+        title: `<a:wrong_animated:1537179702928875631> Whitelisted Users — ${guild.name}`,
         subtitle: `Authorized Security Bypass Delegation`,
         description:
           `Below are all authorized whitelisted users for **${guild.name}**:\n\n` +
@@ -766,7 +766,7 @@ module.exports = {
       });
 
       const navRow = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('wl_page_back').setLabel('Go Back').setEmoji('🔴').setStyle(ButtonStyle.Danger),
+        new ButtonBuilder().setCustomId('wl_page_back').setLabel('Go Back').setEmoji('<a:wrong_animated:1537179702928875631>').setStyle(ButtonStyle.Danger),
         new ButtonBuilder().setCustomId('wl_page_prev').setLabel('Previous').setStyle(ButtonStyle.Secondary).setDisabled(true),
         new ButtonBuilder().setCustomId('wl_page_next').setLabel('Next').setStyle(ButtonStyle.Secondary).setDisabled(true)
       );
@@ -899,7 +899,7 @@ module.exports = {
       // PANEL OWNERSHIP CHECK: Only the user who invoked this panel message can interact with it
       if (interaction.user.id !== author.id) {
         return interaction.reply({
-          content: `${emojis.WARNING || '⚠️'} **Access Denied**: Only **${author.username}** (who requested this panel) can click these buttons.`,
+          content: `${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Access Denied**: Only **${author.username}** (who requested this panel) can click these buttons.`,
           flags: 64
         });
       }
@@ -926,7 +926,7 @@ module.exports = {
           entries.push(`• <@${uid}> — ${formatUserPerms(permsSet)}`);
         }
         return interaction.reply({
-          content: `👥 **Whitelist Permissions Panel**\n${entries.join('\n') || 'No members whitelisted.'}\n\nUse \`.whitelist perms @user +ban -role\` to edit granular perms!`,
+          content: `<a:membercard_animated:1537177436146638993> **Whitelist Permissions Panel**\n${entries.join('\n') || 'No members whitelisted.'}\n\nUse \`.whitelist perms @user +ban -role\` to edit granular perms!`,
           flags: 64
         });
       }

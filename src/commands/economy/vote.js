@@ -27,9 +27,9 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(config.successColor)
-      .setTitle(`${emojis.sparkle || '✨'} Vote Reward Claimed!`)
+      .setTitle(`${emojis.sparkle || '<a:sparkles_animated:1537179684175872171>'} Vote Reward Claimed!`)
       .setDescription(`Thank you for voting for **Naruto Bot**!\n\n` +
-                      `<a:gift_animated:1537179583064055931> Reward Received: **+${fmt(VOTE_REWARD)}** ${emojis.coin} & **+1** 💎 Gem!`)
+                      `<a:gift_animated:1537179583064055931> Reward Received: **+${fmt(VOTE_REWARD)}** ${emojis.coin} & **+1** <a:dimond_animated:1537177370719551498> Gem!`)
       .addFields({ name: `Wallet Balance`, value: `**${fmt(eco.balance)}** ${emojis.coin}`, inline: true })
       .setFooter({ text: 'You can vote every 12 hours for bonuses!' })
       .setTimestamp();

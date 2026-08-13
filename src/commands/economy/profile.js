@@ -26,7 +26,7 @@ module.exports = {
         { name: `${emojis.gem} Gems`, value: `${fmt(eco.gems || 0)}`, inline: true },
         { name: 'Job', value: job ? `${job.emoji} ${job.name}` : 'Unemployed', inline: true },
         { name: 'Married To', value: eco.married ? `<@${eco.married}>` : 'Single', inline: true },
-        { name: 'Pet', value: pet ? `${items.PET_SPECIES[pet.species]?.emoji || '🐾'} ${pet.name} (Lv. ${pet.level})` : 'None', inline: true },
+        { name: 'Pet', value: pet ? `${items.PET_SPECIES[pet.species]?.emoji || '<a:pet_paw_animated:1537179634159067229>'} ${pet.name} (Lv. ${pet.level})` : 'None', inline: true },
         { name: `${emojis.fire} Daily Streak`, value: `${eco.dailyStreak || 0} days`, inline: true },
         { name: 'Items Owned', value: `${fmt(itemCount)}`, inline: true },
         { name: `${emojis.chart} Net Worth`, value: `${fmt(eco.balance + eco.bank)} ${emojis.coin}`, inline: true },

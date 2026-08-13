@@ -37,7 +37,7 @@ module.exports = {
       return message.channel.send({
         embeds: [new EmbedBuilder()
           .setColor(config.successColor)
-          .setTitle(`📈 Stock Purchase Successful!`)
+          .setTitle(`<a:chart_animated:1537179539514462308> Stock Purchase Successful!`)
           .setDescription(`Purchased **${amount}x ${ticker}** (${stock.name}) for **${fmt(totalCost)}** ${emojis.coin}.\n-# You now own **${eco.stocks[ticker]}** shares of ${ticker}.`)
           .setFooter({ text: `New Wallet Balance: ${fmt(eco.balance)} ${emojis.coin}` })],
       });
@@ -63,7 +63,7 @@ module.exports = {
       return message.channel.send({
         embeds: [new EmbedBuilder()
           .setColor(config.successColor)
-          .setTitle(`📉 Stock Sale Successful!`)
+          .setTitle(`<a:chart_animated:1537179539514462308> Stock Sale Successful!`)
           .setDescription(`Sold **${amount}x ${ticker}** (${stock.name}) for **+${fmt(totalReturn)}** ${emojis.coin}.\n-# Remaining shares: **${eco.stocks[ticker] || 0}**`)
           .setFooter({ text: `New Wallet Balance: ${fmt(eco.balance)} ${emojis.coin}` })],
       });
@@ -71,12 +71,12 @@ module.exports = {
 
     const lines = Object.entries(items.STOCKS).map(([sym, st]) => {
       const owned = eco.stocks[sym] || 0;
-      return `📈 **${sym}** — ${st.name}\n-# Price: **${fmt(st.price)}** ${emojis.coin} (${st.trend}) • Owned: **${owned}** • Buy: \`.stocks buy ${sym} 1\``;
+      return `<a:chart_animated:1537179539514462308> **${sym}** — ${st.name}\n-# Price: **${fmt(st.price)}** ${emojis.coin} (${st.trend}) • Owned: **${owned}** • Buy: \`.stocks buy ${sym} 1\``;
     });
 
     const embed = new EmbedBuilder()
       .setColor(config.embedColor)
-      .setTitle(`${emojis.BITCOIN || '📈'} Leaf Village Stock Market`)
+      .setTitle(`${emojis.BITCOIN || '<a:chart_animated:1537179539514462308>'} Leaf Village Stock Market`)
       .setThumbnail(message.guild.iconURL({ dynamic: true }) || message.client.user.displayAvatarURL())
       .setDescription(lines.join('\n\n'))
       .setFooter({ text: 'Use .stocks buy <ticker> <amount> or .stocks sell <ticker> <amount>' })

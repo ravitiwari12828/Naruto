@@ -399,7 +399,7 @@ class MusicCard {
     // --- Time labels ---
     const timeY = progressY + 28;
     const currentTime = this.formatDuration(position);
-    const totalTime = isLive ? '🔴 LIVE' : this.formatDuration(duration);
+    const totalTime = isLive ? '<a:wrong_animated:1537179702928875631> LIVE' : this.formatDuration(duration);
 
     ctx.fillStyle = '#a0b0c0';
     ctx.font = '14px "Inter Medium"';

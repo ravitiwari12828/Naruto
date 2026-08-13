@@ -88,18 +88,18 @@ module.exports = {
       return message.reply(`${emojis.WARNING} Please provide a prompt or question!\n**Example:** \`.ask What is Google?\` or \`.code write a JS discord command\``);
     }
 
-    const waitingMsg = await message.reply(`${emojis.AN_BOT || emojis.OBJ_AN_BOT || '⚡'} *Consulting Sage AI Intelligence...*`);
+    const waitingMsg = await message.reply(`${emojis.AN_BOT || emojis.OBJ_AN_BOT || '<a:rapid_animated:1537177482006896692>'} *Consulting Sage AI Intelligence...*`);
 
     try {
       const aiResponse = await generateAIAnswer(query, mode);
 
       const statusBox = createDynamicBox('AI RESPONSE SUMMARY', [
         { key: 'Engine', value: mode === 'code' ? 'Code Compiler' : 'Sage AI Engine' },
-        { key: 'Status', value: '🟢 Completed' }
+        { key: 'Status', value: '<a:accept_animated:1537177319603703969> Completed' }
       ]);
 
       const embed = createStyledEmbed({
-        title: mode === 'code' ? `${emojis.LAPTOP || '💻'} Priority Code Assistant` : `${emojis.SPARKLES || '✨'} Priority AI Assistant`,
+        title: mode === 'code' ? `${emojis.LAPTOP || '<a:laptop_animated:1537179613732671678>'} Priority Code Assistant` : `${emojis.SPARKLES || '<a:sparkles_animated:1537179684175872171>'} Priority AI Assistant`,
         subtitle: mode === 'code' ? 'Generated Code Solution' : 'Sage Intelligence Response',
         description:
           '```\n' + statusBox + '\n```\n\n' +

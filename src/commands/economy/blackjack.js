@@ -65,7 +65,7 @@ module.exports = {
       .setTitle(`🃏 OwO Blackjack Table`)
       .addFields(
         { name: `<a:robot_animated:1537177494183088199> Dealer (${finished ? handValue(dealer) : '?'})`, value: fmtHand(dealer, !finished), inline: false },
-        { name: `👤 You (${handValue(player)})`, value: fmtHand(player), inline: false },
+        { name: `<a:membercard_animated:1537177436146638993> You (${handValue(player)})`, value: fmtHand(player), inline: false },
       )
       .setDescription(resultText || 'Hit to draw a card, Stand to stay, or Double your bet!')
       .setFooter({ text: `Current Bet: ${fmt(bet)} ${emojis.coin} • Wallet: ${fmt(eco.balance)} coins` })

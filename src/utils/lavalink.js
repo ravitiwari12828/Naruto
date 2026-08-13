@@ -61,7 +61,7 @@ function initLavalink(client) {
 
   lavalink.nodeManager.on('error', (node, error) => {
     const errCode = error?.code || error?.message || 'Connection glitch';
-    console.log(`⚠️ [Lavalink Connection] Node ${node.id} network check (${errCode}) - Auto-reconnecting...`);
+    console.log(`<a:wrong_animated:1537179702928875631> [Lavalink Connection] Node ${node.id} network check (${errCode}) - Auto-reconnecting...`);
   });
 
   // Forward raw gateway voice packets to Lavalink
@@ -269,7 +269,7 @@ function initLavalink(client) {
         setTimeout(async () => {
           if (player && !player.playing && !player.paused && player.queue.tracks.length === 0) {
             await player.destroy().catch(() => {});
-            if (channel) channel.send(`👋 Left voice channel due to inactivity.`).catch(() => {});
+            if (channel) channel.send(`<a:wave_animated:1537179697421492304> Left voice channel due to inactivity.`).catch(() => {});
           }
         }, 120000);
       }

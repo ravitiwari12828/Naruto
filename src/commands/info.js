@@ -91,7 +91,7 @@ function buildServerInfoMainEmbed(guild, owner, activeTab = 'overview', author, 
   } else if (activeTab === 'splash') {
     const splashURL = guild.splashURL({ dynamic: true, size: 1024 });
     title = `${guild.name} • Invite Splash`;
-    description = splashURL ? `🎨 **Invite Splash Image**\n[Click for High-Res Original Image](${splashURL})` : `${emojis.WARNING} *This server does not have an invite splash.*`;
+    description = splashURL ? `<a:paint_animated:1537177457403363389> **Invite Splash Image**\n[Click for High-Res Original Image](${splashURL})` : `${emojis.WARNING} *This server does not have an invite splash.*`;
   } else {
     // OVERVIEW
     const ownerName = owner ? owner.user.username : 'Unknown';
@@ -224,11 +224,11 @@ module.exports = {
         '```';
 
       const embed = createStyledEmbed({
-        title: `${emojis.STATS_NEW || '📈'} Naruto Bot Information & System Metrics`,
+        title: `${emojis.STATS_NEW || '<a:chart_animated:1537179539514462308>'} Naruto Bot Information & System Metrics`,
         subtitle: `Developed with ❤️ by Synn • All-In-One Shinobi Bot`,
         description:
           boxText + `\n\n` +
-          `**⚡ Quick Info Links:**\n` +
+          `**<a:rapid_animated:1537177482006896692> Quick Info Links:**\n` +
           `[Support Server](https://discord.gg/ZPKcPreUMT) • [Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands)\n\n` +
           `*Type \`.help\` to view all 24 active system modules and 545+ commands!*`,
         requestedBy: author,
@@ -293,7 +293,7 @@ module.exports = {
         const row2 = new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId(`afk_dm_enable_${authorId}`)
-            .setLabel('🔔 Enable DM Mention')
+            .setLabel('<a:signal_animated:1537177512365260911> Enable DM Mention')
             .setStyle(data.notifyDM ? ButtonStyle.Success : ButtonStyle.Secondary),
           new ButtonBuilder()
             .setCustomId(`afk_dm_disable_${authorId}`)
@@ -411,7 +411,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 👥 MEMBERCOUNT — Full server member breakdown
+    // <a:membercard_animated:1537177436146638993> MEMBERCOUNT — Full server member breakdown
     if (invoked === 'membercount' || invoked === 'members' || invoked === 'mc') {
       await guild.members.fetch().catch(() => {}); // force cache refresh
 
@@ -443,11 +443,11 @@ module.exports = {
         '```';
 
       const embed = createStyledEmbed({
-        title: `${emojis.MEMBERS || '👥'} Member Count — ${guild.name}`,
+        title: `${emojis.MEMBERS || '<a:membercard_animated:1537177436146638993>'} Member Count — ${guild.name}`,
         subtitle: `Live Server Member Statistics`,
         description: boxText + '\n\n' +
-          `🟢 **Online:** \`${online}\` • 🟡 **Idle:** \`${idle}\` • 🔴 **DnD:** \`${dnd}\` • ⚫ **Offline:** \`${offline}\`\n` +
-          `> 👤 **${humans.toLocaleString()}** humans • <a:robot_animated:1537177494183088199> **${bots.toLocaleString()}** bots • 💎 **${boosters}** boosters`,
+          `<a:accept_animated:1537177319603703969> **Online:** \`${online}\` • 🟡 **Idle:** \`${idle}\` • <a:wrong_animated:1537179702928875631> **DnD:** \`${dnd}\` • ⚫ **Offline:** \`${offline}\`\n` +
+          `> <a:membercard_animated:1537177436146638993> **${humans.toLocaleString()}** humans • <a:robot_animated:1537177494183088199> **${bots.toLocaleString()}** bots • <a:dimond_animated:1537177370719551498> **${boosters}** boosters`,
         requestedBy: author,
         clientUser
       });
@@ -512,7 +512,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 🎯 SNIPE (Shows last 10 sniped messages in channel)
+    // <a:target_animated:1537179692174545037> SNIPE (Shows last 10 sniped messages in channel)
     if (invoked === 'snipe') {
       const rawStore = snipeStore.get(message.channel.id);
       const history = Array.isArray(rawStore) ? rawStore : (rawStore ? [rawStore] : []);
@@ -525,7 +525,7 @@ module.exports = {
       if (!isNaN(indexArg) && indexArg >= 1 && indexArg <= history.length) {
         const item = history[indexArg - 1];
         const embed = createStyledEmbed({
-          title: `🎯 Sniped Message #${indexArg} of ${history.length}`,
+          title: `<a:target_animated:1537179692174545037> Sniped Message #${indexArg} of ${history.length}`,
           subtitle: `Sent & Deleted by ${item.authorTag || 'Unknown User'}`,
           description: `**Author:** ${item.authorId ? `<@${item.authorId}>` : `\`${item.authorTag}\``}\n**Deleted:** <t:${Math.floor(item.timestamp / 1000)}:R>\n\n**Message Content:**\n${item.content || '*[Empty]*'}`,
           bannerUrl: item.image || null,
@@ -545,7 +545,7 @@ module.exports = {
       });
 
       const embed = createStyledEmbed({
-        title: `${emojis.SCROLL || '🎯'} Snipe History — #${message.channel.name}`,
+        title: `${emojis.SCROLL || '<a:target_animated:1537179692174545037>'} Snipe History — #${message.channel.name}`,
         subtitle: `Displaying last ${history.length} deleted message(s) in this channel`,
         description:
           `${lines.join('\n\n')}\n\n` +
@@ -557,7 +557,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 👤 USERINFO / USER / UI [@user]
+    // <a:membercard_animated:1537177436146638993> USERINFO / USER / UI [@user]
     if (['userinfo', 'user', 'ui'].includes(invoked)) {
       const member = message.mentions.members?.first() || message.guild.members.cache.get(args[0]) || message.member;
       const user = member.user;
@@ -616,7 +616,7 @@ module.exports = {
       const embed = createStyledEmbed({
         title: `🏓 Pong!`,
         fields: [
-          { name: '⚡ Bot Latency', value: `\`${latency}ms\``, inline: true },
+          { name: '<a:rapid_animated:1537177482006896692> Bot Latency', value: `\`${latency}ms\``, inline: true },
           { name: '🌐 Discord API Ping', value: `\`${apiPing}ms\``, inline: true }
         ],
         requestedBy: author,
@@ -644,7 +644,7 @@ module.exports = {
         description:
           '```\n' + box + '\n```\n\n' +
           `${inviteEmoji} **[Click Here to Invite ${clientUser.username}](${inviteUrl})**\n` +
-          `💬 **[Click Here to Join Support Server](${supportUrl})**`,
+          `<a:code_animated:1537177358912725033> **[Click Here to Join Support Server](${supportUrl})**`,
         requestedBy: author,
         clientUser
       });
@@ -660,7 +660,7 @@ module.exports = {
           .setLabel('Support Server')
           .setStyle(ButtonStyle.Link)
           .setURL(supportUrl)
-          .setEmoji(emojis.OBJ_MODMAIL || '💬')
+          .setEmoji(emojis.OBJ_MODMAIL || '<a:code_animated:1537177358912725033>')
       );
 
       return message.channel.send({ embeds: [embed], components: [row] });

@@ -100,7 +100,7 @@ module.exports = {
       };
 
       return createStyledEmbed({
-        title: `${emojis.SCROLL || '📜'} Audit Logging System Architecture`,
+        title: `${emojis.SCROLL || '<a:scroll_animated:1537179663791693844>'} Audit Logging System Architecture`,
         subtitle: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Server Event & Moderation Logging Grid`,
         description:
           `**${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Security Logs Category**\n` +
@@ -127,7 +127,7 @@ module.exports = {
           `ticket-logs        : ${resolve('ticketlogs', 'ticketLogs', 'ticket-logs')}\n` +
           `modmail-logs       : ${resolve('modmaillogs', 'modmailLogs', 'modmail-logs')}\n` +
           `\`\`\`\n\n` +
-          (actionText ? `> ${emojis.SUCCESS || '✅'} **Status:** ${actionText}\n\n` : '') +
+          (actionText ? `> ${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Status:** ${actionText}\n\n` : '') +
           `**Mode:** \`${config.mode.toUpperCase()}\` | **Choose your setup method below:**\n` +
           `*(Existing server channels will be automatically re-used to prevent duplicate channels!)*`,
         requestedBy: author,
@@ -179,7 +179,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: `${emojis.ERROR || '❌'} Only the administrator can use these buttons.`, ephemeral: true });
+        return interaction.reply({ content: `${emojis.ERROR || '<a:wrong_animated:1537179702928875631>'} Only the administrator can use these buttons.`, ephemeral: true });
       }
 
       await interaction.deferUpdate();

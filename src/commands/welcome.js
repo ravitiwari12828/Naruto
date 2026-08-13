@@ -29,7 +29,7 @@ const WELCOME_PRESETS = {
     style: 'aesthetic',
     color: '#FFD1DC',
     title: '{script:Welcome to {server_name}}',
-    description: '🌸 Welcome {user} ♡\n\n✨ We are so happy to have you here!\n🍰 Total Sweethearts: #{membercount}',
+    description: '<a:cherry_blossom_animated:1537179542148620299> Welcome {user} ♡\n\n<a:sparkles_animated:1537179684175872171> We are so happy to have you here!\n🍰 Total Sweethearts: #{membercount}',
     font: 'script',
     banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/aesthetic_banner.gif'
   },
@@ -37,7 +37,7 @@ const WELCOME_PRESETS = {
     name: 'Cosmic Galaxy Horizon',
     style: 'galaxy',
     color: '#00FFFF',
-    title: '✨ {smallcaps:WELCOME TO THE COSMOS}',
+    title: '<a:sparkles_animated:1537179684175872171> {smallcaps:WELCOME TO THE COSMOS}',
     description: '🌌 Welcome space traveler {user}!\n\n🛸 Starship: {server_name}\n🪐 Crew Members: #{membercount}',
     font: 'smallcaps',
     banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/galaxy_banner.gif'
@@ -56,7 +56,7 @@ const WELCOME_PRESETS = {
     style: 'shinobi',
     color: '#FF7A00',
     title: '🍥 {gothic:Welcome Shinobi}',
-    description: '🍃 Believe it! Welcome {user} to {gothic:{server_name}}!\n\n⚔️ Village Ninja Count: #{membercount}',
+    description: '<a:leaf_animated:1537179616400375939> Believe it! Welcome {user} to {gothic:{server_name}}!\n\n<a:battle_animated:1537177338427605064> Village Ninja Count: #{membercount}',
     font: 'gothic',
     banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/shinobi_banner.gif'
   },
@@ -64,7 +64,7 @@ const WELCOME_PRESETS = {
     name: 'Cyberpunk Neon Matrix',
     style: 'cyberpunk',
     color: '#00FFBB',
-    title: '⚡ {smallcaps:CYBERNETIC ACCESS GRANTED}',
+    title: '<a:rapid_animated:1537177482006896692> {smallcaps:CYBERNETIC ACCESS GRANTED}',
     description: '👾 User connected: {user}\n\n🌐 Net Grid: {server_name}\n💾 Node Connections: #{membercount}',
     font: 'smallcaps',
     banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/cyberpunk_banner.gif'
@@ -126,7 +126,7 @@ function getOrCreateWelcomeConfig(guildId) {
       footer: 'Welcome to our Server',
       headerText: `<a:chart_animated:1537179539514462308> MEMBER COUNT: #{membercount}`,
       imageUrl: PRESET_BANNERS.gothic,
-      joinDmText: '🌸 Welcome to **{server_name}**, {user}! Enjoy your stay!',
+      joinDmText: '<a:cherry_blossom_animated:1537179542148620299> Welcome to **{server_name}**, {user}! Enjoy your stay!',
       leaveDmText: '📤 Goodbye {user}, we hope to see you back in **{server_name}** soon!',
       boostText: '<a:rocket_animated:1537179661371707402> **{user}** boosted **{server_name}**!'
     });
@@ -313,7 +313,7 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
   ], 20, 22);
 
   const gearEmoji = '<a:settings_animated:1537177506170404905>';
-  const configEmoji = '💬';
+  const configEmoji = '<a:code_animated:1537177358912725033>';
   const boostEmoji = '<a:rocket_animated:1537179661371707402>';
   const mailEmoji = '<a:openeddooraperture_animated:1537177450411462766>';
 
@@ -329,7 +329,7 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
     `> *Type \`.welcome <command>\` to configure any option above.*`;
 
   const embed = createStyledEmbed({
-    title: `👋 Welcome System Dashboard`,
+    title: `<a:wave_animated:1537179697421492304> Welcome System Dashboard`,
     subtitle: `${guild.name} Greetings Configuration`,
     description,
     requestedBy: author,
@@ -587,7 +587,7 @@ module.exports = {
       ]);
 
       return message.reply(
-        `🎨 **Available Welcome Theme Presets:**\n` +
+        `<a:paint_animated:1537177457403363389> **Available Welcome Theme Presets:**\n` +
         '```\n' + presetBox + '\n```\n' +
         `Usage: \`.welcome preset gothic\` or \`.welcome preset shinobi\``
       );

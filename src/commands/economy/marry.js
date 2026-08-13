@@ -26,7 +26,7 @@ module.exports = {
 
     const row = new ActionRowBuilder().addComponents(
       new ButtonBuilder().setCustomId('marry_accept').setLabel('Accept Proposal').setEmoji('💍').setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId('marry_decline').setLabel('Decline').setEmoji('❌').setStyle(ButtonStyle.Danger)
+      new ButtonBuilder().setCustomId('marry_decline').setLabel('Decline').setEmoji('<a:wrong_animated:1537179702928875631>').setStyle(ButtonStyle.Danger)
     );
 
     const embed = new EmbedBuilder()
@@ -52,7 +52,7 @@ module.exports = {
         const winEmbed = new EmbedBuilder()
           .setColor(0xFF69B4)
           .setTitle(`💖 Marriage Ceremony Complete!`)
-          .setDescription(`🎉 **<@${message.author.id}>** and **${target}** are now officially married! 💕`)
+          .setDescription(`<a:tada_party_animated:1537179689381134356> **<@${message.author.id}>** and **${target}** are now officially married! 💕`)
           .setFooter({ text: 'Congratulations from Naruto Bot!' })
           .setTimestamp();
 

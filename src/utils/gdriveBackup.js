@@ -38,7 +38,7 @@ function createSnapshot() {
 
     return { success: true, filename, filepath, size: fs.statSync(filepath).size };
   } catch (err) {
-    console.error('❌ [Snapshot Error]:', err.message);
+    console.error('<a:wrong_animated:1537179702928875631> [Snapshot Error]:', err.message);
     return { success: false, error: err.message };
   }
 }
@@ -257,7 +257,7 @@ async function performDriveBackup() {
       message: `Uploaded snapshot ${snapshotRes.filename} to 5TB Google Drive (File ID: ${driveFile.id})!`
     };
   } catch (err) {
-    console.error('⚠️ [Drive Backup Warning]:', err.message);
+    console.error('<a:wrong_animated:1537179702928875631> [Drive Backup Warning]:', err.message);
     return {
       success: true,
       driveError: err.message,
@@ -273,7 +273,7 @@ async function performDriveBackup() {
 setInterval(() => {
   performDriveBackup().then(res => {
     if (res.success) {
-      console.log(`📦 [Auto Backup] ${res.message}`);
+      console.log(`<a:openfolder_animated:1537177452936437760> [Auto Backup] ${res.message}`);
     }
   });
 }, 24 * 60 * 60 * 1000);

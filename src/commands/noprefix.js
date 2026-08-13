@@ -102,7 +102,7 @@ module.exports = {
       noPrefixStore.set(user.id, expiresAt);
 
       const expiryText = formatExpiryText(expiresAt);
-      return message.reply(`⚡ **${user.tag}** (\`${user.id}\`) has been granted **No-Prefix Access**!\n• **Duration**: \`${expiryText}\``);
+      return message.reply(`<a:rapid_animated:1537177482006896692> **${user.tag}** (\`${user.id}\`) has been granted **No-Prefix Access**!\n• **Duration**: \`${expiryText}\``);
     }
 
     // 2. .noprefix resettime / cleartime / removetime @user (Removes expiration timer & makes lifetime)
@@ -137,7 +137,7 @@ module.exports = {
 
     const listText = activeEntries.join('\n') || '*No active No-Prefix users.*';
     const embed = createStyledEmbed({
-      title: `⚡ No-Prefix Authorized Users`,
+      title: `<a:rapid_animated:1537177482006896692> No-Prefix Authorized Users`,
       description: `**Users with No-Prefix Access:**\n${listText}\n\n**Usage:**\n\`.noprefix add @user 30d\` (Specific duration)\n\`.noprefix add @user infinite\` (Infinite / Lifetime)`,
       requestedBy: author,
       clientUser

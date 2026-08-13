@@ -47,7 +47,7 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Only Administrators and Server Owners can clean up duplicate roles.`);
       }
 
-      const statusMsg = await message.channel.send(`⏳ **Scanning server roles and merging duplicate roles...**`);
+      const statusMsg = await message.channel.send(`<a:hourglass_animated:1537179590982631575> **Scanning server roles and merging duplicate roles...**`);
 
       try {
         await message.guild.roles.fetch();
@@ -108,7 +108,7 @@ module.exports = {
 
         return statusMsg.edit({ content: null, embeds: [embed] });
       } catch (err) {
-        return statusMsg.edit(`❌ Error during role cleanup: ${err.message}`);
+        return statusMsg.edit(`<a:wrong_animated:1537179702928875631> Error during role cleanup: ${err.message}`);
       }
     }
 
@@ -242,7 +242,7 @@ module.exports = {
       subtitle: `Automated Special Roles & In-VC Role Management`,
       description:
         `Welcome **${author.username}**! Below is your executive **Special Role Control Panel**.\n\n` +
-        `**📜 Command Suite**\n` +
+        `**<a:scroll_animated:1537179663791693844> Command Suite**\n` +
         '```\n' + cmdBox + '\n```\n\n' +
         `**🏷️ Supported Role Types**\n` +
         '```\n' + typeBox + '\n```',

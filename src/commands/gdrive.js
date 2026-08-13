@@ -13,18 +13,18 @@ module.exports = {
 
   async execute(message, args, client) {
     if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-      return message.reply('❌ Only administrators can manage Google Drive database backups.');
+      return message.reply('<a:wrong_animated:1537179702928875631> Only administrators can manage Google Drive database backups.');
     }
 
     const sub = args[0] ? args[0].toLowerCase() : 'status';
 
     // 1. .gdrive backup - Trigger instant backup
     if (sub === 'backup' || sub === 'now' || sub === 'create') {
-      const statusMsg = await message.reply('⏳ Creating master database snapshot & sync to Google Drive...');
+      const statusMsg = await message.reply('<a:hourglass_animated:1537179590982631575> Creating master database snapshot & sync to Google Drive...');
       const res = await performDriveBackup();
 
       if (!res.success) {
-        return statusMsg.edit(`❌ **Backup Failed**: ${res.error}`);
+        return statusMsg.edit(`<a:wrong_animated:1537179702928875631> **Backup Failed**: ${res.error}`);
       }
 
       const box = createDynamicBox('5TB DRIVE BACKUP REPORT', [
@@ -42,10 +42,10 @@ module.exports = {
 
       if (res.filepath && fs.existsSync(res.filepath)) {
         const attachment = new AttachmentBuilder(res.filepath, { name: res.filename });
-        return statusMsg.edit({ content: '✅ **Backup Snapshot Completed!**', embeds: [embed], files: [attachment] });
+        return statusMsg.edit({ content: '<a:accept_animated:1537177319603703969> **Backup Snapshot Completed!**', embeds: [embed], files: [attachment] });
       }
 
-      return statusMsg.edit({ content: '✅ **Backup Completed!**', embeds: [embed] });
+      return statusMsg.edit({ content: '<a:accept_animated:1537177319603703969> **Backup Completed!**', embeds: [embed] });
     }
 
     // 2. .gdrive setup - Guide on setting up Google Drive Service Account
@@ -60,7 +60,7 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(0x5865F2)
-        .setTitle('🛠️ 5TB Google Drive Integration Guide')
+        .setTitle('<a:utility_animated:1537177542040231937> 5TB Google Drive Integration Guide')
         .setDescription(
           '```\n' + setupBox + '\n```\n\n' +
           '**Need Help?**\n' +

@@ -221,7 +221,7 @@ module.exports = {
     } catch (e) {}
 
     const embed = createStyledEmbed({
-      title: `${emojis.NINJA_SCROLL || emojis.SCROLL || '📜'} Lyrics — ${res.title}`,
+      title: `${emojis.NINJA_SCROLL || emojis.SCROLL || '<a:scroll_animated:1537179663791693844>'} Lyrics — ${res.title}`,
       subtitle: `Artist: ${res.artist}`,
       description: lyricsText,
       requestedBy: author,

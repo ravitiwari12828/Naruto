@@ -21,7 +21,7 @@ process.on('uncaughtException', (err) => {
   if (err.stack) flushLog(`Stack: ${err.stack}`, true);
 });
 process.on('unhandledRejection', (reason, promise) => {
-  flushLog(`⚠️ [UNHANDLED PROMISE REJECTION]: ${reason?.message || reason}`, true);
+  flushLog(`<a:wrong_animated:1537179702928875631> [UNHANDLED PROMISE REJECTION]: ${reason?.message || reason}`, true);
   if (reason?.stack) flushLog(`Stack: ${reason.stack}`, true);
 });
 
@@ -52,7 +52,7 @@ function pingServer() {
   clientModule.get(keepaliveUrl, (res) => {
     flushLog(`📡 Keepalive self-ping sent to ${keepaliveUrl} (Status: ${res.statusCode})`);
   }).on('error', (err) => {
-    flushLog(`⚠️ Keepalive self-ping warning: ${err.message}`, true);
+    flushLog(`<a:wrong_animated:1537179702928875631> Keepalive self-ping warning: ${err.message}`, true);
   });
 }
 
@@ -84,7 +84,7 @@ const everyonePingViolations = new Map();
 const client = new Client({
   presence: {
     status: 'online',
-    activities: [{ name: '💬 .help | Naruto Shinobi Bot', type: 3 }]
+    activities: [{ name: '<a:code_animated:1537177358912725033> .help | Naruto Shinobi Bot', type: 3 }]
   },
   makeCache: Options.cacheWithLimits({
     MessageManager: 25,
@@ -123,19 +123,19 @@ client.commands = new Collection();
 
 // Gateway Shard & Connectivity Debug Monitor
 client.on('shardReady', (id) => {
-  flushLog(`⚡ [Gateway Connected] Shard #${id} established connection to Discord Gateway! WebSocket Ping: ${client.ws.ping}ms`);
+  flushLog(`<a:rapid_animated:1537177482006896692> [Gateway Connected] Shard #${id} established connection to Discord Gateway! WebSocket Ping: ${client.ws.ping}ms`);
 });
 client.on('shardDisconnect', (event, id) => {
-  flushLog(`⚠️ [Gateway Disconnect] Shard #${id} disconnected! Code: ${event.code} | Reason: ${event.reason || 'None provided'}`, true);
+  flushLog(`<a:wrong_animated:1537179702928875631> [Gateway Disconnect] Shard #${id} disconnected! Code: ${event.code} | Reason: ${event.reason || 'None provided'}`, true);
 });
 client.on('shardReconnecting', (id) => {
   flushLog(`🔄 [Gateway Reconnecting] Shard #${id} attempting automatic reconnect...`);
 });
 client.on('shardResume', (id, replayedEvents) => {
-  flushLog(`✅ [Gateway Resumed] Shard #${id} session resumed! Replayed ${replayedEvents} events.`);
+  flushLog(`<a:accept_animated:1537177319603703969> [Gateway Resumed] Shard #${id} session resumed! Replayed ${replayedEvents} events.`);
 });
 client.on('shardError', (error, id) => {
-  flushLog(`💥 [Gateway Socket Error] Shard #${id}: ${error.message || error}`, true);
+  flushLog(`<a:kaboom_animated:1537179599228637226> [Gateway Socket Error] Shard #${id}: ${error.message || error}`, true);
 });
 
 // Load Commands Dynamically (Recursively scan subdirectories)
@@ -193,7 +193,7 @@ client.once('ready', async () => {
 
   client.user.setPresence({
     status: 'online',
-    activities: [{ name: '💬 DM me for Support | .help', type: 3 }]
+    activities: [{ name: '<a:code_animated:1537177358912725033> DM me for Support | .help', type: 3 }]
   });
 
   // Startup Cleanup: Sweep and delete leftover empty VoiceMaster temporary channels across all guilds
@@ -233,11 +233,11 @@ client.on('guildCreate', async (guild) => {
   if (botlockCmd && botlockCmd.isGuildAuthorized) {
     const isAuth = botlockCmd.isGuildAuthorized(guild.id, guild.ownerId);
     if (!isAuth) {
-      console.log(`🔒 [Lockdown Triggered] Leaving unauthorized server: ${guild.name} (ID: ${guild.id})`);
+      console.log(`<a:key_lock_animated:1537179601493561404> [Lockdown Triggered] Leaving unauthorized server: ${guild.name} (ID: ${guild.id})`);
       try {
         const defaultChan = guild.channels.cache.find(c => c.isTextBased() && c.permissionsFor(guild.members.me).has('SendMessages'));
         if (defaultChan) {
-          await defaultChan.send(`🔒 **Private Server Lockdown**: This bot is locked to authorized servers only. Leaving server...`);
+          await defaultChan.send(`<a:key_lock_animated:1537179601493561404> **Private Server Lockdown**: This bot is locked to authorized servers only. Leaving server...`);
         }
       } catch (e) {}
       guild.leave().catch(() => {});
@@ -326,7 +326,7 @@ client.on('guildMemberAdd', async (member) => {
     }
   }
 
-  // 🚪 WICK-STYLE JOINGATE SECURITY ENFORCEMENT
+  // <a:openeddooraperture_animated:1537177450411462766> WICK-STYLE JOINGATE SECURITY ENFORCEMENT
   const antinukeCmd = client.commands.get('antinuke');
   if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
     const antiConfig = antinukeCmd.getOrCreateAntinuke(member.guild.id);
@@ -338,7 +338,7 @@ client.on('guildMemberAdd', async (member) => {
         await member.kick('JoinGate Protection: No Profile Avatar').catch(() => {});
         dispatchLog(member.guild, 'antinuke', {
           color: 0xFEE75C,
-          title: '🚪 JOINGATE: NO AVATAR MEMBER KICKED',
+          title: '<a:openeddooraperture_animated:1537177450411462766> JOINGATE: NO AVATAR MEMBER KICKED',
           description: `**Member Kicked:** <@${member.id}> (\`${member.user.tag}\`) had no profile picture.`,
           footer: 'JoinGate Security'
         });
@@ -352,7 +352,7 @@ client.on('guildMemberAdd', async (member) => {
           await member.kick(`JoinGate Protection: Account age under ${jg.minAccountAgeDays} days`).catch(() => {});
           dispatchLog(member.guild, 'antinuke', {
             color: 0xED4245,
-            title: '🚪 JOINGATE: YOUNG ACCOUNT KICKED',
+            title: '<a:openeddooraperture_animated:1537177450411462766> JOINGATE: YOUNG ACCOUNT KICKED',
             description: `**Young Account Blocked:** <@${member.id}> (\`${member.user.tag}\`)\n• **Created:** <t:${Math.floor(member.user.createdTimestamp / 1000)}:R>\n• **Requirement:** Minimum ${jg.minAccountAgeDays} Days.`,
             footer: 'JoinGate Security'
           });
@@ -367,7 +367,7 @@ client.on('guildMemberAdd', async (member) => {
           await member.timeout(24 * 60 * 60 * 1000, 'JoinGate Protection: Invite link in username').catch(() => {});
           dispatchLog(member.guild, 'antinuke', {
             color: 0xFEE75C,
-            title: '🚪 JOINGATE: ADVERTISING USERNAME TIMED OUT',
+            title: '<a:openeddooraperture_animated:1537177450411462766> JOINGATE: ADVERTISING USERNAME TIMED OUT',
             description: `**Advertising Username Intercepted:** <@${member.id}> (\`${member.user.tag}\`) timed out for 24h due to invite link in username.`,
             footer: 'JoinGate Security'
           });
@@ -1036,11 +1036,11 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
 
     dispatchLog(newGuild, 'antinuke', {
       color: 0xFEE75C,
-      title: '⚠️ VANITYGUARD — BOOST LOST',
+      title: '<a:wrong_animated:1537179702928875631> VANITYGUARD — BOOST LOST',
       description:
         `**Server dropped below Level 3 Boost!**\n\n` +
-        `🔒 **Protected Vanity Saved:** \`discord.gg/${vanityConfig.protectedVanity}\`\n` +
-        `📦 **Status:** Code is locked in bot memory — will AUTO-RECLAIM when boost returns!\n\n` +
+        `<a:key_lock_animated:1537179601493561404> **Protected Vanity Saved:** \`discord.gg/${vanityConfig.protectedVanity}\`\n` +
+        `<a:openfolder_animated:1537177452936437760> **Status:** Code is locked in bot memory — will AUTO-RECLAIM when boost returns!\n\n` +
         `> Boost your server back to **Level 3** to automatically restore \`discord.gg/${vanityConfig.protectedVanity}\``,
       footer: 'VanityGuard Decoy System'
     });
@@ -1060,11 +1060,11 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
 
       dispatchLog(newGuild, 'antinuke', {
         color: 0x57F287,
-        title: '✅ VANITYGUARD — REAL VANITY RECLAIMED',
+        title: '<a:accept_animated:1537177319603703969> VANITYGUARD — REAL VANITY RECLAIMED',
         description:
           `**Server boosted back to Level 3!**\n\n` +
-          `🔒 **Real Vanity Reclaimed:** \`discord.gg/${vanityConfig.protectedVanity}\`\n` +
-          `⚡ **Recovery Time:** < 1 second\n` +
+          `<a:key_lock_animated:1537179601493561404> **Real Vanity Reclaimed:** \`discord.gg/${vanityConfig.protectedVanity}\`\n` +
+          `<a:rapid_animated:1537177482006896692> **Recovery Time:** < 1 second\n` +
           `<a:security_animated:1537177499862171741> **Status:** Protected & LOCKED`,
         footer: 'VanityGuard Decoy System'
       });
@@ -1127,10 +1127,10 @@ client.on('guildUpdate', async (oldGuild, newGuild) => {
             title: '<a:security_animated:1537177499862171741> VANITYGUARD — DECOY REJECTED',
             description:
               `**Vanity Theft Intercepted & Neutralized!**\n\n` +
-              `🔴 **Rogue Admin:** <@${executor.id}>\n` +
+              `<a:wrong_animated:1537179702928875631> **Rogue Admin:** <@${executor.id}>\n` +
               `🎭 **Decoy Vanity (gone):** \`${decoyVanity ? 'discord.gg/' + decoyVanity : 'Changed/Removed'}\`\n` +
-              `🔒 **Real Vanity (SAFE):** \`discord.gg/${realVanity}\` — **LOCKED & PROTECTED**\n` +
-              `⚡ **Recovery Speed:** < 50ms\n` +
+              `<a:key_lock_animated:1537179601493561404> **Real Vanity (SAFE):** \`discord.gg/${realVanity}\` — **LOCKED & PROTECTED**\n` +
+              `<a:rapid_animated:1537177482006896692> **Recovery Speed:** < 50ms\n` +
               `⛓️ **Punishment:** 10-Day Quarantine Jail Applied to Rogue Admin\n\n` +
               `> The decoy vanity left — your real vanity \`discord.gg/${realVanity}\` was NEVER at risk!`,
             footer: 'VanityGuard Decoy System'
@@ -1189,7 +1189,7 @@ client.on('webhooksUpdate', async (channel) => {
   }
 });
 
-// 🎯 6. SNIPE ENGINE — STORES LAST 10 DELETED MESSAGES PER CHANNEL
+// <a:target_animated:1537179692174545037> 6. SNIPE ENGINE — STORES LAST 10 DELETED MESSAGES PER CHANNEL
 client.on('messageDelete', async (message) => {
   if (!message || !message.channel || message.author?.bot) return;
 
@@ -1219,7 +1219,7 @@ client.on('messageDelete', async (message) => {
 client.on('messageCreate', async (message) => {
   if (!message || message.author?.bot) return;
 
-  // 🔒 GLOBAL MESSAGE DEDUPLICATION LOCK: Prevent duplicate processing across events
+  // <a:key_lock_animated:1537179601493561404> GLOBAL MESSAGE DEDUPLICATION LOCK: Prevent duplicate processing across events
   if (!client.processedMsgLock) client.processedMsgLock = new Set();
   if (client.processedMsgLock.has(message.id)) return;
   client.processedMsgLock.add(message.id);
@@ -1311,7 +1311,7 @@ client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
   const contentLower = message.content ? message.content.toLowerCase().trim() : '';
 
-  // ⚡ AUTOMATIC SPAM, LINK & BAD WORD AUTOMOD ENFORCEMENT
+  // <a:rapid_animated:1537177482006896692> AUTOMATIC SPAM, LINK & BAD WORD AUTOMOD ENFORCEMENT
   if (message.guild && message.member) {
     const antinukeCmd = client.commands.get('antinuke');
     const antiConfig = antinukeCmd ? antinukeCmd.getOrCreateAntinuke(message.guild.id) : null;
@@ -1354,7 +1354,7 @@ client.on('messageCreate', async (message) => {
         await message.delete().catch(() => {});
 
         // Send 5-second auto-deleting warning in chat
-        message.channel.send(`⚠️ <@${message.author.id}>, your message was blocked by AutoMod (\`Rule: ${blockedRule}\`).`)
+        message.channel.send(`<a:wrong_animated:1537179702928875631> <@${message.author.id}>, your message was blocked by AutoMod (\`Rule: ${blockedRule}\`).`)
           .then(m => setTimeout(() => m.delete().catch(() => {}), 5000))
           .catch(() => {});
 
@@ -1554,7 +1554,7 @@ client.on('messageCreate', async (message) => {
         const secs = afkTime % 60;
         const durationStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
 
-        message.channel.send(`${emojis.LEAF || '🍃'} Welcome back <@${message.author.id}>! I removed your AFK status (AFK for **${durationStr}**).`).catch(() => {});
+        message.channel.send(`${emojis.LEAF || '<a:leaf_animated:1537179616400375939>'} Welcome back <@${message.author.id}>! I removed your AFK status (AFK for **${durationStr}**).`).catch(() => {});
       }
     }
 
@@ -1685,12 +1685,12 @@ client.on('messageCreate', async (message) => {
             } else {
               // Styled Embed Announcement
               const levelUpEmbed = createStyledEmbed({
-                title: `${emojis.CELEBRATION || '🎉'} LEVEL UP! — Shinobi Rank Advancement`,
+                title: `${emojis.CELEBRATION || '<a:tada_party_animated:1537179689381134356>'} LEVEL UP! — Shinobi Rank Advancement`,
                 description: `Congratulations <@${message.author.id}>! Your activity elevated your Ninja Rank!`,
                 fields: [
-                  { name: `${emojis.STAR || '⭐'} New Level`, value: `\`Level ${userAfter.level}\``, inline: true },
+                  { name: `${emojis.STAR || '<a:rank_animated:1537179656090943538>'} New Level`, value: `\`Level ${userAfter.level}\``, inline: true },
                   { name: `${emojis.NINJA_RANK || '🍥'} Shinobi Rank`, value: `\`${userAfter.rank}\``, inline: true },
-                  { name: `${emojis.ZAP || '✨'} Total XP`, value: `\`${userAfter.xp} XP\``, inline: true }
+                  { name: `${emojis.ZAP || '<a:sparkles_animated:1537179684175872171>'} Total XP`, value: `\`${userAfter.xp} XP\``, inline: true }
                 ],
                 thumbnailUrl: message.author.displayAvatarURL({ dynamic: true, size: 256 }),
                 requestedBy: message.author,
@@ -1928,8 +1928,8 @@ client.on('messageCreate', async (message) => {
   const startTime = Date.now();
   const chanName = message.channel ? `#${message.channel.name}` : 'DM';
   const guildName = message.guild ? message.guild.name : 'DM';
-  console.log(`⚡ [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
-  flushLog(`⚡ [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
+  console.log(`<a:rapid_animated:1537177482006896692> [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
+  flushLog(`<a:rapid_animated:1537177482006896692> [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
   db.recordAnalyticsEvent(message.guild ? message.guild.id : 'DM', message.author.id, 'command', 1);
 
   const statsCmd = client.commands.get('stats');
@@ -1940,10 +1940,10 @@ client.on('messageCreate', async (message) => {
   try {
     await command.execute(message, args);
     const latency = Date.now() - startTime;
-    flushLog(`✅ [Command Success] .${commandName} completed for ${message.author.tag} in ${chanName} (${latency}ms)`);
+    flushLog(`<a:accept_animated:1537177319603703969> [Command Success] .${commandName} completed for ${message.author.tag} in ${chanName} (${latency}ms)`);
   } catch (error) {
     const latency = Date.now() - startTime;
-    flushLog(`❌ [Command Error] .${commandName} failed for ${message.author.tag} in ${chanName} (${latency}ms): ${error.stack || error.message || error}`, true);
+    flushLog(`<a:wrong_animated:1537179702928875631> [Command Error] .${commandName} failed for ${message.author.tag} in ${chanName} (${latency}ms): ${error.stack || error.message || error}`, true);
     const errMsg = error?.message || 'Execution Error';
     message.reply(`${emojis.WARNING} Command \`.${commandName}\` error: \`${errMsg}\``).catch(() => {});
   }
@@ -2107,9 +2107,9 @@ client.on('interactionCreate', async (interaction) => {
           await player.queue.add(track);
           if (!player.playing && !player.paused) {
             await player.play();
-            return interaction.editReply({ content: `✨ **Playing Suggested Track:** \`${track.info.title}\`` }).catch(() => {});
+            return interaction.editReply({ content: `<a:sparkles_animated:1537179684175872171> **Playing Suggested Track:** \`${track.info.title}\`` }).catch(() => {});
           } else {
-            return interaction.editReply({ content: `✨ **Added to Queue:** \`${track.info.title}\` at position **#${player.queue.tracks.length}**.` }).catch(() => {});
+            return interaction.editReply({ content: `<a:sparkles_animated:1537179684175872171> **Added to Queue:** \`${track.info.title}\` at position **#${player.queue.tracks.length}**.` }).catch(() => {});
           }
         }
       }
@@ -2136,9 +2136,9 @@ client.on('interactionCreate', async (interaction) => {
 
       if (!player.playing && !player.paused) {
         await player.play();
-        return interaction.editReply({ content: `✨ **Playing Suggested Track:** \`${track.info.title}\`` }).catch(() => {});
+        return interaction.editReply({ content: `<a:sparkles_animated:1537179684175872171> **Playing Suggested Track:** \`${track.info.title}\`` }).catch(() => {});
       } else {
-        return interaction.editReply({ content: `✨ **Added to Queue:** \`${track.info.title}\` at position **#${player.queue.tracks.length}**.` }).catch(() => {});
+        return interaction.editReply({ content: `<a:sparkles_animated:1537179684175872171> **Added to Queue:** \`${track.info.title}\` at position **#${player.queue.tracks.length}**.` }).catch(() => {});
       }
     } catch (e) {
       return interaction.editReply({ content: `${emojis.ERROR} Failed to play suggested song: ${e.message}` }).catch(() => {});
@@ -2164,7 +2164,7 @@ client.on('interactionCreate', async (interaction) => {
         if (player.filterManager && typeof player.filterManager.resetFilters === 'function') {
           await player.filterManager.resetFilters().catch(() => {});
         }
-        return interaction.editReply({ content: `🚫 Reset all audio filters to default.` }).catch(() => {});
+        return interaction.editReply({ content: `<a:disabled_animated:1537177373613629542> Reset all audio filters to default.` }).catch(() => {});
       }
 
       if (player.filterManager) {
@@ -2241,7 +2241,7 @@ client.on('interactionCreate', async (interaction) => {
     }
     if (val === 'ctrl_autoplay') {
       player.autoplay = !player.autoplay;
-      const status = player.autoplay ? '🟢 **ENABLED**' : '🔴 **DISABLED**';
+      const status = player.autoplay ? '<a:accept_animated:1537177319603703969> **ENABLED**' : '<a:wrong_animated:1537179702928875631> **DISABLED**';
       return interaction.editReply({ content: `♾️ **Autoplay Mode:** ${status}!` }).catch(() => {});
     }
     if (val === 'ctrl_fav_add') {
@@ -2275,7 +2275,7 @@ client.on('interactionCreate', async (interaction) => {
       if (!player.playing && !player.paused) {
         await player.play().catch(() => {});
       }
-      return interaction.editReply({ content: `⭐ Queued **${queuedCount} Favorite Songs** into queue!` }).catch(() => {});
+      return interaction.editReply({ content: `<a:rank_animated:1537179656090943538> Queued **${queuedCount} Favorite Songs** into queue!` }).catch(() => {});
     }
     if (val === 'ctrl_voldown') {
       const vol = Math.max(10, (player.volume || 100) - 20);
@@ -2322,11 +2322,11 @@ client.on('interactionCreate', async (interaction) => {
 
     if (val === 'vm_menu_lock') {
       await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: false }).catch(() => {});
-      return interaction.editReply({ content: `🔒 Private Voice Channel **locked**!` }).catch(() => {});
+      return interaction.editReply({ content: `<a:key_lock_animated:1537179601493561404> Private Voice Channel **locked**!` }).catch(() => {});
     }
     if (val === 'vm_menu_unlock') {
       await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: true }).catch(() => {});
-      return interaction.editReply({ content: `🔓 Private Voice Channel **unlocked**!` }).catch(() => {});
+      return interaction.editReply({ content: `<a:unlock_animated:1537177539297157150> Private Voice Channel **unlocked**!` }).catch(() => {});
     }
     if (val === 'vm_menu_mute') {
       channel.members.forEach(m => m.voice.setMute(true).catch(() => {}));
@@ -2337,7 +2337,7 @@ client.on('interactionCreate', async (interaction) => {
       return interaction.editReply({ content: `<a:microphone_animated:1537177439527112755> Server unmuted all members in VC.` }).catch(() => {});
     }
     if (val === 'vm_menu_limit') {
-      return interaction.editReply({ content: `👥 Use \`.vc limit <1-99>\` to change slot limit.` }).catch(() => {});
+      return interaction.editReply({ content: `<a:membercard_animated:1537177436146638993> Use \`.vc limit <1-99>\` to change slot limit.` }).catch(() => {});
     }
     if (val === 'vm_menu_claim') {
       return interaction.editReply({ content: `<a:crown_animated:1537177361093500968> Room ownership claimed!` }).catch(() => {});
@@ -2436,7 +2436,7 @@ client.on('interactionCreate', async (interaction) => {
 
     if (action === 'music_autoplay') {
       player.autoplay = !player.autoplay;
-      const status = player.autoplay ? '🟢 **ENABLED**' : '🔴 **DISABLED**';
+      const status = player.autoplay ? '<a:accept_animated:1537177319603703969> **ENABLED**' : '<a:wrong_animated:1537179702928875631> **DISABLED**';
       return interaction.editReply({ content: `♾️ **Autoplay Mode:** ${status}!` }).catch(() => {});
     }
     if (action === 'music_fav_add') {
@@ -2470,7 +2470,7 @@ client.on('interactionCreate', async (interaction) => {
       if (!player.playing && !player.paused) {
         await player.play().catch(() => {});
       }
-      return interaction.editReply({ content: `⭐ Queued **${queuedCount} Favorite Songs** into queue!` }).catch(() => {});
+      return interaction.editReply({ content: `<a:rank_animated:1537179656090943538> Queued **${queuedCount} Favorite Songs** into queue!` }).catch(() => {});
     }
     if (action === 'music_lyrics') {
       const currentTrack = player?.queue?.current;
@@ -2486,7 +2486,7 @@ client.on('interactionCreate', async (interaction) => {
       }
       let lyricsText = res.lyrics;
       if (lyricsText.length > 1900) lyricsText = lyricsText.slice(0, 1900) + '\n...*(truncated)*';
-      return interaction.editReply({ content: `📜 **Lyrics — ${res.title} (${res.artist}):**\n\`\`\`\n${lyricsText}\n\`\`\`` }).catch(() => {});
+      return interaction.editReply({ content: `<a:scroll_animated:1537179663791693844> **Lyrics — ${res.title} (${res.artist}):**\n\`\`\`\n${lyricsText}\n\`\`\`` }).catch(() => {});
     }
   }
 
@@ -2507,7 +2507,7 @@ client.on('interactionCreate', async (interaction) => {
     if (!gw.entries) gw.entries = new Set();
 
     if (gw.entries.has(interaction.user.id)) {
-      return interaction.reply({ content: `🎉 You have already entered giveaway **${gwId}**!`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `<a:tada_party_animated:1537179689381134356> You have already entered giveaway **${gwId}**!`, flags: 64 }).catch(() => {});
     }
 
     gw.entries.add(interaction.user.id);
@@ -2534,7 +2534,7 @@ client.on('interactionCreate', async (interaction) => {
 
     const dmEmbed = new EmbedBuilder()
       .setColor(0x2B2D31)
-      .setTitle('Giveaway Entry Confirmed! 🎉')
+      .setTitle('Giveaway Entry Confirmed! <a:tada_party_animated:1537179689381134356>')
       .setDescription(
         `Your entry for **${gw.prize}** has been confirmed!\n\n` +
         `**Giveaway Info**\n` +
@@ -2551,7 +2551,7 @@ client.on('interactionCreate', async (interaction) => {
 
     await interaction.user.send({ embeds: [dmEmbed], components: [dmRow] }).catch(() => {});
 
-    return interaction.reply({ content: `🎉 **Entry Confirmed!** Check your DMs for details! 📩`, flags: 64 }).catch(() => {});
+    return interaction.reply({ content: `<a:tada_party_animated:1537179689381134356> **Entry Confirmed!** Check your DMs for details! 📩`, flags: 64 }).catch(() => {});
   }
 
   // GIVEAWAY CLAIM REWARD BUTTON → Opens a Reward Ticket
@@ -2622,12 +2622,12 @@ client.on('interactionCreate', async (interaction) => {
 
       const rewardEmbed = new EmbedBuilder()
         .setColor(0xFFD700)
-        .setTitle(`${emojis.GOLD_CUP || '🏆'}  Reward Claim Ticket`)
+        .setTitle(`${emojis.GOLD_CUP || '<a:prize_1_animated:1537179648465834044>'}  Reward Claim Ticket`)
         .setDescription(
           `> **Prize:** ${gw.prize}\n\n` +
           `<@${user.id}> has claimed their giveaway reward!\n\n` +
-          `${emojis.GIVEAWAY_PING || '🎉'} **Giveaway ID:** \`${gw.id}\`\n` +
-          `${emojis.GOLD_CUP || '🏆'} **Host:** <@${gw.hostId}>\n\n` +
+          `${emojis.GIVEAWAY_PING || '<a:tada_party_animated:1537179689381134356>'} **Giveaway ID:** \`${gw.id}\`\n` +
+          `${emojis.GOLD_CUP || '<a:prize_1_animated:1537179648465834044>'} **Host:** <@${gw.hostId}>\n\n` +
           `*Please wait — a staff member will assist you shortly.*`
         )
         .setFooter({ text: `Ticket #${ticketNum} • Reward Claim`, iconURL: client.user?.displayAvatarURL() || undefined })
@@ -2640,7 +2640,7 @@ client.on('interactionCreate', async (interaction) => {
 
       if (logChan) {
         const logEmbed = createStyledEmbed({
-          title: `🏆 Reward Claim Ticket Opened`,
+          title: `<a:prize_1_animated:1537179648465834044> Reward Claim Ticket Opened`,
           description: `**User:** <@${user.id}> (\`${user.tag}\`)\n**Prize:** ${gw.prize}\n**Giveaway ID:** \`${gw.id}\`\n**Ticket:** ${ticketChan}`,
           requestedBy: user,
           clientUser: client.user
@@ -2671,7 +2671,7 @@ client.on('interactionCreate', async (interaction) => {
         if (elapsed < cooldownMs) {
           const remainingMins = Math.ceil((cooldownMs - elapsed) / 60000);
           return interaction.reply({
-            content: `⏳ **Staff Call Cooldown**: Staff was called recently. Call again in **${remainingMins} minutes**.`,
+            content: `<a:hourglass_animated:1537179590982631575> **Staff Call Cooldown**: Staff was called recently. Call again in **${remainingMins} minutes**.`,
             flags: 64
           }).catch(() => {});
         }
@@ -2767,12 +2767,12 @@ client.on('interactionCreate', async (interaction) => {
       const embed = EmbedBuilder.from(message.embeds[0]);
       const color = newPriority === 'Urgent' ? 0xFF0055 : newPriority === 'Normal' ? 0xFEE75C : 0x57F287;
       embed.setColor(color);
-      embed.spliceFields(1, 1, { name: '⚡ Priority Level', value: `\`${newPriority}\``, inline: true });
+      embed.spliceFields(1, 1, { name: '<a:rapid_animated:1537177482006896692> Priority Level', value: `\`${newPriority}\``, inline: true });
 
       topic = topic.includes('priority:') ? topic.replace(/priority:[^|]+/, `priority:${newPriority}`) : topic + `|priority:${newPriority}`;
       await channel.setTopic(topic).catch(() => {});
       await message.edit({ embeds: [embed] }).catch(() => {});
-      await interaction.reply({ content: `⚡ Priority set to **${newPriority}** by <@${user.id}>.` }).catch(() => {});
+      await interaction.reply({ content: `<a:rapid_animated:1537177482006896692> Priority set to **${newPriority}** by <@${user.id}>.` }).catch(() => {});
 
       if (ticketCmd) {
         const claimMatch = topic.match(/claim:([^|]+)/);
@@ -2824,7 +2824,7 @@ client.on('interactionCreate', async (interaction) => {
       if (ownerId) {
         await channel.permissionOverwrites.edit(ownerId, { SendMessages: false }).catch(() => {});
       }
-      return interaction.reply({ content: `🔒 Ticket locked by <@${user.id}>.` }).catch(() => {});
+      return interaction.reply({ content: `<a:key_lock_animated:1537179601493561404> Ticket locked by <@${user.id}>.` }).catch(() => {});
     } catch (e) {
       console.error('ticket_lock_btn error:', e);
       return interaction.reply({ content: `${emojis.ERROR} Failed to lock ticket: ${e.message}`, flags: 64 }).catch(() => {});
@@ -2842,10 +2842,10 @@ client.on('interactionCreate', async (interaction) => {
     const member = interaction.member;
     if (member.roles.cache.has(roleId)) {
       await member.roles.remove(roleId).catch(() => null);
-      return interaction.reply({ content: `❌ Removed role **${role.name}**!`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `<a:wrong_animated:1537179702928875631> Removed role **${role.name}**!`, flags: 64 }).catch(() => {});
     } else {
       await member.roles.add(roleId).catch(() => null);
-      return interaction.reply({ content: `✅ Added role **${role.name}**!`, flags: 64 }).catch(() => {});
+      return interaction.reply({ content: `<a:accept_animated:1537177319603703969> Added role **${role.name}**!`, flags: 64 }).catch(() => {});
     }
   }
 
@@ -2862,10 +2862,10 @@ client.on('interactionCreate', async (interaction) => {
       const member = interaction.member;
       if (member.roles.cache.has(roleId)) {
         await member.roles.remove(roleId).catch(() => null);
-        return interaction.reply({ content: `❌ Removed role **${role.name}**!`, flags: 64 }).catch(() => {});
+        return interaction.reply({ content: `<a:wrong_animated:1537179702928875631> Removed role **${role.name}**!`, flags: 64 }).catch(() => {});
       } else {
         await member.roles.add(roleId).catch(() => null);
-        return interaction.reply({ content: `✅ Added role **${role.name}**!`, flags: 64 }).catch(() => {});
+        return interaction.reply({ content: `<a:accept_animated:1537177319603703969> Added role **${role.name}**!`, flags: 64 }).catch(() => {});
       }
     }
   }
@@ -2881,7 +2881,7 @@ client.on('interactionCreate', async (interaction) => {
 
     db.recordAnalyticsEvent(interaction.guild.id, user.id, 'ticket_closed', 1);
 
-    await interaction.reply({ content: `🔒 Ticket closed by <@${user.id}>. Sending transcript & deleting in **5 seconds**...` }).catch(() => {});
+    await interaction.reply({ content: `<a:key_lock_animated:1537179601493561404> Ticket closed by <@${user.id}>. Sending transcript & deleting in **5 seconds**...` }).catch(() => {});
 
     const msgs = await channel.messages.fetch({ limit: 100 });
     const buffer = ticketCmd ? ticketCmd.generateTranscriptBuffer(channel, msgs, user) : Buffer.from('Transcript', 'utf-8');
@@ -2895,7 +2895,7 @@ client.on('interactionCreate', async (interaction) => {
       try {
         const openerUser = await client.users.fetch(ownerId);
         const dmEmbed = createStyledEmbed({
-          title: `📜 Ticket Transcript — ${channel.name}`,
+          title: `<a:scroll_animated:1537179663791693844> Ticket Transcript — ${channel.name}`,
           description: `Here is the full text transcript of your closed ticket in **${interaction.guild.name}**.`,
           requestedBy: user,
           clientUser: client.user
@@ -2908,7 +2908,7 @@ client.on('interactionCreate', async (interaction) => {
       const { logChan, transcriptChan } = await ticketCmd.ensureTicketLogChannels(interaction.guild);
       if (transcriptChan) {
         const transEmbed = createStyledEmbed({
-          title: `📜 Ticket Closed & Saved`,
+          title: `<a:scroll_animated:1537179663791693844> Ticket Closed & Saved`,
           description: `**Ticket Channel:** \`${channel.name}\`\n**Closed By:** ${user.tag} (${user.id})\n**Messages:** ${msgs.size}`,
           requestedBy: user,
           clientUser: client.user
@@ -2994,22 +2994,22 @@ client.on('interactionCreate', async (interaction) => {
         const everyoneView = channel.permissionsFor(interaction.guild.roles.everyone).has(PermissionsBitField.Flags.ViewChannel);
         return interaction.reply({
           content:
-            `⚡ **VoiceMaster Room Status**\n` +
+            `<a:rapid_animated:1537177482006896692> **VoiceMaster Room Status**\n` +
             `• **Room:** <#${channel.id}>\n` +
             `• **Bitrate:** \`${channel.bitrate / 1000} kbps\`\n` +
             `• **User Limit:** \`${channel.userLimit === 0 ? 'Unlimited' : channel.userLimit}\`\n` +
-            `• **Locked:** \`${!everyoneConnect ? 'Yes 🔒' : 'No 🔓'}\` | **Hidden:** \`${!everyoneView ? 'Yes 🙈' : 'No 👁️'}\` | **Members:** \`${channel.members.size}\``,
+            `• **Locked:** \`${!everyoneConnect ? 'Yes <a:key_lock_animated:1537179601493561404>' : 'No <a:unlock_animated:1537177539297157150>'}\` | **Hidden:** \`${!everyoneView ? 'Yes 🙈' : 'No <a:sharingan_animated:1537179668703084654>'}\` | **Members:** \`${channel.members.size}\``,
           flags: 64
         });
       }
       case 'limit':
-        return interaction.reply({ content: `👥 **Set Slot Limit**: Use \`.vc limit <1-99>\` in chat to change room capacity limit.`, flags: 64 });
+        return interaction.reply({ content: `<a:membercard_animated:1537177436146638993> **Set Slot Limit**: Use \`.vc limit <1-99>\` in chat to change room capacity limit.`, flags: 64 });
       case 'logs':
-        return interaction.reply({ content: `📜 **Room Logs**: Private channel generated for **<@${interaction.user.id}>** with active members: \`${channel.members.size}\`.`, flags: 64 });
+        return interaction.reply({ content: `<a:scroll_animated:1537179663791693844> **Room Logs**: Private channel generated for **<@${interaction.user.id}>** with active members: \`${channel.members.size}\`.`, flags: 64 });
       case 'ban':
         return interaction.reply({ content: `${emojis.MOD} **Ban Member**: Use \`.vc ban @user\` to disconnect and ban a member from your room.`, flags: 64 });
       case 'unban':
-        return interaction.reply({ content: `🔓 **Unban Member**: Use \`.vc unban @user\` to unban a member from joining your room.`, flags: 64 });
+        return interaction.reply({ content: `<a:unlock_animated:1537177539297157150> **Unban Member**: Use \`.vc unban @user\` to unban a member from joining your room.`, flags: 64 });
 
       // --- ROW 2 ---
       case 'hide':
@@ -3018,15 +3018,15 @@ client.on('interactionCreate', async (interaction) => {
       case 'unhide':
       case 'reveal':
         await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { ViewChannel: true }).catch(() => {});
-        return interaction.reply({ content: `👁️ **Private VC Unhidden** — Channel is now visible in the channel list.`, flags: 64 });
+        return interaction.reply({ content: `<a:sharingan_animated:1537179668703084654> **Private VC Unhidden** — Channel is now visible in the channel list.`, flags: 64 });
       case 'region':
         return interaction.reply({ content: `🌐 **Voice Region**: Use \`.vc region <auto/us-east/india>\` to switch voice server region.`, flags: 64 });
       case 'unlock':
         await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: true }).catch(() => {});
-        return interaction.reply({ content: `🔓 **Private VC Unlocked** — Channel access is now open to all members.`, flags: 64 });
+        return interaction.reply({ content: `<a:unlock_animated:1537177539297157150> **Private VC Unlocked** — Channel access is now open to all members.`, flags: 64 });
       case 'lock':
         await channel.permissionOverwrites.edit(interaction.guild.roles.everyone, { Connect: false }).catch(() => {});
-        return interaction.reply({ content: `🔒 **Private VC Locked** — Channel access is now restricted.`, flags: 64 });
+        return interaction.reply({ content: `<a:key_lock_animated:1537179601493561404> **Private VC Locked** — Channel access is now restricted.`, flags: 64 });
 
       // --- ROW 3 ---
       case 'trust':
@@ -3040,7 +3040,7 @@ client.on('interactionCreate', async (interaction) => {
       case 'invite':
         return interaction.reply({ content: `📞 **Invite Member**: Use \`.vc invite @user\` to send a private VC invite link in DM.`, flags: 64 });
       case 'kick':
-        return interaction.reply({ content: `🚫 **Kick Member**: Use \`.vc kick @user\` to disconnect a member from your voice channel.`, flags: 64 });
+        return interaction.reply({ content: `<a:disabled_animated:1537177373613629542> **Kick Member**: Use \`.vc kick @user\` to disconnect a member from your voice channel.`, flags: 64 });
 
       // --- ROW 4 ---
       case 'suppress':
@@ -3052,7 +3052,7 @@ client.on('interactionCreate', async (interaction) => {
         channel.members.forEach(m => { if (!m.user.bot) m.voice.setMute(false).catch(() => {}); });
         return interaction.reply({ content: `<a:microphone_animated:1537177439527112755> **Server Unmuted** — All members in VC have been unmuted.`, flags: 64 });
       case 'chat':
-        return interaction.reply({ content: `💬 **Room Chat**: You can chat directly in your private room text thread!`, flags: 64 });
+        return interaction.reply({ content: `<a:code_animated:1537177358912725033> **Room Chat**: You can chat directly in your private room text thread!`, flags: 64 });
       case 'claim':
         return interaction.reply({ content: `<a:crown_animated:1537177361093500968> **Room Status**: You are currently managing private room **<#${channel.id}>**.`, flags: 64 });
       case 'transfer':
@@ -3178,7 +3178,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   }
 });
 
-// ⭐️ REACTION XP LEVELING ENGINE
+// <a:rank_animated:1537179656090943538>️ REACTION XP LEVELING ENGINE
 client.on('messageReactionAdd', async (reaction, user) => {
   try {
     if (user.bot) return;
@@ -3203,7 +3203,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
       // Check for level up announcement if configured
       if (levelCfg.channelId !== 'none') {
         const targetChan = (levelCfg.channelId && levelCfg.channelId !== 'default' && guild.channels.cache.get(levelCfg.channelId)) || reaction.message.channel;
-        targetChan.send({ content: `🎉 Congratulations <@${user.id}>! You leveled up to **Level ${res.user.level}** via reactions!` }).catch(() => {});
+        targetChan.send({ content: `<a:tada_party_animated:1537179689381134356> Congratulations <@${user.id}>! You leveled up to **Level ${res.user.level}** via reactions!` }).catch(() => {});
       }
     }
   } catch (err) {
@@ -3236,7 +3236,7 @@ client.on('messageReactionAdd', async (reaction, user) => {
         const { dispatchLog } = require('./utils/logger');
         dispatchLog(guild, 'modlogs', {
           color: 0xED4245,
-          title: `🚫 Single Reaction Violation — Duplicate Vote Stripped`,
+          title: `<a:disabled_animated:1537177373613629542> Single Reaction Violation — Duplicate Vote Stripped`,
           description:
             `• **User:** <@${user.id}> (\`${user.tag}\`)\n` +
             `• **Channel:** <#${channelId}>\n` +
@@ -3344,10 +3344,10 @@ require('./events/messageLogs')(client);
 const token = process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim() : null;
 if (token && token !== 'your_discord_bot_token_here') {
   client.login(token).catch(err => {
-    flushLog(`❌ [Discord Login Failed]: ${err.message}`, true);
+    flushLog(`<a:wrong_animated:1537179702928875631> [Discord Login Failed]: ${err.message}`, true);
   });
 } else {
-  flushLog(`⚠️ DISCORD_TOKEN is not set in environment variables!`, true);
+  flushLog(`<a:wrong_animated:1537179702928875631> DISCORD_TOKEN is not set in environment variables!`, true);
 }
 
 module.exports = client;

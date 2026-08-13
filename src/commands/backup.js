@@ -52,10 +52,10 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 📦 1. CREATE BACKUP (.backup create / .backup save)
+    // <a:openfolder_animated:1537177452936437760> 1. CREATE BACKUP (.backup create / .backup save)
     if (['create', 'save', 'new'].includes(subCmd)) {
       const backupId = `bk-${Date.now().toString(36)}`;
-      const loadingMsg = await message.channel.send(`${emojis.LOADING || '⏳'} Generating server snapshot (Roles, Channels, Categories, Settings)...`);
+      const loadingMsg = await message.channel.send(`${emojis.LOADING || '<a:hourglass_animated:1537179590982631575>'} Generating server snapshot (Roles, Channels, Categories, Settings)...`);
 
       try {
         // Collect Roles
@@ -155,7 +155,7 @@ module.exports = {
           '\n```';
 
         const embed = createStyledEmbed({
-          title: `📦 Server Backups`,
+          title: `<a:openfolder_animated:1537177452936437760> Server Backups`,
           description: boxText + '\n\nType `.backup create` to generate your first server snapshot!',
           requestedBy: author,
           clientUser
@@ -178,7 +178,7 @@ module.exports = {
       }).join('\n\n');
 
       const embed = createStyledEmbed({
-        title: `📦 Saved Server Backups [ ${backupKeys.length} ]`,
+        title: `<a:openfolder_animated:1537177452936437760> Saved Server Backups [ ${backupKeys.length} ]`,
         subtitle: `Server Snapshots for ${guild.name}`,
         description: boxText + '\n\n' + listText + `\n\n💡 *Restore any backup using \`.backup restore <backupId>\`*`,
         requestedBy: author,
@@ -249,7 +249,7 @@ module.exports = {
         }
 
         if (i.customId.startsWith('confirm_restore_')) {
-          await i.update({ content: `${emojis.LOADING || '⏳'} Initiating full server restoration from snapshot \`${backupId}\`...`, embeds: [], components: [] });
+          await i.update({ content: `${emojis.LOADING || '<a:hourglass_animated:1537179590982631575>'} Initiating full server restoration from snapshot \`${backupId}\`...`, embeds: [], components: [] });
 
           try {
             if (backup.guildName && guild.name !== backup.guildName) {
@@ -356,7 +356,7 @@ module.exports = {
     ]);
 
     const embed = createStyledEmbed({
-      title: `📦 Server Backup & Recovery Suite`,
+      title: `<a:openfolder_animated:1537177452936437760> Server Backup & Recovery Suite`,
       subtitle: `Full Server Snapshot & Disaster Recovery`,
       description: '```\n' + boxHelp + '\n```',
       requestedBy: author,

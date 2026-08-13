@@ -44,20 +44,20 @@ const QUEST_POOLS = {
 };
 
 const CLANS = {
-  uchiha: { name: 'Uchiha', emoji: '🔥', perk: '+20% Jutsu Fire Damage & Sharingan' },
+  uchiha: { name: 'Uchiha', emoji: '<a:fire_animated:1537179571697352774>', perk: '+20% Jutsu Fire Damage & Sharingan' },
   senju: { name: 'Senju', emoji: '🌲', perk: '+30% Max HP & Wood Style Regeneration' },
-  hyuga: { name: 'Hyuga', emoji: '👁️', perk: '+20% Critical Strike & Byakugan' },
-  uzumaki: { name: 'Uzumaki', emoji: '🌀', perk: '+50% Max Chakra & Sealing Jutsu' },
-  hatake: { name: 'Hatake', emoji: '⚡', perk: '+15% Battle Speed & Lightning Blade' },
-  nara: { name: 'Nara', emoji: '👥', perk: '+15% Evasion & Shadow Strangle' }
+  hyuga: { name: 'Hyuga', emoji: '<a:sharingan_animated:1537179668703084654>', perk: '+20% Critical Strike & Byakugan' },
+  uzumaki: { name: 'Uzumaki', emoji: '<a:rasengan_animated:1537179658800463992>', perk: '+50% Max Chakra & Sealing Jutsu' },
+  hatake: { name: 'Hatake', emoji: '<a:rapid_animated:1537177482006896692>', perk: '+15% Battle Speed & Lightning Blade' },
+  nara: { name: 'Nara', emoji: '<a:membercard_animated:1537177436146638993>', perk: '+15% Evasion & Shadow Strangle' }
 };
 
 const SHOP_ITEMS = [
-  { id: 'kunai', aliases: ['kunai', 'kunais', 'blade', 'blades'], name: '🗡️ Kunai Blade', cost: 100, sellPrice: 60, maxCap: 50, desc: '+15 Physical Attack in Battle' },
+  { id: 'kunai', aliases: ['kunai', 'kunais', 'blade', 'blades'], name: '<a:kunai_animated:1537179611161698385> Kunai Blade', cost: 100, sellPrice: 60, maxCap: 50, desc: '+15 Physical Attack in Battle' },
   { id: 'shuriken', aliases: ['shuriken', 'shurikens', 'star', 'stars'], name: '🥷 Shuriken Pack', cost: 150, sellPrice: 90, maxCap: 50, desc: '+25 Ranged Attack in Battle' },
-  { id: 'elixir', aliases: ['elixir', 'elixirs', 'potion', 'potions', 'healthpotion', 'healthpotions'], name: '🧪 Health Elixir', cost: 200, sellPrice: 120, maxCap: 20, desc: 'Restores 50 HP in Battle' },
+  { id: 'elixir', aliases: ['elixir', 'elixirs', 'potion', 'potions', 'healthpotion', 'healthpotions'], name: '<a:potion_alchemy_animated:1537179643449446581> Health Elixir', cost: 200, sellPrice: 120, maxCap: 20, desc: 'Restores 50 HP in Battle' },
   { id: 'pill', aliases: ['pill', 'pills', 'chakrapill', 'chakrapills'], name: '💊 Military Chakra Pill', cost: 250, sellPrice: 150, maxCap: 20, desc: 'Restores 50 Chakra in Battle' },
-  { id: 'scroll', aliases: ['scroll', 'scrolls', 'jutsuscroll'], name: '📜 Ancient Jutsu Scroll', cost: 500, sellPrice: 300, maxCap: 10, desc: 'Unlocks advanced Jutsu training' }
+  { id: 'scroll', aliases: ['scroll', 'scrolls', 'jutsuscroll'], name: '<a:scroll_animated:1537179663791693844> Ancient Jutsu Scroll', cost: 500, sellPrice: 300, maxCap: 10, desc: 'Unlocks advanced Jutsu training' }
 ];
 
 const AVAILABLE_JUTSUS = [
@@ -108,7 +108,7 @@ function buildLeaderboardPayload(catParam, author, clientUser) {
     fieldFormatter = (u) => `**${u.ryo || 0} Ryo** • Rank: *${u.rank || 'Academy Student'}*`;
   } else if (catParam === 'wins' || catParam === 'battles') {
     allUsers.sort((a, b) => (b.ninjaStats?.wins || 0) - (a.ninjaStats?.wins || 0));
-    title = `⚔️ Global Shinobi PvP Battles Leaderboard`;
+    title = `<a:battle_animated:1537177338427605064> Global Shinobi PvP Battles Leaderboard`;
     fieldFormatter = (u) => `**${u.ninjaStats?.wins || 0} Victories** (${u.ninjaStats?.battles || 0} Total Battles)`;
   } else if (catParam === 'rank' || catParam === 'ranks') {
     const rankWeight = { 'Hokage': 8, 'Shadow': 7, 'Sannin': 6, 'Anbu': 5, 'Jonin': 4, 'Chunin': 3, 'Genin': 2, 'Academy Student': 1 };
@@ -117,7 +117,7 @@ function buildLeaderboardPayload(catParam, author, clientUser) {
     fieldFormatter = (u) => `**${u.rank || 'Academy Student'}** • Level **${u.level || 1}** (${u.xp || 0} XP)`;
   } else if (catParam === 'missions' || catParam === 'quests') {
     allUsers.sort((a, b) => (b.ninjaStats?.missionsCompleted || 0) - (a.ninjaStats?.missionsCompleted || 0));
-    title = `📜 Global Shinobi Missions Leaderboard`;
+    title = `<a:scroll_animated:1537179663791693844> Global Shinobi Missions Leaderboard`;
     fieldFormatter = (u) => `**${u.ninjaStats?.missionsCompleted || 0} Missions Completed**`;
   } else {
     allUsers.sort((a, b) => (b.level || 1) - (a.level || 1) || (b.xp || 0) - (a.xp || 0));
@@ -126,7 +126,7 @@ function buildLeaderboardPayload(catParam, author, clientUser) {
   }
 
   const top10 = allUsers.slice(0, 10);
-  const medals = ['🥇', '🥈', '🥉', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
+  const medals = ['<a:prize_1_animated:1537179648465834044>', '<a:prize_2_animated:1537179651087007774>', '<a:prize_3_animated:1537179653750652948>', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
   let descLines = [];
   for (let i = 0; i < top10.length; i++) {
     const u = top10[i];
@@ -163,12 +163,12 @@ function buildLeaderboardPayload(catParam, author, clientUser) {
     new ButtonBuilder()
       .setCustomId('ninjalb_wins')
       .setLabel('Battles')
-      .setEmoji('⚔️')
+      .setEmoji('<a:battle_animated:1537177338427605064>')
       .setStyle(catParam === 'wins' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ninjalb_missions')
       .setLabel('Missions')
-      .setEmoji('📜')
+      .setEmoji('<a:scroll_animated:1537179663791693844>')
       .setStyle(catParam === 'missions' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 
@@ -229,14 +229,14 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `📜 ${targetUser.username}'s Shinobi Scroll`,
+        title: `<a:scroll_animated:1537179663791693844> ${targetUser.username}'s Shinobi Scroll`,
         subtitle: `${emojis.NARUTO || '🍥'} Konoha Global Shinobi Profile`,
         description:
           '```\n' + profileBox + '\n```\n\n' +
           `• **Clan Perks:** ${clanInfo.perk}\n` +
           `• **Missions Completed:** \`${userData.ninjaStats?.missionsCompleted || 0}\` Missions\n\n` +
           `**Mastered Jutsus:**\n` +
-          (userData.jutsuList.map(j => `• ⚡ **${j}**`).join('\n') || 'None'),
+          (userData.jutsuList.map(j => `• <a:rapid_animated:1537177482006896692> **${j}**`).join('\n') || 'None'),
         requestedBy: author,
         clientUser
       });
@@ -253,7 +253,7 @@ module.exports = {
 
       if (now - lastMeditate < COOLDOWN_1H) {
         const remainingMins = Math.ceil((COOLDOWN_1H - (now - lastMeditate)) / 60000);
-        return message.reply(`${emojis.WARNING || '⚠️'} **Meditation Cooldown Active!** You can train chakra again in **${remainingMins} minutes**.`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Meditation Cooldown Active!** You can train chakra again in **${remainingMins} minutes**.`);
       }
 
       const xpGained = Math.floor(Math.random() * 30) + 20;
@@ -270,8 +270,8 @@ module.exports = {
         title: `🧘 Shinobi Chakra Meditation & Stat Training`,
         subtitle: `${author.username} focused inner energy under Konoha waterfall...`,
         description:
-          `⚡ **Chakra Fully Restored:** \`100/100\`\n` +
-          `✨ **Rewards Earned:** \`+${xpGained} XP\` | \`+${ryoGained} Ryo\`\n\n` +
+          `<a:rapid_animated:1537177482006896692> **Chakra Fully Restored:** \`100/100\`\n` +
+          `<a:sparkles_animated:1537179684175872171> **Rewards Earned:** \`+${xpGained} XP\` | \`+${ryoGained} Ryo\`\n\n` +
           `*Your chakra control has tightened! Next meditation available in 1 hour.*`,
         requestedBy: author,
         clientUser
@@ -288,11 +288,11 @@ module.exports = {
       if (!targetJutsuName) {
         const jutsuListStr = AVAILABLE_JUTSUS.map(j => {
           const isOwned = userData.jutsuList.includes(j.name);
-          return `• **${j.name}** ${isOwned ? '✅ *(Owned)*' : `— \`${j.cost} Ryo\` (Req: Lv. ${j.reqLevel})`}\n  └ Damage: \`${j.damage}\` | Chakra Cost: \`${j.chakra}\``;
+          return `• **${j.name}** ${isOwned ? '<a:accept_animated:1537177319603703969> *(Owned)*' : `— \`${j.cost} Ryo\` (Req: Lv. ${j.reqLevel})`}\n  └ Damage: \`${j.damage}\` | Chakra Cost: \`${j.chakra}\``;
         }).join('\n\n');
 
         const embed = createStyledEmbed({
-          title: `⚡ Konoha Secret Jutsu Archives`,
+          title: `<a:rapid_animated:1537177482006896692> Konoha Secret Jutsu Archives`,
           subtitle: `Master Shinobi Techniques`,
           description: `**Available Jutsus to Learn:**\n\n${jutsuListStr}\n\n**To Learn:** \`.ninja jutsu learn <Jutsu Name>\``,
           requestedBy: author,
@@ -303,19 +303,19 @@ module.exports = {
 
       const jutsuToLearn = AVAILABLE_JUTSUS.find(j => j.name.toLowerCase() === targetJutsuName.toLowerCase());
       if (!jutsuToLearn) {
-        return message.reply(`${emojis.WARNING || '⚠️'} Jutsu **"${targetJutsuName}"** not found in the archives! Type \`.ninja jutsu\` to view all jutsus.`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Jutsu **"${targetJutsuName}"** not found in the archives! Type \`.ninja jutsu\` to view all jutsus.`);
       }
 
       if (userData.jutsuList.includes(jutsuToLearn.name)) {
-        return message.reply(`${emojis.WARNING || '⚠️'} You have already mastered **${jutsuToLearn.name}**!`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} You have already mastered **${jutsuToLearn.name}**!`);
       }
 
       if (userData.level < jutsuToLearn.reqLevel) {
-        return message.reply(`${emojis.WARNING || '⚠️'} You need to reach **Level ${jutsuToLearn.reqLevel}** to learn **${jutsuToLearn.name}**!`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} You need to reach **Level ${jutsuToLearn.reqLevel}** to learn **${jutsuToLearn.name}**!`);
       }
 
       if (userData.ryo < jutsuToLearn.cost) {
-        return message.reply(`${emojis.WARNING || '⚠️'} You need **${jutsuToLearn.cost} Ryo** to purchase this Jutsu scroll! You have \`${userData.ryo} Ryo\`.`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} You need **${jutsuToLearn.cost} Ryo** to purchase this Jutsu scroll! You have \`${userData.ryo} Ryo\`.`);
       }
 
       db.updateUser(author.id, (u) => {
@@ -323,7 +323,7 @@ module.exports = {
         u.jutsuList.push(jutsuToLearn.name);
       });
 
-      return message.reply(`${emojis.SUCCESS || '✅'} **CONGRATULATIONS!** You spent \`${jutsuToLearn.cost} Ryo\` and mastered **⚡ ${jutsuToLearn.name}**!`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **CONGRATULATIONS!** You spent \`${jutsuToLearn.cost} Ryo\` and mastered **<a:rapid_animated:1537177482006896692> ${jutsuToLearn.name}**!`);
     }
 
     // ─────────────────────────────────────────
@@ -336,7 +336,7 @@ module.exports = {
 
       if (now - lastBattle < COOLDOWN_2M) {
         const remainingSecs = Math.ceil((COOLDOWN_2M - (now - lastBattle)) / 1000);
-        return message.reply(`${emojis.WARNING || '⚠️'} **Battle Fatigue Active!** Rest your body and fight again in **${remainingSecs} seconds**.`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Battle Fatigue Active!** Rest your body and fight again in **${remainingSecs} seconds**.`);
       }
 
       const enemies = [
@@ -349,7 +349,7 @@ module.exports = {
       const enemy = enemies[Math.floor(Math.random() * enemies.length)];
 
       if (userData.chakra < 25) {
-        return message.reply(`${emojis.WARNING || '⚠️'} You do not have enough Chakra (\`${userData.chakra}/100\`) to enter battle! Use \`.ninja train\` to meditate.`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} You do not have enough Chakra (\`${userData.chakra}/100\`) to enter battle! Use \`.ninja train\` to meditate.`);
       }
 
       const userJutsuName = userData.jutsuList[Math.floor(Math.random() * userData.jutsuList.length)];
@@ -357,8 +357,8 @@ module.exports = {
 
       let clanBonusText = '';
       let userAtkBonus = 0;
-      if (userData.clan === 'Uchiha') { userAtkBonus += 15; clanBonusText = '🔥 *Uchiha Sharingan activated (+15 Atk)*'; }
-      if (userData.clan === 'Hyuga') { userAtkBonus += 10; clanBonusText = '👁️ *Hyuga Byakugan strike (+10 Critical Atk)*'; }
+      if (userData.clan === 'Uchiha') { userAtkBonus += 15; clanBonusText = '<a:fire_animated:1537179571697352774> *Uchiha Sharingan activated (+15 Atk)*'; }
+      if (userData.clan === 'Hyuga') { userAtkBonus += 10; clanBonusText = '<a:sharingan_animated:1537179668703084654> *Hyuga Byakugan strike (+10 Critical Atk)*'; }
 
       const totalUserDamage = jutsuObj.damage + userAtkBonus + Math.floor(Math.random() * 15);
       const isWin = totalUserDamage >= enemy.hp || Math.random() > 0.3;
@@ -407,14 +407,14 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: isWin ? `⚔️ SHINOBI VICTORY! (${winStreak} Win Streak)` : `💀 SHINOBI DEFEAT!`,
+        title: isWin ? `<a:battle_animated:1537177338427605064> SHINOBI VICTORY! (${winStreak} Win Streak)` : `💀 SHINOBI DEFEAT!`,
         subtitle: `${author.username} engaged ${enemy.name} in combat!`,
         description:
           '```\n' + battleBox + '\n```\n\n' +
           (clanBonusText ? `${clanBonusText}\n\n` : '') +
           (isWin
-            ? `🎉 **You defeated ${enemy.name}!** Earned \`+${totalRyoGained} Ryo\` (+${streakBonusRyo} streak bonus) and \`+${totalXpGained} XP\`!`
-            : `💥 **${enemy.name} counter-attacked and forced your retreat!** Win streak reset to 0. Train harder and try again.`),
+            ? `<a:tada_party_animated:1537179689381134356> **You defeated ${enemy.name}!** Earned \`+${totalRyoGained} Ryo\` (+${streakBonusRyo} streak bonus) and \`+${totalXpGained} XP\`!`
+            : `<a:kaboom_animated:1537179599228637226> **${enemy.name} counter-attacked and forced your retreat!** Win streak reset to 0. Train harder and try again.`),
         requestedBy: author,
         clientUser
       });
@@ -440,7 +440,7 @@ module.exports = {
         const remainingMs = DAY_MS - (now - questData.lastReset);
         const hours = Math.floor(remainingMs / (1000 * 60 * 60));
         const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
-        return message.reply(`${emojis.WARNING || '⚠️'} **Daily Mission Limit Reached!** You completed \`3/3\` missions today. Next missions reset in **${hours}h ${minutes}m**.`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Daily Mission Limit Reached!** You completed \`3/3\` missions today. Next missions reset in **${hours}h ${minutes}m**.`);
       }
 
       const pool = getQuestPoolForLevel(userLevel);
@@ -467,7 +467,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `📜 Mission Accomplished!`,
+        title: `<a:scroll_animated:1537179663791693844> Mission Accomplished!`,
         subtitle: `${quest.title} (${quest.rank})`,
         description:
           '```\n' + missionBox + '\n```\n\n' +
@@ -489,7 +489,7 @@ module.exports = {
       if (!selectedClanName) {
         const clanListStr = Object.values(CLANS).map(c => `• ${c.emoji} **${c.name} Clan** — *${c.perk}*`).join('\n');
         const embed = createStyledEmbed({
-          title: `⛩️ Konoha Great Shinobi Clans`,
+          title: `<a:shinto_shrine_animated:1537179670943109311> Konoha Great Shinobi Clans`,
           subtitle: `Select Your Ancestral Lineage`,
           description:
             `**Current Clan:** \`${userData.clan || 'None'}\`\n\n` +
@@ -503,11 +503,11 @@ module.exports = {
 
       const targetClan = CLANS[selectedClanName];
       if (!targetClan) {
-        return message.reply(`${emojis.WARNING || '⚠️'} Invalid clan! Choose from: \`uchiha\`, \`senju\`, \`hyuga\`, \`uzumaki\`, \`hatake\`, \`nara\`.`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Invalid clan! Choose from: \`uchiha\`, \`senju\`, \`hyuga\`, \`uzumaki\`, \`hatake\`, \`nara\`.`);
       }
 
       db.updateUser(author.id, (u) => { u.clan = targetClan.name; });
-      return message.reply(`${emojis.SUCCESS || '✅'} **ANCIENT LINEAGE AWAKENED!** You are now a proud member of the **${targetClan.emoji} ${targetClan.name} Clan**! Perk: *${targetClan.perk}*.`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **ANCIENT LINEAGE AWAKENED!** You are now a proud member of the **${targetClan.emoji} ${targetClan.name} Clan**! Perk: *${targetClan.perk}*.`);
     }
 
     // ─────────────────────────────────────────
@@ -517,11 +517,11 @@ module.exports = {
       const reqs = calculateRankRequirements(userData.level);
 
       if (userData.level < reqs.reqLevel) {
-        return message.reply(`${emojis.WARNING || '⚠️'} **Rankup Requirement Not Met!** You are currently **${userData.rank}** (Lv. ${userData.level}). You need **Level ${reqs.reqLevel}** to advance to **${reqs.next}**!`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Rankup Requirement Not Met!** You are currently **${userData.rank}** (Lv. ${userData.level}). You need **Level ${reqs.reqLevel}** to advance to **${reqs.next}**!`);
       }
 
       if (userData.rank === reqs.next) {
-        return message.reply(`${emojis.SUCCESS || '✅'} You are already at **${userData.rank}** rank! Keep training to reach the next tier.`);
+        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} You are already at **${userData.rank}** rank! Keep training to reach the next tier.`);
       }
 
       db.updateUser(author.id, (u) => { u.rank = reqs.next; });
@@ -529,7 +529,7 @@ module.exports = {
       const embed = createStyledEmbed({
         title: `🏅 SHINOBI RANK PROMOTION!`,
         subtitle: `${author.username} passed the Shinobi Exams!`,
-        description: `🎉 **CONGRATULATIONS!** You have been promoted to **${reqs.next}**! Your authority and village respect have increased!`,
+        description: `<a:tada_party_animated:1537179689381134356> **CONGRATULATIONS!** You have been promoted to **${reqs.next}**! Your authority and village respect have increased!`,
         requestedBy: author,
         clientUser
       });
@@ -559,11 +559,11 @@ module.exports = {
           '╭──────────────────────────╮\n' +
           '│    BUY PRICES  (Ryo)     │\n' +
           '├──────────────────────────┤\n' +
-          '│ 🗡️  Kunai Blade    :  100 │\n' +
+          '│ <a:kunai_animated:1537179611161698385>  Kunai Blade    :  100 │\n' +
           '│ 🥷  Shuriken Pack  :  150 │\n' +
-          '│ 🧪  Health Elixir  :  200 │\n' +
+          '│ <a:potion_alchemy_animated:1537179643449446581>  Health Elixir  :  200 │\n' +
           '│ 💊  Chakra Pill    :  250 │\n' +
-          '│ 📜  Ancient Scroll :  500 │\n' +
+          '│ <a:scroll_animated:1537179663791693844>  Ancient Scroll :  500 │\n' +
           '╰──────────────────────────╯';
 
         // ── Box 2: Sell Values ──
@@ -571,11 +571,11 @@ module.exports = {
           '╭──────────────────────────╮\n' +
           '│   SELL VALUES  (Ryo)     │\n' +
           '├──────────────────────────┤\n' +
-          '│ 🗡️  Kunai Blade    :   60 │\n' +
+          '│ <a:kunai_animated:1537179611161698385>  Kunai Blade    :   60 │\n' +
           '│ 🥷  Shuriken Pack  :   90 │\n' +
-          '│ 🧪  Health Elixir  :  120 │\n' +
+          '│ <a:potion_alchemy_animated:1537179643449446581>  Health Elixir  :  120 │\n' +
           '│ 💊  Chakra Pill    :  150 │\n' +
-          '│ 📜  Ancient Scroll :  300 │\n' +
+          '│ <a:scroll_animated:1537179663791693844>  Ancient Scroll :  300 │\n' +
           '╰──────────────────────────╯';
 
         // ── Box 3: Max Inventory Capacity ──
@@ -583,11 +583,11 @@ module.exports = {
           '╭──────────────────────────╮\n' +
           '│   MAX INVENTORY CAPACITY │\n' +
           '├──────────────────────────┤\n' +
-          '│ 🗡️  Kunai Blade    : × 50 │\n' +
+          '│ <a:kunai_animated:1537179611161698385>  Kunai Blade    : × 50 │\n' +
           '│ 🥷  Shuriken Pack  : × 50 │\n' +
-          '│ 🧪  Health Elixir  : × 20 │\n' +
+          '│ <a:potion_alchemy_animated:1537179643449446581>  Health Elixir  : × 20 │\n' +
           '│ 💊  Chakra Pill    : × 20 │\n' +
-          '│ 📜  Ancient Scroll : × 10 │\n' +
+          '│ <a:scroll_animated:1537179663791693844>  Ancient Scroll : × 10 │\n' +
           '╰──────────────────────────╯';
 
         const embed = createStyledEmbed({
@@ -626,12 +626,12 @@ module.exports = {
         }
 
         if (!query) {
-          return message.reply(`${emojis.WARNING || '⚠️'} Please specify an item to buy! Usage: \`.ninja buy <item> [amount]\`. Type \`.ninja shop\` for prices.`);
+          return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Please specify an item to buy! Usage: \`.ninja buy <item> [amount]\`. Type \`.ninja shop\` for prices.`);
         }
 
         const item = findShopItem(query);
         if (!item) {
-          return message.reply(`${emojis.WARNING || '⚠️'} Item **"${query}"** not found in shop! Type \`.ninja shop\` to view available weapons and potions.`);
+          return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Item **"${query}"** not found in shop! Type \`.ninja shop\` to view available weapons and potions.`);
         }
 
         qty = Math.max(1, qty);
@@ -639,12 +639,12 @@ module.exports = {
         const currentQty = inv[item.id] || 0;
 
         if (currentQty + qty > item.maxCap) {
-          return message.reply(`${emojis.WARNING || '⚠️'} **Inventory Limit Exceeded!** You can only hold up to **${item.maxCap} ${item.name}**! You currently hold \`${currentQty}\`.`);
+          return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Inventory Limit Exceeded!** You can only hold up to **${item.maxCap} ${item.name}**! You currently hold \`${currentQty}\`.`);
         }
 
         const totalCost = item.cost * qty;
         if (userData.ryo < totalCost) {
-          return message.reply(`${emojis.WARNING || '⚠️'} You need **${totalCost} Ryo** to buy \`${qty}x ${item.name}\`! You currently have \`${userData.ryo} Ryo\`.`);
+          return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} You need **${totalCost} Ryo** to buy \`${qty}x ${item.name}\`! You currently have \`${userData.ryo} Ryo\`.`);
         }
 
         db.updateUser(author.id, (u) => {
@@ -653,7 +653,7 @@ module.exports = {
           u.ninjaInventory[item.id] = currentQty + qty;
         });
 
-        return message.reply(`${emojis.SUCCESS || '✅'} **PURCHASE SUCCESSFUL!** Purchased \`${qty}x ${item.name}\` for **${totalCost} Ryo**! Balance: \`${userData.ryo - totalCost} Ryo\`.`);
+        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **PURCHASE SUCCESSFUL!** Purchased \`${qty}x ${item.name}\` for **${totalCost} Ryo**! Balance: \`${userData.ryo - totalCost} Ryo\`.`);
       }
 
       // <a:money_animated:1537177442672709707> SELL ITEMS FOR RYO (.ninja sell <item> [quantity])
@@ -672,12 +672,12 @@ module.exports = {
         }
 
         if (!query) {
-          return message.reply(`${emojis.WARNING || '⚠️'} Please specify an item to sell! Usage: \`.ninja sell <item> [amount]\`.`);
+          return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Please specify an item to sell! Usage: \`.ninja sell <item> [amount]\`.`);
         }
 
         const item = findShopItem(query);
         if (!item) {
-          return message.reply(`${emojis.WARNING || '⚠️'} Item **"${query}"** not recognized!`);
+          return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Item **"${query}"** not recognized!`);
         }
 
         qty = Math.max(1, qty);
@@ -685,7 +685,7 @@ module.exports = {
         const currentQty = inv[item.id] || 0;
 
         if (currentQty < qty) {
-          return message.reply(`${emojis.WARNING || '⚠️'} You do not have \`${qty}x ${item.name}\` in your inventory! You currently hold \`${currentQty}\`.`);
+          return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} You do not have \`${qty}x ${item.name}\` in your inventory! You currently hold \`${currentQty}\`.`);
         }
 
         const totalEarned = item.sellPrice * qty;
@@ -696,7 +696,7 @@ module.exports = {
           u.ryo += totalEarned;
         });
 
-        return message.reply(`${emojis.SUCCESS || '✅'} **SALE SUCCESSFUL!** Sold \`${qty}x ${item.name}\` for **+${totalEarned} Ryo**! Balance: \`${userData.ryo + totalEarned} Ryo\`.`);
+        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **SALE SUCCESSFUL!** Sold \`${qty}x ${item.name}\` for **+${totalEarned} Ryo**! Balance: \`${userData.ryo + totalEarned} Ryo\`.`);
       }
 
       // 🎒 INVENTORY DISPLAY (.ninja inventory)

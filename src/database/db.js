@@ -69,7 +69,7 @@ class ResilientDatabase {
     if (mongoUri && mongoose) {
       this.initMongo(mongoUri);
     } else {
-      console.log('⚠️ [Database Warning] MONGODB_URI is missing in environment variables! Data will reset on Render deploys until MONGODB_URI is added in Render Dashboard.');
+      console.log('<a:wrong_animated:1537179702928875631> [Database Warning] MONGODB_URI is missing in environment variables! Data will reset on Render deploys until MONGODB_URI is added in Render Dashboard.');
       if (sqlite3) {
         try {
           this.sqliteDb = new sqlite3.Database(dbPath, (err) => {
@@ -91,10 +91,10 @@ class ResilientDatabase {
     };
 
     try {
-      console.log('🍃 [MongoDB Cloud] Connecting to MongoDB Atlas database...');
+      console.log('<a:leaf_animated:1537179616400375939> [MongoDB Cloud] Connecting to MongoDB Atlas database...');
       await mongoose.connect(uri, connectOptions);
       this.useMongo = true;
-      console.log('✅ [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
+      console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
     } catch (err) {
       try {
         let directUri = uri;
@@ -103,7 +103,7 @@ class ResilientDatabase {
         }
         await mongoose.connect(directUri, connectOptions);
         this.useMongo = true;
-        console.log('✅ [MongoDB Cloud] Connected successfully via direct connection! Syncing cloud database state...');
+        console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully via direct connection! Syncing cloud database state...');
       } catch (retryErr) {
         console.log('<a:infox_animated:1537177409428787251> [Local High-Speed Database Active] Running seamlessly on local JSON database.');
         return;
@@ -150,7 +150,7 @@ class ResilientDatabase {
       );
       console.log('<a:cloudcomputing_animated:1537177355766865940> [MongoDB Cloud] Master cloud database backup active!');
     } catch (err) {
-      console.error('⚠️ [MongoDB Cloud Error] Failed to connect to MongoDB Atlas:', err.message);
+      console.error('<a:wrong_animated:1537179702928875631> [MongoDB Cloud Error] Failed to connect to MongoDB Atlas:', err.message);
     }
   }
 
@@ -186,7 +186,7 @@ class ResilientDatabase {
           { key: 'master_database' },
           { data: this.data, updatedAt: new Date() },
           { upsert: true }
-        ).catch(err => console.error('⚠️ [MongoDB Sync Error]:', err.message));
+        ).catch(err => console.error('<a:wrong_animated:1537179702928875631> [MongoDB Sync Error]:', err.message));
       }, 500);
     }
   }

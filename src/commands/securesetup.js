@@ -73,7 +73,7 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId('setup_full_protect')
           .setLabel('Max Protection')
-          .setEmoji('⚡')
+          .setEmoji('<a:rapid_animated:1537177482006896692>')
           .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
           .setCustomId('setup_antinuke')
@@ -91,7 +91,7 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId('setup_log_channel')
           .setLabel('Security Logs')
-          .setEmoji('📜')
+          .setEmoji('<a:scroll_animated:1537179663791693844>')
           .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
           .setCustomId('setup_panic_toggle')
@@ -120,7 +120,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: `${emojis.WARNING || '⚠️'} Only the administrator who invoked \`.securesetup\` can use these buttons.`, flags: 64 });
+        return interaction.reply({ content: `${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Only the administrator who invoked \`.securesetup\` can use these buttons.`, flags: 64 });
       }
 
       await interaction.deferUpdate();
@@ -161,7 +161,7 @@ module.exports = {
           } catch (e) {}
         }
 
-        actionStatus = `⚡ **Full Maximum Security Deployed!** AntiNuke (21 Filters), AutoMod, AntiBot, and <#${logChan?.id || 'channel'}> enabled!`;
+        actionStatus = `<a:rapid_animated:1537177482006896692> **Full Maximum Security Deployed!** AntiNuke (21 Filters), AutoMod, AntiBot, and <#${logChan?.id || 'channel'}> enabled!`;
       }
 
       else if (interaction.customId === 'setup_antinuke') {
@@ -194,12 +194,12 @@ module.exports = {
                 { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
               ]
             });
-            actionStatus = `📜 Security audit channel created: <#${logChan.id}>!`;
+            actionStatus = `<a:scroll_animated:1537179663791693844> Security audit channel created: <#${logChan.id}>!`;
           } catch (e) {
             actionStatus = `${emojis.ERROR} Failed to create channel: ${e.message}`;
           }
         } else {
-          actionStatus = `📜 Security channel already exists: <#${logChan.id}>`;
+          actionStatus = `<a:scroll_animated:1537179663791693844> Security channel already exists: <#${logChan.id}>`;
         }
       }
 
@@ -208,7 +208,7 @@ module.exports = {
           const config = antinukeConfigs.get(guild.id) || { enabled: true, panicmode: false };
           config.panicmode = !config.panicmode;
           antinukeConfigs.set(guild.id, config);
-          actionStatus = config.panicmode ? `🚨 **PANIC LOCKDOWN ACTIVATED!**` : `🟢 Panic Mode deactivated.`;
+          actionStatus = config.panicmode ? `🚨 **PANIC LOCKDOWN ACTIVATED!**` : `<a:accept_animated:1537177319603703969> Panic Mode deactivated.`;
         }
       }
 
@@ -221,7 +221,7 @@ module.exports = {
     });
     } catch (err) {
       console.error('[SecureSetup Command Error]', err);
-      return message.channel.send({ content: `⚠️ Failed to send security setup menu: ${err.message}` }).catch(() => {});
+      return message.channel.send({ content: `<a:wrong_animated:1537179702928875631> Failed to send security setup menu: ${err.message}` }).catch(() => {});
     }
   }
 };

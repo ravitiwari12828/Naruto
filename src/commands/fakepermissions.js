@@ -58,7 +58,7 @@ module.exports = {
       !message.member.permissions.has(PermissionsBitField.Flags.ManageGuild) &&
       message.guild.ownerId !== message.author.id
     ) {
-      return message.reply(`⚠️ You need **Manage Server** permission to use fake permissions.`);
+      return message.reply(`<a:wrong_animated:1537179702928875631> You need **Manage Server** permission to use fake permissions.`);
     }
 
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -92,10 +92,10 @@ module.exports = {
       const role = message.mentions.roles.first() || guild.roles.cache.get(args[1]);
       const perm = normalizePerm(args[2] || args[1]);
 
-      if (!role) return message.reply(`⚠️ Usage: \`.fakepermissions add <@role> <permission>\``);
+      if (!role) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.fakepermissions add <@role> <permission>\``);
       if (!perm || !isValidPerm(perm)) {
         return message.reply(
-          `⚠️ Invalid permission \`${perm}\`. Use \`.fakepermissions list\` to see valid permissions.\n` +
+          `<a:wrong_animated:1537179702928875631> Invalid permission \`${perm}\`. Use \`.fakepermissions list\` to see valid permissions.\n` +
           `> Valid: ${VALID_FAKE_PERMS.slice(0, 8).map(p => `\`${p}\``).join(', ')} *...and more*`
         );
       }
@@ -104,7 +104,7 @@ module.exports = {
       if (!data.roles[role.id].includes(perm)) data.roles[role.id].push(perm);
 
       return message.reply(
-        `${emojis.SUCCESS || '✅'} Added fake permission \`${perm}\` to role **${role.name}**!\n` +
+        `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Added fake permission \`${perm}\` to role **${role.name}**!\n` +
         `> *This is cosmetic only — no real Discord permissions were changed.*`
       );
     }
@@ -114,22 +114,22 @@ module.exports = {
       const role = message.mentions.roles.first() || guild.roles.cache.get(args[1]);
       const perm = normalizePerm(args[2] || args[1]);
 
-      if (!role || !perm) return message.reply(`⚠️ Usage: \`.fakepermissions remove <@role> <permission>\``);
+      if (!role || !perm) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.fakepermissions remove <@role> <permission>\``);
 
       if (data.roles[role.id]) {
         data.roles[role.id] = data.roles[role.id].filter(p => p !== perm);
       }
 
-      return message.reply(`${emojis.SUCCESS || '✅'} Removed fake permission \`${perm}\` from role **${role.name}**.`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Removed fake permission \`${perm}\` from role **${role.name}**.`);
     }
 
     // .fakepermissions reset <@role>
     if (sub === 'reset' && sub2 !== 'user') {
       const role = message.mentions.roles.first() || guild.roles.cache.get(args[1]);
-      if (!role) return message.reply(`⚠️ Usage: \`.fakepermissions reset <@role>\``);
+      if (!role) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.fakepermissions reset <@role>\``);
 
       delete data.roles[role.id];
-      return message.reply(`${emojis.SUCCESS || '✅'} Reset all fake permissions for role **${role.name}**.`);
+      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Reset all fake permissions for role **${role.name}**.`);
     }
 
     // .fakepermissions list [<@role>]
@@ -170,7 +170,7 @@ module.exports = {
         });
       }
       if (userEntries.length > 0) {
-        desc += `\n**👤 Users with Fake Permissions:**\n`;
+        desc += `\n**<a:membercard_animated:1537177436146638993> Users with Fake Permissions:**\n`;
         userEntries.forEach(([userId, perms]) => {
           desc += `<@${userId}> — ${buildPermsList(perms)}\n`;
         });
@@ -198,7 +198,7 @@ module.exports = {
 
         if (!user || !perm || !isValidPerm(perm)) {
           return message.reply(
-            `⚠️ Usage: \`.fakepermissions user add <@user> <permission>\`\n` +
+            `<a:wrong_animated:1537179702928875631> Usage: \`.fakepermissions user add <@user> <permission>\`\n` +
             `> Example: \`.fakepermissions user add @User manage_messages\``
           );
         }
@@ -207,7 +207,7 @@ module.exports = {
         if (!data.users[user.id].includes(perm)) data.users[user.id].push(perm);
 
         return message.reply(
-          `${emojis.SUCCESS || '✅'} Added fake permission \`${perm}\` to user **${user.username}**!\n` +
+          `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Added fake permission \`${perm}\` to user **${user.username}**!\n` +
           `> *This is cosmetic only — no real Discord permissions were changed.*`
         );
       }
@@ -232,7 +232,7 @@ module.exports = {
           return message.channel.send({ embeds: [embed] });
         }
 
-        return message.reply(`⚠️ Usage: \`.fakepermissions user list <@user>\``);
+        return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.fakepermissions user list <@user>\``);
       }
 
       // .fakepermissions user remove <@user> <permission>
@@ -241,23 +241,23 @@ module.exports = {
         const perm = normalizePerm(args[3] || args[2]);
 
         if (!user || !perm) {
-          return message.reply(`⚠️ Usage: \`.fakepermissions user remove <@user> <permission>\``);
+          return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.fakepermissions user remove <@user> <permission>\``);
         }
 
         if (data.users[user.id]) {
           data.users[user.id] = data.users[user.id].filter(p => p !== perm);
         }
 
-        return message.reply(`${emojis.SUCCESS || '✅'} Removed fake permission \`${perm}\` from user **${user.username}**.`);
+        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Removed fake permission \`${perm}\` from user **${user.username}**.`);
       }
 
       // .fakepermissions user reset <@user>
       if (action === 'reset') {
         const user = message.mentions.users.first() || (args[2] ? await message.client.users.fetch(args[2]).catch(() => null) : null);
-        if (!user) return message.reply(`⚠️ Usage: \`.fakepermissions user reset <@user>\``);
+        if (!user) return message.reply(`<a:wrong_animated:1537179702928875631> Usage: \`.fakepermissions user reset <@user>\``);
 
         delete data.users[user.id];
-        return message.reply(`${emojis.SUCCESS || '✅'} Reset all fake permissions for user **${user.username}**.`);
+        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Reset all fake permissions for user **${user.username}**.`);
       }
 
       // .fakepermissions user (no action) — show user help
@@ -289,7 +289,7 @@ module.exports = {
         `> *Fake permissions are **cosmetic only** — they appear in \`.fakepermissions list\` but do NOT grant real Discord permissions.*\n\n` +
         `🎭 **Role Commands**\n` +
         '```\n' + roleBox + '\n```\n\n' +
-        `👤 **User Commands**\n` +
+        `<a:membercard_animated:1537177436146638993> **User Commands**\n` +
         '```\n' + userBox + '\n```\n\n' +
         `📋 **Valid Permissions** *(partial list)*\n` +
         '```\n' + validPermsBox + '\n```',

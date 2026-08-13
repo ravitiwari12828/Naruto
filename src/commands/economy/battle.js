@@ -6,7 +6,7 @@ const { cooldownLeft, fmt } = require('../../utils/economyCore');
 
 const COOLDOWN = 5 * 60 * 1000;
 const MONSTERS = [
-  { name: 'Slime', emoji: '🟢', power: 6, reward: 80 },
+  { name: 'Slime', emoji: '<a:accept_animated:1537177319603703969>', power: 6, reward: 80 },
   { name: 'Goblin', emoji: '👺', power: 12, reward: 150 },
   { name: 'Skeleton', emoji: '💀', power: 18, reward: 220 },
   { name: 'Orc', emoji: '👹', power: 26, reward: 320 },

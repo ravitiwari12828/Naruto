@@ -111,4 +111,4 @@ function renderNarutoGlassGif(filename, framesCount = 20) {
 
 console.log('Rendering 3D Glassmorphic Animated Elements...');
 const p1 = renderNarutoGlassGif('naruto_3d_glass.png');
-console.log('3D Glassmorphic Elements Created Successfully! ✅', p1);
+console.log('3D Glassmorphic Elements Created Successfully! <a:accept_animated:1537177319603703969>', p1);

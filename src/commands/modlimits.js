@@ -317,7 +317,7 @@ module.exports = {
       `Welcome **${author.username}**! Below is your server **AntiNuke Action Rate Limits Grid**.\n\n` +
       '```\n' + limitsBox + '\n```\n' +
       '```\n' + cmdBox + '\n```\n\n' +
-      `**📜 Configuration Mappings:**\n` +
+      `**<a:scroll_animated:1537179663791693844> Configuration Mappings:**\n` +
       `• **Logging Channel**: ${logChan}\n` +
       `• **Time Window**: \`24 Hours\` *(24-Hour Rolling Reset Window)*\n` +
       `• **Max Configurable**: Admin = \`3 per 24h\` | Server Owner = \`5 per 24h\`\n\n` +

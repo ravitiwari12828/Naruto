@@ -135,13 +135,13 @@ async function startDownload() {
     const ok = await downloadFile(url, filepath);
     if (ok) {
       downloadedCount++;
-      console.log(`✅ Downloaded: ${filename}`);
+      console.log(`<a:accept_animated:1537177319603703969> Downloaded: ${filename}`);
     } else {
-      console.log(`⚠️ Skipped/404: ${filename}`);
+      console.log(`<a:wrong_animated:1537179702928875631> Skipped/404: ${filename}`);
     }
   }
 
-  console.log(`🎉 Finished downloading ${downloadedCount} animated GIFs to Desktop: ${desktopFolder}`);
+  console.log(`<a:tada_party_animated:1537179689381134356> Finished downloading ${downloadedCount} animated GIFs to Desktop: ${desktopFolder}`);
 }
 
 startDownload();

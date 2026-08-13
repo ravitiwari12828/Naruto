@@ -73,7 +73,7 @@ async function dispatchLog(guild, logType, embedData) {
     } else {
       embed = new EmbedBuilder()
         .setColor(embedData.color || 0xED4245)
-        .setTitle(embedData.title || `📜 ${logType.toUpperCase()} Log`)
+        .setTitle(embedData.title || `<a:scroll_animated:1537179663791693844> ${logType.toUpperCase()} Log`)
         .setDescription(embedData.description || '')
         .setTimestamp();
 
@@ -129,7 +129,7 @@ function dispatchAntiNukeLog(guild, { rogueUser, targetUser, actionReason, banSt
     .addFields(
       {
         name: 'Action',
-        value: `**Ban Status :** ✅ | <@${rogueUser?.id || rogueUser || targetUser?.id || targetUser}> ${banStatusText || 'Successfully Banned'}`
+        value: `**Ban Status :** <a:accept_animated:1537177319603703969> | <@${rogueUser?.id || rogueUser || targetUser?.id || targetUser}> ${banStatusText || 'Successfully Banned'}`
       },
       {
         name: 'Moderator',

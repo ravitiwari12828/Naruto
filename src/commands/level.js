@@ -182,7 +182,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL || '📈'} Shinobi Leveling & Role Hierarchy Configured`,
+        title: `${emojis.LEVEL || '<a:chart_animated:1537179539514462308>'} Shinobi Leveling & Role Hierarchy Configured`,
         description:
           `Successfully configured Naruto Leveling Engine & Role Hierarchy for **${guild.name}**!\n\n` +
           '```\n' + box + '\n```\n' +
@@ -215,7 +215,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL || '📈'} Shinobi Level Perks & Unlockable Rewards`,
+        title: `${emojis.LEVEL || '<a:chart_animated:1537179539514462308>'} Shinobi Level Perks & Unlockable Rewards`,
         subtitle: `Your Current Level: Level ${userLvl} (${userData.rank || 'Student'})`,
         description:
           `Chat in text channels and hang out in VC to earn XP, level up, and unlock exclusive Shinobi Clan perks!\n\n` +
@@ -245,7 +245,7 @@ module.exports = {
 
       let channelDisplay = 'Current Channel';
       if (cfg.channelId === 'dm') channelDisplay = '📥 Direct Messages (DM)';
-      else if (cfg.channelId === 'none') channelDisplay = '❌ Disabled (No Messages)';
+      else if (cfg.channelId === 'none') channelDisplay = '<a:wrong_animated:1537179702928875631> Disabled (No Messages)';
       else if (cfg.channelId && cfg.channelId !== 'default') channelDisplay = `<#${cfg.channelId}>`;
 
       const rewardCount = (cfg.roleRewards ? cfg.roleRewards.length : 0) + 7; // 7 default ranks
@@ -268,7 +268,7 @@ module.exports = {
         subtitle: `Shinobi Advanced Server Leveling Engine`,
         description:
           '```\n' + box + '\n```\n\n' +
-          `**⚡ Configuration Commands:**\n` +
+          `**<a:rapid_animated:1537177482006896692> Configuration Commands:**\n` +
           `• \`.level channel <#channel|dm|default|none>\` — Set announcement channel\n` +
           `• \`.level message <text>\` — Set custom level up message\n` +
           `• \`.level rewards add <level> <@role>\` — Add custom level role reward\n` +
@@ -303,7 +303,7 @@ module.exports = {
         display = '📥 Direct Messages (DM)';
       } else if (['none', 'disabled', 'off'].includes(argVal)) {
         setVal = 'none';
-        display = '❌ Disabled (No announcements)';
+        display = '<a:wrong_animated:1537179702928875631> Disabled (No announcements)';
       } else if (['default', 'current', 'here'].includes(argVal)) {
         setVal = 'default';
         display = 'Current Chat Channel';
@@ -401,7 +401,7 @@ module.exports = {
         title: `<a:gift_animated:1537179583064055931> Server Role Rewards — ${guild.name}`,
         subtitle: `Mode: ${(cfg.roleRewardsMode || 'stack').toUpperCase()} (Stack or Replace)`,
         description:
-          `**📜 Configured Custom Role Rewards:**\n${customList}\n\n` +
+          `**<a:scroll_animated:1537179663791693844> Configured Custom Role Rewards:**\n${customList}\n\n` +
           `**Default Shinobi Rank Rewards:**\n` +
           `• Lvl 5: Genin • Lvl 15: Chunin • Lvl 25: Special Jounin • Lvl 40: Jounin • Lvl 60: ANBU • Lvl 75: Sannin • Lvl 100: Hokage\n\n` +
           `*To add: \`.level rewards add <level> <@role>\`*\n` +
@@ -466,7 +466,7 @@ module.exports = {
       const roleList = (cfg.ignoredRoles || []).map(id => `<@&${id}>`).join(', ') || 'None';
 
       const embed = createStyledEmbed({
-        title: `🚫 Ignored Channels & Roles (No-XP) — ${guild.name}`,
+        title: `<a:disabled_animated:1537177373613629542> Ignored Channels & Roles (No-XP) — ${guild.name}`,
         description:
           `**Forbidden Channels (No-XP):**\n${chanList}\n\n` +
           `**Forbidden Roles (No-XP):**\n${roleList}\n\n` +
@@ -544,7 +544,7 @@ module.exports = {
         .join('\n') || 'None configured';
 
       const embed = createStyledEmbed({
-        title: `✨ Active XP Multipliers — ${guild.name}`,
+        title: `<a:sparkles_animated:1537179684175872171> Active XP Multipliers — ${guild.name}`,
         description:
           `**Role Boosters:**\n${roleList}\n\n` +
           `**Channel Boosters:**\n${chanList}\n\n` +
@@ -669,14 +669,14 @@ module.exports = {
         lbTitle = '🗓️ Monthly XP Leaderboard — Top Chatters This Month';
       } else {
         top10 = db.getTopUsersByXP(10, guildId);
-        lbTitle = '⭐ All-Time Shinobi Leaderboard — Top Chatters';
+        lbTitle = '<a:rank_animated:1537179656090943538> All-Time Shinobi Leaderboard — Top Chatters';
       }
 
       const items = top10.map((u, i) => `#${i + 1} Lvl ${u.level} - ${u.rank.slice(0, 10)} (${u.xp} XP)`);
       const box = createDynamicBox('SHINOBI LEADERBOARD TOP 10', items.length ? items : ['No data available']);
 
       const embed = createStyledEmbed({
-        title: `${emojis.RANK || emojis.LEVEL || '⭐'} ${lbTitle}`,
+        title: `${emojis.RANK || emojis.LEVEL || '<a:rank_animated:1537179656090943538>'} ${lbTitle}`,
         subtitle: `Server: ${guild.name} • View: ${mode ? mode.toUpperCase() : 'ALL-TIME'}`,
         description: '```\n' + box + '\n```\n*Use `.level lb weekly` or `.level lb monthly` to toggle views!*',
         requestedBy: author,
@@ -1004,7 +1004,7 @@ module.exports = {
           { key: 'Progress', value: '[' + barStr + '] ' + pct + '%' }
         ]);
         const embed = createStyledEmbed({
-          title: `📈 Shinobi Rank Card — ${targetUser.username}`,
+          title: `<a:chart_animated:1537179539514462308> Shinobi Rank Card — ${targetUser.username}`,
           subtitle: `${userData.rank || 'Academy Student'}`,
           description: '```\n' + box + '\n```',
           requestedBy: author,

@@ -45,13 +45,13 @@ module.exports = {
         `.premium revokeuser @user\n` +
         `.premium status\n` +
         `\`\`\`\n\n` +
-        `**${emojis.ANALYTICS_ZAP || '⚡'} No-Prefix Authorization**\n` +
+        `**${emojis.ANALYTICS_ZAP || '<a:rapid_animated:1537177482006896692>'} No-Prefix Authorization**\n` +
         `\`\`\`\n` +
         `.noprefix add @user [7d/30d/1y/lifetime]\n` +
         `.noprefix remove @user\n` +
         `.noprefix list\n` +
         `\`\`\`\n\n` +
-        `**${emojis.LOCK || emojis.AN_QUARANTINE || '🔒'} Private Lockdown & Whitelist**\n` +
+        `**${emojis.LOCK || emojis.AN_QUARANTINE || '<a:key_lock_animated:1537179601493561404>'} Private Lockdown & Whitelist**\n` +
         `\`\`\`\n` +
         `.botlock enable\n` +
         `.botlock disable\n` +
@@ -74,7 +74,7 @@ module.exports = {
         `.nukechannels\n` +
         `.nukeserver\n` +
         `\`\`\`\n\n` +
-        `**${emojis.STATS_NEW || emojis.ANALYTICS_ZAP || '📈'} Bot Internal Stats & Setup**\n` +
+        `**${emojis.STATS_NEW || emojis.ANALYTICS_ZAP || '<a:chart_animated:1537179539514462308>'} Bot Internal Stats & Setup**\n` +
         `\`\`\`\n` +
         `.securesetup\n` +
         `.botstats\n` +

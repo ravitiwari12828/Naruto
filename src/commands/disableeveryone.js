@@ -30,7 +30,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    const statusMsg = await message.channel.send(`${emojis.LOADING || '⏳'} Auditing server permissions & stripping MentionEveryone across all roles & channels...`);
+    const statusMsg = await message.channel.send(`${emojis.LOADING || '<a:hourglass_animated:1537179590982631575>'} Auditing server permissions & stripping MentionEveryone across all roles & channels...`);
 
     let rolesStrippedCount = 0;
     let channelsSealedCount = 0;

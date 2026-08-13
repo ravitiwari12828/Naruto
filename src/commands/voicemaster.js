@@ -56,7 +56,7 @@ function buildDeviceProofBox(title, items) {
  * Builds the Custom Voice Channels deployment embed with device-proof 28-char box.
  */
 function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
-  const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`<a:volumeup_animated:1537177548121968650> ✨ 「 Join to Create 」`';
+  const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`<a:volumeup_animated:1537177548121968650> <a:sparkles_animated:1537179684175872171> 「 Join to Create 」`';
 
   const perkBox = buildDeviceProofBox('PERKS COMPARISON', [
     'Member  : Size Max 5',
@@ -100,7 +100,7 @@ function buildCustomVoiceChannelButtons(guildId, triggerChanId = null) {
     new ButtonBuilder()
       .setStyle(ButtonStyle.Link)
       .setLabel('Support Server')
-      .setEmoji('💬')
+      .setEmoji('<a:code_animated:1537177358912725033>')
       .setURL('https://discord.gg/w7Ryr6v4q8')
   );
 
@@ -193,7 +193,7 @@ module.exports = {
         return message.reply(`${emojis.DISABLED} Administrator permission required to deploy Custom Voice Channels.`);
       }
 
-      const statusMsg = await message.channel.send(`⏳ Creating **Custom Voice Channels Category & Interface**...`);
+      const statusMsg = await message.channel.send(`<a:hourglass_animated:1537179590982631575> Creating **Custom Voice Channels Category & Interface**...`);
 
       try {
         // Create Category
@@ -204,7 +204,7 @@ module.exports = {
 
         // Create Trigger VC
         const triggerChan = await guild.channels.create({
-          name: '<a:volumeup_animated:1537177548121968650> ✨ 「 Join to Create 」',
+          name: '<a:volumeup_animated:1537177548121968650> <a:sparkles_animated:1537179684175872171> 「 Join to Create 」',
           type: ChannelType.GuildVoice,
           parent: category.id
         });
@@ -247,7 +247,7 @@ module.exports = {
 
         return message.channel.send({ embeds: [confirmEmbed] });
       } catch (err) {
-        return statusMsg.edit(`❌ Failed to deploy Custom Voice Channels: \`${err.message}\``);
+        return statusMsg.edit(`<a:wrong_animated:1537179702928875631> Failed to deploy Custom Voice Channels: \`${err.message}\``);
       }
     }
 

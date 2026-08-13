@@ -225,8 +225,8 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText = 'Low',
   const color = priorityColorMap[priorityText] || 0x57F287;
 
   const ticketEmoji = emojis.TICKETS || '<a:tickety_animated:1537177533961732106>';
-  const profileEmoji = emojis.PROFILE || '👤';
-  const zapEmoji = emojis.ANALYTICS_ZAP || emojis.ZAP || '⚡';
+  const profileEmoji = emojis.PROFILE || '<a:membercard_animated:1537177436146638993>';
+  const zapEmoji = emojis.ANALYTICS_ZAP || emojis.ZAP || '<a:rapid_animated:1537177482006896692>';
   const crownEmoji = emojis.SPECIAL_ROLES || '<a:crown_animated:1537177361093500968>';
   const anonEmoji = emojis.PROFILE || '🎭';
 
@@ -253,9 +253,9 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText = 'Low',
 function buildTicketActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('ticket_claim_btn').setEmoji(emojis.OBJ_OWNER || '<a:crown_animated:1537177361093500968>').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_lock_btn').setEmoji(emojis.OBJ_LOCK || '🔒').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_lock_btn').setEmoji(emojis.OBJ_LOCK || '<a:key_lock_animated:1537179601493561404>').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('ticket_callstaff_btn').setEmoji(emojis.OBJ_INVITES || '📞').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_priority_btn').setEmoji(emojis.OBJ_ZAP || '⚡').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_priority_btn').setEmoji(emojis.OBJ_ZAP || '<a:rapid_animated:1537177482006896692>').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('ticket_anon_btn').setEmoji(emojis.OBJ_PROFILE || '🎭').setStyle(ButtonStyle.Secondary)
   );
 
@@ -426,7 +426,7 @@ module.exports = {
       if (elapsed < cooldownMs) {
         const remainingMins = Math.ceil((cooldownMs - elapsed) / 60000);
         return message.reply({
-          content: `⏳ **Staff Call Cooldown**: Staff was called recently. You can call staff again in **${remainingMins} minutes**.`,
+          content: `<a:hourglass_animated:1537179590982631575> **Staff Call Cooldown**: Staff was called recently. You can call staff again in **${remainingMins} minutes**.`,
           flags: 64
         });
       }
@@ -534,7 +534,7 @@ module.exports = {
         await message.channel.permissionOverwrites.edit(ownerId, { SendMessages: false }).catch(() => {});
       }
 
-      return message.reply(`🔒 Ticket locked by <@${author.id}>.`);
+      return message.reply(`<a:key_lock_animated:1537179601493561404> Ticket locked by <@${author.id}>.`);
     }
 
     // 8. TICKET TRANSCRIPT (.ticket transcript / .transcript)
@@ -546,7 +546,7 @@ module.exports = {
       const attachment = new AttachmentBuilder(buffer, { name: `transcript-${message.channel.name}.txt` });
 
       return message.reply({
-        content: `📜 **Ticket Transcript Exported:**`,
+        content: `<a:scroll_animated:1537179663791693844> **Ticket Transcript Exported:**`,
         files: [attachment]
       });
     }
@@ -561,13 +561,13 @@ module.exports = {
 
         if (transcriptChan) {
           await transcriptChan.send({
-            content: `📜 **Ticket Closed & Logged:** \`${message.channel.name}\` closed by <@${author.id}>`,
+            content: `<a:scroll_animated:1537179663791693844> **Ticket Closed & Logged:** \`${message.channel.name}\` closed by <@${author.id}>`,
             files: [attachment]
           }).catch(() => {});
         }
       }
 
-      await message.reply(`🔒 **Ticket Closed**: Channel will be deleted in 3 seconds...`).catch(() => {});
+      await message.reply(`<a:key_lock_animated:1537179601493561404> **Ticket Closed**: Channel will be deleted in 3 seconds...`).catch(() => {});
       setTimeout(() => message.channel.delete().catch(() => {}), 3000);
       return;
     }

@@ -268,7 +268,7 @@ module.exports = (client) => {
   });
 
   // ─────────────────────────────────────────
-  // 4. 👥 MEMBER JOIN & LEAVE LOGS (guildMemberAdd, guildMemberRemove, guildMemberUpdate)
+  // 4. <a:membercard_animated:1537177436146638993> MEMBER JOIN & LEAVE LOGS (guildMemberAdd, guildMemberRemove, guildMemberUpdate)
   // ─────────────────────────────────────────
   client.on('guildMemberAdd', async (member) => {
     const guild = member.guild;
@@ -405,7 +405,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`🔓 Member Unbanned`)
+      .setTitle(`<a:unlock_animated:1537177539297157150> Member Unbanned`)
       .setDescription(
         `• **Unbanned User:** <@${ban.user.id}> (\`${ban.user.tag}\`)\n` +
         `• **User ID:** \`${ban.user.id}\`\n` +
@@ -498,7 +498,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle(`${emojis.WARNING || '⚠️'} Invite Link Posted in Chat`)
+      .setTitle(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Invite Link Posted in Chat`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Author:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
