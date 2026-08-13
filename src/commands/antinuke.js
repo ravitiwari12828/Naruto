@@ -1,3 +1,4 @@
+const db = require('../database/db');
 const {
   ActionRowBuilder,
   ButtonBuilder,
@@ -13,18 +14,20 @@ const antinukeConfigs = new Map();
 
 function getOrCreateAntinuke(guildId) {
   if (!antinukeConfigs.has(guildId)) {
+    const dbConfig = db.getAntinuke(guildId);
+    const wlMap = new Map();
+    if (Array.isArray(dbConfig.whitelistedUsers)) {
+      dbConfig.whitelistedUsers.forEach(u => wlMap.set(u, new Set(['all'])));
+    }
+    wlMap.set('1420687548807905324', new Set(['all']));
+
     antinukeConfigs.set(guildId, {
-      enabled: false,
-      panicmode: false,
-      panicLevel: 1, // 1: Low, 2: Medium, 3: High Lockdown
-      whitelistedUsers: new Map([
-        [ new Set(['all'])],
-        ['1420687548807905324', new Set(['all'])],
-        [ new Set(['all'])],
-        [ new Set(['all'])]
-      ]),
-      extraOwners: new Set([ '1420687548807905324', ]),
-      bypassRoles: new Set(),
+      enabled: dbConfig.enabled ?? false,
+      panicmode: dbConfig.panicmode ?? false,
+      panicLevel: dbConfig.panicLevel ?? 1,
+      whitelistedUsers: wlMap,
+      extraOwners: new Set(dbConfig.extraOwners || ['1420687548807905324']),
+      bypassRoles: new Set(dbConfig.bypassRoles || []),
 
       // Shinobi JoinGate General Settings
       joinGate: {

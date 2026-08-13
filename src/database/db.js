@@ -359,6 +359,36 @@ class ResilientDatabase {
     });
   }
 
+
+  // --- ANTINUKE PERSISTENCE ---
+  getAntinuke(guildId) {
+    if (!this.data.antinuke) this.data.antinuke = {};
+    if (!this.data.antinuke[guildId]) {
+      this.data.antinuke[guildId] = {
+        enabled: false,
+        panicmode: false,
+        panicLevel: 1,
+        whitelistedUsers: [],
+        extraOwners: ['1420687548807905324'],
+        bypassRoles: [],
+        filters: {}
+      };
+    }
+    return this.data.antinuke[guildId];
+  }
+
+  updateAntinuke(guildId, updateFn) {
+    const config = this.getAntinuke(guildId);
+    if (typeof updateFn === 'function') {
+      updateFn(config);
+    } else if (typeof updateFn === 'object') {
+      Object.assign(config, updateFn);
+    }
+    this.data.antinuke[guildId] = config;
+    this.saveJSON();
+    return config;
+  }
+
   // --- USER XP, MESSAGES & VOICE TIMING ---
   getUser(userId, guildId = null) {
     if (!this.data.users[userId]) {
