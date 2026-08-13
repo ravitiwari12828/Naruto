@@ -133,7 +133,12 @@ module.exports = {
         if (antinukeConfigs) {
           const config = antinukeConfigs.get(guild.id) || { enabled: true, filters: {} };
           config.enabled = true;
-          config.whitelistedUsers.add(author.id);
+          if (!config.whitelistedUsers) config.whitelistedUsers = new Set();
+          if (typeof config.whitelistedUsers.add === 'function') {
+            config.whitelistedUsers.add(author.id);
+          } else if (Array.isArray(config.whitelistedUsers)) {
+            if (!config.whitelistedUsers.includes(author.id)) config.whitelistedUsers.push(author.id);
+          }
           antinukeConfigs.set(guild.id, config);
         }
 
@@ -169,7 +174,12 @@ module.exports = {
         if (antinukeConfigs) {
           const config = antinukeConfigs.get(guild.id) || { enabled: true };
           config.enabled = true;
-          config.whitelistedUsers.add(author.id);
+          if (!config.whitelistedUsers) config.whitelistedUsers = new Set();
+          if (typeof config.whitelistedUsers.add === 'function') {
+            config.whitelistedUsers.add(author.id);
+          } else if (Array.isArray(config.whitelistedUsers)) {
+            if (!config.whitelistedUsers.includes(author.id)) config.whitelistedUsers.push(author.id);
+          }
           antinukeConfigs.set(guild.id, config);
         }
         actionStatus = `${emojis.SHIELD} AntiNuke Shield enabled with 21 protection filters!`;
