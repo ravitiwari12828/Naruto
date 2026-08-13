@@ -1,3 +1,4 @@
+const { isBotOwner } = require('../utils/owners');
 const { EmbedBuilder, PermissionsBitField, AttachmentBuilder } = require('discord.js');
 const { createDynamicBox } = require('../utils/boxBuilder');
 const { performDriveBackup, createSnapshot } = require('../utils/gdriveBackup');
@@ -8,12 +9,12 @@ module.exports = {
   name: 'gdrive',
   aliases: ['drivebackup', 'cloudbackup', 'gdrivebackup'],
   description: 'Manage 5TB Google Drive automated database backups & snapshots',
-  category: 'system',
+  category: 'owner',
   usage: '.gdrive [backup/list/download/setup]',
 
   async execute(message, args, client) {
-    if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-      return message.reply('<a:wrong_animated:1537179702928875631> Only administrators can manage Google Drive database backups.');
+    if (!isBotOwner(message.author, message.client)) {
+      return message.reply('<a:wrong_animated:1537179702928875631> Access Denied: Only **Bot Owners** can execute 5TB Google Drive cloud database backup commands.');
     }
 
     const sub = args[0] ? args[0].toLowerCase() : 'status';
