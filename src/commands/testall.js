@@ -26,9 +26,7 @@ module.exports = {
   usage: '.testall [module_name]',
   cooldown: 5000,
   async execute(message, args) {
-    if (!isBotOwner(message.author, message.client)) {
-      return message.reply(`${emojis.WARNING} Access Denied: Only **Bot Owners** can run the system diagnostic command.`);
-    }
+    if (!isBotOwner(message.author, message.client)) return;
 
     const filterModule = (args[0] || '').toLowerCase();
     const statusMsg = await message.reply(`${emojis.LOADING} **Initiating Command Diagnostic Audit...** Please wait.`);

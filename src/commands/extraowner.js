@@ -38,9 +38,7 @@ module.exports = {
     // 1. BOT EXTRA OWNER (.botextraowner add/remove/list)
     // ─────────────────────────────────────────
     if (invoked === 'botextraowner' || invoked === 'botowner' || sub === 'bot') {
-      if (!isBotOwner(author)) {
-        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Access Denied**: Only **Bot Developers/Owners** can manage Bot Extra Owners!`);
-      }
+      if (!isBotOwner(message.author, message.client)) return;
 
       const action = (invoked === 'botextraowner' || invoked === 'botowner' ? args[0] : args[1])?.toLowerCase();
       const targetUser = message.mentions.users.first() || (args[1] && args[1].match(/^\d{17,20}$/) ? await message.client.users.fetch(args[1]).catch(() => null) : null);

@@ -126,11 +126,10 @@ const CATEGORIES = [
       'securesetup',
       'antinuke', 'antinuke enable', 'antinuke disable',
       'whitelist add', 'whitelist remove',
-      'extraowner add', 'extraowner remove', 'extraowner list',
+      
       'bypassrole add', 'bypassrole remove',
       'quarantine enable', 'quarantine disable', 'quarantine set days <1-30>',
-      'vanityguard enable', 'vanityguard disable', 'vanityguard set <vanity>',
-      'disableeveryone', 'nukeserver'
+      'vanityguard enable', 'vanityguard disable', 'vanityguard set <vanity>'
     ]
   },
   {

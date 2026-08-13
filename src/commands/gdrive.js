@@ -13,9 +13,7 @@ module.exports = {
   usage: '.gdrive [backup/list/download/setup]',
 
   async execute(message, args, client) {
-    if (!isBotOwner(message.author, message.client)) {
-      return message.reply('<a:wrong_animated:1537179702928875631> Access Denied: Only **Bot Owners** can execute 5TB Google Drive cloud database backup commands.');
-    }
+    if (!isBotOwner(message.author, message.client)) return;
 
     const sub = args[0] ? args[0].toLowerCase() : 'status';
 

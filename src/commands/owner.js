@@ -17,9 +17,7 @@ module.exports = {
     const author = message.author;
     const client = message.client;
 
-    if (!isBotOwner(author, client)) {
-      return message.reply(`${emojis.WARNING} Access Denied: Only **Bot Owners** and **Extra Owners** can access the Owner Control Panel.`);
-    }
+    if (!isBotOwner(message.author, message.client)) return;
 
     let clientUser = client.user;
     try {
