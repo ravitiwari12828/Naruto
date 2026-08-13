@@ -91,7 +91,7 @@ function buildEndedEmbed(gw, winnerMentions, clientUser) {
     new ButtonBuilder()
       .setCustomId(`gw_claim_${gw.id}`)
       .setLabel('Claim Reward')
-      .setEmoji({ id: '1532508968960786613', name: 'GF_Gold_Cup', animated: true })
+      .setEmoji('🎉')
       .setStyle(ButtonStyle.Success)
   );
 
@@ -197,7 +197,7 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId(`gw_enter_${id}`)
           .setLabel('Enter Giveaway')
-          .setEmoji({ id: '1532508786307104878', name: 'Radha_Giveaway_ping', animated: true })
+          .setEmoji('🎉')
           .setStyle(ButtonStyle.Success)
       );
 

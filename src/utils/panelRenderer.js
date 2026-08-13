@@ -632,12 +632,12 @@ function buildNavigationButtons() {
   return new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('help_home')
-      .setEmoji({ id: '1537177403875401889', animated: true })
+      .setEmoji('🎉')
       .setLabel('Home Menu')
       .setStyle(ButtonStyle.Success),
     new ButtonBuilder()
       .setCustomId('help_delete')
-      .setEmoji({ id: '1537177488168456202', animated: true })
+      .setEmoji('🎉')
       .setLabel('Close Panel')
       .setStyle(ButtonStyle.Danger)
   );
