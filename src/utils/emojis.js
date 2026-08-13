@@ -162,6 +162,21 @@ const CUSTOM = {
 };
 
 const EMOJI_IDS = {
+  OBJ_AN_BAN: { id: '1537177336007364709', animated: true },
+  OBJ_AN_KICK: { id: '1537177415552602223', animated: true },
+  OBJ_AN_BOT: { id: '1537177494183088199', animated: true },
+  OBJ_AN_CHANNEL: { id: '1537177452936437760', animated: true },
+  OBJ_AN_ROLE: { id: '1537177361093500968', animated: true },
+  OBJ_AN_WEBHOOK: { id: '1537177550990741534', animated: true },
+  OBJ_AN_SPAM: { id: '1537177373613629542', animated: true },
+  OBJ_AN_SHIELD: { id: '1537177499862171741', animated: true },
+  OBJ_AN_RAID: { id: '1537177338427605064', animated: true },
+  OBJ_AN_GUILD: { id: '1537177403875401889', animated: true },
+  OBJ_AN_PANIC: { id: '1537179599228637226', animated: true },
+  OBJ_AN_JOINGATE: { id: '1537179596334698627', animated: true },
+  OBJ_AN_QUARANTINE: { id: '1537177476147576993', animated: true },
+  OBJ_AN_WHITELIST: { id: '1537177345633550347', animated: true },
+  OBJ_AN_EVERYONE: { id: '1537177409428787251', animated: true },
   youtube_animated: { id: '1537179705470492693', animated: true },
   wrong_animated: { id: '1537179702928875631', animated: true },
   welcome_animated: { id: '1537179700349243402', animated: true },
@@ -381,24 +396,25 @@ const emojisProxy = new Proxy(baseExports, {
 
     // Handle OBJ_ Button Emoji Objects
     if (prop.startsWith('OBJ_')) {
+      if (prop in EMOJI_IDS) return EMOJI_IDS[prop];
       const cleanKey = prop.replace('OBJ_', '').toLowerCase();
       for (const [k, obj] of Object.entries(EMOJI_IDS)) {
-        if (k.toLowerCase().includes(cleanKey)) {
+        if (k.toLowerCase() === cleanKey || k.toLowerCase().includes(cleanKey)) {
           return obj;
         }
       }
-      return EMOJI_IDS.sparkles_animated || { id: '1537179684175872171', animated: true };
+      return undefined; // NEVER return sparkles for missing button emojis!
     }
 
     // Handle string key lookups
     const propLower = prop.toLowerCase();
     for (const [k, v] of Object.entries(CUSTOM)) {
-      if (k.toLowerCase() === propLower || k.toLowerCase().includes(propLower)) {
+      if (k.toLowerCase() === propLower) {
         return v;
       }
     }
 
-    return FALLBACK_MAP[prop] || '<a:sparkles_animated:1537179684175872171>';
+    return FALLBACK_MAP[prop] || undefined;
   }
 });
 
