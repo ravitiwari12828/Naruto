@@ -73,7 +73,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x5865F2)
-      .setTitle(`<a:settings_animated:1537177506170404905> Server Settings Updated`)
+      .setTitle(`⚙️ Server Settings Updated`)
       .setDescription(
         `• **Server:** \`${newGuild.name}\`\n` +
         `• **Updated By:** ${executor ? `<@${executor.id}> (\`${executor.tag}\`)` : '`Unknown`'}\n\n` +
@@ -193,7 +193,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`<a:openfolder_animated:1537177452936437760> Channel Created`)
+      .setTitle(`📁 Channel Created`)
       .setDescription(
         `• **Channel:** <#${channel.id}> (\`${channel.name}\`)\n` +
         `• **Channel ID:** \`${channel.id}\`\n` +
@@ -233,7 +233,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xFEE75C)
-      .setTitle(`<a:settings_animated:1537177506170404905> Channel Modified / Permissions Updated`)
+      .setTitle(`⚙️ Channel Modified / Permissions Updated`)
       .setDescription(
         `• **Channel:** <#${newChannel.id}> (\`${newChannel.name}\`)\n` +
         `• **Category:** \`${newChannel.parent ? newChannel.parent.name : 'None'}\`\n` +
@@ -385,7 +385,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`<a:kick_animated:1537177415552602223> Member Banned`)
+      .setTitle(`🔨 Member Banned`)
       .setDescription(
         `• **Banned User:** <@${ban.user.id}> (\`${ban.user.tag}\`)\n` +
         `• **User ID:** \`${ban.user.id}\`\n` +
@@ -405,7 +405,7 @@ module.exports = (client) => {
 
     const embed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setTitle(`<a:unlock_animated:1537177539297157150> Member Unbanned`)
+      .setTitle(`🔓 Member Unbanned`)
       .setDescription(
         `• **Unbanned User:** <@${ban.user.id}> (\`${ban.user.tag}\`)\n` +
         `• **User ID:** \`${ban.user.id}\`\n` +

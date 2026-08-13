@@ -145,7 +145,7 @@ function dispatchLimitLog(guild, { actionTitle, executor, target, details, remai
 
   const embed = new EmbedBuilder()
     .setColor(0xED4245)
-    .setTitle(`${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} ${actionTitle}`)
+    .setTitle(`🛡️ ${actionTitle}`)
     .setDescription(descLines.join('\n'))
     .setThumbnail(executor ? executor.displayAvatarURL({ dynamic: true }) : (guild.iconURL({ dynamic: true }) || undefined))
     .setFooter({ text: `Naruto Limit System | ${cleanActionName}` })
