@@ -506,6 +506,94 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
     return embed;
   }
 
+  // SPECIAL FORMATTING FOR FUN CATEGORY SUB-GROUPS
+  if (cat.value === 'fun') {
+    const gamesBox = createDynamicBox('SHINOBI GAMES & ORACLE', [
+      '.8ball       - Ask mystic ninja 8ball',
+      '.truth       - Answer revealing truth question',
+      '.dare        - Perform daring ninja task',
+      '.wyr         - Would you rather choice',
+      '.fortune     - Read daily ninja fortune',
+      '.vibecheck   - Check server vibe percentage'
+    ]);
+
+    const ratingBox = createDynamicBox('SHINOBI RATINGS & MINI-GAMES', [
+      '.smartrate   - Calculate IQ intelligence rate',
+      '.rizzmeter   - Measure charisma & rizz rate',
+      '.shipname    - Combine two usernames',
+      '.wanted      - Create wild west wanted poster',
+      '.wasted      - Generate GTA wasted screen',
+      '.powerlevel  - Measure chakra power level',
+      '.coolrate    - Calculate coolness rating',
+      '.bonk        - Bonk horny ninja user'
+    ]);
+
+    const memeBox = createDynamicBox('SHINOBI MEME GENERATORS', [
+      '.spongebobchicken - Mocking meme text generator',
+      '.slapcar     - Slap roof of car meme',
+      '.isthisa     - Is this a pigeon meme',
+      '.drake       - Drake approve/reject meme',
+      '.distractedbf- Distracted boyfriend meme',
+      '.eject       - Among Us ejection screen',
+      '.tradeoffer  - Trade offer meme generator'
+    ]);
+
+    const emoteBox = createDynamicBox('SHINOBI ANIME EMOTES', [
+      '.blush       - Show cute blush expression',
+      '.cry         - Express deep sadness',
+      '.dance       - Dance with excitement',
+      '.pout        - Pout in dissatisfaction',
+      '.shrug       - Shrug shoulders shrug',
+      '.sleepy      - Show tired sleepy state',
+      '.smile       - Share warm happy smile',
+      '.smug        - Show confident smug grin',
+      '.thumbsup    - Give thumbs up approval',
+      '.triggered   - Show triggered reaction'
+    ]);
+
+    const actionBox = createDynamicBox('SHINOBI ANIME ACTIONS', [
+      '.cuddle      - Cuddle warmly with user',
+      '.hug         - Give warm embrace hug',
+      '.kiss        - Send sweet kiss to user',
+      '.lick        - Playfully lick user',
+      '.nom         - Playfully bite/nom user',
+      '.pat         - Headpat user gently',
+      '.poke        - Poke user cheek',
+      '.slap        - Slap user playfully',
+      '.stare       - Stare intently at user',
+      '.highfive    - Give high five to user',
+      '.bite        - Playfully bite user',
+      '.punch       - Playfully punch user',
+      '.handholding - Hold hands with user',
+      '.tickle      - Tickle user playfully',
+      '.wave        - Wave hello to user',
+      '.boop        - Boop user nose',
+      '.snuggle     - Snuggle close together'
+    ]);
+
+    const embed = new EmbedBuilder()
+      .setColor(catColor)
+      .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
+      .setTitle(`${cat.heading} Shinobi Fun & Entertainment Hub`)
+      .setDescription(
+        `# ${cat.heading} Shinobi Fun & Entertainment Hub\n` +
+        `Welcome **${username}**! Below is the categorized command suite for **Fun & Games**.\n\n` +
+        '```\n' + gamesBox + '\n```\n\n' +
+        '```\n' + ratingBox + '\n```\n\n' +
+        '```\n' + memeBox + '\n```\n\n' +
+        '```\n' + emoteBox + '\n```\n\n' +
+        '```\n' + actionBox + '\n```'
+      )
+      .setFooter(validUserAvatar ? {
+        text: `Requested by ${username} • Total ${cat.commands.length} commands`,
+        iconURL: validUserAvatar
+      } : { text: `Requested by ${username} • Total ${cat.commands.length} commands` });
+
+    if (botAvatarURL) embed.setThumbnail(botAvatarURL);
+    if (devPortalBanner) embed.setImage(devPortalBanner);
+    return embed;
+  }
+
   // Executive Dynamic Codeblock Box Layout for ALL other categories
   const displayCmds = cat.commands.map(cmd => '.' + cmd);
   let rawTitle = cat.label.includes('&') ? cat.label.split('&')[0].trim() : cat.label;
