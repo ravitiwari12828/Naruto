@@ -50,7 +50,7 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
     .sort((a, b) => a.label.localeCompare(b.label))
     .map(cat => {
       const customEmoji = cat.customEmoji || EMOJI_MAP[cat.value] || cat.unicodeFallback || '✨';
-      return `### ${customEmoji}  »  **${cat.label}**`;
+      return `## ${customEmoji} **${cat.label}**`;
     })
     .join('\n'); // Discord H3 headers (###) render medium sleek emojis & bold titles
 
