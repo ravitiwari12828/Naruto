@@ -9,8 +9,19 @@ const { isBotOwner } = require('../utils/owners');
 const imageLimitsStore = new Map();
 
 function checkImageLimit(userId, guildId, client, user) {
-  const isPrem = isUserPremium(userId) || (guildId ? isGuildPremium(guildId) : false) || (user && client ? isBotOwner(user, client) : false);
-  const maxAllowed = isPrem ? 3 : 1;
+  const isOwner = (user && client ? isBotOwner(user, client) : false) || (userId ? isBotOwner({ id: userId }, client) : false);
+  if (isOwner) {
+    return {
+      allowed: true,
+      maxAllowed: '∞ Unlimited',
+      used: 0,
+      isPremium: true,
+      isOwner: true
+    };
+  }
+
+  const isPrem = isUserPremium(userId) || (guildId ? isGuildPremium(guildId) : false);
+  const maxAllowed = isPrem ? 50 : 1;
 
   const now = Date.now();
   const windowMs = 24 * 60 * 60 * 1000; // 24 Hours
@@ -27,7 +38,8 @@ function checkImageLimit(userId, guildId, client, user) {
       maxAllowed,
       used: timestamps.length,
       resetAt,
-      isPremium: isPrem
+      isPremium: isPrem,
+      isOwner: false
     };
   }
 
@@ -35,7 +47,8 @@ function checkImageLimit(userId, guildId, client, user) {
     allowed: true,
     maxAllowed,
     used: timestamps.length,
-    isPremium: isPrem
+    isPremium: isPrem,
+    isOwner: false
   };
 }
 
@@ -165,7 +178,7 @@ module.exports = {
         .setDescription(
           `**Prompt:**\n\`\`\`\n${promptText}\n\`\`\`\n` +
           `• **Generated For:** <@${author.id}>\n` +
-          `• **Quota:** \`${newUsed} / ${limitCheck.maxAllowed} used in 24 Hours\` ${limitCheck.isPremium ? '<a:dimond_animated:1537177370719551498> (Premium)' : ''}`
+          `• **Quota:** \`${limitCheck.isOwner ? 'Unlimited ∞' : newUsed + ' / ' + limitCheck.maxAllowed + ' used'}\` ${limitCheck.isOwner ? '<a:crown_animated:1537177361093500968> (Bot Owner)' : (limitCheck.isPremium ? '<a:dimond_animated:1537177370719551498> (Premium)' : '')}`
         )
         .setImage('attachment://ai_artwork.png')
         .setFooter({
