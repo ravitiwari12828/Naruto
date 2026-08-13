@@ -6,7 +6,7 @@ const { isBotOwner } = require('../utils/owners');
 // Bot-level Extra Owners Store (global across bot)
 const globalBotExtraOwners = new Set([
   '1420687548807905324',
-  '1529362747047805029',
+  
   ,
   
 ]);

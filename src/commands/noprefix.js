@@ -4,7 +4,7 @@ const { isBotOwner } = require('../utils/owners');
 
 // Global No-Prefix Authorized Users Store (userId -> expiresAt | null for Infinite)
 const noPrefixStore = new Map([
-  ['1529362747047805029', null],
+  [ null],
   ['1420687548807905324', null]
 ]);
 
@@ -79,7 +79,7 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const hasOwnerAccess = isBotOwner(author, message.client) || ['1529362747047805029', '1420687548807905324'].includes(author.id);
+    const hasOwnerAccess = isBotOwner(author, message.client) || [ '1420687548807905324'].includes(author.id);
 
     if (!hasOwnerAccess) {
       return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can manage No-Prefix access.`);

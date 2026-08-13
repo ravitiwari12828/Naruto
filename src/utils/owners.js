@@ -6,11 +6,10 @@
  * Extra Bot Owner: 1514546738055348237 (gojo_katura)
  */
 
-const PRIMARY_BOT_OWNER_ID = '1529362747047805029'; // sy_nn
+const PRIMARY_BOT_OWNER_ID = '1420687548807905324'; // Synn
 
 const MAIN_BOT_OWNER_IDS = new Set([
-  '1529362747047805029', // Primary Bot Owner (sy_nn)
-  '1420687548807905324'  // Co-Bot Owner
+  '1420687548807905324' // Synn
 ]);
 
 const EXTRA_BOT_OWNER_IDS = new Set();
