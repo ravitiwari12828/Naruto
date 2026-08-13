@@ -79,7 +79,7 @@ function createStyledEmbed({
 
   let fullDesc = '';
   if (subtitle) {
-    fullDesc += `### ${subtitle}\n\n`;
+    fullDesc += `# ${subtitle}\n\n`;
   }
   if (description) {
     fullDesc += `${description}\n`;

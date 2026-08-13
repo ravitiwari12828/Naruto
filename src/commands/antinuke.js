@@ -285,20 +285,20 @@ function renderAntinukeDashboard(config, author, clientUser) {
 
   const description =
     `Welcome **${author.username}**! Below is your executive **<a:antinuke_animated:1537447188823805972> AntiNuke & Security Control Suite**.\n\n` +
-    `**<a:scroll_animated:1537179663791693844> Control Button Guide:**\n` +
+    `## <a:scroll_animated:1537179663791693844> Control Button Guide\n` +
     `• ${emojis.AN_SHIELD} **Shield**: Master AntiNuke Guard *(Auto-creates/deletes \`AntiNuke Bypass\` role)*\n` +
     `• ${emojis.AN_PANIC} **Panic**: Emergency Lockdown Mode (Levels 1-3)\n` +
     `• ${emojis.AN_JOINGATE} **JoinGate**: Bot Add & Account Age Join Protection\n` +
     `• ${emojis.AN_QUARANTINE} **Quarantine**: Dangerous Admin Perm Auto-Quarantine\n` +
     `• ${emojis.AN_WHITELIST} **Whitelist**: Open Granular <a:whitelist_animated:1537447233472036964> Whitelist Delegation Hub\n` +
     `• ${emojis.AN_BAN} ${emojis.AN_KICK} ${emojis.AN_BOT} ${emojis.AN_CHANNEL} ${emojis.AN_ROLE} ${emojis.AN_WEBHOOK} ${emojis.AN_SPAM} ${emojis.AN_SHIELD} ${emojis.AN_RAID} ${emojis.AN_GUILD} **Filters**: Action Interception Toggles (Ban, Kick, Bot, Channel, Role, Webhook, Spam, Everyone, Raid, Guild)\n\n` +
-    `**${emojis.AN_SHIELD} Main System Status**\n` +
+    `## ${emojis.AN_SHIELD} Main System Status\n` +
     '```\n' + boxMain + '\n```\n\n' +
-    `**${emojis.AN_JOINGATE} Join Gate Security**\n` +
+    `## ${emojis.AN_JOINGATE} Join Gate Security\n` +
     '```\n' + boxGate + '\n```\n\n' +
     `**${emojis.AN_QUARANTINE} Auto <a:quarantine_animated:1537447221350633472> Quarantine Guard**\n` +
     '```\n' + boxQuarantine + '\n```\n\n' +
-    `**<a:crown_animated:1537177361093500968> Registered Extra Owners**\n` +
+    `## <a:crown_animated:1537177361093500968> Registered Extra Owners\n` +
     `${extraOwnersList}`;
 
   return createStyledEmbed({

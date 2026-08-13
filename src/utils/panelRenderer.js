@@ -448,8 +448,8 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
     .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
     .setTitle(`${cat.heading} ${cat.label}`)
     .setDescription(
-      `Welcome **${username}**! Below is the executive suite for **${cat.label}**.\n` +
-      `Type any command below in your server to execute.\n\n` +
+      `# ${cat.heading} ${cat.label} Executive Hub\n` +
+      `Welcome **${username}**! Below is the command suite for **${cat.label}**.\n\n` +
       '```\n' + boxStr + '\n```'
     )
     .setFooter(validUserAvatar ? {
@@ -616,8 +616,8 @@ function _unusedLegacyBuildCategory(messageOrInteraction, cat, botUser, botAvata
     .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
     .setTitle(`${cat.heading}`)
     .setDescription(
-      `Welcome **${username}**! Below is the executive suite for **${cat.label}**.\n` +
-      `Type any command below in your server to execute.\n\n` +
+      `# ${cat.heading} ${cat.label} Executive Hub\n` +
+      `Welcome **${username}**! Below is the command suite for **${cat.label}**.\n\n` +
       '```\n' + boxStr + '\n```'
     )
     .setFooter(validUserAvatar ? {
