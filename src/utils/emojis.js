@@ -4,6 +4,16 @@
  */
 
 const CUSTOM = {
+
+  OBJ_ANALYTICS: '<a:chart_animated:1537179539514462308>',
+  OBJ_AUTORESPOND: '<a:code_animated:1537177358912725033>',
+  OBJ_VOICE: '<a:volumeup_animated:1537177548121968650>',
+  OBJ_INVITES: '<a:linkx_animated:1537177423324512327>',
+  OBJ_PROFILE: '<a:membercard_animated:1537177436146638993>',
+  OBJ_MESSAGES: '<a:code_animated:1537177358912725033>',
+  OBJ_RANK: '<a:rank_animated:1537179656090943538>',
+  OBJ_NINJUTSU: '<a:naruto_animated:1537179622024814733>',
+
   accept_animated: '<a:accept_animated:1537177319603703969>',
   add_animated: '<a:add_animated:1537177324435283998>',
   adduser_animated: '<a:adduser_animated:1537177327098798082>',
