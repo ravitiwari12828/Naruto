@@ -89,9 +89,11 @@ function createStyledEmbed({
     embed.setDescription(fullDesc);
   }
 
-  if (fields.length > 0) {
+  if (fields && Array.isArray(fields) && fields.length > 0) {
     fields.forEach(f => {
-      embed.addFields({ name: f.name, value: f.value, inline: f.inline || false });
+      if (f && f.name !== undefined && f.value !== undefined) {
+        embed.addFields({ name: String(f.name), value: String(f.value), inline: Boolean(f.inline) });
+      }
     });
   }
 

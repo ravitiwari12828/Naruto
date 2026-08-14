@@ -40,12 +40,12 @@ async function refreshGuildCounters(guild) {
     if (!channel) continue;
 
     let newName = null;
-    if (item.type === 'total') newName = `<a:membercard_animated:1537177436146638993> Total Members: ${totalMembers.toLocaleString()}`;
-    else if (item.type === 'users') newName = `<a:membercard_animated:1537177436146638993> Users: ${userCount.toLocaleString()}`;
-    else if (item.type === 'bots') newName = `<a:robot_animated:1537177494183088199> Bots: ${botCount.toLocaleString()}`;
-    else if (item.type === 'online') newName = `<a:accept_animated:1537177319603703969> Online: ${onlineCount.toLocaleString()}`;
-    else if (item.type === 'boosters') newName = `<a:rocket_animated:1537179661371707402> Boosters: ${boosterCount.toLocaleString()}`;
-    else if (item.type === 'goal' && item.goal) newName = `<a:target_animated:1537179692174545037> Goal: ${totalMembers}/${item.goal}`;
+    if (item.type === 'total') newName = `👥 Total Members: ${totalMembers.toLocaleString()}`;
+    else if (item.type === 'users') newName = `👤 Users: ${userCount.toLocaleString()}`;
+    else if (item.type === 'bots') newName = `🤖 Bots: ${botCount.toLocaleString()}`;
+    else if (item.type === 'online') newName = `🟢 Online: ${onlineCount.toLocaleString()}`;
+    else if (item.type === 'boosters') newName = `🚀 Boosters: ${boosterCount.toLocaleString()}`;
+    else if (item.type === 'goal' && item.goal) newName = `🎯 Goal: ${totalMembers}/${item.goal}`;
 
     if (newName && channel.name !== newName) {
       await channel.setName(newName).catch(() => null);
@@ -80,7 +80,7 @@ module.exports = {
       try {
         // Create Category
         const category = await guild.channels.create({
-          name: '<a:chart_animated:1537179539514462308> SERVER STATS',
+          name: '📊 SERVER STATS',
           type: ChannelType.GuildCategory,
           permissionOverwrites: [
             {
@@ -92,26 +92,26 @@ module.exports = {
 
         // Create Counter Voice Channels
         const cTotal = await guild.channels.create({
-          name: `<a:membercard_animated:1537177436146638993> Total Members: ${totalMembers.toLocaleString()}`,
+          name: `👥 Total Members: ${totalMembers.toLocaleString()}`,
           type: ChannelType.GuildVoice,
           parent: category.id
         });
 
         const cUsers = await guild.channels.create({
-          name: `<a:membercard_animated:1537177436146638993> Users: ${userCount.toLocaleString()}`,
+          name: `👤 Users: ${userCount.toLocaleString()}`,
           type: ChannelType.GuildVoice,
           parent: category.id
         });
 
         const cBots = await guild.channels.create({
-          name: `<a:robot_animated:1537177494183088199> Bots: ${botCount.toLocaleString()}`,
+          name: `🤖 Bots: ${botCount.toLocaleString()}`,
           type: ChannelType.GuildVoice,
           parent: category.id
         });
 
         const nextGoal = Math.ceil((totalMembers + 1) / 100) * 100 || 500;
         const cGoal = await guild.channels.create({
-          name: `<a:target_animated:1537179692174545037> Goal: ${totalMembers}/${nextGoal}`,
+          name: `🎯 Goal: ${totalMembers}/${nextGoal}`,
           type: ChannelType.GuildVoice,
           parent: category.id
         });
@@ -127,7 +127,7 @@ module.exports = {
         });
 
         const box = createDynamicBox('COUNTER SETUP COMPLETE', [
-          { key: 'Category', value: '<a:chart_animated:1537179539514462308> SERVER STATS' },
+          { key: 'Category', value: '📊 SERVER STATS' },
           { key: 'Counters', value: 'Total, Users, Bots, Goal' },
           { key: 'Status  ', value: 'ACTIVE (Auto-Updates)' }
         ]);
@@ -149,9 +149,18 @@ module.exports = {
     // 2. .counter list / .counter panel / .counter config
     if (!sub || sub === 'list' || sub === 'panel' || sub === 'config') {
       const cfg = getCounters(guildId);
+      const typeEmojis = {
+        total: '<a:membercard_animated:1537177436146638993>',
+        users: '<a:membercard_animated:1537177436146638993>',
+        bots: '<a:robot_animated:1537177494183088199>',
+        online: '<a:accept_animated:1537177319603703969>',
+        boosters: '<a:rocket_animated:1537179661371707402>',
+        goal: '<a:target_animated:1537179692174545037>'
+      };
       const list = (cfg.counters || []).map(c => {
         const chan = guild.channels.cache.get(c.channelId);
-        return `• **${c.type.toUpperCase()}**: ${chan ? `<#${chan.id}> (\`${chan.name}\`)` : 'Channel deleted'}`;
+        const emoji = typeEmojis[c.type] || '📊';
+        return `• **${c.type.toUpperCase()}:** ${emoji} ${chan ? `<#${chan.id}>` : '`Deleted`'}`;
       }).join('\n') || 'No counter channels setup yet.';
 
       const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
@@ -203,17 +212,17 @@ module.exports = {
             const userCount = Math.max(0, totalMembers - botCount);
 
             const category = await guild.channels.create({
-              name: '<a:chart_animated:1537179539514462308> SERVER STATS',
+              name: '📊 SERVER STATS',
               type: ChannelType.GuildCategory,
               permissionOverwrites: [{ id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.Connect] }]
             });
 
-            const cTotal = await guild.channels.create({ name: `<a:membercard_animated:1537177436146638993> Total Members: ${totalMembers.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
-            const cUsers = await guild.channels.create({ name: `<a:membercard_animated:1537177436146638993> Users: ${userCount.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
-            const cBots = await guild.channels.create({ name: `<a:robot_animated:1537177494183088199> Bots: ${botCount.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
+            const cTotal = await guild.channels.create({ name: `👥 Total Members: ${totalMembers.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
+            const cUsers = await guild.channels.create({ name: `👤 Users: ${userCount.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
+            const cBots = await guild.channels.create({ name: `🤖 Bots: ${botCount.toLocaleString()}`, type: ChannelType.GuildVoice, parent: category.id });
 
             const nextGoal = Math.ceil((totalMembers + 1) / 100) * 100 || 500;
-            const cGoal = await guild.channels.create({ name: `<a:target_animated:1537179692174545037> Goal: ${totalMembers}/${nextGoal}`, type: ChannelType.GuildVoice, parent: category.id });
+            const cGoal = await guild.channels.create({ name: `🎯 Goal: ${totalMembers}/${nextGoal}`, type: ChannelType.GuildVoice, parent: category.id });
 
             updateCountersConfig(guildId, cfg => {
               cfg.categoryId = category.id;
@@ -248,7 +257,7 @@ module.exports = {
       const totalMembers = guild.memberCount || 0;
       try {
         const cGoal = await guild.channels.create({
-          name: `<a:target_animated:1537179692174545037> Goal: ${totalMembers}/${targetNum}`,
+          name: `🎯 Goal: ${totalMembers}/${targetNum}`,
           type: ChannelType.GuildVoice
         });
 
