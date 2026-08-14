@@ -130,6 +130,24 @@ class ResilientDatabase {
                   this.data.users[uid].invites = Math.max(this.data.users[uid].invites || 0, cloudVal[uid].invites || 0);
                 }
               }
+            } else if (key === 'guildLevels' && typeof cloudVal === 'object') {
+              if (!this.data.guildLevels) this.data.guildLevels = {};
+              for (const gId of Object.keys(cloudVal)) {
+                if (!this.data.guildLevels[gId]) this.data.guildLevels[gId] = {};
+                for (const uid of Object.keys(cloudVal[gId])) {
+                  if (!this.data.guildLevels[gId][uid]) {
+                    this.data.guildLevels[gId][uid] = cloudVal[gId][uid];
+                  } else {
+                    const local = this.data.guildLevels[gId][uid];
+                    const cloud = cloudVal[gId][uid];
+                    local.messages = Math.max(local.messages || 0, cloud.messages || 0);
+                    local.xp = Math.max(local.xp || 0, cloud.xp || 0);
+                    local.level = Math.max(local.level || 1, cloud.level || 1);
+                    local.voiceSeconds = Math.max(local.voiceSeconds || 0, cloud.voiceSeconds || 0);
+                    local.invites = Math.max(local.invites || 0, cloud.invites || 0);
+                  }
+                }
+              }
             } else if (Array.isArray(cloudVal) ? cloudVal.length > 0 : Object.keys(cloudVal).length > 0) {
               this.data[key] = cloudVal;
             }
@@ -746,6 +764,34 @@ class ResilientDatabase {
       if (e.eventType === 'ticket_created') stats.ticketsCreated += e.value;
       if (e.eventType === 'ticket_closed') stats.ticketsClosed += e.value;
     });
+
+    // Fallback: For lifetime query or if time-windowed events count is lower than stored user database totals,
+    // merge cumulative database totals so numbers never reset!
+    if (!windowMs || stats.messages === 0) {
+      let cumulativeMsgs = 0;
+      let cumulativeVoice = 0;
+      let cumulativeInvs = 0;
+
+      if (guildId && this.data.guildLevels && this.data.guildLevels[guildId]) {
+        Object.values(this.data.guildLevels[guildId]).forEach(u => {
+          cumulativeMsgs += (u.messages || 0);
+          cumulativeVoice += (u.voiceSeconds || 0);
+          cumulativeInvs += (u.invites || 0);
+        });
+      }
+
+      if (cumulativeMsgs === 0 && this.data.users) {
+        Object.values(this.data.users).forEach(u => {
+          cumulativeMsgs += (u.messages || 0);
+          cumulativeVoice += (u.voiceSeconds || 0);
+          cumulativeInvs += (u.invites || 0);
+        });
+      }
+
+      stats.messages = Math.max(stats.messages, cumulativeMsgs);
+      stats.voiceSeconds = Math.max(stats.voiceSeconds, cumulativeVoice);
+      stats.invites = Math.max(stats.invites, cumulativeInvs);
+    }
 
     return stats;
   }

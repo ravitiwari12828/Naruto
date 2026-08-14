@@ -1580,19 +1580,21 @@ client.on('messageCreate', async (message) => {
 
   // GUILD MESSAGES & LEVELING ENGINE
   const guildId = message.guild.id;
-  const levelCfg = db.getLevelConfig(guildId);
+  const memberRoleIds = message.member ? message.member.roles.cache.map(r => r.id) : [];
 
+  // ALWAYS track message count & analytics for ALL non-bot messages
+  const userBefore = db.getUser(message.author.id, guildId);
+  const oldLvl = userBefore.level;
+
+  db.addMessage(message.author.id, 1, guildId, memberRoleIds, message.channel.id);
+  db.recordAnalyticsEvent(guildId, message.author.id, 'message', 1);
+
+  const levelCfg = db.getLevelConfig(guildId);
   if (levelCfg.enabled !== false) {
     const isIgnoredChan = levelCfg.ignoredChannels && levelCfg.ignoredChannels.includes(message.channel.id);
-    const memberRoleIds = message.member ? message.member.roles.cache.map(r => r.id) : [];
     const isIgnoredRole = levelCfg.ignoredRoles && memberRoleIds.some(rId => levelCfg.ignoredRoles.includes(rId));
 
     if (!isIgnoredChan && !isIgnoredRole) {
-      const userBefore = db.getUser(message.author.id, guildId);
-      const oldLvl = userBefore.level;
-
-      db.addMessage(message.author.id, 1, guildId, memberRoleIds);
-      db.recordAnalyticsEvent(guildId, message.author.id, 'message', 1);
 
       const userAfter = db.getUser(message.author.id, guildId);
       if (userAfter.level > oldLvl) {
