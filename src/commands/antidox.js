@@ -61,24 +61,30 @@ async function checkMessageForDox(message) {
   let violationRule = null;
   let detectedType = '';
 
-  // 1. IP Address Leak Check
+  // 1. IP Address Leak Check (Direct + Obfuscated [dot]/spaces/commas)
   if (config.antiIp && !violationRule) {
-    const ipMatches = content.match(IPV4_REGEX);
+    const normalizedIpContent = content.replace(/\[dot\]|\(dot\)|dot|,/gi, '.').replace(/\s+/g, '');
+    const ipMatches = normalizedIpContent.match(IPV4_REGEX) || content.match(IPV4_REGEX);
     if (ipMatches) {
       const realIp = ipMatches.find(ip => !EXCLUDED_IPS.includes(ip) && !ip.startsWith('192.168.') && !ip.startsWith('10.'));
       if (realIp) {
         violationRule = 'IP Address Leak Guard';
-        detectedType = 'IPv4 Address';
+        detectedType = 'IPv4 Address (Direct/Obfuscated)';
       }
     }
   }
 
-  // 2. Phone Number Leak Check
+  // 2. Phone Number & Obfuscated Multiline Digit Leak Check
   if (config.antiPhone && !violationRule) {
-    const phoneMatches = content.match(PHONE_REGEX);
-    if (phoneMatches && phoneMatches.length > 0) {
+    const directPhoneMatches = content.match(PHONE_REGEX);
+
+    // Strip all non-digit characters to catch numbers split across lines, spaces, hyphens, or symbols
+    const digitsOnly = content.replace(/\D/g, '');
+    const obfuscatedPhoneMatch = /(?:91|0)?[6-9]\d{9}/.test(digitsOnly);
+
+    if ((directPhoneMatches && directPhoneMatches.length > 0) || obfuscatedPhoneMatch) {
       violationRule = 'Phone Number Leak Guard';
-      detectedType = 'Mobile Phone Number';
+      detectedType = 'Mobile Phone Number (Split/Obfuscated)';
     }
   }
 
