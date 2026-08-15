@@ -41,6 +41,9 @@ const LEAK_LINK_REGEX = /(doxbin\.(org|cc|me|com)|ghostbin\.(co|me)|rentry\.(co|
 // Safe IP Exclusions (localhost, zero, DNS, common local IPs)
 const EXCLUDED_IPS = ['127.0.0.1', '0.0.0.0', '1.1.1.1', '8.8.8.8', '8.8.4.4', '255.255.255.255'];
 
+// Sliding Window Cross-Message Cache (User Key -> Array of { msgId, content, timestamp })
+const userRecentMsgCache = new Map();
+
 async function checkMessageForDox(message) {
   if (!message || !message.guild || message.author.bot) return false;
 
@@ -56,41 +59,52 @@ async function checkMessageForDox(message) {
   }
 
   const content = message.content || '';
-  if (!content) return false;
+
+  // Cross-Message Sliding Window History (90 seconds window)
+  const userKey = `${message.guild.id}:${message.channel.id}:${message.author.id}`;
+  const now = Date.now();
+  let userHistory = userRecentMsgCache.get(userKey) || [];
+  userHistory = userHistory.filter(m => (now - m.timestamp) < 90000);
+  if (content) {
+    userHistory.push({ msgId: message.id, content: content, timestamp: now });
+  }
+  userRecentMsgCache.set(userKey, userHistory);
+
+  const combinedText = userHistory.map(m => m.content).join(' ');
 
   let violationRule = null;
   let detectedType = '';
 
-  // 1. IP Address Leak Check (Direct + Obfuscated [dot]/spaces/commas)
+  // 1. IP Address Leak Check (Direct + Obfuscated + Cross-Message)
   if (config.antiIp && !violationRule) {
-    const normalizedIpContent = content.replace(/\[dot\]|\(dot\)|dot|,/gi, '.').replace(/\s+/g, '');
+    const normalizedIpContent = combinedText.replace(/\[dot\]|\(dot\)|\bdot\b|,/gi, '.').replace(/\s+/g, '');
     const ipMatches = normalizedIpContent.match(IPV4_REGEX) || content.match(IPV4_REGEX);
     if (ipMatches) {
       const realIp = ipMatches.find(ip => !EXCLUDED_IPS.includes(ip) && !ip.startsWith('192.168.') && !ip.startsWith('10.'));
       if (realIp) {
         violationRule = 'IP Address Leak Guard';
-        detectedType = 'IPv4 Address (Direct/Obfuscated)';
+        detectedType = 'IPv4 Address (Cross-Message/Obfuscated)';
       }
     }
   }
 
-  // 2. Phone Number & Obfuscated Multiline Digit Leak Check
+  // 2. Phone Number Leak Check (Direct + Obfuscated + Cross-Message Multi-Send)
   if (config.antiPhone && !violationRule) {
     const directPhoneMatches = content.match(PHONE_REGEX);
 
-    // Strip all non-digit characters to catch numbers split across lines, spaces, hyphens, or symbols
-    const digitsOnly = content.replace(/\D/g, '');
-    const obfuscatedPhoneMatch = /(?:91|0)?[6-9]\d{9}/.test(digitsOnly);
+    // Strip all non-digits from combined recent messages sent by this user in this channel
+    const combinedDigits = combinedText.replace(/\D/g, '');
+    const obfuscatedPhoneMatch = /(?:91|0)?[6-9]\d{9}/.test(combinedDigits);
 
     if ((directPhoneMatches && directPhoneMatches.length > 0) || obfuscatedPhoneMatch) {
       violationRule = 'Phone Number Leak Guard';
-      detectedType = 'Mobile Phone Number (Split/Obfuscated)';
+      detectedType = 'Mobile Phone Number (Cross-Message Split Leak)';
     }
   }
 
   // 3. Doxbin & Leak Link Blocker
   if (config.antiLinks && !violationRule) {
-    const linkMatches = content.match(LEAK_LINK_REGEX);
+    const linkMatches = combinedText.match(LEAK_LINK_REGEX);
     if (linkMatches && linkMatches.length > 0) {
       violationRule = 'Doxbin & IP Logger Link Guard';
       detectedType = 'Doxbin / IP Logger URL';
@@ -98,8 +112,17 @@ async function checkMessageForDox(message) {
   }
 
   if (violationRule) {
-    // 1. Instant Message Deletion
-    await message.delete().catch(() => {});
+    // 1. Instant Multi-Message Deletion (Deletes ALL messages that contributed to the split leak!)
+    for (const item of userHistory) {
+      if (item.msgId === message.id) {
+        await message.delete().catch(() => {});
+      } else {
+        const cachedMsg = message.channel.messages?.cache?.get(item.msgId);
+        if (cachedMsg) await cachedMsg.delete().catch(() => {});
+        else await message.channel.messages?.delete(item.msgId).catch(() => {});
+      }
+    }
+    userRecentMsgCache.delete(userKey);
 
     // 2. Auto-Timeout Violator (default 10 mins)
     const timeoutMs = (config.timeoutMinutes || 10) * 60 * 1000;
