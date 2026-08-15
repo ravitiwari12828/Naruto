@@ -1309,6 +1309,14 @@ client.on('messageCreate', async (message) => {
   }
 
   if (message.author.bot) return;
+
+  // <a:security_animated:1537177499862171741> ANTI-DOX & PRIVACY LEAK PROTECTION INTERCEPTION
+  const antidoxCmd = client.commands.get('antidox');
+  if (antidoxCmd && antidoxCmd.checkMessageForDox) {
+    const isDoxBlocked = await antidoxCmd.checkMessageForDox(message);
+    if (isDoxBlocked) return;
+  }
+
   const contentLower = message.content ? message.content.toLowerCase().trim() : '';
 
   // <a:rapid_animated:1537177482006896692> AUTOMATIC SPAM, LINK & BAD WORD AUTOMOD ENFORCEMENT

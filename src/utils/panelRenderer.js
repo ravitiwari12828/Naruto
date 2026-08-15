@@ -10,6 +10,7 @@ const { createDynamicBox } = require('./boxBuilder');
 
 // Distinct Vibrant Color Palette per Module Panel
 const CATEGORY_COLORS = {
+  antidox: 0xFF2D55,
   analytics: 0x00F0FF,     // Neon Cyan / Electric Blue
   modmail: 0x57F287,       // Emerald Mint Green
   ticket: 0xFF0055,        // Vibrant Magenta / Crimson Pink
@@ -38,6 +39,20 @@ const CATEGORY_COLORS = {
 
 // Shared Categories definition matching help.js exactly
 const CATEGORIES = [
+  {
+    label: 'Anti-Dox Security',
+    value: 'antidox',
+    description: 'Anti-Dox & Leak Guard: IP address, phone number, doxxing paste links & PII protection',
+    customEmoji: '<a:security_animated:1537177499862171741>',
+    emojiId: '1537177499862171741',
+    unicodeFallback: '<a:security_animated:1537177499862171741>',
+    heading: '<a:security_animated:1537177499862171741>',
+    commands: [
+      'antidox', 'antidox enable', 'antidox disable',
+      'antidox status', 'antidox ip <on|off>',
+      'antidox phone <on|off>', 'antidox links <on|off>'
+    ]
+  },
   {
     label: 'Analytics & Tracking',
     value: 'analytics',

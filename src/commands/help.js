@@ -9,6 +9,7 @@ const {
 } = require('../utils/panelRenderer');
 
 const EMOJI_MAP = {
+  antidox: '<a:security_animated:1537177499862171741>',
   analytics: '<a:chart_animated:1537179539514462308>',
   antinuke: '<a:antinuke_animated:1537447188823805972>',
   autorole: '<a:settings_animated:1537177506170404905>',
@@ -49,8 +50,8 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
   const moduleLines = CATEGORIES.slice()
     .sort((a, b) => a.label.localeCompare(b.label))
     .map(cat => {
-      const customEmoji = cat.customEmoji || EMOJI_MAP[cat.value] || cat.unicodeFallback || '<a:sparkles_animated:1537179684175872171>';
-      return `## ${customEmoji} **${cat.label}**`;
+      const customEmoji = cat.customEmoji || EMOJI_MAP[cat.value] || cat.unicodeFallback || '🔹';
+      return `• ${customEmoji} **${cat.label}**`;
     })
     .join('\n'); // Discord H3 headers (###) render medium sleek emojis & bold titles
 
@@ -69,9 +70,9 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
     .setDescription(
       `A feature-packed All-In-One Discord bot built with a **Naruto Shinobi** theme!\n\n` +
       '```\n' + metricsBox + '\n```\n\n' +
-      `## <a:flantic_dance_animated:1537179577518919811> All Modules\n` +
+      `### All Active Server Modules\n` +
       `${moduleLines}\n\n` +
-      `### <a:linkx_animated:1537177423324512327> **Quick Links**\n` +
+      `**Quick Links**\n` +
 
       `[Invite Bot](https://discord.com/api/oauth2/authorize?client_id=${clientObj.user.id}&permissions=8&scope=bot%20applications.commands) • [Support Server](https://discord.gg/ZPKcPreUMT) • [Vote Top.gg](https://top.gg/bot/${clientObj.user.id})`
     )
