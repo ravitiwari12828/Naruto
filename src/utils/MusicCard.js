@@ -323,6 +323,10 @@ class MusicCard {
    * @param {string} opts.requester - User requester tag
    * @returns {Promise<Buffer>} PNG image buffer
    */
+  /**
+   * Main entry: creates a full 800x360 sleek music card PNG buffer
+   * Left Thumbnail + Right Song Details with spacious volume padding
+   */
   async createMusicCard(opts = {}) {
     const {
       title = 'Unknown Title',
@@ -336,9 +340,13 @@ class MusicCard {
     } = opts;
 
     const width = 800;
-    const height = 540;
-    const cx = width / 2;
-    const thumbSize = 300;
+    const height = 360;
+    const thumbSize = 220;
+    const artX = 42;
+    const artY = 96; // 28px spacious gap below separator line at y = 68 (NO overlap with volume!)
+
+    const infoX = artX + thumbSize + 32; // x = 294
+    const rightW = width - infoX - 42;  // width = 464
 
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
@@ -359,11 +367,11 @@ class MusicCard {
     ctx.stroke();
 
     // Top Gloss Reflection
-    const refGrad = ctx.createLinearGradient(0, 0, width, 100);
+    const refGrad = ctx.createLinearGradient(0, 0, width, 90);
     refGrad.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
     refGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
     ctx.fillStyle = refGrad;
-    ctx.fillRect(4, 4, width - 8, 90);
+    ctx.fillRect(4, 4, width - 8, 80);
     ctx.restore();
 
     // --- 1. Top Metadata Header Row ---
@@ -371,40 +379,37 @@ class MusicCard {
     ctx.font = '15px "Inter Medium", sans-serif';
     ctx.fillStyle = '#a0b0c0';
     ctx.textAlign = 'left';
-    ctx.fillText('👤 Author:', 48, 32);
-    ctx.fillText('🔊 Volume:', cx - 40, 32);
-    ctx.fillText('🌐 Duration:', width - 160, 32);
+    ctx.fillText('👤 Author:', 48, 30);
+    ctx.fillText('🔊 Volume:', width / 2 - 40, 30);
+    ctx.fillText('🌐 Duration:', width - 160, 30);
 
-    ctx.font = 'bold 18px "Inter Bold", sans-serif';
+    ctx.font = 'bold 17px "Inter Bold", sans-serif';
     ctx.fillStyle = '#ffffff';
-    const reqText = this.truncateText(ctx, requester, 180, 'bold 18px "Inter Bold"');
-    ctx.fillText(reqText, 48, 56);
+    const reqText = this.truncateText(ctx, requester, 180, 'bold 17px "Inter Bold"');
+    ctx.fillText(reqText, 48, 54);
 
     ctx.fillStyle = '#1ee064';
-    ctx.fillText('100%', cx - 40, 56);
+    ctx.fillText('100%', width / 2 - 40, 54);
 
     ctx.fillStyle = '#00dcff';
     const totalTimeStr = isLive ? 'LIVE' : this.formatDuration(duration);
-    ctx.fillText(totalTimeStr, width - 160, 56);
+    ctx.fillText(totalTimeStr, width - 160, 54);
 
     // Separator line
     ctx.strokeStyle = 'rgba(255, 120, 0, 0.4)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(32, 72);
-    ctx.lineTo(width - 32, 72);
+    ctx.moveTo(32, 68);
+    ctx.lineTo(width - 32, 68);
     ctx.stroke();
     ctx.restore();
 
-    // --- 2. Large Hero Centered Album Artwork Slot (300x300px) ---
-    const artX = cx - thumbSize / 2;
-    const artY = 84;
-
+    // --- 2. Left Side Album Artwork Box (220x220px) ---
     ctx.save();
     ctx.strokeStyle = '#FF7800';
     ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.roundRect(artX - 5, artY - 5, thumbSize + 10, thumbSize + 10, 24);
+    ctx.roundRect(artX - 5, artY - 5, thumbSize + 10, thumbSize + 10, 22);
     ctx.stroke();
 
     await this.drawArtwork(ctx, artworkUrl, artX, artY, thumbSize);
@@ -416,59 +421,59 @@ class MusicCard {
     ctx.stroke();
     ctx.restore();
 
-    // --- 3. Song Title & Artist (Centered below Artwork with proper margin) ---
-    const titleY = artY + thumbSize + 26; // y = 410
+    // --- 3. Right Side Song Title & Artist Description ---
     ctx.save();
-    const displayTitle = this.truncateText(ctx, `${title} — ${artist}`, width - 80, 'bold 22px "Inter Bold"');
+    const displayTitle = this.truncateText(ctx, title, rightW, 'bold 22px "Inter Bold"');
     ctx.font = 'bold 22px "Inter Bold", sans-serif';
     ctx.fillStyle = '#ffffff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(displayTitle, cx, titleY);
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText(displayTitle, infoX, artY + 8);
+
+    const displayArtist = this.truncateText(ctx, artist, rightW, '16px "Inter Medium"');
+    ctx.font = '16px "Inter Medium", sans-serif';
+    ctx.fillStyle = '#a0b0c0';
+    ctx.fillText(displayArtist, infoX, artY + 42);
     ctx.restore();
 
-    // --- 4. Dynamic Equalizer Frequency Bars ---
-    const eqY = titleY + 32; // y = 442
+    // --- 4. Right Side Dynamic Equalizer Frequency Bars ---
+    const eqY = artY + 110; // y = 206
     ctx.save();
     ctx.fillStyle = '#00dcff';
-    for (let b = 0; b < 24; b++) {
-      const bx = cx - 168 + b * 14;
-      const bh = Math.max(4, Math.floor(12 + 10 * Math.sin((position / 1000) * 2 + b * 0.5)));
+    for (let b = 0; b < 22; b++) {
+      const bx = infoX + b * 13;
+      const bh = Math.max(4, Math.floor(10 + 9 * Math.sin((position / 1000) * 2 + b * 0.5)));
       ctx.beginPath();
-      ctx.roundRect(bx, eqY - bh, 6, bh, 2);
+      ctx.roundRect(bx, eqY - bh, 5, bh, 2);
       ctx.fill();
     }
     ctx.restore();
 
-    // --- 5. Progress Timeline & Scrubber Bar ---
-    const barX1 = 80;
-    const barY = eqY + 22; // y = 464
-    const barW = width - 160;
-    const barX2 = barX1 + barW;
-
+    // --- 5. Right Side Progress Timeline & Scrubber Bar ---
+    const barY = eqY + 24; // y = 230
     const progress = isLive ? 1 : (duration > 0 ? Math.min(position / duration, 1) : 0);
-    const fillW = Math.floor(barW * progress);
+    const fillW = Math.floor(rightW * progress);
 
     ctx.save();
     ctx.beginPath();
-    ctx.roundRect(barX1, barY, barW, 8, 4);
+    ctx.roundRect(infoX, barY, rightW, 8, 4);
     ctx.fillStyle = 'rgba(40, 50, 70, 0.8)';
     ctx.fill();
 
     if (fillW > 0) {
       ctx.beginPath();
-      ctx.roundRect(barX1, barY, fillW, 8, 4);
+      ctx.roundRect(infoX, barY, fillW, 8, 4);
       ctx.fillStyle = '#00dcff';
       ctx.fill();
     }
 
     // Scrubber Knob
-    const knobX = barX1 + fillW;
+    const knobX = infoX + fillW;
     ctx.shadowColor = 'rgba(0, 220, 255, 0.8)';
     ctx.shadowBlur = 10;
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(knobX, barY + 4, 8, 0, Math.PI * 2);
+    ctx.arc(knobX, barY + 4, 7, 0, Math.PI * 2);
     ctx.fill();
     ctx.restore();
 
@@ -478,11 +483,11 @@ class MusicCard {
     ctx.font = '14px "Inter Medium", sans-serif';
     ctx.fillStyle = '#00dcff';
     ctx.textAlign = 'left';
-    ctx.fillText(currentTimeStr, barX1, barY + 28);
+    ctx.fillText(currentTimeStr, infoX, barY + 28);
 
     ctx.fillStyle = '#a0b0c0';
     ctx.textAlign = 'right';
-    ctx.fillText(totalTimeStr, barX2, barY + 28);
+    ctx.fillText(totalTimeStr, infoX + rightW, barY + 28);
     ctx.restore();
 
     return canvas.toBuffer('image/png');
