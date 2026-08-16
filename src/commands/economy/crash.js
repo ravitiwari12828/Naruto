@@ -3,20 +3,21 @@ const db = require('../../database/db');
 const config = require('../../config');
 const emojis = require('../../utils/emojis');
 const { fmt } = require('../../utils/economyCore');
+const { renderCrashCard } = require('../../utils/casinoCard');
 
 module.exports = {
   name: 'crash',
-  description: 'Watch the multiplier rise and cash out before it crashes!',
+  description: 'Naruto Stake Rocket — Cash out before the rocket explodes!',
   usage: '.crash <bet>',
   cooldown: 5000,
   async execute(message, args) {
     const bet = parseInt(args[0], 10);
     const eco = db.economy(message.guild.id, message.author.id);
     if (!bet || bet <= 0) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Provide a valid bet, e.g. \`.crash 100\`.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Provide a valid bet amount, e.g. \`.crash 100\`.`)] });
     }
     if (bet > eco.balance) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Insufficient wallet balance. Wallet: **${fmt(eco.balance)}** ${emojis.coin}.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Insufficient wallet balance. Current Wallet: **${fmt(eco.balance)}** <a:dollar_animated:1537177379666006016>.`)] });
     }
 
     eco.balance -= bet;
@@ -28,21 +29,50 @@ module.exports = {
     let finalMultiplier = 1.00;
 
     const row = new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('crash_cashout').setLabel('CASHOUT').setEmoji('<a:money_animated:1537177442672709707>').setStyle(ButtonStyle.Success)
+      new ButtonBuilder()
+        .setCustomId('crash_cashout')
+        .setLabel('CASHOUT ROCKET')
+        .setEmoji('<a:dollar_animated:1537177379666006016>')
+        .setStyle(ButtonStyle.Success)
     );
 
-    const getEmbed = (multiplier, status = 'Rising...') => new EmbedBuilder()
-      .setColor(status.includes('CRASHED') ? config.errorColor : status.includes('CASHED') ? config.successColor : config.embedColor)
-      .setAuthor({ name: `${message.author.username}'s Crash Rocket`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-      .setTitle(`<a:rocket_animated:1537179661371707402> Crash Game`)
-      .setDescription(`\`\`\`\n  <a:rocket_animated:1537179661371707402> Rocket Status: ${status}\n  Current Multipliers: ${multiplier.toFixed(2)}x\n  Potential Payout: ${fmt(Math.floor(bet * multiplier))} coins\n\`\`\``)
-      .setFooter({ text: `Bet: ${fmt(bet)} ${emojis.coin}` });
+    const buildPayload = async (multiplier, status = 'Rising...', isCrash = false, isWin = false) => {
+      const statusIcon = isCrash ? '<a:kaboom_animated:1537179599228637226>' : isWin ? '<a:accept_animated:1537177319603703969>' : '<a:rocket_animated:1537179661371707402>';
+      const color = isCrash ? 0xED4245 : isWin ? 0x57F287 : 0x00F0FF;
 
-    const sent = await message.channel.send({ embeds: [getEmbed(currentMultiplier)], components: [row] });
+      const cardAttachment = await renderCrashCard({
+        multiplier,
+        status,
+        bet,
+        payout: Math.floor(bet * multiplier),
+        isCrash,
+        isWin,
+        username: message.author.username
+      });
+
+      const embed = new EmbedBuilder()
+        .setColor(color)
+        .setAuthor({ name: `${message.author.username}'s Shinobi Rocket`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+        .setTitle(`${statusIcon} Naruto Stake.cc Crash Game`)
+        .setDescription(
+          `**Status:** ${statusIcon} **${status}**\n` +
+          `• **Current Multiplier:** **${multiplier.toFixed(2)}x**\n` +
+          `• **Bet Amount:** **${fmt(bet)}** <a:dollar_animated:1537177379666006016>\n` +
+          `• **Potential Payout:** **${fmt(Math.floor(bet * multiplier))}** <a:dollar_animated:1537177379666006016>`
+        )
+        .setImage('attachment://stake-crash.png')
+        .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Naruto Shinobi Casino Cards` })
+        .setTimestamp();
+
+      return { embeds: [embed], files: [cardAttachment] };
+    };
+
+    const initialPayload = await buildPayload(currentMultiplier);
+    const sent = await message.channel.send({ ...initialPayload, components: [row] });
     const collector = sent.createMessageComponentCollector({ time: 30000 });
 
     collector.on('collect', async (i) => {
-      if (i.user.id !== message.author.id) return i.reply({ content: `${emojis.error} Not your game.`, ephemeral: true });
+      if (i.user.id !== message.author.id) return i.reply({ content: `<a:wrong_animated:1537179702928875631> Not your game.`, flags: 64 });
       if (i.customId === 'crash_cashout') {
         cashedOut = true;
         finalMultiplier = currentMultiplier;
@@ -50,10 +80,11 @@ module.exports = {
         eco.balance += payout;
         db.setEconomy(message.guild.id, message.author.id, eco);
 
+        const winPayload = await buildPayload(finalMultiplier, `CASHED OUT at ${finalMultiplier.toFixed(2)}x (Won +${fmt(payout)} Ryo!)`, false, true);
         await i.update({
-          embeds: [getEmbed(finalMultiplier, `CASHED OUT at ${finalMultiplier.toFixed(2)}x (Won +${fmt(payout)} coins!)`)],
+          ...winPayload,
           components: []
-        });
+        }).catch(() => {});
         collector.stop();
       }
     });
@@ -70,13 +101,15 @@ module.exports = {
         clearInterval(interval);
         collector.stop();
         if (!cashedOut) {
+          const crashPayload = await buildPayload(crashAt, `CRASHED AT ${crashAt.toFixed(2)}x (Lost -${fmt(bet)} Ryo)`, true, false);
           await sent.edit({
-            embeds: [getEmbed(crashAt, `<a:kaboom_animated:1537179599228637226> CRASHED AT ${crashAt.toFixed(2)}x (Lost -${fmt(bet)} coins)`)],
+            ...crashPayload,
             components: []
           }).catch(() => {});
         }
       } else {
-        await sent.edit({ embeds: [getEmbed(currentMultiplier)] }).catch(() => {});
+        const updatePayload = await buildPayload(currentMultiplier);
+        await sent.edit(updatePayload).catch(() => {});
       }
     }, 1500);
   },
