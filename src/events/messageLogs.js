@@ -124,7 +124,7 @@ module.exports = (client) => {
         .setFooter({ text: `${guild.name} • Audit Logging` })
         .setTimestamp();
 
-      dispatchLog(guild, 'messages', { embeds: [bulkEmbed], files: [fileAttachment] });
+      dispatchLog(guild, 'messages', bulkEmbed, [fileAttachment]);
     } catch (err) {
       console.error('[Message Bulk Delete Log Error]:', err.message);
     }

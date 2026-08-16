@@ -14,7 +14,7 @@ function getOrCreateAdvLogStore(guildId) {
   return advLogStore.get(guildId);
 }
 
-async function dispatchLog(guild, logType, embedData) {
+async function dispatchLog(guild, logType, embedData, attachments = []) {
   if (!guild) return;
 
   const store = getOrCreateAdvLogStore(guild.id);
@@ -85,10 +85,15 @@ async function dispatchLog(guild, logType, embedData) {
       }
     }
 
-    await targetChannel.send({
+    const payload = {
       embeds: [embed],
       allowedMentions: { parse: [], users: [], roles: [] }
-    }).catch(() => {});
+    };
+    if (Array.isArray(attachments) && attachments.length > 0) {
+      payload.files = attachments;
+    }
+
+    await targetChannel.send(payload).catch(err => console.error(`[DispatchLog Send Fail]:`, err.message));
   } catch (e) {
     console.error(`Error sending log [${logType}]:`, e.message);
   }
