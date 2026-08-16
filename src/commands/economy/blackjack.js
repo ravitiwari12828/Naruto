@@ -109,7 +109,7 @@ module.exports = {
         new ButtonBuilder().setCustomId('bj_stand').setLabel('STAND').setEmoji('🛑').setStyle(ButtonStyle.Success),
       );
       if (canDouble && eco.balance >= bet * 2) {
-        r.addComponents(new ButtonBuilder().setCustomId('bj_double').setLabel('DOUBLE').setEmoji('<a:dollar_animated:1537177379666006016>').setStyle(ButtonStyle.Warning));
+        r.addComponents(new ButtonBuilder().setCustomId('bj_double').setLabel('DOUBLE').setEmoji('<a:dollar_animated:1537177379666006016>').setStyle(ButtonStyle.Secondary));
       }
       return r;
     };
