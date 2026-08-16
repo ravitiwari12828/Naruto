@@ -851,7 +851,19 @@ const FALLBACK_MAP = {
   LOADING: '<a:hourglass_animated:1537179590982631575>',
   DISABLED: '<a:disabled_animated:1537177373613629542>',
   ENABLED: '<a:accept_animated:1537177319603703969>',
-  TOOLS: '<a:utility_animated:1537177542040231937>'
+  TOOLS: '<a:utility_animated:1537177542040231937>',
+  ANALYTICS_ZAP: '<a:chart_animated:1537179539514462308>',
+  AUTORESPOND: '<a:code_animated:1537177358912725033>',
+  wallet: '<a:dollar_animated:1537177379666006016>',
+  bank: '🏦',
+  gem: '<a:dimond_animated:1537177370719551498>',
+  gems: '<a:dimond_animated:1537177370719551498>',
+  coin: '<a:dollar_animated:1537177379666006016>',
+  coins: '<a:dollar_animated:1537177379666006016>',
+  money: '<a:dollar_animated:1537177379666006016>',
+  networth: '📊',
+  hourglass: '<a:clock_animated:1537177352839368784>',
+  fire: '<a:fire_animated:1537179571697352774>'
 };
 
 const baseExports = {
@@ -893,7 +905,18 @@ const emojisProxy = new Proxy(baseExports, {
       }
     }
 
-    return FALLBACK_MAP[prop] || undefined;
+    if (FALLBACK_MAP[prop]) return FALLBACK_MAP[prop];
+    if (FALLBACK_MAP[propLower]) return FALLBACK_MAP[propLower];
+
+    if (propLower.includes('wallet')) return '👛';
+    if (propLower.includes('bank')) return '🏦';
+    if (propLower.includes('gem')) return '💎';
+    if (propLower.includes('coin') || propLower.includes('money')) return '🪙';
+    if (propLower.includes('net')) return '📊';
+    if (propLower.includes('hour') || propLower.includes('time')) return '⏳';
+    if (propLower.includes('fire') || propLower.includes('streak')) return '🔥';
+
+    return '';
   }
 });
 
