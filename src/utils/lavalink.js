@@ -16,8 +16,17 @@ function initLavalink(client) {
         retryDelay: 2000
       },
       {
-        id: 'synn-node-backup',
+        id: 'synn-node-serenetia',
         host: 'lavalink.serenetia.com',
+        port: 443,
+        authorization: 'youshallnotpass',
+        secure: true,
+        retryAmount: 20,
+        retryDelay: 2000
+      },
+      {
+        id: 'synn-node-lava-v4',
+        host: 'lava-v4.ajiepy.srht.me',
         port: 443,
         authorization: 'youshallnotpass',
         secure: true,
@@ -36,7 +45,7 @@ function initLavalink(client) {
     autoSkipOnResolveError: true,
     playerOptions: {
       defaultSearchPlatform: 'spsearch',
-      applyVolumeAsFilter: false,
+      applyVolumeAsFilter: true,
       onDisconnect: {
         autoReconnect: true,
         destroyPlayer: false

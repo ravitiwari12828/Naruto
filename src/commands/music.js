@@ -382,6 +382,7 @@ module.exports = {
               volume: 100
             });
             await player.connect();
+            await player.setVolume(100).catch(() => {});
           }
 
           let res = null;
