@@ -36,6 +36,7 @@ function updateAntidox(guildId, fn) {
 // Regex Detectors for PII Data
 const IPV4_REGEX = /\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b/g;
 const PHONE_REGEX = /(?:\+91[\-\s]?)?[6-9]\d{9}\b/g;
+const EMAIL_REGEX = /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi;
 const LEAK_LINK_REGEX = /(doxbin\.(org|cc|me|com)|ghostbin\.(co|me)|rentry\.(co|org)|iplogger\.(org|com|ru)|grabify\.(link|net)|shorturl\.at|pastebin\.com\/raw)/gi;
 
 // Safe IP Exclusions (localhost, zero, DNS, common local IPs)
@@ -99,6 +100,16 @@ async function checkMessageForDox(message) {
     if ((directPhoneMatches && directPhoneMatches.length > 0) || obfuscatedPhoneMatch) {
       violationRule = 'Phone Number Leak Guard';
       detectedType = 'Mobile Phone Number (Cross-Message Split Leak)';
+    }
+  }
+
+  // 3. Email Address Leak Check (Direct + Obfuscated)
+  if ((config.antiEmail !== false) && !violationRule) {
+    const normalizedEmailContent = combinedText.replace(/\[at\]|\(at\)|\bat\b/gi, '@').replace(/\[dot\]|\(dot\)|\bdot\b/gi, '.').replace(/\s+/g, '');
+    const emailMatches = normalizedEmailContent.match(EMAIL_REGEX) || content.match(EMAIL_REGEX);
+    if (emailMatches && emailMatches.length > 0) {
+      violationRule = 'Email Address Leak Guard';
+      detectedType = 'Private Email Address (Direct/Obfuscated)';
     }
   }
 
