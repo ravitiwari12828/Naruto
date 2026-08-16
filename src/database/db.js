@@ -1332,6 +1332,43 @@ class ResilientDatabase {
     this.saveJSON();
     return this.data.botAppearances[guildId];
   }
+
+  // --- USER UPDATE & DATA PERSISTENCE HELPERS ---
+  updateUser(userId, dataOrFn, guildId = null) {
+    const user = this.getUser(userId, guildId);
+    if (typeof dataOrFn === 'function') {
+      dataOrFn(user);
+    } else if (typeof dataOrFn === 'object' && dataOrFn !== null) {
+      Object.assign(user, dataOrFn);
+    }
+    this.saveJSON();
+    return user;
+  }
+
+  saveAutomod(guildId, config) {
+    if (!this.data.automod) this.data.automod = {};
+    this.data.automod[guildId] = config;
+    this.saveJSON();
+    return config;
+  }
+
+  getGuildLevelingConfig(guildId) {
+    return this.getLevelConfig(guildId);
+  }
+
+  clearMessages(userId, guildId = null) {
+    const user = this.getUser(userId, guildId);
+    user.messages = 0;
+    this.saveJSON();
+    return user;
+  }
+
+  clearVoiceTime(userId, guildId = null) {
+    const user = this.getUser(userId, guildId);
+    user.voiceSeconds = 0;
+    this.saveJSON();
+    return user;
+  }
 }
 
 const db = new ResilientDatabase();
