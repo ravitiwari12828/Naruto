@@ -3,56 +3,69 @@ const db = require('../../database/db');
 const config = require('../../config');
 const emojis = require('../../utils/emojis');
 const { fmt } = require('../../utils/economyCore');
+const { renderRouletteCard } = require('../../utils/casinoCard');
 
 const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 
 module.exports = {
   name: 'roulette',
-  description: 'Spin the Roulette wheel! Bet on red, black, green, or numbers 0-36.',
-  usage: '.roulette <bet> <red|black|green|0-36>',
-  cooldown: 3000,
+  description: 'Spin the Naruto Stake.cc Roulette wheel!',
+  usage: '.roulette <bet> <red|black|green|number>',
+  cooldown: 4000,
   async execute(message, args) {
     const bet = parseInt(args[0], 10);
-    const space = (args[1] || '').toLowerCase();
-
+    const choice = (args[1] || '').toUpperCase();
     const eco = db.economy(message.guild.id, message.author.id);
-    if (!bet || bet <= 0 || !space) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Usage: \`.roulette <bet> <red|black|green|0-36>\`\nExample: \`.roulette 100 red\``)] });
+
+    if (!bet || bet <= 0 || !choice) {
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Usage: \`.roulette <bet> <red|black|green|0-36>\`.`)] });
     }
     if (bet > eco.balance) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Insufficient wallet balance. Wallet: **${fmt(eco.balance)}** ${emojis.coin}.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Insufficient wallet balance. Wallet: **${fmt(eco.balance)}** <a:dollar_animated:1537177379666006016>.`)] });
     }
 
-    const landedNumber = Math.floor(Math.random() * 37);
-    let landedColor;
-    if (landedNumber === 0) landedColor = 'green';
-    else if (RED_NUMBERS.includes(landedNumber)) landedColor = 'red';
-    else landedColor = 'black';
-
-    let won = false;
-    let multiplier = 0;
-
-    if (space === 'red' && landedColor === 'red') { won = true; multiplier = 2; }
-    else if (space === 'black' && landedColor === 'black') { won = true; multiplier = 2; }
-    else if (space === 'green' && landedColor === 'green') { won = true; multiplier = 14; }
-    else if (!isNaN(parseInt(space, 10)) && parseInt(space, 10) === landedNumber) { won = true; multiplier = 36; }
-
     eco.balance -= bet;
-    const payout = won ? Math.floor(bet * multiplier) : 0;
-    eco.balance += payout;
     db.setEconomy(message.guild.id, message.author.id, eco);
 
-    const colorEmoji = landedColor === 'red' ? '<a:wrong_animated:1537179702928875631>' : landedColor === 'black' ? '⚫' : '<a:accept_animated:1537177319603703969>';
+    const winningNumber = Math.floor(Math.random() * 37);
+    let winningColor = winningNumber === 0 ? 'GREEN' : RED_NUMBERS.includes(winningNumber) ? 'RED' : 'BLACK';
+
+    let isWin = false;
+    let multiplier = 0;
+
+    if (choice === 'RED' && winningColor === 'RED') { isWin = true; multiplier = 2; }
+    else if (choice === 'BLACK' && winningColor === 'BLACK') { isWin = true; multiplier = 2; }
+    else if (choice === 'GREEN' && winningColor === 'GREEN') { isWin = true; multiplier = 14; }
+    else if (parseInt(choice, 10) === winningNumber) { isWin = true; multiplier = 36; }
+
+    const payout = isWin ? bet * multiplier : 0;
+    if (isWin) {
+      eco.balance += payout;
+      db.setEconomy(message.guild.id, message.author.id, eco);
+    }
+
+    const cardAttachment = await renderRouletteCard({
+      winningNumber,
+      color: winningColor,
+      bet,
+      payout,
+      isWin,
+      username: message.author.username
+    });
+
+    const resultIcon = isWin ? '<a:accept_animated:1537177319603703969>' : '<a:wrong_animated:1537179702928875631>';
 
     const embed = new EmbedBuilder()
-      .setColor(won ? config.successColor : config.errorColor)
-      .setTitle(`🎰 Roulette Spin Result`)
-      .setDescription(`Wheel landed on: ${colorEmoji} **${landedNumber} (${landedColor.toUpperCase()})**\n\n` +
-                      `Your Bet: **${space.toUpperCase()}** (${fmt(bet)} ${emojis.coin})\n` +
-                      `${won ? `${emojis.success} **YOU WON!** Payout: **+${fmt(payout)}** ${emojis.coin} (${multiplier}x)` : `${emojis.error} **YOU LOST!** Lost -${fmt(bet)} ${emojis.coin}.`}`)
-      .setFooter({ text: `New Wallet Balance: ${fmt(eco.balance)} ${emojis.coin}` })
+      .setColor(isWin ? 0x57F287 : 0xED4245)
+      .setTitle(`${resultIcon} Naruto Stake.cc Roulette Wheel`)
+      .setDescription(
+        `**Winning Slot:** **${winningNumber} (${winningColor})**\n\n` +
+        `${resultIcon} ${isWin ? `**WINNER!** Choice matched! Won **+${fmt(payout)}** Ryo!` : `**LOST!** Roulette landed on ${winningNumber} (${winningColor}). Lost -${fmt(bet)} Ryo.`}`
+      )
+      .setImage('attachment://stake-roulette.png')
+      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Stake Casino Visuals` })
       .setTimestamp();
 
-    return message.channel.send({ embeds: [embed] });
+    return message.channel.send({ embeds: [embed], files: [cardAttachment] });
   },
 };

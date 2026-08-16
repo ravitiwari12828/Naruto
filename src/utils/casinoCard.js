@@ -316,8 +316,254 @@ async function renderBlackjackCard({ dealerCards, playerCards, dealerScore, play
   return new AttachmentBuilder(buffer, { name: 'stake-blackjack.png' });
 }
 
+
+/**
+ * 🍥 Naruto Roulette Visual Canvas Card
+ */
+async function renderRouletteCard({ winningNumber, color, bet, payout, isWin, username }) {
+  const canvas = createCanvas(800, 420);
+  const ctx = canvas.getContext('2d');
+
+  // Dark Background
+  ctx.fillStyle = '#060a12';
+  ctx.fillRect(0, 0, 800, 420);
+
+  // Outer Border
+  const colorHex = color === 'RED' ? '#ef4444' : color === 'BLACK' ? '#334155' : '#10b981';
+  ctx.strokeStyle = colorHex;
+  ctx.lineWidth = 5;
+  ctx.strokeRect(12, 12, 776, 396);
+
+  // Banner
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(25, 22, 750, 50);
+
+  drawKonohaCrest(ctx, 55, 47, 14, colorHex);
+
+  ctx.textAlign = 'left';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillStyle = colorHex;
+  ctx.fillText('NARUTO STAKE ROULETTE WHEEL', 90, 53);
+
+  // Roulette Wheel Circle Representation
+  const cx = 300;
+  const cy = 230;
+  const radius = 110;
+
+  // Outer Wheel Rim
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+  ctx.fillStyle = '#1e293b';
+  ctx.fill();
+  ctx.strokeStyle = '#f59e0b';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
+  // Winning Number Central Badge
+  ctx.beginPath();
+  ctx.arc(cx, cy, radius * 0.6, 0, Math.PI * 2);
+  ctx.fillStyle = colorHex;
+  ctx.fill();
+
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 52px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(String(winningNumber), cx, cy + 18);
+
+  // Right Side Stats Panel
+  const panelX = 480;
+  const panelY = 95;
+  const panelW = 295;
+  const panelH = 270;
+
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(panelX, panelY, panelW, panelH);
+
+  ctx.textAlign = 'left';
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillStyle = THEME.textMuted;
+  ctx.fillText('WINNING SLOT', panelX + 25, panelY + 40);
+
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillStyle = colorHex;
+  ctx.fillText(`${winningNumber} (${color})`, panelX + 25, panelY + 70);
+
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillStyle = THEME.textMuted;
+  ctx.fillText('BET AMOUNT', panelX + 25, panelY + 125);
+
+  ctx.font = 'bold 20px sans-serif';
+  ctx.fillStyle = THEME.textLight;
+  ctx.fillText(`${bet} Ryo`, panelX + 25, panelY + 152);
+
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillStyle = THEME.textMuted;
+  ctx.fillText('PAYOUT WON', panelX + 25, panelY + 205);
+
+  ctx.font = 'bold 24px sans-serif';
+  ctx.fillStyle = isWin ? THEME.leafGreen : THEME.akatsukiRed;
+  ctx.fillText(`${payout} Ryo`, panelX + 25, panelY + 235);
+
+  const buffer = canvas.toBuffer('image/png');
+  return new AttachmentBuilder(buffer, { name: 'stake-roulette.png' });
+}
+
+/**
+ * 🍥 Naruto Dice Roller Visual Canvas Card
+ */
+async function renderDiceCard({ userRoll, dealerRoll, target, bet, payout, isWin, username }) {
+  const canvas = createCanvas(800, 420);
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#060a12';
+  ctx.fillRect(0, 0, 800, 420);
+
+  ctx.strokeStyle = isWin ? THEME.leafGreen : THEME.akatsukiRed;
+  ctx.lineWidth = 5;
+  ctx.strokeRect(12, 12, 776, 396);
+
+  // Header Banner
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(25, 22, 750, 50);
+
+  drawKonohaCrest(ctx, 55, 47, 14, THEME.nineTailsOrange);
+
+  ctx.textAlign = 'left';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillStyle = THEME.nineTailsOrange;
+  ctx.fillText('STAKE.CC 3D DICE ROLLER', 90, 53);
+
+  // Dice 1 (User Roll)
+  const d1X = 140;
+  const d1Y = 130;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(d1X, d1Y, 140, 140);
+  ctx.strokeStyle = THEME.chakraBlue;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(d1X, d1Y, 140, 140);
+
+  ctx.textAlign = 'center';
+  ctx.font = 'bold 64px sans-serif';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText(String(userRoll), d1X + 70, d1Y + 95);
+
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillStyle = THEME.textMuted;
+  ctx.fillText('YOUR ROLL', d1X + 70, d1Y + 175);
+
+  // VS Divider
+  ctx.font = 'bold 36px sans-serif';
+  ctx.fillStyle = THEME.nineTailsOrange;
+  ctx.fillText('VS', 350, 215);
+
+  // Dice 2 (Dealer Roll / Target)
+  const d2X = 420;
+  const d2Y = 130;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(d2X, d2Y, 140, 140);
+  ctx.strokeStyle = THEME.akatsukiRed;
+  ctx.lineWidth = 4;
+  ctx.strokeRect(d2X, d2Y, 140, 140);
+
+  ctx.font = 'bold 64px sans-serif';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText(String(dealerRoll), d2X + 70, d2Y + 95);
+
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillStyle = THEME.textMuted;
+  ctx.fillText('DEALER ROLL', d2X + 70, d2Y + 175);
+
+  // Result Footer Banner
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(25, 345, 750, 55);
+
+  ctx.textAlign = 'left';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = isWin ? THEME.leafGreen : THEME.akatsukiRed;
+  ctx.fillText(isWin ? `WINNER! You rolled ${userRoll} vs ${dealerRoll}! (+${payout} Ryo)` : `LOST! You rolled ${userRoll} vs ${dealerRoll}! (-${bet} Ryo)`, 45, 380);
+
+  const buffer = canvas.toBuffer('image/png');
+  return new AttachmentBuilder(buffer, { name: 'stake-dice.png' });
+}
+
+/**
+ * 🍥 Naruto Higher/Lower Visual Canvas Card
+ */
+async function renderHigherLowerCard({ currentCard, nextCard, guess, bet, payout, isWin, username }) {
+  const canvas = createCanvas(800, 420);
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#060a12';
+  ctx.fillRect(0, 0, 800, 420);
+
+  ctx.strokeStyle = isWin ? THEME.leafGreen : THEME.akatsukiRed;
+  ctx.lineWidth = 5;
+  ctx.strokeRect(12, 12, 776, 396);
+
+  // Header Banner
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(25, 22, 750, 50);
+
+  drawKonohaCrest(ctx, 55, 47, 14, THEME.chakraBlue);
+
+  ctx.textAlign = 'left';
+  ctx.font = 'bold 22px sans-serif';
+  ctx.fillStyle = THEME.chakraBlue;
+  ctx.fillText('STAKE.CC HIGHER OR LOWER', 90, 53);
+
+  // Current Card
+  const c1X = 160;
+  const c1Y = 110;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(c1X, c1Y, 110, 160);
+
+  ctx.font = 'bold 36px sans-serif';
+  ctx.fillStyle = (currentCard.includes('♥') || currentCard.includes('♦')) ? '#dc2626' : '#000000';
+  ctx.textAlign = 'center';
+  ctx.fillText(currentCard, c1X + 55, c1Y + 95);
+
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillStyle = THEME.textMuted;
+  ctx.fillText('BASE CARD', c1X + 55, c1Y + 195);
+
+  // Guess Arrow Indicator
+  ctx.font = 'bold 42px sans-serif';
+  ctx.fillStyle = THEME.gold;
+  ctx.fillText(guess === 'HIGHER' ? '⬆️ HIGHER' : '⬇️ LOWER', 400, 200);
+
+  // Next Drawn Card
+  const c2X = 530;
+  const c2Y = 110;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(c2X, c2Y, 110, 160);
+
+  ctx.font = 'bold 36px sans-serif';
+  ctx.fillStyle = (nextCard.includes('♥') || nextCard.includes('♦')) ? '#dc2626' : '#000000';
+  ctx.fillText(nextCard, c2X + 55, c2Y + 95);
+
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillStyle = THEME.textMuted;
+  ctx.fillText('DRAWN CARD', c2X + 55, c2Y + 195);
+
+  // Footer Banner
+  ctx.fillStyle = '#1e293b';
+  ctx.fillRect(25, 345, 750, 55);
+
+  ctx.textAlign = 'left';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillStyle = isWin ? THEME.leafGreen : THEME.akatsukiRed;
+  ctx.fillText(isWin ? `WINNER! Guessed ${guess} correctly! (+${payout} Ryo)` : `WRONG! Guessed ${guess}! (-${bet} Ryo)`, 45, 380);
+
+  const buffer = canvas.toBuffer('image/png');
+  return new AttachmentBuilder(buffer, { name: 'stake-higherlower.png' });
+}
+
 module.exports = {
   renderCrashCard,
   renderPlinkoCard,
-  renderBlackjackCard
+  renderBlackjackCard,
+  renderRouletteCard,
+  renderDiceCard,
+  renderHigherLowerCard
 };
+

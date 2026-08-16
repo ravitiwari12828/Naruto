@@ -3,70 +3,97 @@ const db = require('../../database/db');
 const config = require('../../config');
 const emojis = require('../../utils/emojis');
 const { fmt } = require('../../utils/economyCore');
+const { renderHigherLowerCard } = require('../../utils/casinoCard');
 
 const SUITS = ['♠️', '♥️', '♦️', '♣️'];
-const RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
-function drawCard() {
-  return { rank: RANKS[Math.floor(Math.random() * RANKS.length)], suit: SUITS[Math.floor(Math.random() * SUITS.length)] };
+function getRandomCard() {
+  const r = RANKS[Math.floor(Math.random() * RANKS.length)];
+  const s = SUITS[Math.floor(Math.random() * SUITS.length)];
+  return { r, s, val: RANKS.indexOf(r) + 2 };
 }
-function rankValue(card) { return RANKS.indexOf(card.rank); }
 
 module.exports = {
   name: 'higherlower',
-  description: 'Guess if the next card is higher or lower — cash out anytime before you lose it all.',
+  aliases: ['hl'],
+  description: 'Guess if the next drawn card is Higher or Lower!',
   usage: '.higherlower <bet>',
-  cooldown: 5000,
+  cooldown: 4000,
   async execute(message, args) {
     const bet = parseInt(args[0], 10);
     const eco = db.economy(message.guild.id, message.author.id);
-    if (!bet || bet <= 0 || bet > eco.balance) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`${emojis.error} Give a valid bet you can afford.`)] });
+
+    if (!bet || bet <= 0) {
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Provide a valid bet amount, e.g. \`.hl 100\`.`)] });
     }
+    if (bet > eco.balance) {
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Insufficient wallet balance. Wallet: **${fmt(eco.balance)}** <a:dollar_animated:1537177379666006016>.`)] });
+    }
+
     eco.balance -= bet;
     db.setEconomy(message.guild.id, message.author.id, eco);
 
-    let current = drawCard();
-    let multiplier = 1;
+    const baseCard = getRandomCard();
 
-    const buildRow = () => new ActionRowBuilder().addComponents(
-      new ButtonBuilder().setCustomId('hl_higher').setLabel('Higher').setEmoji('⬆️').setStyle(ButtonStyle.Success),
-      new ButtonBuilder().setCustomId('hl_lower').setLabel('Lower').setEmoji('⬇️').setStyle(ButtonStyle.Danger),
-      new ButtonBuilder().setCustomId('hl_cashout').setLabel(`Cash Out (${Math.floor(bet * multiplier)})`).setEmoji(emojis.coin).setStyle(ButtonStyle.Primary),
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId('hl_higher').setLabel('HIGHER ⬆️').setStyle(ButtonStyle.Primary),
+      new ButtonBuilder().setCustomId('hl_lower').setLabel('LOWER ⬇️').setStyle(ButtonStyle.Danger),
     );
-    const buildEmbed = () => new EmbedBuilder()
-      .setColor(config.embedColor)
-      .setTitle('🃏 Higher or Lower')
-      .setAuthor({ name: message.author.username, iconURL: message.author.displayAvatarURL() })
-      .setDescription(`Current card: **${current.rank}${current.suit}**\n\nMultiplier: **x${multiplier.toFixed(2)}**\nPotential payout: **${fmt(Math.floor(bet * multiplier))}** ${emojis.coin}`)
-      .setFooter({ text: `Bet: ${fmt(bet)} coins` });
 
-    const sent = await message.channel.send({ embeds: [buildEmbed()], components: [buildRow()] });
-    const collector = sent.createMessageComponentCollector({ time: 30000, filter: (i) => i.user.id === message.author.id });
+    const embed = new EmbedBuilder()
+      .setColor(0x00F0FF)
+      .setTitle(`🃏 Naruto Stake.cc Higher or Lower`)
+      .setDescription(
+        `**Base Card:** \`[ ${baseCard.s} ${baseCard.r} ]\`\n\n` +
+        `Will the next drawn card be **HIGHER** or **LOWER**? Click below!`
+      )
+      .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Stake Casino Visuals` });
+
+    const sent = await message.channel.send({ embeds: [embed], components: [row] });
+    const collector = sent.createMessageComponentCollector({ time: 30000 });
 
     collector.on('collect', async (i) => {
-      if (i.customId === 'hl_cashout') {
-        const fresh = db.economy(message.guild.id, message.author.id);
-        const payout = Math.floor(bet * multiplier);
-        fresh.balance += payout;
-        db.setEconomy(message.guild.id, message.author.id, fresh);
-        collector.stop();
-        return i.update({ embeds: [buildEmbed().setColor(config.successColor).setDescription(`${emojis.success} Cashed out for **${fmt(payout)}** coins!`)], components: [] });
+      if (i.user.id !== message.author.id) return i.reply({ content: `<a:wrong_animated:1537179702928875631> Not your game.`, flags: 64 });
+
+      const guess = i.customId === 'hl_higher' ? 'HIGHER' : 'LOWER';
+      const nextCard = getRandomCard();
+
+      let isWin = false;
+      if (guess === 'HIGHER' && nextCard.val >= baseCard.val) isWin = true;
+      if (guess === 'LOWER' && nextCard.val <= baseCard.val) isWin = true;
+
+      const payout = isWin ? bet * 2 : 0;
+      if (isWin) {
+        eco.balance += payout;
+        db.setEconomy(message.guild.id, message.author.id, eco);
       }
 
-      const next = drawCard();
-      const guess = i.customId === 'hl_higher' ? 'higher' : 'lower';
-      const actual = rankValue(next) === rankValue(current) ? 'tie' : rankValue(next) > rankValue(current) ? 'higher' : 'lower';
-      current = next;
+      const cardAttachment = await renderHigherLowerCard({
+        currentCard: `${baseCard.s} ${baseCard.r}`,
+        nextCard: `${nextCard.s} ${nextCard.r}`,
+        guess,
+        bet,
+        payout,
+        isWin,
+        username: message.author.username
+      });
 
-      if (actual === 'tie' || actual === guess) {
-        multiplier += 0.5;
-        await i.update({ embeds: [buildEmbed()], components: [buildRow()] });
-      } else {
-        collector.stop();
-        await i.update({ embeds: [buildEmbed().setColor(config.errorColor).setDescription(`${emojis.error} Wrong! The card was **${current.rank}${current.suit}**. You lost your **${fmt(bet)}** coin bet.`)], components: [] });
-      }
+      const resultIcon = isWin ? '<a:accept_animated:1537177319603703969>' : '<a:wrong_animated:1537179702928875631>';
+
+      const resultEmbed = new EmbedBuilder()
+        .setColor(isWin ? 0x57F287 : 0xED4245)
+        .setTitle(`${resultIcon} Naruto Stake.cc Higher or Lower Results`)
+        .setDescription(
+          `**Base Card:** \`[ ${baseCard.s} ${baseCard.r} ]\` | **Drawn Card:** \`[ ${nextCard.s} ${nextCard.r} ]\`\n\n` +
+          `${resultIcon} ${isWin ? `**WINNER!** Guessed **${guess}** correctly! Won **+${fmt(payout)}** Ryo!` : `**LOST!** Guessed **${guess}**. Lost -${fmt(bet)} Ryo.`}`
+        )
+        .setImage('attachment://stake-higherlower.png')
+        .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Stake Casino Visuals` })
+        .setTimestamp();
+
+      await i.update({ embeds: [resultEmbed], files: [cardAttachment], components: [] }).catch(() => {});
+      collector.stop();
     });
-    collector.on('end', (collected, reason) => { if (reason === 'time') sent.edit({ components: [] }).catch(() => {}); });
   },
 };
