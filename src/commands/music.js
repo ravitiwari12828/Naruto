@@ -122,85 +122,10 @@ const NARUTO_OST = {
   'hero': 'Naruto Shippuden OP 1 - Hero\'s Come Back!!'
 };
 
-/**
- * Builds the Track Information Embed matching requested UI.
- */
 function buildMusicPlayerEmbed(track, player) {
-  const title = track?.info?.title || 'Unknown Track';
-  const artist = track?.info?.author || 'Unknown Artist';
-  const durationMs = track?.info?.duration || 0;
-  const durationStr = formatDuration(durationMs);
-
-  const { createDynamicBox } = require('../utils/boxBuilder');
-
-  const boxText = createDynamicBox('TRACK INFORMATION', [
-    { key: 'Title   ', value: title.length > 25 ? title.slice(0, 23) + '…' : title },
-    { key: 'Artist  ', value: artist.length > 25 ? artist.slice(0, 23) + '…' : artist },
-    { key: 'Duration', value: durationStr },
-    { key: 'Playback', value: 'STREAMING NOW' }
-  ]);
-
   return new EmbedBuilder()
     .setColor(0xFF007F)
-    .setTitle(`${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} Now Playing`)
-    .setDescription('```\n' + boxText + '\n```\n*Currently streaming in voice channel*');
-}
-
-const { isGuildPremium, isUserPremium } = require('./premium');
-
-/**
- * Builds the STELLAR BEATS "Added to Queue" Card for playing next tracks matching requested UI.
- */
-function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
-  const isPrem = (guildId && isGuildPremium(guildId)) || (author && isUserPremium(author.id));
-  const maxQueue = isPrem ? 200 : 50;
-  const queueType = isPrem ? 'Premium Tier <a:sparkles_animated:1537179684175872171>' : 'Standard Tier';
-  const statusText = isPrem ? 'Premium active <a:crown_animated:1537177361093500968>' : 'Free Tier (50 max)';
-  const footerNote = isPrem ? '*Premium features unlocked <a:rank_animated:1537179656090943538>*' : '*Upgrade to Premium for 200 max queue*';
-
-  const title = track?.info?.title || 'Unknown Track';
-  const artist = track?.info?.author || 'Unknown Artist';
-  const durationMs = track?.info?.duration || 0;
-  const durationStr = formatDuration(durationMs);
-  const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
-
-  return new EmbedBuilder()
-    .setColor(isPrem ? 0x7289DA : 0xFF007F)
-    .setTitle(`${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} Added to Queue`)
-    .setThumbnail(artworkUrl)
-    .setDescription(
-      `### ${emojis.SPARKLES || '<a:sparkles_animated:1537179684175872171>'} Track Information\n\n` +
-      `• ${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} **Title:** ${title}\n` +
-      `• ${emojis.AN_LYRICS || '🎤'} **Artist:** ${artist}\n` +
-      `• ${emojis.AN_LOOP || '⏱️'} **Duration:** \`${durationStr}\`\n` +
-      `• ${emojis.ANALYTICS_ZAP || '<a:rapid_animated:1537177482006896692>'} **Status:** Position #${position}\n\n` +
-      `*Track has been queued successfully*\n\n` +
-      `---\n\n` +
-      `### ${emojis.STATS || '<a:chart_animated:1537179539514462308>'} Queue Information\n\n` +
-      `• ${emojis.AN_STAR || '<a:target_animated:1537179692174545037>'} **Position:** #${position}\n` +
-      `• ${emojis.OWNER_CROWN || '<a:crown_animated:1537177361093500968>'} **Queue Type:** ${queueType}\n` +
-      `• ${emojis.ANALYTICS_ZAP || '<a:chart_animated:1537179539514462308>'} **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
-      `• ${emojis.AN_STAR || '<a:sparkles_animated:1537179684175872171>'} **Status:** ${statusText}\n\n` +
-      `${footerNote}`
-    )
-    .setTimestamp();
-}
-
-function buildAddedToQueueRow() {
-  return new ActionRowBuilder().addComponents(
-    new ButtonBuilder()
-      .setCustomId('queue_playnow')
-      .setLabel('Play Now')
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId('queue_playnext')
-      .setLabel('Play Next')
-      .setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder()
-      .setCustomId('queue_remove')
-      .setLabel('Remove')
-      .setStyle(ButtonStyle.Danger)
-  );
+    .setDescription('*Currently streaming in voice channel*');
 }
 
 /**
@@ -210,24 +135,24 @@ function buildMusicActionRows(player = null) {
   const isAutoplay = player?.autoplay || false;
 
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_prev').setLabel('PREVIOUS').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_pause').setLabel('PLAY_PAUSE').setEmoji('⏯️').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('music_skip').setLabel('NEXT').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setLabel('STOP').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏯️').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_loop').setLabel('LOOP').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_shuffle').setLabel('SHUFFLE').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_volup').setLabel('VOLUME').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_clear').setLabel('TRASH').setEmoji('🗑️').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_clear').setEmoji('🗑️').setStyle(ButtonStyle.Secondary)
   );
 
   const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_autoplay').setLabel('AUTOPLAY').setEmoji('♾️').setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_add').setLabel('LIKE').setEmoji('❤️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_play').setLabel('QUEUE').setEmoji('🎵').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_lyrics').setLabel('LYRICS').setEmoji('🎤').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_autoplay').setEmoji('♾️').setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_add').setEmoji('❤️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_play').setEmoji('🎵').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_lyrics').setEmoji('🎤').setStyle(ButtonStyle.Secondary)
   );
 
   let suggestedOptions = [];
