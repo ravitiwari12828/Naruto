@@ -43,12 +43,12 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(0x00F0FF)
-      .setTitle(`🃏 Naruto Stake.cc Higher or Lower`)
+      .setTitle(`🃏 Shinobi Higher or Lower`)
       .setDescription(
         `**Base Card:** \`[ ${baseCard.s} ${baseCard.r} ]\`\n\n` +
         `Will the next drawn card be **HIGHER** or **LOWER**? Click below!`
       )
-      .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Stake Casino Visuals` });
+      .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Naruto Shinobi Games` });
 
     const sent = await message.channel.send({ embeds: [embed], components: [row] });
     const collector = sent.createMessageComponentCollector({ time: 30000 });
@@ -83,13 +83,13 @@ module.exports = {
 
       const resultEmbed = new EmbedBuilder()
         .setColor(isWin ? 0x57F287 : 0xED4245)
-        .setTitle(`${resultIcon} Naruto Stake.cc Higher or Lower Results`)
+        .setTitle(`${resultIcon} Shinobi Higher or Lower Results`)
         .setDescription(
           `**Base Card:** \`[ ${baseCard.s} ${baseCard.r} ]\` | **Drawn Card:** \`[ ${nextCard.s} ${nextCard.r} ]\`\n\n` +
           `${resultIcon} ${isWin ? `**WINNER!** Guessed **${guess}** correctly! Won **+${fmt(payout)}** Ryo!` : `**LOST!** Guessed **${guess}**. Lost -${fmt(bet)} Ryo.`}`
         )
-        .setImage('attachment://stake-higherlower.png')
-        .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Stake Casino Visuals` })
+        .setImage('attachment://naruto-higherlower.png')
+        .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Shinobi Games` })
         .setTimestamp();
 
       await i.update({ embeds: [resultEmbed], files: [cardAttachment], components: [] }).catch(() => {});

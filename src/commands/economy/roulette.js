@@ -9,7 +9,7 @@ const RED_NUMBERS = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 
 
 module.exports = {
   name: 'roulette',
-  description: 'Spin the Naruto Stake.cc Roulette wheel!',
+  description: 'Spin the Konoha Shinobi Roulette wheel!',
   usage: '.roulette <bet> <red|black|green|number>',
   cooldown: 4000,
   async execute(message, args) {
@@ -57,13 +57,13 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(isWin ? 0x57F287 : 0xED4245)
-      .setTitle(`${resultIcon} Naruto Stake.cc Roulette Wheel`)
+      .setTitle(`${resultIcon} Konoha Shinobi Roulette Wheel`)
       .setDescription(
         `**Winning Slot:** **${winningNumber} (${winningColor})**\n\n` +
         `${resultIcon} ${isWin ? `**WINNER!** Choice matched! Won **+${fmt(payout)}** Ryo!` : `**LOST!** Roulette landed on ${winningNumber} (${winningColor}). Lost -${fmt(bet)} Ryo.`}`
       )
-      .setImage('attachment://stake-roulette.png')
-      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Stake Casino Visuals` })
+      .setImage('attachment://naruto-roulette.png')
+      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Shinobi Games` })
       .setTimestamp();
 
     return message.channel.send({ embeds: [embed], files: [cardAttachment] });

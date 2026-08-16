@@ -7,7 +7,7 @@ const { renderCrashCard } = require('../../utils/casinoCard');
 
 module.exports = {
   name: 'crash',
-  description: 'Naruto Stake Rocket — Cash out before the rocket explodes!',
+  description: 'Naruto Konoha Rasengan Rocket — Cash out before the rocket explodes!',
   usage: '.crash <bet>',
   cooldown: 5000,
   async execute(message, args) {
@@ -53,14 +53,14 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setColor(color)
         .setAuthor({ name: `${message.author.username}'s Shinobi Rocket`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-        .setTitle(`${statusIcon} Naruto Stake.cc Crash Game`)
+        .setTitle(`${statusIcon} Naruto Konoha Rasengan Rocket`)
         .setDescription(
           `**Status:** ${statusIcon} **${status}**\n` +
           `• **Current Multiplier:** **${multiplier.toFixed(2)}x**\n` +
           `• **Bet Amount:** **${fmt(bet)}** <a:dollar_animated:1537177379666006016>\n` +
           `• **Potential Payout:** **${fmt(Math.floor(bet * multiplier))}** <a:dollar_animated:1537177379666006016>`
         )
-        .setImage('attachment://stake-crash.png')
+        .setImage('attachment://naruto-crash.png')
         .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Naruto Shinobi Casino Cards` })
         .setTimestamp();
 

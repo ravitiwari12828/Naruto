@@ -1,7 +1,7 @@
 const { createCanvas } = require('@napi-rs/canvas');
 const { AttachmentBuilder } = require('discord.js');
 
-// 🍥 Naruto Shinobi Stake.cc Palette
+// 🍥 Naruto Shinobi Naruto Shinobi Palette
 const THEME = {
   bgDark: '#080d19',
   cardBg: '#131b2e',
@@ -81,7 +81,7 @@ async function renderCrashCard({ multiplier, status, bet, payout, isCrash, isWin
   ctx.textAlign = 'left';
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = THEME.chakraBlue;
-  ctx.fillText('NARUTO STAKE ROCKET', 90, 58);
+  ctx.fillText('KONOHA RASENGAN ROCKET', 90, 58);
 
   ctx.font = 'bold 16px sans-serif';
   ctx.fillStyle = THEME.textMuted;
@@ -164,7 +164,7 @@ async function renderCrashCard({ multiplier, status, bet, payout, isCrash, isWin
   ctx.fillText(`${payout} Ryo`, panelX + 20, panelY + 238);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'stake-crash.png' });
+  return new AttachmentBuilder(buffer, { name: 'naruto-crash.png' });
 }
 
 /**
@@ -191,7 +191,7 @@ async function renderPlinkoCard({ path, slotIndex, multiplier, bet, payout, isWi
   ctx.textAlign = 'left';
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = THEME.leafGreen;
-  ctx.fillText('PLINKO PLUNGE BOARD', 90, 53);
+  ctx.fillText('CHAKRA KUNAI PLINKO BOARD', 90, 53);
 
   // Peg Pyramid
   const centerX = 400;
@@ -240,7 +240,7 @@ async function renderPlinkoCard({ path, slotIndex, multiplier, bet, payout, isWi
   ctx.fillText(isWin ? `WINNER! Multiplier: ${multiplier}x | +${payout} Ryo` : `Landed: ${multiplier}x | Payout: ${payout} Ryo`, 45, 383);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'stake-plinko.png' });
+  return new AttachmentBuilder(buffer, { name: 'naruto-plinko.png' });
 }
 
 /**
@@ -313,7 +313,7 @@ async function renderBlackjackCard({ dealerCards, playerCards, dealerScore, play
   ctx.fillText(`Bet: ${bet} Ryo`, 645, 245);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'stake-blackjack.png' });
+  return new AttachmentBuilder(buffer, { name: 'naruto-blackjack.png' });
 }
 
 
@@ -343,7 +343,7 @@ async function renderRouletteCard({ winningNumber, color, bet, payout, isWin, us
   ctx.textAlign = 'left';
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = colorHex;
-  ctx.fillText('NARUTO STAKE ROULETTE WHEEL', 90, 53);
+  ctx.fillText('KONOHA SHINOBI ROULETTE WHEEL', 90, 53);
 
   // Roulette Wheel Circle Representation
   const cx = 300;
@@ -405,7 +405,7 @@ async function renderRouletteCard({ winningNumber, color, bet, payout, isWin, us
   ctx.fillText(`${payout} Ryo`, panelX + 25, panelY + 235);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'stake-roulette.png' });
+  return new AttachmentBuilder(buffer, { name: 'naruto-roulette.png' });
 }
 
 /**
@@ -431,7 +431,7 @@ async function renderDiceCard({ userRoll, dealerRoll, target, bet, payout, isWin
   ctx.textAlign = 'left';
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = THEME.nineTailsOrange;
-  ctx.fillText('STAKE.CC 3D DICE ROLLER', 90, 53);
+  ctx.fillText('KUNAI 3D DICE ROLLER', 90, 53);
 
   // Dice 1 (User Roll)
   const d1X = 140;
@@ -483,7 +483,7 @@ async function renderDiceCard({ userRoll, dealerRoll, target, bet, payout, isWin
   ctx.fillText(isWin ? `WINNER! You rolled ${userRoll} vs ${dealerRoll}! (+${payout} Ryo)` : `LOST! You rolled ${userRoll} vs ${dealerRoll}! (-${bet} Ryo)`, 45, 380);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'stake-dice.png' });
+  return new AttachmentBuilder(buffer, { name: 'naruto-dice.png' });
 }
 
 /**
@@ -509,7 +509,7 @@ async function renderHigherLowerCard({ currentCard, nextCard, guess, bet, payout
   ctx.textAlign = 'left';
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = THEME.chakraBlue;
-  ctx.fillText('STAKE.CC HIGHER OR LOWER', 90, 53);
+  ctx.fillText('SHINOBI HIGHER OR LOWER', 90, 53);
 
   // Current Card
   const c1X = 160;
@@ -555,7 +555,7 @@ async function renderHigherLowerCard({ currentCard, nextCard, guess, bet, payout
   ctx.fillText(isWin ? `WINNER! Guessed ${guess} correctly! (+${payout} Ryo)` : `WRONG! Guessed ${guess}! (-${bet} Ryo)`, 45, 380);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'stake-higherlower.png' });
+  return new AttachmentBuilder(buffer, { name: 'naruto-higherlower.png' });
 }
 
 module.exports = {

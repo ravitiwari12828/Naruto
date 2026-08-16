@@ -311,7 +311,7 @@ class MusicCard {
   }
 
   /**
-   * Main entry: creates a full 780x260 frosted-glass music card PNG buffer
+   * Main entry: creates a full 800x780 frosted-glass music card PNG buffer
    * @param {object} opts
    * @param {string} opts.title - Track title
    * @param {string} opts.artist - Track artist / author
@@ -320,6 +320,7 @@ class MusicCard {
    * @param {number} opts.duration - Total track duration in ms
    * @param {string} opts.source - Source platform (youtube, spotify, etc.)
    * @param {boolean} opts.isLive - Whether the track is a livestream
+   * @param {string} opts.requester - User requester tag
    * @returns {Promise<Buffer>} PNG image buffer
    */
   async createMusicCard(opts = {}) {
@@ -329,110 +330,159 @@ class MusicCard {
       artworkUrl = null,
       position = 0,
       duration = 0,
-      source = 'Unknown',
+      source = 'Spotify',
       isLive = false,
+      requester = 'Synn'
     } = opts;
 
-    const width = 780;
-    const height = 260;
-    const margin = 30;
-    const artworkSize = 180;
+    const width = 800;
+    const height = 480;
+    const cx = width / 2;
+    const thumbSize = 240;
 
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
 
-    const artworkX = margin;
-    const artworkY = margin;
-    const infoX = artworkX + artworkSize + 30;
-    const contentWidth = width - infoX - margin;
+    // --- Background Base (Dark Obsidian + Neon Orange Border) ---
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(0, 0, width, height, 28);
+    ctx.fillStyle = '#0c0f18';
+    ctx.fill();
 
-    // --- Background ---
-    const bgGradient = ctx.createRadialGradient(
-      width * 0.5, height * 0.5, 0,
-      width * 0.5, height * 0.5, width * 0.7
-    );
-    bgGradient.addColorStop(0, '#1a1f35');
-    bgGradient.addColorStop(0.4, '#161b2e');
-    bgGradient.addColorStop(0.7, '#141825');
-    bgGradient.addColorStop(1, '#0f1320');
-    ctx.fillStyle = bgGradient;
-    ctx.fillRect(0, 0, width, height);
+    ctx.beginPath();
+    ctx.roundRect(4, 4, width - 8, height - 8, 24);
+    ctx.fillStyle = 'rgba(20, 26, 40, 0.95)';
+    ctx.fill();
+    ctx.strokeStyle = '#FF7800';
+    ctx.lineWidth = 3;
+    ctx.stroke();
 
-    const overlayGradient = ctx.createLinearGradient(0, 0, width, height);
-    overlayGradient.addColorStop(0, 'rgba(100, 130, 180, 0.05)');
-    overlayGradient.addColorStop(0.5, 'rgba(80, 120, 160, 0.02)');
-    overlayGradient.addColorStop(1, 'rgba(100, 130, 180, 0.05)');
-    ctx.fillStyle = overlayGradient;
-    ctx.fillRect(0, 0, width, height);
+    // Top Gloss Reflection
+    const refGrad = ctx.createLinearGradient(0, 0, width, 100);
+    refGrad.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
+    refGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = refGrad;
+    ctx.fillRect(4, 4, width - 8, 90);
+    ctx.restore();
 
-    // --- Snowflake decorations ---
-    this.createSnowflakeDecorations(ctx, width, height);
-    this.createFrostSnowflake(ctx, 30, 30, 12, 0.3);
-    this.createFrostSnowflake(ctx, width - 30, 30, 10, 0.3);
-    this.createFrostSnowflake(ctx, 30, height - 30, 14, 0.3);
-    this.createFrostSnowflake(ctx, width - 30, height - 30, 11, 0.3);
-
-    // --- Artwork ---
-    await this.drawArtwork(ctx, artworkUrl, artworkX, artworkY, artworkSize);
-
-    // --- Title row ---
-    const titleY = artworkY + 15;
-    const titleHeight = 38;
-    this.createFrostedGlass(ctx, infoX - 10, titleY, contentWidth + 20, titleHeight, 10);
-    const displayTitle = this.truncateText(ctx, title, contentWidth - 10, '24px "Inter Bold"');
-    this.createFrostText(ctx, displayTitle, infoX, titleY + titleHeight / 2, 24, 'Inter Bold', true);
-
-    // --- Artist row ---
-    const artistY = titleY + titleHeight + 10;
-    const artistHeight = 32;
-    this.createFrostedGlass(ctx, infoX - 10, artistY, contentWidth + 20, artistHeight, 8);
-    const displayArtist = this.truncateText(ctx, artist, contentWidth - 10, '17px "Inter Medium"');
-    this.createFrostText(ctx, displayArtist, infoX, artistY + artistHeight / 2, 17, 'Inter Medium');
-
-    // --- Progress bar ---
-    const progressY = artistY + artistHeight + 25;
-    const progressBarHeight = 12;
-    const progressBarWidth = contentWidth;
-    const progress = isLive ? 1 : (duration > 0 ? Math.min(position / duration, 1) : 0);
-    this.createFrostedProgressBar(ctx, infoX, progressY, progressBarWidth, progressBarHeight, progress);
-
-    // --- Time labels ---
-    const timeY = progressY + 28;
-    const currentTime = this.formatDuration(position);
-    const totalTime = isLive ? '<a:wrong_animated:1537179702928875631> LIVE' : this.formatDuration(duration);
-
+    // --- 1. Top Metadata Header Row ---
+    ctx.save();
+    ctx.font = '15px "Inter Medium", sans-serif';
     ctx.fillStyle = '#a0b0c0';
-    ctx.font = '14px "Inter Medium"';
     ctx.textAlign = 'left';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(currentTime, infoX, timeY);
-    ctx.textAlign = 'right';
-    ctx.fillText(totalTime, infoX + progressBarWidth, timeY);
+    ctx.fillText('👤 Author:', 48, 32);
+    ctx.fillText('🔊 Volume:', cx - 40, 32);
+    ctx.fillText('🌐 Duration:', width - 160, 32);
 
-    // --- Source badge (bottom-left) ---
-    const bottomY = height - 35;
-    ctx.font = '14px "Inter SemiBold"';
-    ctx.textAlign = 'left';
-    const sourceMetrics = ctx.measureText(source.toUpperCase());
-    const badgeWidth = sourceMetrics.width + 25;
-    const badgeHeight = 28;
-    const badgeX = infoX;
-    const badgeY = bottomY - badgeHeight / 2;
+    ctx.font = 'bold 18px "Inter Bold", sans-serif';
+    ctx.fillStyle = '#ffffff';
+    const reqText = this.truncateText(ctx, requester, 180, 'bold 18px "Inter Bold"');
+    ctx.fillText(reqText, 48, 56);
 
-    this.createFrostedGlass(ctx, badgeX, badgeY, badgeWidth, badgeHeight, badgeHeight / 2);
+    ctx.fillStyle = '#1ee064';
+    ctx.fillText('100%', cx - 40, 56);
 
+    ctx.fillStyle = '#00dcff';
+    const totalTimeStr = isLive ? 'LIVE' : this.formatDuration(duration);
+    ctx.fillText(totalTimeStr, width - 160, 56);
+
+    // Separator line
+    ctx.strokeStyle = 'rgba(255, 120, 0, 0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(32, 72);
+    ctx.lineTo(width - 32, 72);
+    ctx.stroke();
+    ctx.restore();
+
+    // --- 2. Large Centered Album Artwork Slot (Hero Thumbnail Box) ---
+    const artX = cx - thumbSize / 2;
+    const artY = 86;
+
+    ctx.save();
+    ctx.strokeStyle = '#FF7800';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.roundRect(artX - 4, artY - 4, thumbSize + 8, thumbSize + 8, 22);
+    ctx.stroke();
+
+    await this.drawArtwork(ctx, artworkUrl, artX, artY, thumbSize);
+
+    ctx.strokeStyle = 'rgba(0, 220, 255, 0.8)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(artX - 1, artY - 1, thumbSize + 2, thumbSize + 2, 19);
+    ctx.stroke();
+    ctx.restore();
+
+    // --- 3. Song Title & Artist (Centered below Artwork with proper margin) ---
+    const titleY = artY + thumbSize + 24; // y = 350
+    ctx.save();
+    const displayTitle = this.truncateText(ctx, `${title} — ${artist}`, width - 100, 'bold 22px "Inter Bold"');
+    ctx.font = 'bold 22px "Inter Bold", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(source.toUpperCase(), badgeX + badgeWidth / 2, badgeY + badgeHeight / 2);
+    ctx.fillText(displayTitle, cx, titleY);
+    ctx.restore();
 
-    // --- Requester / User tag (bottom-right) ---
+    // --- 4. Dynamic Equalizer Frequency Bars (Below Title with clear margin) ---
+    const eqY = titleY + 34; // y = 384
     ctx.save();
-    ctx.textAlign = 'right';
-    ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#00dcff';
+    for (let b = 0; b < 22; b++) {
+      const bx = cx - 154 + b * 14;
+      const bh = Math.max(4, Math.floor(12 + 10 * Math.sin((position / 1000) * 2 + b * 0.5)));
+      ctx.beginPath();
+      ctx.roundRect(bx, eqY - bh, 6, bh, 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // --- 5. Progress Timeline & Scrubber Bar ---
+    const barX1 = 80;
+    const barY = eqY + 20; // y = 404
+    const barW = width - 160;
+    const barX2 = barX1 + barW;
+
+    const progress = isLive ? 1 : (duration > 0 ? Math.min(position / duration, 1) : 0);
+    const fillW = Math.floor(barW * progress);
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(barX1, barY, barW, 8, 4);
+    ctx.fillStyle = 'rgba(40, 50, 70, 0.8)';
+    ctx.fill();
+
+    if (fillW > 0) {
+      ctx.beginPath();
+      ctx.roundRect(barX1, barY, fillW, 8, 4);
+      ctx.fillStyle = '#00dcff';
+      ctx.fill();
+    }
+
+    // Scrubber Knob
+    const knobX = barX1 + fillW;
+    ctx.shadowColor = 'rgba(0, 220, 255, 0.8)';
+    ctx.shadowBlur = 10;
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 15px "Inter SemiBold"';
-    ctx.fillText(opts.requester || 'Synn', width - margin - 5, bottomY);
+    ctx.beginPath();
+    ctx.arc(knobX, barY + 4, 8, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+
+    // Timestamps
+    const currentTimeStr = this.formatDuration(position);
+    ctx.save();
+    ctx.font = '14px "Inter Medium", sans-serif';
+    ctx.fillStyle = '#00dcff';
+    ctx.textAlign = 'left';
+    ctx.fillText(currentTimeStr, barX1, barY + 30);
+
+    ctx.fillStyle = '#a0b0c0';
+    ctx.textAlign = 'right';
+    ctx.fillText(totalTimeStr, barX2, barY + 30);
     ctx.restore();
 
     return canvas.toBuffer('image/png');

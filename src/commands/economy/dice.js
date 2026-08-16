@@ -50,13 +50,13 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(isWin ? 0x57F287 : isTie ? 0xF59E0B : 0xED4245)
-      .setTitle(`${resultIcon} Naruto Stake.cc 3D Dice Roller`)
+      .setTitle(`${resultIcon} Kunai 3D Dice Roller`)
       .setDescription(
         `**Your Roll:** 🎲 **${userRoll}** | **Dealer Roll:** 🎲 **${dealerRoll}**\n\n` +
         `${resultIcon} ${isWin ? `**WINNER!** You beat the dealer! Won **+${fmt(payout)}** Ryo!` : isTie ? `**PUSH!** Tie game! Bet returned.` : `**LOST!** Dealer won. Lost -${fmt(bet)} Ryo.`}`
       )
-      .setImage('attachment://stake-dice.png')
-      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Stake Casino Visuals` })
+      .setImage('attachment://naruto-dice.png')
+      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Shinobi Games` })
       .setTimestamp();
 
     return message.channel.send({ embeds: [embed], files: [cardAttachment] });

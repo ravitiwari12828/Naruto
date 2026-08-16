@@ -55,13 +55,13 @@ module.exports = {
 
     const resultEmbed = new EmbedBuilder()
       .setColor(isWin ? 0x57F287 : 0xED4245)
-      .setTitle(`${resultIcon} Naruto Stake.cc Plinko Plunge`)
+      .setTitle(`${resultIcon} Naruto Konoha Chakra Plinko Plunge`)
       .setDescription(
         `**Trajectory:** ${path.join(' ')}\n\n` +
         `${resultIcon} Ball landed on **${multiplier}x**!\n` +
         `• **Payout Won:** **${fmt(payout)}** <a:dollar_animated:1537177379666006016> (Net: **${isWin ? '+' : ''}${fmt(payout - bet)}**)`
       )
-      .setImage('attachment://stake-plinko.png')
+      .setImage('attachment://naruto-plinko.png')
       .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Shinobi Visuals` })
       .setTimestamp();
 

@@ -210,24 +210,24 @@ function buildMusicActionRows(player = null) {
   const isAutoplay = player?.autoplay || false;
 
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_pause').setEmoji('⏯️').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('music_skip').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('music_prev').setLabel('PREVIOUS').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_pause').setLabel('PLAY_PAUSE').setEmoji('⏯️').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('music_skip').setLabel('NEXT').setEmoji('⏭️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_stop').setLabel('STOP').setEmoji('⏹️').setStyle(ButtonStyle.Danger)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_loop').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_volup').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_clear').setEmoji('🗑️').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_loop').setLabel('LOOP').setEmoji('🔁').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_shuffle').setLabel('SHUFFLE').setEmoji('🔀').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setLabel('VOLUME').setEmoji('🔊').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_clear').setLabel('TRASH').setEmoji('🗑️').setStyle(ButtonStyle.Secondary)
   );
 
   const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_autoplay').setEmoji('♾️').setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_add').setEmoji('❤️').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_play').setEmoji('🎶').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_lyrics').setEmoji('🎤').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_autoplay').setLabel('AUTOPLAY').setEmoji('♾️').setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_add').setLabel('LIKE').setEmoji('❤️').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_play').setLabel('QUEUE').setEmoji('🎵').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_lyrics').setLabel('LYRICS').setEmoji('🎤').setStyle(ButtonStyle.Secondary)
   );
 
   let suggestedOptions = [];
