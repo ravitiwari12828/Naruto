@@ -25,8 +25,8 @@ function initLavalink(client) {
         retryDelay: 2000
       },
       {
-        id: 'synn-node-lava-v4',
-        host: 'lava-v4.ajiepy.srht.me',
+        id: 'synn-node-v4-jars',
+        host: 'lavalink.v4.lavalink.jars.io',
         port: 443,
         authorization: 'youshallnotpass',
         secure: true,
@@ -35,7 +35,19 @@ function initLavalink(client) {
       }
     ],
     sendToShard: (guildId, payload) => {
-      client.guilds.cache.get(guildId)?.shard?.send(payload);
+      try {
+        const guild = client.guilds.cache.get(guildId);
+        if (guild) {
+          if (guild.shard && typeof guild.shard.send === 'function') {
+            guild.shard.send(payload);
+          } else if (client.ws && client.ws.shards) {
+            const shard = client.ws.shards.get(guild.shardId || 0);
+            if (shard && typeof shard.send === 'function') {
+              shard.send(payload);
+            }
+          }
+        }
+      } catch (e) {}
     },
     client: {
       id: client.user.id,
@@ -44,7 +56,7 @@ function initLavalink(client) {
     autoSkip: true,
     autoSkipOnResolveError: true,
     playerOptions: {
-      defaultSearchPlatform: 'spsearch',
+      defaultSearchPlatform: 'scsearch',
       applyVolumeAsFilter: true,
       onDisconnect: {
         autoReconnect: true,
@@ -224,6 +236,9 @@ function initLavalink(client) {
   // ─────────────────────────────────────────
   lavalink.on('trackStart', async (player, track) => {
     if (!player) return;
+
+    // Enforce 100% audio output volume
+    await player.setVolume(100).catch(() => {});
 
     // Automatically set Voice Channel Status: <a:musicplayer_animated:1537177445428633762> Song Name - Artist Name
     await updateVoiceChannelStatus(player, track);
