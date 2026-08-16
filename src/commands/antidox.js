@@ -71,15 +71,30 @@ async function checkMessageForDox(message) {
   }
   userRecentMsgCache.set(userKey, userHistory);
 
-  const combinedText = userHistory.map(m => m.content).join(' ');
+  const rawCombinedText = userHistory.map(m => m.content).join(' ');
+
+  // Strip Discord Mentions, Channel Tags, Custom Emojis, and 17-20 Digit Snowflake IDs
+  const cleanContent = content
+    .replace(/<@!?\d+>/g, '')
+    .replace(/<#\d+>/g, '')
+    .replace(/<@&\d+>/g, '')
+    .replace(/<a?:[a-zA-Z0-9_]+:\d+>/g, '')
+    .replace(/\b\d{17,20}\b/g, '');
+
+  const cleanCombinedText = rawCombinedText
+    .replace(/<@!?\d+>/g, '')
+    .replace(/<#\d+>/g, '')
+    .replace(/<@&\d+>/g, '')
+    .replace(/<a?:[a-zA-Z0-9_]+:\d+>/g, '')
+    .replace(/\b\d{17,20}\b/g, '');
 
   let violationRule = null;
   let detectedType = '';
 
   // 1. IP Address Leak Check (Direct + Obfuscated + Cross-Message)
   if (config.antiIp && !violationRule) {
-    const normalizedIpContent = combinedText.replace(/\[dot\]|\(dot\)|\bdot\b|,/gi, '.').replace(/\s+/g, '');
-    const ipMatches = normalizedIpContent.match(IPV4_REGEX) || content.match(IPV4_REGEX);
+    const normalizedIpContent = cleanCombinedText.replace(/\[dot\]|\(dot\)|\bdot\b|,/gi, '.').replace(/\s+/g, '');
+    const ipMatches = normalizedIpContent.match(IPV4_REGEX) || cleanContent.match(IPV4_REGEX);
     if (ipMatches) {
       const realIp = ipMatches.find(ip => !EXCLUDED_IPS.includes(ip) && !ip.startsWith('192.168.') && !ip.startsWith('10.'));
       if (realIp) {
@@ -91,11 +106,12 @@ async function checkMessageForDox(message) {
 
   // 2. Phone Number Leak Check (Direct + Obfuscated + Cross-Message Multi-Send)
   if (config.antiPhone && !violationRule) {
-    const directPhoneMatches = content.match(PHONE_REGEX);
+    const directPhoneMatches = cleanContent.match(PHONE_REGEX);
 
-    // Strip all non-digits from combined recent messages sent by this user in this channel
-    const combinedDigits = combinedText.replace(/\D/g, '');
-    const obfuscatedPhoneMatch = /(?:91|0)?[6-9]\d{9}/.test(combinedDigits);
+    // Strip non-digits from cleaned combined text
+    const combinedDigits = cleanCombinedText.replace(/\D/g, '');
+    const obfuscatedPhoneMatch = (combinedDigits.length >= 10 && combinedDigits.length <= 13) &&
+                                 /(?:91|0)?[6-9]\d{9}/.test(combinedDigits);
 
     if ((directPhoneMatches && directPhoneMatches.length > 0) || obfuscatedPhoneMatch) {
       violationRule = 'Phone Number Leak Guard';
