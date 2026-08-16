@@ -77,8 +77,11 @@ function initLavalink(client) {
   lavalink.on('trackEnd', async (player, track, reason) => {
     if (!player) return;
 
+    const reasonStr = typeof reason === 'object' ? (reason?.reason || '') : String(reason || '');
+    const cleanReason = reasonStr.toLowerCase();
+
     // Ignore stopped or replaced tracks to prevent rapid infinite autoplay loops
-    if (reason !== 'finished' && reason !== 'loadFailed') return;
+    if (cleanReason === 'replaced' || cleanReason === 'stopped') return;
 
     // Initialize Autoplay History Set on player
     if (!player.autoplayHistory) player.autoplayHistory = new Set();
@@ -157,6 +160,8 @@ function initLavalink(client) {
         }
       } catch (err) {
         console.error('[Autoplay Engine Error]', err.message || err);
+      } finally {
+        setTimeout(() => { player.isAutoplaySearching = false; }, 3000);
       }
     }
   });
