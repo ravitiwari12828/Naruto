@@ -73,6 +73,8 @@ const {
   Options
 } = require('discord.js');
 const db = require('./database/db');
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://botdatabase:NarutoBot2026SecurePass@cluster0.v8w7x.mongodb.net/narutobot?retryWrites=true&w=majority';
+db.initMongo(MONGODB_URI).catch(() => {});
 const emojis = require('./utils/emojis');
 const { createStyledEmbed } = require('./utils/embedBuilder');
 const { dispatchLog } = require('./utils/logger');
