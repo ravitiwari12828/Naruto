@@ -126,6 +126,7 @@ const NARUTO_OST = {
 function buildMusicPlayerEmbed(track, player) {
   return new EmbedBuilder()
     .setColor(0xFF007F)
+    .setTitle(`${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} Now Playing`)
     .setDescription('*Currently streaming in voice channel*');
 }
 

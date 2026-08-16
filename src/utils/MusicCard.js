@@ -336,9 +336,9 @@ class MusicCard {
     } = opts;
 
     const width = 800;
-    const height = 480;
+    const height = 540;
     const cx = width / 2;
-    const thumbSize = 240;
+    const thumbSize = 300;
 
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
@@ -396,15 +396,15 @@ class MusicCard {
     ctx.stroke();
     ctx.restore();
 
-    // --- 2. Large Centered Album Artwork Slot (Hero Thumbnail Box) ---
+    // --- 2. Large Hero Centered Album Artwork Slot (300x300px) ---
     const artX = cx - thumbSize / 2;
-    const artY = 86;
+    const artY = 84;
 
     ctx.save();
     ctx.strokeStyle = '#FF7800';
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 3.5;
     ctx.beginPath();
-    ctx.roundRect(artX - 4, artY - 4, thumbSize + 8, thumbSize + 8, 22);
+    ctx.roundRect(artX - 5, artY - 5, thumbSize + 10, thumbSize + 10, 24);
     ctx.stroke();
 
     await this.drawArtwork(ctx, artworkUrl, artX, artY, thumbSize);
@@ -417,9 +417,9 @@ class MusicCard {
     ctx.restore();
 
     // --- 3. Song Title & Artist (Centered below Artwork with proper margin) ---
-    const titleY = artY + thumbSize + 24; // y = 350
+    const titleY = artY + thumbSize + 26; // y = 410
     ctx.save();
-    const displayTitle = this.truncateText(ctx, `${title} — ${artist}`, width - 100, 'bold 22px "Inter Bold"');
+    const displayTitle = this.truncateText(ctx, `${title} — ${artist}`, width - 80, 'bold 22px "Inter Bold"');
     ctx.font = 'bold 22px "Inter Bold", sans-serif';
     ctx.fillStyle = '#ffffff';
     ctx.textAlign = 'center';
@@ -427,12 +427,12 @@ class MusicCard {
     ctx.fillText(displayTitle, cx, titleY);
     ctx.restore();
 
-    // --- 4. Dynamic Equalizer Frequency Bars (Below Title with clear margin) ---
-    const eqY = titleY + 34; // y = 384
+    // --- 4. Dynamic Equalizer Frequency Bars ---
+    const eqY = titleY + 32; // y = 442
     ctx.save();
     ctx.fillStyle = '#00dcff';
-    for (let b = 0; b < 22; b++) {
-      const bx = cx - 154 + b * 14;
+    for (let b = 0; b < 24; b++) {
+      const bx = cx - 168 + b * 14;
       const bh = Math.max(4, Math.floor(12 + 10 * Math.sin((position / 1000) * 2 + b * 0.5)));
       ctx.beginPath();
       ctx.roundRect(bx, eqY - bh, 6, bh, 2);
@@ -442,7 +442,7 @@ class MusicCard {
 
     // --- 5. Progress Timeline & Scrubber Bar ---
     const barX1 = 80;
-    const barY = eqY + 20; // y = 404
+    const barY = eqY + 22; // y = 464
     const barW = width - 160;
     const barX2 = barX1 + barW;
 
@@ -478,11 +478,11 @@ class MusicCard {
     ctx.font = '14px "Inter Medium", sans-serif';
     ctx.fillStyle = '#00dcff';
     ctx.textAlign = 'left';
-    ctx.fillText(currentTimeStr, barX1, barY + 30);
+    ctx.fillText(currentTimeStr, barX1, barY + 28);
 
     ctx.fillStyle = '#a0b0c0';
     ctx.textAlign = 'right';
-    ctx.fillText(totalTimeStr, barX2, barY + 30);
+    ctx.fillText(totalTimeStr, barX2, barY + 28);
     ctx.restore();
 
     return canvas.toBuffer('image/png');
