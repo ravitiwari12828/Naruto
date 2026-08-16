@@ -77,6 +77,9 @@ function initLavalink(client) {
   lavalink.on('trackEnd', async (player, track, reason) => {
     if (!player) return;
 
+    // Ignore stopped or replaced tracks to prevent rapid infinite autoplay loops
+    if (reason !== 'finished' && reason !== 'loadFailed') return;
+
     // Initialize Autoplay History Set on player
     if (!player.autoplayHistory) player.autoplayHistory = new Set();
 
@@ -85,8 +88,9 @@ function initLavalink(client) {
       if (track.info.title) player.autoplayHistory.add(track.info.title.toLowerCase().trim());
     }
 
-    // Check if Autoplay is enabled
-    if (player.autoplay) {
+    // Autoplay trigger ONLY when queue is empty and autoplay is enabled and not already searching
+    if (player.autoplay && player.queue.tracks.length === 0 && !player.isAutoplaySearching) {
+      player.isAutoplaySearching = true;
       try {
         console.log(`♾️ [Autoplay Engine] Triggering smart recommendation for "${track?.info?.title}" by "${track?.info?.author}"...`);
 

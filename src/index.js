@@ -1961,6 +1961,49 @@ client.on('messageCreate', async (message) => {
 
 // Interaction Listener
 client.on('interactionCreate', async (interaction) => {
+  // Slash Command Handler
+  if (interaction.isChatInputCommand()) {
+    const cmdName = interaction.commandName;
+    const command = client.commands.get(cmdName);
+    if (!command) return;
+
+    try {
+      const args = [];
+      if (cmdName === 'play') {
+        const q = interaction.options.getString('query');
+        if (q) args.push(q);
+      } else if (cmdName === 'antidox') {
+        const act = interaction.options.getString('action');
+        if (act) args.push(act);
+      } else if (cmdName === 'ban' || cmdName === 'kick') {
+        const target = interaction.options.getUser('target');
+        const reason = interaction.options.getString('reason');
+        if (target) args.push(target.id);
+        if (reason) args.push(reason);
+      } else if (cmdName === 'purge') {
+        const amt = interaction.options.getInteger('amount');
+        if (amt) args.push(amt.toString());
+      }
+
+      // Convert interaction context for standard command execution
+      const fakeMsg = {
+        guild: interaction.guild,
+        channel: interaction.channel,
+        author: interaction.user,
+        member: interaction.member,
+        client: interaction.client,
+        content: `.${cmdName} ${args.join(' ')}`.trim(),
+        reply: (opts) => interaction.reply(opts).catch(() => {}),
+        delete: () => Promise.resolve()
+      };
+
+      await command.execute(fakeMsg, args);
+    } catch (err) {
+      console.error(`Slash command error /${cmdName}:`, err.message);
+      interaction.reply({ content: `⚠️ Error executing slash command: ${err.message}`, flags: 64 }).catch(() => {});
+    }
+    return;
+  }
   // 🌐 GLOBAL HELP & MODULE PANEL INTERACTION HANDLER
   if (interaction.customId === 'help_home' || interaction.customId === 'help_delete' || (interaction.isStringSelectMenu() && interaction.customId === 'help_category_select')) {
     await interaction.deferUpdate().catch(() => {});
