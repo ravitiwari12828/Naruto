@@ -11,6 +11,7 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 const { getLavalink } = require('../utils/lavalink');
+const { isGuildPremium, isUserPremium } = require('./premium');
 
 // MusicCard canvas renderer (optional fallback)
 let MusicCard = null;
@@ -126,6 +127,58 @@ function buildMusicPlayerEmbed(track, player) {
   return new EmbedBuilder()
     .setColor(0xFF007F)
     .setDescription('*Currently streaming in voice channel*');
+}
+
+function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
+  const isPrem = (guildId && isGuildPremium(guildId)) || (author && isUserPremium(author.id));
+  const maxQueue = isPrem ? 200 : 50;
+  const queueType = isPrem ? 'Premium Tier <a:sparkles_animated:1537179684175872171>' : 'Standard Tier';
+  const statusText = isPrem ? 'Premium active <a:crown_animated:1537177361093500968>' : 'Free Tier (50 max)';
+  const footerNote = isPrem ? '*Premium features unlocked <a:rank_animated:1537179656090943538>*' : '*Upgrade to Premium for 200 max queue*';
+
+  const title = track?.info?.title || 'Unknown Track';
+  const artist = track?.info?.author || 'Unknown Artist';
+  const durationMs = track?.info?.duration || 0;
+  const durationStr = formatDuration(durationMs);
+  const artworkUrl = track?.info?.artworkUrl || 'https://i.imgur.com/8Q9Z9zG.png';
+
+  return new EmbedBuilder()
+    .setColor(isPrem ? 0x7289DA : 0xFF007F)
+    .setTitle(`${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} Added to Queue`)
+    .setThumbnail(artworkUrl)
+    .setDescription(
+      `### ${emojis.SPARKLES || '<a:sparkles_animated:1537179684175872171>'} Track Information\n\n` +
+      `• ${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} **Title:** ${title}\n` +
+      `• ${emojis.AN_LYRICS || '🎤'} **Artist:** ${artist}\n` +
+      `• ${emojis.AN_LOOP || '⏱️'} **Duration:** \`${durationStr}\`\n` +
+      `• ${emojis.ANALYTICS_ZAP || '<a:rapid_animated:1537177482006896692>'} **Status:** Position #${position}\n\n` +
+      `*Track has been queued successfully*\n\n` +
+      `---\n\n` +
+      `### ${emojis.STATS || '<a:chart_animated:1537179539514462308>'} Queue Information\n\n` +
+      `• ${emojis.AN_STAR || '<a:target_animated:1537179692174545037>'} **Position:** #${position}\n` +
+      `• ${emojis.OWNER_CROWN || '<a:crown_animated:1537177361093500968>'} **Queue Type:** ${queueType}\n` +
+      `• ${emojis.ANALYTICS_ZAP || '<a:chart_animated:1537179539514462308>'} **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
+      `• ${emojis.AN_STAR || '<a:sparkles_animated:1537179684175872171>'} **Status:** ${statusText}\n\n` +
+      `${footerNote}`
+    )
+    .setTimestamp();
+}
+
+function buildAddedToQueueRow() {
+  return new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId('queue_playnow')
+      .setLabel('Play Now')
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId('queue_playnext')
+      .setLabel('Play Next')
+      .setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('queue_remove')
+      .setLabel('Remove')
+      .setStyle(ButtonStyle.Danger)
+  );
 }
 
 /**
