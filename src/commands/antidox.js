@@ -121,17 +121,17 @@ async function checkMessageForDox(message) {
 
   // 3. Email Address Leak Check (Direct + Obfuscated)
   if ((config.antiEmail !== false) && !violationRule) {
-    const normalizedEmailContent = combinedText.replace(/\[at\]|\(at\)|\bat\b/gi, '@').replace(/\[dot\]|\(dot\)|\bdot\b/gi, '.').replace(/\s+/g, '');
-    const emailMatches = normalizedEmailContent.match(EMAIL_REGEX) || content.match(EMAIL_REGEX);
+    const normalizedEmailContent = cleanCombinedText.replace(/\[at\]|\(at\)|\bat\b/gi, '@').replace(/\[dot\]|\(dot\)|\bdot\b/gi, '.').replace(/\s+/g, '');
+    const emailMatches = normalizedEmailContent.match(EMAIL_REGEX) || cleanContent.match(EMAIL_REGEX);
     if (emailMatches && emailMatches.length > 0) {
       violationRule = 'Email Address Leak Guard';
       detectedType = 'Private Email Address (Direct/Obfuscated)';
     }
   }
 
-  // 3. Doxbin & Leak Link Blocker
+  // 4. Doxbin & Leak Link Blocker
   if (config.antiLinks && !violationRule) {
-    const linkMatches = combinedText.match(LEAK_LINK_REGEX);
+    const linkMatches = cleanCombinedText.match(LEAK_LINK_REGEX);
     if (linkMatches && linkMatches.length > 0) {
       violationRule = 'Doxbin & IP Logger Link Guard';
       detectedType = 'Doxbin / IP Logger URL';
