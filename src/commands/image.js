@@ -83,6 +83,58 @@ function fetchImageBuffer(imageUrl, timeoutMs = 75000) {
   });
 }
 
+
+function fetchDallE3Image(prompt, apiKey) {
+  return new Promise((resolve, reject) => {
+    const postData = JSON.stringify({
+      model: 'dall-e-3',
+      prompt: prompt,
+      n: 1,
+      size: '1024x1024',
+      quality: 'hd'
+    });
+
+    const options = {
+      hostname: 'api.openai.com',
+      path: '/v1/images/generations',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    };
+
+    const req = https.request(options, (res) => {
+      let body = '';
+      res.on('data', chunk => body += chunk);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(body);
+          if (json.data && json.data[0] && json.data[0].url) {
+            fetchImageBuffer(json.data[0].url).then(resolve).catch(reject);
+          } else if (json.error) {
+            reject(new Error(json.error.message || 'DALL-E 3 API Error'));
+          } else {
+            reject(new Error('Invalid response from DALL-E 3 API'));
+          }
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.setTimeout(60000, () => {
+      req.destroy();
+      reject(new Error('DALL-E 3 API Timeout'));
+    });
+
+    req.write(postData);
+    req.end();
+  });
+}
+
 module.exports = {
   name: 'imagine',
   description: 'Generate high-definition AI art & realistic anime scenes (Free: 1 image/24h, Premium: 3 images/24h)',
@@ -168,16 +220,29 @@ module.exports = {
 
       const encodedPrompt = encodeURIComponent(promptText);
 
-      // Model pipeline: flux -> flux-realism -> turbo
-      const modelsToTry = ['flux', 'flux-realism', 'turbo'];
       let imageBuffer = null;
+      let usedEngine = 'Flux Engine';
 
-      for (const model of modelsToTry) {
+      const openAiKey = process.env.OPENAI_API_KEY;
+
+      if (openAiKey) {
         try {
-          const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&enhance=false&model=${model}&seed=${seed}`;
-          imageBuffer = await fetchImageBuffer(url, 45000);
-          if (imageBuffer && imageBuffer.length > 5000) break;
-        } catch (e) {}
+          imageBuffer = await fetchDallE3Image(promptText, openAiKey);
+          if (imageBuffer) usedEngine = 'ChatGPT DALL-E 3 HD';
+        } catch (dalleErr) {
+          console.error('[DALL-E 3 Fallback]:', dalleErr.message);
+        }
+      }
+
+      if (!imageBuffer) {
+        const modelsToTry = ['flux', 'flux-realism', 'turbo'];
+        for (const model of modelsToTry) {
+          try {
+            const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&enhance=false&model=${model}&seed=${seed}`;
+            imageBuffer = await fetchImageBuffer(url, 45000);
+            if (imageBuffer && imageBuffer.length > 5000) break;
+          } catch (e) {}
+        }
       }
 
       if (!imageBuffer) {
@@ -200,7 +265,7 @@ module.exports = {
         )
         .setImage('attachment://ai_artwork.png')
         .setFooter({
-          text: `Naruto Imagine System • ${author.tag}`,
+          text: `Naruto Imagine Engine • ${author.tag}`,
           iconURL: author.displayAvatarURL({ dynamic: true })
         })
         .setTimestamp();
