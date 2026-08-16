@@ -166,19 +166,15 @@ module.exports = {
     try {
       const seed = Math.floor(Math.random() * 999999) + 1;
 
-      // Anatomical Precision & High-Detail Quality Modifiers
-      const qualityModifiers = ', masterpiece, best quality, highly detailed, perfect anatomy, correct hands and feet, 5 fingers per hand, natural limbs, ultra-sharp focus, cinematic lighting, vivid colors, 8k resolution';
-      const enhancedPromptText = promptText.includes('masterpiece') ? promptText : (promptText + qualityModifiers);
+      const encodedPrompt = encodeURIComponent(promptText);
 
-      const encodedPrompt = encodeURIComponent(enhancedPromptText);
-
-      // Model pipeline: flux-realism -> flux -> turbo
-      const modelsToTry = ['flux-realism', 'flux', 'turbo'];
+      // Model pipeline: flux -> flux-realism -> turbo
+      const modelsToTry = ['flux', 'flux-realism', 'turbo'];
       let imageBuffer = null;
 
       for (const model of modelsToTry) {
         try {
-          const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&enhance=true&model=${model}&seed=${seed}`;
+          const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&enhance=false&model=${model}&seed=${seed}`;
           imageBuffer = await fetchImageBuffer(url, 45000);
           if (imageBuffer && imageBuffer.length > 5000) break;
         } catch (e) {}
