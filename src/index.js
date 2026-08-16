@@ -1591,10 +1591,7 @@ client.on('messageCreate', async (message) => {
   const memberRoleIds = message.member ? message.member.roles.cache.map(r => r.id) : [];
 
   // ALWAYS track message count & analytics for ALL non-bot messages
-  const userBefore = db.getUser(message.author.id, guildId);
-  const oldLvl = userBefore.level;
-
-  db.addMessage(message.author.id, 1, guildId, memberRoleIds, message.channel.id);
+  const msgResult = db.addMessage(message.author.id, 1, guildId, memberRoleIds, message.channel.id);
   db.recordAnalyticsEvent(guildId, message.author.id, 'message', 1);
 
   const levelCfg = db.getLevelConfig(guildId);
@@ -1603,9 +1600,13 @@ client.on('messageCreate', async (message) => {
     const isIgnoredRole = levelCfg.ignoredRoles && memberRoleIds.some(rId => levelCfg.ignoredRoles.includes(rId));
 
     if (!isIgnoredChan && !isIgnoredRole) {
-
       const userAfter = db.getUser(message.author.id, guildId);
-      if (userAfter.level > oldLvl) {
+      const isLevelUp = msgResult && msgResult.leveledUp && userAfter._lastAnnouncedLevel !== userAfter.level;
+
+      if (isLevelUp) {
+        userAfter._lastAnnouncedLevel = userAfter.level;
+        db.saveJSON();
+
         // ── Auto-assign level rank role & perk/custom role rewards ──
         if (message.member && message.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
           const currentRank = userAfter.rank;

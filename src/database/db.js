@@ -451,13 +451,13 @@ class ResilientDatabase {
 
       return new Proxy(u, {
         get(target, prop) {
-          if (['xp', 'weeklyXp', 'monthlyXp', 'level', 'rank', 'messages', 'voiceSeconds', '_lastXpAt', '_lastReactionXpAt', 'cardBg'].includes(prop)) {
+          if (['xp', 'weeklyXp', 'monthlyXp', 'level', 'rank', 'messages', 'voiceSeconds', '_lastXpAt', '_lastReactionXpAt', '_lastAnnouncedLevel', 'cardBg'].includes(prop)) {
             return gLvl[prop] !== undefined ? gLvl[prop] : (prop === 'level' ? 1 : prop === 'rank' ? 'Academy Student' : prop === 'cardBg' ? null : 0);
           }
           return target[prop];
         },
         set(target, prop, value) {
-          if (['xp', 'weeklyXp', 'monthlyXp', 'level', 'rank', 'messages', 'voiceSeconds', '_lastXpAt', '_lastReactionXpAt', 'cardBg'].includes(prop)) {
+          if (['xp', 'weeklyXp', 'monthlyXp', 'level', 'rank', 'messages', 'voiceSeconds', '_lastXpAt', '_lastReactionXpAt', '_lastAnnouncedLevel', 'cardBg'].includes(prop)) {
             gLvl[prop] = value;
             return true;
           }
