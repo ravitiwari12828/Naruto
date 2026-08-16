@@ -210,24 +210,24 @@ function buildMusicActionRows(player = null) {
   const isAutoplay = player?.autoplay || false;
 
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_prev').setEmoji('🎵').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_pause').setEmoji('🎵').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('music_skip').setEmoji('🎵').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_stop').setEmoji('🎵').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder().setCustomId('music_prev').setEmoji({ id: '1537179644158414859', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_pause').setEmoji({ id: '1537179636608536637', animated: true }).setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('music_skip').setEmoji({ id: '1537179630661017681', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_stop').setEmoji({ id: '1537179678127685642', animated: true }).setStyle(ButtonStyle.Danger)
   );
 
   const row2 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_loop').setEmoji('🎵').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_shuffle').setEmoji('🎵').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_volup').setEmoji('🎵').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_clear').setEmoji('🎵').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_loop').setEmoji({ id: '1537179606837104692', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_shuffle').setEmoji({ id: '1537179671169339462', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_volup').setEmoji({ id: '1537177548121968650', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_clear').setEmoji({ id: '1537177340390416434', animated: true }).setStyle(ButtonStyle.Secondary)
   );
 
   const row3 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('music_autoplay').setEmoji('🎵').setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_add').setEmoji('🎵').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_fav_play').setEmoji('🎵').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('music_lyrics').setEmoji('🎵').setStyle(ButtonStyle.Secondary)
+    new ButtonBuilder().setCustomId('music_autoplay').setEmoji({ id: '1537177490059960350', animated: true }).setStyle(isAutoplay ? ButtonStyle.Success : ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_add').setEmoji({ id: '1537177361093500968', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_fav_play').setEmoji({ id: '1537179661371707402', animated: true }).setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('music_lyrics').setEmoji({ id: '1537177465829724181', animated: true }).setStyle(ButtonStyle.Secondary)
   );
 
   let suggestedOptions = [];
@@ -257,14 +257,14 @@ function buildMusicActionRows(player = null) {
 
   const suggestedSelect = new StringSelectMenuBuilder()
     .setCustomId('music_suggested_select')
-    .setPlaceholder('<a:sparkles_animated:1537179684175872171> Suggested songs...')
+    .setPlaceholder('✨ Suggested songs...')
     .addOptions(suggestedOptions);
 
   const row4 = new ActionRowBuilder().addComponents(suggestedSelect);
 
   const filterSelect = new StringSelectMenuBuilder()
     .setCustomId('music_filter_select')
-    .setPlaceholder('<a:sparkles_animated:1537179684175872171> Select a music filter to apply...')
+    .setPlaceholder('🎛️ Select a music filter to apply...')
     .setMinValues(1)
     .setMaxValues(5)
     .addOptions([
@@ -610,11 +610,11 @@ module.exports = {
           .setTitle('Connected successfully!')
           .setThumbnail(botAvatar)
           .setDescription(
-            `• <a<a:accept_animated:1537177319603703969>1536620799115530270> **Channel:** <#${channel.id}>
+            `• <a:accept_animated:1537177319603703969> **Channel:** <#${channel.id}>
 ` +
-            `• <a<a:membercard_animated:1537177436146638993>1536620905738801224> **Members:** ${memberCount} member${memberCount === 1 ? '' : 's'}
+            `• <a:membercard_animated:1537177436146638993> **Members:** ${memberCount} member${memberCount === 1 ? '' : 's'}
 ` +
-            `• <a<a:openfolder_animated:1537177452936437760>1536620926316322917> **Category:** [ <a:musicplayer_animated:1537177445428633762> - ${categoryName} ]
+            `• <a:openfolder_animated:1537177452936437760> **Category:** [ <a:musicplayer_animated:1537177445428633762> - ${categoryName} ]
 
 ` +
             `*Use a play command to start music!*`
@@ -674,10 +674,10 @@ module.exports = {
 
       if (player.repeatMode === 'off') {
         player.setRepeatMode('track');
-        return message.reply('<a<a:sparkles_animated:1537179684175872171>1536620997694726194> **Loop Mode:** Track Repeat (Current song will repeat).');
+        return message.reply('<a:sparkles_animated:1537179684175872171> **Loop Mode:** Track Repeat (Current song will repeat).');
       } else if (player.repeatMode === 'track') {
         player.setRepeatMode('queue');
-        return message.reply('<a<a:sparkles_animated:1537179684175872171>1536620997694726194> **Loop Mode:** Queue Repeat (Entire queue will repeat).');
+        return message.reply('<a:sparkles_animated:1537179684175872171> **Loop Mode:** Queue Repeat (Entire queue will repeat).');
       } else {
         player.setRepeatMode('off');
         return message.reply('➡️ **Loop Mode:** Disabled (Normal playback).');
@@ -689,7 +689,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player || !player.queue.tracks.length) return message.reply(`${emojis.WARNING} Queue is empty or has only 1 track.`);
       player.queue.shuffle();
-      return message.reply('<a<a:membercard_animated:1537177436146638993>1536620793335652403> **Shuffled** the queue randomly!');
+      return message.reply('<a:membercard_animated:1537177436146638993> **Shuffled** the queue randomly!');
     }
 
     // 10. CLEAR QUEUE (.clear)
@@ -697,7 +697,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player) return message.reply(`${emojis.WARNING} No active music player.`);
       player.queue.clear();
-      return message.reply('<a<a:sparkles_animated:1537179684175872171>1536620813430562877> **Cleared** all upcoming songs in queue.');
+      return message.reply('<a:sparkles_animated:1537179684175872171> **Cleared** all upcoming songs in queue.');
     }
 
     // 11. REMOVE / MOVE (.remove 3, .move 5 2)
