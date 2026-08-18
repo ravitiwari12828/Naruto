@@ -2297,6 +2297,8 @@ client.on('interactionCreate', async (interaction) => {
     }
     if (val === 'ctrl_autoplay') {
       player.autoplay = !player.autoplay;
+      const musicCmd = client.commands?.get('music');
+      if (musicCmd?.autoplayStore) musicCmd.autoplayStore.set(interaction.guild.id, player.autoplay);
       const status = player.autoplay ? '<a:accept_animated:1537177319603703969> **ENABLED**' : '<a:wrong_animated:1537179702928875631> **DISABLED**';
       return interaction.editReply({ content: `♾️ **Autoplay Mode:** ${status}!` }).catch(() => {});
     }
@@ -2492,6 +2494,8 @@ client.on('interactionCreate', async (interaction) => {
 
     if (action === 'music_autoplay') {
       player.autoplay = !player.autoplay;
+      const musicCmd = client.commands?.get('music');
+      if (musicCmd?.autoplayStore) musicCmd.autoplayStore.set(interaction.guild.id, player.autoplay);
       const status = player.autoplay ? '<a:accept_animated:1537177319603703969> **ENABLED**' : '<a:wrong_animated:1537179702928875631> **DISABLED**';
       return interaction.editReply({ content: `♾️ **Autoplay Mode:** ${status}!` }).catch(() => {});
     }

@@ -21,8 +21,9 @@ try {
   console.warn('[Music] Canvas renderer not available — using styled embed player.');
 }
 
-// 24/7 AFK Voice Store
+// 24/7 AFK Voice & Autoplay Guild Stores
 const afkStore = new Map();
+const autoplayStore = new Map();
 const musicCardRenderer = MusicCard ? new MusicCard() : null;
 
 /**
@@ -299,6 +300,7 @@ module.exports = {
     'autoplay', 'ap', 'fav', 'favorite', 'favorites'
   ],
   afkStore,
+  autoplayStore,
   buildMusicPlayerEmbed,
   buildMusicActionRows,
   sendMusicCard,
@@ -384,6 +386,10 @@ module.exports = {
             });
             await player.connect();
             await player.setVolume(100).catch(() => {});
+          }
+
+          if (autoplayStore.has(guildId)) {
+            player.autoplay = autoplayStore.get(guildId);
           }
 
           let res = null;
@@ -803,6 +809,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player) return message.reply(`${emojis.WARNING} No active music player!`);
       player.autoplay = !player.autoplay;
+      autoplayStore.set(guildId, player.autoplay);
       const status = player.autoplay ? '<a:accept_animated:1537177319603703969> **ENABLED**' : '<a:wrong_animated:1537179702928875631> **DISABLED**';
       return message.reply(`♾️ **Autoplay Mode:** ${status}! ${player.autoplay ? '(Auto-queuing recommended tracks when queue ends)' : ''}`);
     }
