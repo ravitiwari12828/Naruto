@@ -84,17 +84,27 @@ class ResilientDatabase {
   }
 
   async initMongo(uri) {
+    if (mongoose) {
+      try {
+        mongoose.set('bufferCommands', false);
+      } catch (e) {}
+    }
+
     const connectOptions = {
-      serverSelectionTimeoutMS: 10000,
-      connectTimeoutMS: 10000,
+      serverSelectionTimeoutMS: 4000,
+      connectTimeoutMS: 4000,
       family: 4
     };
 
     try {
       console.log('<a:leaf_animated:1537179616400375939> [MongoDB Cloud] Connecting to MongoDB Atlas database...');
       await mongoose.connect(uri, connectOptions);
-      this.useMongo = true;
-      console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
+      if (mongoose.connection && mongoose.connection.readyState === 1) {
+        this.useMongo = true;
+        console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
+      } else {
+        throw new Error('Connection state not open');
+      }
     } catch (err) {
       try {
         let directUri = uri;
@@ -102,12 +112,24 @@ class ResilientDatabase {
           directUri = 'mongodb://botdatabase:NarutoBot2026SecurePass@cluster0-shard-00-00.v8w7x.mongodb.net:27017,cluster0-shard-00-01.v8w7x.mongodb.net:27017,cluster0-shard-00-02.v8w7x.mongodb.net:27017/narutobot?ssl=true&authSource=admin&retryWrites=true&w=majority';
         }
         await mongoose.connect(directUri, connectOptions);
-        this.useMongo = true;
-        console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully via direct connection! Syncing cloud database state...');
+        if (mongoose.connection && mongoose.connection.readyState === 1) {
+          this.useMongo = true;
+          console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully via direct connection! Syncing cloud database state...');
+        } else {
+          throw new Error('Direct connection state not open');
+        }
       } catch (retryErr) {
+        this.useMongo = false;
+        this.mongoReady = false;
         console.log('<a:infox_animated:1537177409428787251> [Local High-Speed Database Active] Running seamlessly on local JSON database.');
         return;
       }
+    }
+
+    if (!this.useMongo || !mongoose.connection || mongoose.connection.readyState !== 1) {
+      this.useMongo = false;
+      this.mongoReady = false;
+      return;
     }
 
     try {
