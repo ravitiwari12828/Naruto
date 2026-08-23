@@ -113,11 +113,16 @@ class ResilientDatabase {
       }
     } catch (err) {
       try {
+        await mongoose.disconnect().catch(() => {});
         let directUri = uri;
         if (uri.includes('cluster0.hqffik2.mongodb.net') || uri.includes('cluster0.v8w7x.mongodb.net')) {
           directUri = 'mongodb://narutobot:K5VTWsogy3sqCh6q@cluster0-shard-00-00.hqffik2.mongodb.net:27017,cluster0-shard-00-01.hqffik2.mongodb.net:27017,cluster0-shard-00-02.hqffik2.mongodb.net:27017/narutobot?ssl=true&replicaSet=atlas-hqffik-shard-0&authSource=admin&retryWrites=true&w=majority';
         }
-        await mongoose.connect(directUri, connectOptions);
+        if (directUri !== uri) {
+          await mongoose.connect(directUri, connectOptions);
+        } else {
+          throw err;
+        }
         if (mongoose.connection && mongoose.connection.readyState === 1) {
           this.useMongo = true;
           console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully via direct connection! Syncing cloud database state...');
@@ -125,6 +130,7 @@ class ResilientDatabase {
           throw new Error('Direct connection state not open');
         }
       } catch (retryErr) {
+        await mongoose.disconnect().catch(() => {});
         this.useMongo = false;
         this.mongoReady = false;
         console.log('<a:wrong_animated:1537179702928875631> [MongoDB Atlas Connection Failure]:', retryErr?.message || err?.message || 'IP Not Whitelisted / Network Access Blocked');
