@@ -103,9 +103,9 @@ function formatItemLines(item, maxContentWidth) {
  * @param {number} minWidth - Optional minimum inner width (default: 20, max cap: 22)
  * @returns {string} Formatted monospaced codeblock box string
  */
-function createDynamicBox(title, items = [], minWidth = 24, customMaxWidth = null) {
-  // Safe Inner Width: Expanded to 34 chars for wide executive monospaced box alignment
-  const MAX_INNER_WIDTH = customMaxWidth || 22;
+function createDynamicBox(title, items = [], minWidth = 20, customMaxWidth = null) {
+  // Safe Inner Width: Capped at 20 chars so total box width (24 chars) never wraps on mobile/desktop embeds
+  const MAX_INNER_WIDTH = customMaxWidth || 20;
 
   // Process all items into compliant line strings
   const processedLines = [];
@@ -123,9 +123,9 @@ function createDynamicBox(title, items = [], minWidth = 24, customMaxWidth = nul
   const contentWidth = Math.min(MAX_INNER_WIDTH, Math.max(minWidth, maxVisWidth));
   const borderRepeat = contentWidth + 2; // 1 space padding on each side
 
-  const topBorder = '╭' + '─'.repeat(borderRepeat) + '╮';
+  const topBorder = '┌' + '─'.repeat(borderRepeat) + '┐';
   const divider = '├' + '─'.repeat(borderRepeat) + '┤';
-  const bottomBorder = '╰' + '─'.repeat(borderRepeat) + '╯';
+  const bottomBorder = '└' + '─'.repeat(borderRepeat) + '┘';
 
   const boxLines = [topBorder];
 
