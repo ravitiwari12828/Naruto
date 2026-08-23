@@ -112,15 +112,26 @@ module.exports = {
           `naruto-security-logs: ${resolve('antinuke', 'securityLogs', 'naruto-security-logs')}\n` +
           `naruto-mod-logs     : ${resolve('modlogs', 'modLogs', 'naruto-mod-logs')}\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TOOLS || '<a:settings_animated:1537177506170404905>'} Server Audit Logs Category**\n` +
+          `**${emojis.TOOLS || '<a:settings_animated:1537177506170404905>'} Full Server Audit Categories (18/18)**\n` +
           `\`\`\`\n` +
-          `server-logs   : ${resolve('server', 'messageLogs', 'server-logs')}\n` +
-          `message-logs  : ${resolve('messages', 'messageLogs', 'message-logs')}\n` +
-          `channel-logs  : ${resolve('channels', 'channelLogs', 'channel-logs')}\n` +
-          `role-logs     : ${resolve('roles', 'roleLogs', 'role-logs')}\n` +
-          `member-logs   : ${resolve('members', 'memberLogs', 'member-logs')}\n` +
-          `voice-logs    : ${resolve('voice', 'voiceLogs', 'voice-logs')}\n` +
-          `join-leave-logs: ${resolve('joinleave', 'joinleaveLogs', 'join-leave-logs')}\n` +
+          `application-logs: ${resolve('applications', 'appLogs', 'application-logs')}\n` +
+          `channel-logs    : ${resolve('channels', 'channelLogs', 'channel-logs')}\n` +
+          `automod-logs    : ${resolve('automodrules', 'automodLogs', 'automod-logs')}\n` +
+          `emoji-logs      : ${resolve('emojiaudit', 'emojiLogs', 'emoji-logs')}\n` +
+          `event-logs      : ${resolve('events', 'eventLogs', 'event-logs')}\n` +
+          `invite-logs     : ${resolve('invites', 'inviteLogs', 'invite-logs')}\n` +
+          `message-logs    : ${resolve('messages', 'messageLogs', 'message-logs')}\n` +
+          `poll-logs       : ${resolve('polls', 'pollLogs', 'poll-logs')}\n` +
+          `role-logs       : ${resolve('roles', 'roleLogs', 'role-logs')}\n` +
+          `stage-logs      : ${resolve('stage', 'stageLogs', 'stage-logs')}\n` +
+          `server-logs     : ${resolve('server', 'serverLogs', 'server-logs')}\n` +
+          `sticker-logs    : ${resolve('stickers', 'stickerLogs', 'sticker-logs')}\n` +
+          `soundboard-logs : ${resolve('soundboard', 'soundboardLogs', 'soundboard-logs')}\n` +
+          `thread-logs     : ${resolve('threads', 'threadLogs', 'thread-logs')}\n` +
+          `user-logs       : ${resolve('users', 'userLogs', 'user-logs')}\n` +
+          `voice-logs      : ${resolve('voice', 'voiceLogs', 'voice-logs')}\n` +
+          `webhook-logs    : ${resolve('webhooks', 'webhookLogs', 'webhook-logs')}\n` +
+          `mod-logs        : ${resolve('moderation', 'modLogs', 'mod-logs')}\n` +
           `\`\`\`\n\n` +
           `**${emojis.TICKETS || '<a:tickety_animated:1537177533961732106>'} Ticket & ModMail Logs Category**\n` +
           `\`\`\`\n` +
@@ -231,15 +242,31 @@ module.exports = {
             ]
           },
           {
-            name: '<a:openfolder_animated:1537177452936437760> · Server Audit Logs ·',
+            name: '<a:openfolder_animated:1537177452936437760> · Server Audit Logs (Part 1) ·',
             channels: [
-              { key: 'server', name: 'server-logs' },
-              { key: 'messages', name: 'message-logs' },
+              { key: 'applications', name: 'application-logs' },
               { key: 'channels', name: 'channel-logs' },
-              { key: 'roles', name: 'role-logs' },
-              { key: 'members', name: 'member-logs' },
+              { key: 'automodrules', name: 'automod-logs' },
+              { key: 'emojiaudit', name: 'emoji-logs' },
+              { key: 'events', name: 'event-logs' },
+              { key: 'invites', name: 'invite-logs' },
+              { key: 'messages', name: 'message-logs' },
+              { key: 'polls', name: 'poll-logs' },
+              { key: 'roles', name: 'role-logs' }
+            ]
+          },
+          {
+            name: '<a:openfolder_animated:1537177452936437760> · Server Audit Logs (Part 2) ·',
+            channels: [
+              { key: 'stage', name: 'stage-logs' },
+              { key: 'server', name: 'server-logs' },
+              { key: 'stickers', name: 'sticker-logs' },
+              { key: 'soundboard', name: 'soundboard-logs' },
+              { key: 'threads', name: 'thread-logs' },
+              { key: 'users', name: 'user-logs' },
               { key: 'voice', name: 'voice-logs' },
-              { key: 'joinleave', name: 'join-leave-logs' }
+              { key: 'webhooks', name: 'webhook-logs' },
+              { key: 'moderation', name: 'mod-logs' }
             ]
           },
           {

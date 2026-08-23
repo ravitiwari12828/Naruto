@@ -25,27 +25,38 @@ async function dispatchLog(guild, logType, embedData, attachments = []) {
   if (!channelId) {
     const channelNameMap = {
       narutologs: ['naruto-logs', 'all-logs'],
-      modlogs: ['mod-logs', 'modlogs'],
+      modlogs: ['mod-logs', 'modlogs', 'naruto-mod-logs'],
       antinuke: ['naruto-security-logs', 'security-logs', 'antinuke-logs', 'bot-antinuke-logs'],
       automod: ['automod-logs', 'olympus-automod', 'naruto-automod-logs'],
+      automodrules: ['automod-logs', 'naruto-automod-logs'],
       messages: ['message-logs', 'msgs-log', 'message-log'],
       invites: ['invite-logs', 'invites-log'],
       channels: ['channel-logs', 'channel-log'],
       roles: ['role-logs', 'role-log'],
-      members: ['member-logs', 'member-log'],
+      members: ['member-logs', 'member-log', 'user-logs'],
+      users: ['user-logs', 'member-logs', 'member-log'],
       joinleave: ['join-leave-logs', 'join-leave-log', 'welcome-logs'],
       voice: ['voice-logs', 'vc-logs', 'voice-log'],
       vc: ['voice-logs', 'vc-logs', 'voice-log'],
-      webhooks: ['webhook-logs'],
-      banunban: ['ban-unban-logs'],
+      webhooks: ['webhook-logs', 'webhooks-log'],
+      banunban: ['ban-unban-logs', 'mod-logs'],
       ticketlogs: ['ticket-logs', 'tickets-log'],
       transcripts: ['ticket-transcripts'],
       modmaillogs: ['modmail-logs'],
       modmailtranscripts: ['modmail-transcripts'],
       emojis: ['emoji-logs', 'naruto-emoji-logs', 'emojis-log'],
+      emojiaudit: ['emoji-logs', 'naruto-emoji-logs'],
       modcases: ['mod-cases', 'naruto-mod-cases', 'cases-log', 'mod-logs', 'naruto-mod-logs'],
       limitlogs: ['naruto-limit-logs', 'limit-logs', 'limitlogs', 'naruto-security-logs', 'security-logs', 'server-logs'],
-      server: ['server-logs', 'server-log']
+      server: ['server-logs', 'server-log'],
+      applications: ['application-logs', 'applications-log', 'apps-log'],
+      events: ['event-logs', 'events-log', 'scheduled-events-logs'],
+      polls: ['poll-logs', 'polls-log'],
+      stage: ['stage-logs', 'stage-log'],
+      stickers: ['sticker-logs', 'stickers-log', 'emoji-logs'],
+      soundboard: ['soundboard-logs', 'soundboard-log'],
+      threads: ['thread-logs', 'threads-log'],
+      moderation: ['mod-logs', 'moderation-logs', 'naruto-mod-logs']
     };
 
     const targets = channelNameMap[logType] || [logType];

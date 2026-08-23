@@ -47,15 +47,17 @@ module.exports = {
           `naruto-limit-logs    ✓\n` +
           `naruto-mod-logs      ✓\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TOOLS || '<a:settings_animated:1537177506170404905>'} Server Audit Logs Category**\n` +
+          `**${emojis.TOOLS || '<a:settings_animated:1537177506170404905>'} Full Server Audit Categories (18/18)**\n` +
           `\`\`\`\n` +
-          `server-logs      ✓\n` +
-          `message-logs     ✓\n` +
-          `channel-logs     ✓\n` +
-          `role-logs        ✓\n` +
-          `member-logs      ✓\n` +
-          `voice-logs       ✓\n` +
-          `join-leave-logs  ✓\n` +
+          `application-logs ✓   channel-logs    ✓\n` +
+          `automod-logs     ✓   emoji-logs      ✓\n` +
+          `event-logs       ✓   invite-logs     ✓\n` +
+          `message-logs     ✓   poll-logs       ✓\n` +
+          `role-logs        ✓   stage-logs      ✓\n` +
+          `server-logs      ✓   sticker-logs    ✓\n` +
+          `soundboard-logs  ✓   thread-logs     ✓\n` +
+          `user-logs        ✓   voice-logs      ✓\n` +
+          `webhook-logs     ✓   mod-logs        ✓\n` +
           `\`\`\`\n\n` +
           `**${emojis.TICKETS || '<a:tickety_animated:1537177533961732106>'} Ticket & ModMail Logs Category**\n` +
           `\`\`\`\n` +
@@ -123,15 +125,31 @@ module.exports = {
             ]
           },
           {
-            name: '📁 · Server Audit Logs ·',
+            name: '📁 · Server Audit Logs (Part 1) ·',
             channels: [
-              { key: 'server', name: 'server-logs' },
-              { key: 'messages', name: 'message-logs' },
+              { key: 'applications', name: 'application-logs' },
               { key: 'channels', name: 'channel-logs' },
-              { key: 'roles', name: 'role-logs' },
-              { key: 'members', name: 'member-logs' },
+              { key: 'automodrules', name: 'automod-logs' },
+              { key: 'emojiaudit', name: 'emoji-logs' },
+              { key: 'events', name: 'event-logs' },
+              { key: 'invites', name: 'invite-logs' },
+              { key: 'messages', name: 'message-logs' },
+              { key: 'polls', name: 'poll-logs' },
+              { key: 'roles', name: 'role-logs' }
+            ]
+          },
+          {
+            name: '📁 · Server Audit Logs (Part 2) ·',
+            channels: [
+              { key: 'stage', name: 'stage-logs' },
+              { key: 'server', name: 'server-logs' },
+              { key: 'stickers', name: 'sticker-logs' },
+              { key: 'soundboard', name: 'soundboard-logs' },
+              { key: 'threads', name: 'thread-logs' },
+              { key: 'users', name: 'user-logs' },
               { key: 'voice', name: 'voice-logs' },
-              { key: 'joinleave', name: 'join-leave-logs' }
+              { key: 'webhooks', name: 'webhook-logs' },
+              { key: 'moderation', name: 'mod-logs' }
             ]
           },
           {
