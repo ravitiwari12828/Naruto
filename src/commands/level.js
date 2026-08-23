@@ -128,16 +128,37 @@ async function ensureShinobiRolesAndPerks(guild) {
   return { roleMap, createdRoles };
 }
 
+const RANK_GRADIENT_PALETTES = [
+  { id: 1,  name: 'Kurama Flame',       colors: ['#FF0000', '#FF7300', '#FFEA00'], accent: '#FF7300' },
+  { id: 2,  name: 'Neon Cyberpunk',     colors: ['#FF007F', '#7F00FF', '#00F0FF'], accent: '#FF007F' },
+  { id: 3,  name: 'Emerald Shinobi',     colors: ['#00F260', '#0575E6'],           accent: '#00F260' },
+  { id: 4,  name: 'Vaporwave Aura',      colors: ['#8A2387', '#E94057', '#F27121'], accent: '#E94057' },
+  { id: 5,  name: 'Solar Eclipse',      colors: ['#F12711', '#F5AF19'],           accent: '#F5AF19' },
+  { id: 6,  name: 'Chidori Electric',   colors: ['#00c6ff', '#0072ff'],           accent: '#00c6ff' },
+  { id: 7,  name: 'Sakura Blossom',     colors: ['#FF758C', '#FF7EB3'],           accent: '#FF758C' },
+  { id: 8,  name: 'Golden Hokage',       colors: ['#BF953F', '#FCF6BA', '#B38728'], accent: '#FFD700' },
+  { id: 9,  name: 'Midnight Purple',     colors: ['#654ea3', '#eaafc8'],           accent: '#9B59B6' },
+  { id: 10, name: 'Ocean Abyssal',      colors: ['#2B5876', '#4E4376'],           accent: '#2B5876' },
+  { id: 11, name: 'Poison Venom',       colors: ['#11998e', '#38ef7d'],           accent: '#38ef7d' },
+  { id: 12, name: 'Cosmic Nebula',      colors: ['#3A1C71', '#D76D77', '#FFAF7B'], accent: '#D76D77' },
+  { id: 13, name: 'Rinnegan Twilight',  colors: ['#4568DC', '#B06AB3'],           accent: '#B06AB3' },
+  { id: 14, name: 'Crimson Akatsuki',   colors: ['#800020', '#E50914'],           accent: '#E50914' },
+  { id: 15, name: 'Shadow Anbu',        colors: ['#232526', '#414345', '#FF4E50'], accent: '#FF4E50' },
+  { id: 16, name: 'Sage Chakra',        colors: ['#00F260', '#FFD700', '#FF6B00'], accent: '#FF6B00' }
+];
+
 module.exports = {
   name: 'level',
-  description: 'Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level disable, level status',
+  description: 'Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level cardtheme',
   aliases: [
     'levels', 'lvl', 'xp',
-    'rank', 'perks', 'rewards'
+    'rank', 'perks', 'rewards',
+    'ranktheme', 'cardtheme', 'leveltheme'
   ],
   levelConfigs,
   getOrCreateLevelConfig,
   ensureShinobiRolesAndPerks,
+  RANK_GRADIENT_PALETTES,
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -146,6 +167,7 @@ module.exports = {
 
     if (invoked === 'rank') sub = 'rank';
     if (invoked === 'perks' || invoked === 'rewards') sub = 'perks';
+    if (['ranktheme', 'cardtheme', 'leveltheme'].includes(invoked)) sub = 'cardtheme';
 
     const author = message.author;
     const guild = message.guild;
@@ -156,6 +178,31 @@ module.exports = {
     try {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
+
+    // ── CARD THEME SUBCOMMAND (.level cardtheme [1-16]) ──
+    if (sub === 'cardtheme' || sub === 'theme') {
+      const themeNum = parseInt(args[1] || args[0]);
+      if (!isNaN(themeNum) && themeNum >= 1 && themeNum <= 16) {
+        const chosen = RANK_GRADIENT_PALETTES[themeNum - 1];
+        db.updateUser(author.id, u => { u.cardTheme = themeNum; }, guildId);
+        return message.reply(`${emojis.SUCCESS || '✅'} **Rank Card Gradient Theme set to Theme #${themeNum}: "${chosen.name}"!** Type \`.rank\` to view your new card!`);
+      }
+
+      // Display 16 Themes Catalog
+      const themeItems = RANK_GRADIENT_PALETTES.map(p => `#${String(p.id).padStart(2, '0')} : ${p.name}`);
+      const box = createDynamicBox('16 RANK CARD GRADIENT THEMES', themeItems);
+
+      const embed = createStyledEmbed({
+        title: `${emojis.SPARKLES || '✨'} 16 Rank Card Gradient Color Palettes`,
+        description:
+          `Select your favorite gradient theme for your \`.rank\` card!\n\n` +
+          '```\n' + box + '\n```\n' +
+          `**Usage:** \`.ranktheme <1-16>\` or \`.level cardtheme <1-16>\` e.g. \`.ranktheme 5\``,
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
 
     // 1. .level setup <#channel>
     if (sub === 'setup') {
@@ -742,6 +789,21 @@ module.exports = {
         const canvas = createCanvas(W, H);
         const ctx = canvas.getContext('2d');
 
+        // ── 16 DYNAMIC GRADIENT PALETTES SELECTION ──────────────────────────
+        let paletteIdx = 0;
+        const numArg = parseInt(args[1] || args[0]);
+        if (!isNaN(numArg) && numArg >= 1 && numArg <= 16) {
+          paletteIdx = numArg - 1;
+        } else if (userData.cardTheme && userData.cardTheme >= 1 && userData.cardTheme <= 16) {
+          paletteIdx = userData.cardTheme - 1;
+        } else {
+          paletteIdx = (targetUser.id.charCodeAt(targetUser.id.length - 1) % 16);
+        }
+        const palette = RANK_GRADIENT_PALETTES[paletteIdx] || RANK_GRADIENT_PALETTES[0];
+        const primaryColor = palette.colors[0];
+        const secondaryColor = palette.colors[1] || palette.colors[0];
+        const accentColor = palette.accent || palette.colors[palette.colors.length - 1];
+
         // ── BACKGROUND: custom image / custom color / default dark ────────
         let bgLoaded = false;
         if (userData.cardBg && userData.cardBg.startsWith('http')) {
@@ -770,7 +832,7 @@ module.exports = {
           }
         }
 
-        // Diagonal slash accent (top-right corner, Naruto leaf village inspired)
+        // Diagonal slash accent (top-right corner, Theme-colored)
         ctx.save();
         ctx.beginPath();
         ctx.moveTo(W - 200, 0);
@@ -779,15 +841,15 @@ module.exports = {
         ctx.lineTo(W - 130, H);
         ctx.closePath();
         const bgAccent = ctx.createLinearGradient(W - 200, 0, W, H);
-        bgAccent.addColorStop(0, 'rgba(255,107,0,0.07)');
-        bgAccent.addColorStop(1, 'rgba(255,200,0,0.04)');
+        bgAccent.addColorStop(0, primaryColor + '22');
+        bgAccent.addColorStop(1, secondaryColor + '11');
         ctx.fillStyle = bgAccent;
         ctx.fill();
         ctx.restore();
 
         // Bright accent slash line
         ctx.save();
-        ctx.strokeStyle = 'rgba(255,107,0,0.35)';
+        ctx.strokeStyle = primaryColor + '55';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(W - 200, 0);
@@ -797,7 +859,7 @@ module.exports = {
 
         // Rounded card border
         ctx.save();
-        ctx.strokeStyle = 'rgba(255,107,0,0.2)';
+        ctx.strokeStyle = primaryColor + '33';
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.roundRect(1, 1, W - 2, H - 2, 16);
@@ -807,23 +869,23 @@ module.exports = {
         // ── AVATAR (circle, left side) ───────────────────────────────────
         const avX = 95, avY = H / 2, avR = 68;
 
-        // Outer glow (soft orange halo)
+        // Outer glow (soft halo)
         ctx.save();
         const halo = ctx.createRadialGradient(avX, avY, avR - 5, avX, avY, avR + 20);
-        halo.addColorStop(0, 'rgba(255,107,0,0.35)');
-        halo.addColorStop(1, 'rgba(255,107,0,0)');
+        halo.addColorStop(0, primaryColor + '55');
+        halo.addColorStop(1, 'rgba(0,0,0,0)');
         ctx.fillStyle = halo;
         ctx.beginPath();
         ctx.arc(avX, avY, avR + 20, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
 
-        // Ring border
+        // Ring border with multi-stop Gradient
         ctx.save();
         const ringGrad = ctx.createLinearGradient(avX - avR, avY - avR, avX + avR, avY + avR);
-        ringGrad.addColorStop(0, '#FF6B00');
-        ringGrad.addColorStop(0.5, '#FFD700');
-        ringGrad.addColorStop(1, '#FF6B00');
+        ringGrad.addColorStop(0, primaryColor);
+        ringGrad.addColorStop(0.5, secondaryColor);
+        ringGrad.addColorStop(1, accentColor);
         ctx.strokeStyle = ringGrad;
         ctx.lineWidth = 4;
         ctx.beginPath();
@@ -841,8 +903,8 @@ module.exports = {
           ctx.drawImage(avImg, avX - avR, avY - avR, avR * 2, avR * 2);
         } catch {
           const fbGrad = ctx.createLinearGradient(avX - avR, avY - avR, avX + avR, avY + avR);
-          fbGrad.addColorStop(0, '#FF6B00');
-          fbGrad.addColorStop(1, '#6b00ff');
+          fbGrad.addColorStop(0, primaryColor);
+          fbGrad.addColorStop(1, secondaryColor);
           ctx.fillStyle = fbGrad;
           ctx.fillRect(avX - avR, avY - avR, avR * 2, avR * 2);
           ctx.font = 'bold 40px sans-serif';
@@ -865,11 +927,11 @@ module.exports = {
         ctx.fillStyle = '#ffffff';
         ctx.fillText('@' + uname, tx, 62);
 
-        // Thin coloured underline
+        // Thin gradient underline
         const unameW = ctx.measureText('@' + uname).width;
         const lineGrad = ctx.createLinearGradient(tx, 0, tx + unameW, 0);
-        lineGrad.addColorStop(0, '#FF6B00');
-        lineGrad.addColorStop(1, '#FFD700');
+        lineGrad.addColorStop(0, primaryColor);
+        lineGrad.addColorStop(1, accentColor);
         ctx.save();
         ctx.strokeStyle = lineGrad;
         ctx.lineWidth = 2.5;
@@ -899,8 +961,8 @@ module.exports = {
 
           // Chip background
           ctx.save();
-          ctx.fillStyle = 'rgba(255,107,0,0.12)';
-          ctx.strokeStyle = 'rgba(255,107,0,0.3)';
+          ctx.fillStyle = primaryColor + '22';
+          ctx.strokeStyle = primaryColor + '44';
           ctx.lineWidth = 1;
           ctx.beginPath();
           ctx.roundRect(chipX, chipY, totalW, chipH, chipR);
@@ -912,8 +974,8 @@ module.exports = {
           ctx.fillStyle = '#aaaaaa';
           ctx.fillText(label, chipX + chipPad, chipY + 19);
 
-          // Value (orange-gold)
-          ctx.fillStyle = '#FFD700';
+          // Value (accent gold/colored)
+          ctx.fillStyle = accentColor;
           ctx.fillText(val, chipX + chipPad + lW, chipY + 19);
 
           chipX += totalW + 10;
@@ -933,13 +995,18 @@ module.exports = {
         ctx.fill();
         ctx.stroke();
 
-        // Fill (only as wide as actual progress)
+        // Fill (Multi-color gradient matching theme)
         const filled = Math.round(barW * progress);
         if (filled > 2) {
           const barGrad = ctx.createLinearGradient(barX, 0, barX + filled, 0);
-          barGrad.addColorStop(0, '#FF6B00');
-          barGrad.addColorStop(0.5, '#FF9900');
-          barGrad.addColorStop(1, '#FFD700');
+          if (palette.colors.length === 2) {
+            barGrad.addColorStop(0, palette.colors[0]);
+            barGrad.addColorStop(1, palette.colors[1]);
+          } else {
+            barGrad.addColorStop(0, palette.colors[0]);
+            barGrad.addColorStop(0.5, palette.colors[1]);
+            barGrad.addColorStop(1, palette.colors[2]);
+          }
           ctx.fillStyle = barGrad;
           ctx.beginPath();
           ctx.roundRect(barX, barY, filled, barH2, barH2 / 2);
