@@ -916,7 +916,7 @@ const emojisProxy = new Proxy(baseExports, {
     if (propLower.includes('hour') || propLower.includes('time')) return '⏳';
     if (propLower.includes('fire') || propLower.includes('streak')) return '🔥';
 
-    return '';
+    return CUSTOM.naruto_animated || '<a:naruto_animated:1537179622024814733>';
   }
 });
 

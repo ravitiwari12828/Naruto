@@ -175,7 +175,11 @@ function initLavalink(client) {
           if (nextTrack.info?.title) player.autoplayHistory.add(nextTrack.info.title.toLowerCase().trim());
 
           await player.queue.add(nextTrack);
-          await player.play().catch(() => {});
+          if (!player.playing && !player.paused) {
+            await player.play({ track: nextTrack }).catch(async () => {
+              await player.play().catch(() => {});
+            });
+          }
 
           if (player.textChannelId) {
             const channel = client.channels.cache.get(player.textChannelId) || await client.channels.fetch(player.textChannelId).catch(() => null);

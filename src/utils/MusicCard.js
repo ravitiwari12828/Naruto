@@ -339,36 +339,84 @@ class MusicCard {
       requester = 'Synn'
     } = opts;
 
+    // 16 Dynamic Gradient Color Themes
+    const DYNAMIC_PALETTES = [
+      { name: 'Sunset Chakra', main: '#ff7800', sec: '#ec4899', accent: '#8b5cf6' },
+      { name: 'Neon Cyberpunk', main: '#06b6d4', sec: '#a855f7', accent: '#3b82f6' },
+      { name: 'Emerald Shinobi', main: '#10b981', sec: '#14b8a6', accent: '#06b6d4' },
+      { name: 'Crimson Kyuubi', main: '#ef4444', sec: '#f59e0b', accent: '#9333ea' },
+      { name: 'Cosmic Lavender', main: '#6366f1', sec: '#a855f7', accent: '#f43f5e' },
+      { name: 'Golden Sage', main: '#f59e0b', sec: '#eab308', accent: '#ea580c' },
+      { name: 'Hyper Neon Magenta', main: '#ff007f', sec: '#ff4500', accent: '#7b2cbf' },
+      { name: 'Oceanic Rasengan', main: '#1d4ed8', sec: '#06b6d4', accent: '#34d399' },
+      { name: 'Midnight Amaterasu', main: '#0f172a', sec: '#4338ca', accent: '#c084fc' },
+      { name: 'Sakura Blossom', main: '#f472b6', sec: '#e11d48', accent: '#fbbf24' },
+      { name: 'Raijin Lightning', main: '#facc15', sec: '#22d3ee', accent: '#2563eb' },
+      { name: 'Toxic Venom Green', main: '#84cc16', sec: '#22c55e', accent: '#065f46' },
+      { name: 'Solar Flare', main: '#dc2626', sec: '#f97316', accent: '#facc15' },
+      { name: 'Astral Nebula', main: '#581c87', sec: '#d946ef', accent: '#38bdf8' },
+      { name: 'Velvet Midnight', main: '#7e22ce', sec: '#881337', accent: '#d97706' },
+      { name: 'Frozen Frost Glaze', main: '#38bdf8', sec: '#2dd4bf', accent: '#e2e8f0' }
+    ];
+
+    // Pick Palette deterministically based on track title string hash
+    let hash = 0;
+    for (let i = 0; i < title.length; i++) {
+      hash = (hash << 5) - hash + title.charCodeAt(i);
+      hash |= 0;
+    }
+    const palIdx = Math.abs(hash) % DYNAMIC_PALETTES.length;
+    const palette = DYNAMIC_PALETTES[palIdx];
+
     const width = 800;
     const height = 360;
     const thumbSize = 220;
     const artX = 42;
-    const artY = 96; // 28px spacious gap below separator line at y = 68 (NO overlap with volume!)
+    const artY = 96;
 
-    const infoX = artX + thumbSize + 32; // x = 294
-    const rightW = width - infoX - 42;  // width = 464
+    const infoX = artX + thumbSize + 32;
+    const rightW = width - infoX - 42;
 
     const canvas = createCanvas(width, height);
     const ctx = canvas.getContext('2d');
 
-    // --- Background Base (Dark Obsidian + Neon Orange Border) ---
+    // --- Background Base (Dark Obsidian + Dynamic Gradient Border) ---
     ctx.save();
     ctx.beginPath();
     ctx.roundRect(0, 0, width, height, 28);
-    ctx.fillStyle = '#0c0f18';
+    ctx.fillStyle = '#0a0c16';
     ctx.fill();
+
+    // Background Gradient Glow Orbs
+    const orbGrad1 = ctx.createRadialGradient(100, 100, 10, 100, 100, 300);
+    orbGrad1.addColorStop(0, palette.main + '40');
+    orbGrad1.addColorStop(1, 'transparent');
+    ctx.fillStyle = orbGrad1;
+    ctx.fillRect(0, 0, width, height);
+
+    const orbGrad2 = ctx.createRadialGradient(width - 100, height - 100, 10, width - 100, height - 100, 300);
+    orbGrad2.addColorStop(0, palette.sec + '40');
+    orbGrad2.addColorStop(1, 'transparent');
+    ctx.fillStyle = orbGrad2;
+    ctx.fillRect(0, 0, width, height);
 
     ctx.beginPath();
     ctx.roundRect(4, 4, width - 8, height - 8, 24);
-    ctx.fillStyle = 'rgba(20, 26, 40, 0.95)';
+    ctx.fillStyle = 'rgba(18, 22, 36, 0.92)';
     ctx.fill();
-    ctx.strokeStyle = '#FF7800';
-    ctx.lineWidth = 3;
+
+    // Linear Gradient Border
+    const borderGrad = ctx.createLinearGradient(0, 0, width, height);
+    borderGrad.addColorStop(0, palette.main);
+    borderGrad.addColorStop(0.5, palette.sec);
+    borderGrad.addColorStop(1, palette.accent);
+    ctx.strokeStyle = borderGrad;
+    ctx.lineWidth = 3.5;
     ctx.stroke();
 
     // Top Gloss Reflection
     const refGrad = ctx.createLinearGradient(0, 0, width, 90);
-    refGrad.addColorStop(0, 'rgba(255, 255, 255, 0.08)');
+    refGrad.addColorStop(0, 'rgba(255, 255, 255, 0.10)');
     refGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
     ctx.fillStyle = refGrad;
     ctx.fillRect(4, 4, width - 8, 80);
@@ -388,15 +436,15 @@ class MusicCard {
     const reqText = this.truncateText(ctx, requester, 180, 'bold 17px "Inter Bold"');
     ctx.fillText(reqText, 48, 54);
 
-    ctx.fillStyle = '#1ee064';
+    ctx.fillStyle = palette.main;
     ctx.fillText('100%', width / 2 - 40, 54);
 
-    ctx.fillStyle = '#00dcff';
+    ctx.fillStyle = palette.sec;
     const totalTimeStr = isLive ? 'LIVE' : this.formatDuration(duration);
     ctx.fillText(totalTimeStr, width - 160, 54);
 
-    // Separator line
-    ctx.strokeStyle = 'rgba(255, 120, 0, 0.4)';
+    // Separator line with Gradient
+    ctx.strokeStyle = borderGrad;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(32, 68);
@@ -406,7 +454,7 @@ class MusicCard {
 
     // --- 2. Left Side Album Artwork Box (220x220px) ---
     ctx.save();
-    ctx.strokeStyle = '#FF7800';
+    ctx.strokeStyle = palette.main;
     ctx.lineWidth = 3.5;
     ctx.beginPath();
     ctx.roundRect(artX - 5, artY - 5, thumbSize + 10, thumbSize + 10, 22);
@@ -414,7 +462,7 @@ class MusicCard {
 
     await this.drawArtwork(ctx, artworkUrl, artX, artY, thumbSize);
 
-    ctx.strokeStyle = 'rgba(0, 220, 255, 0.8)';
+    ctx.strokeStyle = palette.sec;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.roundRect(artX - 1, artY - 1, thumbSize + 2, thumbSize + 2, 19);
@@ -437,9 +485,13 @@ class MusicCard {
     ctx.restore();
 
     // --- 4. Right Side Dynamic Equalizer Frequency Bars ---
-    const eqY = artY + 110; // y = 206
+    const eqY = artY + 110;
     ctx.save();
-    ctx.fillStyle = '#00dcff';
+    const eqGrad = ctx.createLinearGradient(infoX, 0, infoX + rightW, 0);
+    eqGrad.addColorStop(0, palette.main);
+    eqGrad.addColorStop(1, palette.sec);
+    ctx.fillStyle = eqGrad;
+
     for (let b = 0; b < 22; b++) {
       const bx = infoX + b * 13;
       const bh = Math.max(4, Math.floor(10 + 9 * Math.sin((position / 1000) * 2 + b * 0.5)));
@@ -450,7 +502,7 @@ class MusicCard {
     ctx.restore();
 
     // --- 5. Right Side Progress Timeline & Scrubber Bar ---
-    const barY = eqY + 24; // y = 230
+    const barY = eqY + 24;
     const progress = isLive ? 1 : (duration > 0 ? Math.min(position / duration, 1) : 0);
     const fillW = Math.floor(rightW * progress);
 
@@ -461,15 +513,18 @@ class MusicCard {
     ctx.fill();
 
     if (fillW > 0) {
+      const pGrad = ctx.createLinearGradient(infoX, barY, infoX + fillW, barY);
+      pGrad.addColorStop(0, palette.main);
+      pGrad.addColorStop(1, palette.sec);
       ctx.beginPath();
       ctx.roundRect(infoX, barY, fillW, 8, 4);
-      ctx.fillStyle = '#00dcff';
+      ctx.fillStyle = pGrad;
       ctx.fill();
     }
 
     // Scrubber Knob
     const knobX = infoX + fillW;
-    ctx.shadowColor = 'rgba(0, 220, 255, 0.8)';
+    ctx.shadowColor = palette.sec;
     ctx.shadowBlur = 10;
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
@@ -481,7 +536,7 @@ class MusicCard {
     const currentTimeStr = this.formatDuration(position);
     ctx.save();
     ctx.font = '14px "Inter Medium", sans-serif';
-    ctx.fillStyle = '#00dcff';
+    ctx.fillStyle = palette.main;
     ctx.textAlign = 'left';
     ctx.fillText(currentTimeStr, infoX, barY + 28);
 

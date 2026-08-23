@@ -15,7 +15,7 @@ const db = require('../database/db');
 module.exports = {
   name: 'advlogsetup',
   description: 'Deploy multi-category server audit logging channels (automatically reuses existing server channels)',
-  aliases: [],
+  aliases: ['advlogs', 'advlog', 'logs', 'logsetup', 'logssetup', 'auditlogs'],
 
   async execute(message, args) {
     const author = message.author;
@@ -111,7 +111,7 @@ module.exports = {
       if (interaction.customId === 'advlog_deploy_all') {
         const categoryStructure = [
           {
-            name: '<a:security_animated:1537177499862171741> · Security Logs ·',
+            name: '🛡️ · Security Logs ·',
             channels: [
               { key: 'narutologs', name: 'naruto-logs' },
               { key: 'automod', name: 'naruto-automod-logs' },
@@ -123,7 +123,7 @@ module.exports = {
             ]
           },
           {
-            name: '<a:openfolder_animated:1537177452936437760> · Server Audit Logs ·',
+            name: '📁 · Server Audit Logs ·',
             channels: [
               { key: 'server', name: 'server-logs' },
               { key: 'messages', name: 'message-logs' },
@@ -135,7 +135,7 @@ module.exports = {
             ]
           },
           {
-            name: '<a:tickety_animated:1537177533961732106> · Ticket & ModMail Logs ·',
+            name: '🎟️ · Ticket & ModMail Logs ·',
             channels: [
               { key: 'ticketlogs', name: 'ticket-logs' },
               { key: 'transcripts', name: 'ticket-transcripts' },

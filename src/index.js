@@ -1866,8 +1866,7 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  const mentionPrefix = `<@${client.user.id}>`;
-  const mentionNicknamePrefix = `<@!${client.user.id}>`;
+  const mentionRegex = new RegExp(`^<@!?${client.user.id}>\\s*`);
   let usedPrefix = null;
 
   const { isBotOwner } = require('./utils/owners');
@@ -1876,10 +1875,9 @@ client.on('messageCreate', async (message) => {
 
   if (message.content.startsWith(PREFIX)) {
     usedPrefix = PREFIX;
-  } else if (message.content.startsWith(mentionPrefix)) {
-    usedPrefix = mentionPrefix;
-  } else if (message.content.startsWith(mentionNicknamePrefix)) {
-    usedPrefix = mentionNicknamePrefix;
+  } else if (mentionRegex.test(message.content)) {
+    const match = message.content.match(mentionRegex);
+    usedPrefix = match[0];
   } else {
     // Universal Command Match: Auto-detect valid commands typed with or without prefix
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -1892,7 +1890,7 @@ client.on('messageCreate', async (message) => {
     }
   }
 
-  if (message.content.trim() === mentionPrefix || message.content.trim() === mentionNicknamePrefix) {
+  if (message.content.trim() === `<@${client.user.id}>` || message.content.trim() === `<@!${client.user.id}>`) {
     const helpCmd = client.commands.get('help');
     if (helpCmd) return helpCmd.execute(message, []);
   }
