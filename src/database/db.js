@@ -84,6 +84,13 @@ class ResilientDatabase {
   }
 
   async initMongo(uri) {
+    try {
+      const dns = require('dns');
+      if (typeof dns.setServers === 'function') {
+        dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+      }
+    } catch (e) {}
+
     if (mongoose) {
       try {
         mongoose.set('bufferCommands', false);
@@ -91,8 +98,8 @@ class ResilientDatabase {
     }
 
     const connectOptions = {
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 5000
+      serverSelectionTimeoutMS: 8000,
+      connectTimeoutMS: 8000
     };
 
     try {
@@ -107,8 +114,8 @@ class ResilientDatabase {
     } catch (err) {
       try {
         let directUri = uri;
-        if (uri.includes('cluster0.v8w7x.mongodb.net')) {
-          directUri = 'mongodb://botdatabase:NarutoBot2026SecurePass@cluster0-shard-00-00.v8w7x.mongodb.net:27017,cluster0-shard-00-01.v8w7x.mongodb.net:27017,cluster0-shard-00-02.v8w7x.mongodb.net:27017/narutobot?ssl=true&authSource=admin&retryWrites=true&w=majority';
+        if (uri.includes('cluster0.hqffik2.mongodb.net') || uri.includes('cluster0.v8w7x.mongodb.net')) {
+          directUri = 'mongodb://narutobot:K5VTWsogy3sqCh6q@cluster0-shard-00-00.hqffik2.mongodb.net:27017,cluster0-shard-00-01.hqffik2.mongodb.net:27017,cluster0-shard-00-02.hqffik2.mongodb.net:27017/narutobot?ssl=true&replicaSet=atlas-hqffik-shard-0&authSource=admin&retryWrites=true&w=majority';
         }
         await mongoose.connect(directUri, connectOptions);
         if (mongoose.connection && mongoose.connection.readyState === 1) {
