@@ -21,17 +21,8 @@ function initLavalink(client) {
         port: 443,
         authorization: 'youshallnotpass',
         secure: true,
-        retryAmount: 20,
-        retryDelay: 2000
-      },
-      {
-        id: 'synn-node-ajiepy',
-        host: 'lava-v4.ajiepy.srht.site',
-        port: 443,
-        authorization: 'https://dsc.gg/ajiepy',
-        secure: true,
-        retryAmount: 5,
-        retryDelay: 5000
+        retryAmount: 10,
+        retryDelay: 3000
       }
     ],
     sendToShard: (guildId, payload) => {
