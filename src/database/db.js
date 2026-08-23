@@ -86,6 +86,9 @@ class ResilientDatabase {
   async initMongo(uri) {
     try {
       const dns = require('dns');
+      if (typeof dns.setDefaultResultOrder === 'function') {
+        dns.setDefaultResultOrder('ipv4first');
+      }
       if (typeof dns.setServers === 'function') {
         dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
       }
@@ -98,44 +101,32 @@ class ResilientDatabase {
     }
 
     const connectOptions = {
-      serverSelectionTimeoutMS: 8000,
-      connectTimeoutMS: 8000
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000
     };
 
-    try {
-      console.log('<a:leaf_animated:1537179616400375939> [MongoDB Cloud] Connecting to MongoDB Atlas database...');
-      await mongoose.connect(uri, connectOptions);
-      if (mongoose.connection && mongoose.connection.readyState === 1) {
-        this.useMongo = true;
-        console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
-      } else {
-        throw new Error('Connection state not open');
-      }
-    } catch (err) {
+    console.log('<a:leaf_animated:1537179616400375939> [MongoDB Cloud] Connecting to MongoDB Atlas database...');
+
+    for (let attempt = 1; attempt <= 2; attempt++) {
       try {
-        await mongoose.disconnect().catch(() => {});
-        let directUri = uri;
-        if (uri.includes('cluster0.hqffik2.mongodb.net') || uri.includes('cluster0.v8w7x.mongodb.net')) {
-          directUri = 'mongodb://narutobot:K5VTWsogy3sqCh6q@cluster0-shard-00-00.hqffik2.mongodb.net:27017,cluster0-shard-00-01.hqffik2.mongodb.net:27017,cluster0-shard-00-02.hqffik2.mongodb.net:27017/narutobot?ssl=true&replicaSet=atlas-hqffik-shard-0&authSource=admin&retryWrites=true&w=majority';
-        }
-        if (directUri !== uri) {
-          await mongoose.connect(directUri, connectOptions);
-        } else {
-          throw err;
-        }
+        await mongoose.connect(uri, connectOptions);
         if (mongoose.connection && mongoose.connection.readyState === 1) {
           this.useMongo = true;
-          console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully via direct connection! Syncing cloud database state...');
+          console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
+          break;
         } else {
-          throw new Error('Direct connection state not open');
+          throw new Error('Connection state not open');
         }
-      } catch (retryErr) {
+      } catch (err) {
         await mongoose.disconnect().catch(() => {});
-        this.useMongo = false;
-        this.mongoReady = false;
-        console.log('<a:wrong_animated:1537179702928875631> [MongoDB Atlas Connection Failure]:', retryErr?.message || err?.message || 'IP Not Whitelisted / Network Access Blocked');
-        console.log('<a:infox_animated:1537177409428787251> [Local High-Speed Database Active] Running seamlessly on local JSON database.');
-        return;
+        if (attempt === 2) {
+          this.useMongo = false;
+          this.mongoReady = false;
+          console.log('<a:wrong_animated:1537179702928875631> [MongoDB Atlas Connection Failure]:', err?.message || 'IP Not Whitelisted / Network Access Blocked');
+          console.log('<a:infox_animated:1537177409428787251> [Local High-Speed Database Active] Running seamlessly on local JSON database.');
+          return;
+        }
+        await new Promise(r => setTimeout(r, 2000));
       }
     }
 
