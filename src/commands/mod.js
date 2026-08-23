@@ -335,13 +335,50 @@ module.exports = {
     }
 
     // 8. 🗑️ PURGE
-    if (invoked === 'purge') {
+    if (invoked === 'purge' || invoked === 'purgebots') {
       if (!author.permissions.has(PermissionsBitField.Flags.ManageMessages)) return missingPerms(message, 'Manage Messages');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageMessages)) return botMissingPerms(message, 'Manage Messages');
 
-      const amount = parseInt(args[0]);
+      let targetBotsOnly = invoked === 'purgebots';
+      let amountArg = args[0];
+
+      if (args[0] && ['bots', 'bot', 'b'].includes(args[0].toLowerCase())) {
+        targetBotsOnly = true;
+        amountArg = args[1];
+      }
+
+      const amount = parseInt(amountArg) || 50;
+      const limit = Math.min(amount, 100);
+
+      if (targetBotsOnly) {
+        const messages = await message.channel.messages.fetch({ limit });
+        const botMessages = messages.filter(m => m.author.bot);
+        await message.channel.bulkDelete(botMessages, true).catch(() => null);
+        const count = botMessages.size;
+
+        const embed = createStyledEmbed({
+          title: `${emojis.AN_BOT || '<a:robot_animated:1537177494183088199>'} Bot Messages Purged`,
+          description: `**${count}** bot message(s) cleared from ${message.channel}.`,
+          requestedBy: message.author,
+          clientUser
+        });
+        const reply = await message.channel.send({ embeds: [embed] });
+        setTimeout(() => reply.delete().catch(() => {}), 4000);
+
+        dispatchLog(guild, 'modlogs', {
+          color: 0xE67E22,
+          title: `<a:robot_animated:1537177494183088199> Bot Messages Purged`,
+          description:
+            `• **Channel:** ${message.channel} (\`#${message.channel.name}\`)\n` +
+            `• **Bot Messages Deleted:** \`${count}\`\n` +
+            `• **Moderator:** <@${message.author.id}> (\`${message.author.tag}\`)`,
+          footer: `Purge Action • Server Audit Logs`
+        });
+        return;
+      }
+
       if (!amount || amount < 1 || amount > 100) {
-        return message.reply(`${emojis.WARNING} Usage: \`.purge <1-100>\``);
+        return message.reply(`${emojis.WARNING} Usage: \`.purge <1-100>\` or \`.purge bots <1-100>\``);
       }
 
       await message.delete().catch(() => {});
@@ -370,38 +407,6 @@ module.exports = {
       });
 
       db.recordAnalyticsEvent(guild.id, message.author.id, 'messages_purged', count);
-      return;
-    }
-
-    // 9. <a:robot_animated:1537177494183088199> PURGEBOTS
-    if (invoked === 'purgebots') {
-      if (!author.permissions.has(PermissionsBitField.Flags.ManageMessages)) return missingPerms(message, 'Manage Messages');
-
-      const amount = parseInt(args[0]) || 50;
-      const messages = await message.channel.messages.fetch({ limit: Math.min(amount, 100) });
-      const botMessages = messages.filter(m => m.author.bot);
-      await message.channel.bulkDelete(botMessages, true).catch(() => null);
-
-      const count = botMessages.size;
-
-      const embed = createStyledEmbed({
-        title: `${emojis.AN_BOT || '<a:robot_animated:1537177494183088199>'} Bot Messages Purged`,
-        description: `**${count}** bot message(s) cleared from ${message.channel}.`,
-        requestedBy: message.author,
-        clientUser
-      });
-      const reply = await message.channel.send({ embeds: [embed] });
-      setTimeout(() => reply.delete().catch(() => {}), 4000);
-
-      dispatchLog(guild, 'modlogs', {
-        color: 0xE67E22,
-        title: `<a:robot_animated:1537177494183088199> Bot Messages Purged`,
-        description:
-          `• **Channel:** ${message.channel} (\`#${message.channel.name}\`)\n` +
-          `• **Bot Messages Deleted:** \`${count}\`\n` +
-          `• **Moderator:** <@${message.author.id}> (\`${message.author.tag}\`)`,
-        footer: `Purge Action • Server Audit Logs`
-      });
       return;
     }
 
