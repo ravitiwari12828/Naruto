@@ -45,7 +45,7 @@ function formatItemLines(item, maxContentWidth) {
     let keyStr = String(item.key).trim();
     let valStr = item.value !== undefined ? String(item.value).trim() : '';
 
-    const maxKeyWidth = 16;
+    const maxKeyWidth = 18;
     if (getVisualWidth(keyStr) > maxKeyWidth) {
       keyStr = keyStr.slice(0, Math.max(1, maxKeyWidth - 1)) + '…';
     }
@@ -95,33 +95,38 @@ function formatItemLines(item, maxContentWidth) {
 
 /**
  * Creates a Device-Proof Monospaced Box.
- * Standard box inner width is fixed at 24-26 characters (26-28 characters total width).
- * 26-28 characters is the universal safe threshold for Discord Mobile (iOS/Android) without wrapping.
+ * Standard box inner width is dynamically scaled between 24-28 characters.
  * 
  * @param {string} title - Header title of the box
  * @param {Array<string | {key: string, value: any}>} items - Array of content items
- * @param {number} minWidth - Optional minimum inner width (default: 20, max cap: 22)
+ * @param {number} minWidth - Optional minimum inner width (default: 22)
+ * @param {number} customMaxWidth - Optional maximum inner width (default: 28)
  * @returns {string} Formatted monospaced codeblock box string
  */
-function createDynamicBox(title, items = [], minWidth = 20, customMaxWidth = null) {
-  // Safe Inner Width: Capped at 20 chars so total box width (24 chars) never wraps on mobile/desktop embeds
-  const MAX_INNER_WIDTH = customMaxWidth || 20;
+function createDynamicBox(title, items = [], minWidth = 22, customMaxWidth = null) {
+  const MAX_INNER_WIDTH = customMaxWidth || 28;
 
-  // Process all items into compliant line strings
-  const processedLines = [];
-  let maxVisWidth = getVisualWidth(title || '');
+  // Compute required max visual width across all items
+  let requiredWidth = getVisualWidth(title || '');
 
   items.forEach(item => {
-    const lines = formatItemLines(item, MAX_INNER_WIDTH);
-    lines.forEach(l => {
-      processedLines.push(l);
-      maxVisWidth = Math.max(maxVisWidth, getVisualWidth(l));
-    });
+    if (item && typeof item === 'object' && item.key !== undefined) {
+      const lineLen = getVisualWidth(String(item.key).trim()) + 3 + getVisualWidth(String(item.value || '').trim());
+      requiredWidth = Math.max(requiredWidth, lineLen);
+    } else if (typeof item === 'string') {
+      requiredWidth = Math.max(requiredWidth, getVisualWidth(item));
+    }
   });
 
-  // Calculate final content width
-  const contentWidth = Math.min(MAX_INNER_WIDTH, Math.max(minWidth, maxVisWidth));
-  const borderRepeat = contentWidth + 2; // 1 space padding on each side
+  const contentWidth = Math.min(MAX_INNER_WIDTH, Math.max(minWidth, requiredWidth));
+  const borderRepeat = contentWidth + 2;
+
+  // Process all items with the computed contentWidth
+  const processedLines = [];
+  items.forEach(item => {
+    const lines = formatItemLines(item, contentWidth);
+    lines.forEach(l => processedLines.push(l));
+  });
 
   const topBorder = '┌' + '─'.repeat(borderRepeat) + '┐';
   const divider = '├' + '─'.repeat(borderRepeat) + '┤';
