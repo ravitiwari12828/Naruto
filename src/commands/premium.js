@@ -201,22 +201,13 @@ module.exports = {
             setStatus = 'Updated for this server live on Discord!';
           }
         } catch (err) {
-          setStatus = `Saved in bot DB! *(Note: ${err.message})*`;
-        }
-
-        if (isOwner) {
-          try {
-            await message.client.user.setAvatar(imgUrl);
-            setStatus += ' *(Also updated live on Global Bot Profile!)*';
-          } catch (err) {
-            setStatus += ` *(Global update note: ${err.message})*`;
-          }
+          setStatus = `Saved in server database! *(Note: ${err.message})*`;
         }
 
         const embed = new EmbedBuilder()
           .setColor(0x57F287)
-          .setTitle(`${emojis.SUCCESS || '✅'} Bot Avatar Updated`)
-          .setDescription(`Bot avatar image updated for **${guild.name}**!\n> **Status:** ${setStatus}`)
+          .setTitle(`${emojis.SUCCESS || '✅'} Server Bot Avatar Updated`)
+          .setDescription(`Bot avatar image updated for **${guild.name}**!\n> **Status:** ${setStatus}\n*(Global bot profile picture remains untouched)*.`)
           .setThumbnail(imgUrl);
 
         return message.reply({ embeds: [embed] });
