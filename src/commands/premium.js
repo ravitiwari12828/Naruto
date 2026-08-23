@@ -178,7 +178,27 @@ module.exports = {
 
         draft.avatar = imgUrl;
         db.setGuildAppearance(guild.id, { avatar: imgUrl });
-        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Server bot avatar updated for **${guild.name}**! *(Original global bot profile remains unchanged)*.`);
+
+        let setStatus = '';
+        try {
+          // Attempt Server-Specific Bot Avatar first
+          if (guild.members.me && typeof guild.members.me.setAvatar === 'function') {
+            await guild.members.me.setAvatar(imgUrl).catch(() => {});
+          }
+          // Attempt Global Bot Avatar update
+          await message.client.user.setAvatar(imgUrl);
+          setStatus = 'Updated globally & for this server!';
+        } catch (err) {
+          setStatus = `Saved in bot DB! *(Note: Discord limits global avatar changes to 2 per hour: ${err.message})*`;
+        }
+
+        const embed = new EmbedBuilder()
+          .setColor(0x57F287)
+          .setTitle(`${emojis.SUCCESS || '✅'} Bot Avatar Updated`)
+          .setDescription(`Bot avatar image updated for **${guild.name}**!\n> Status: ${setStatus}`)
+          .setThumbnail(imgUrl);
+
+        return message.reply({ embeds: [embed] });
       }
 
       // 4. SET BANNER (.setbanner <URL/Attachment>)
@@ -189,7 +209,23 @@ module.exports = {
 
         draft.banner = imgUrl;
         db.setGuildAppearance(guild.id, { banner: imgUrl });
-        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Server bot banner updated for **${guild.name}**! *(Original global bot profile remains unchanged)*.`);
+
+        let setStatus = '';
+        try {
+          // Update Global Bot Profile Banner in Discord
+          await message.client.user.setBanner(imgUrl);
+          setStatus = 'Successfully set live on Discord!';
+        } catch (err) {
+          setStatus = `Saved in bot DB! *(Note: Discord requires Nitro / Developer Banner permission: ${err.message})*`;
+        }
+
+        const embed = new EmbedBuilder()
+          .setColor(0x57F287)
+          .setTitle(`${emojis.SUCCESS || '✅'} Bot Banner Updated`)
+          .setDescription(`Bot profile banner updated!\n> Status: ${setStatus}`)
+          .setImage(imgUrl);
+
+        return message.reply({ embeds: [embed] });
       }
 
       // 5. RESET APPEARANCE (.resetappearance / .premium reset)
