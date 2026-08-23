@@ -400,7 +400,7 @@ module.exports = {
           } else if (source) {
             res = await player.search({ query, source }, author);
           } else {
-            const sources = ['spsearch', 'ytmsearch', 'ytsearch', 'scsearch', 'amsearch', 'dzsearch'];
+            const sources = ['scsearch', 'spsearch', 'ytmsearch', 'ytsearch', 'amsearch', 'dzsearch'];
             for (const s of sources) {
               try {
                 res = await player.search({ query, source: s }, author);

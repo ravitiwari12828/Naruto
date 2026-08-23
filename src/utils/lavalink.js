@@ -317,19 +317,40 @@ function initLavalink(client) {
   lavalink.on('trackError', async (player, track, payload) => {
     console.error(`${emojis.WARNING} [Lavalink Track Error] ${track?.info?.title}:`, payload?.exception?.message || payload);
     if (!player) return;
+
+    if (player.isHandlingError) return;
+    player.isHandlingError = true;
+
     try {
       const channel = client.channels.cache.get(player.textChannelId);
-      if (channel) channel.send(`${emojis.WARNING} **Playback Error:** Failed to stream \`${track?.info?.title || 'Track'}\`. Auto-skipping...`).catch(() => {});
-      await player.skip().catch(() => {});
-    } catch (e) {}
+      if (channel) {
+        channel.send(`${emojis.WARNING} **Playback Warning:** Could not stream \`${track?.info?.title || 'Track'}\`. Auto-skipping...`).catch(() => {});
+      }
+      if (player.queue.tracks.length > 0) {
+        await player.skip().catch(() => {});
+      } else {
+        await player.stopPlaying().catch(() => {});
+      }
+    } catch (e) {
+    } finally {
+      setTimeout(() => { player.isHandlingError = false; }, 3000);
+    }
   });
 
   lavalink.on('trackStuck', async (player, track, payload) => {
     console.warn(`${emojis.WARNING} [Lavalink Track Stuck] ${track?.info?.title}`);
     if (!player) return;
+    if (player.isHandlingError) return;
+    player.isHandlingError = true;
+
     try {
-      await player.skip().catch(() => {});
-    } catch (e) {}
+      if (player.queue.tracks.length > 0) {
+        await player.skip().catch(() => {});
+      }
+    } catch (e) {
+    } finally {
+      setTimeout(() => { player.isHandlingError = false; }, 3000);
+    }
   });
 
   // ─────────────────────────────────────────
