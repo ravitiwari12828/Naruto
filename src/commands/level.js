@@ -790,15 +790,20 @@ module.exports = {
         const ctx = canvas.getContext('2d');
 
         // ── 16 DYNAMIC GRADIENT PALETTES SELECTION ──────────────────────────
-        let paletteIdx = 0;
-        const numArg = parseInt(args[1] || args[0]);
-        if (!isNaN(numArg) && numArg >= 1 && numArg <= 16) {
-          paletteIdx = numArg - 1;
+        let paletteIdx = -1;
+        const firstNum = parseInt(args[0]);
+        const secondNum = parseInt(args[1]);
+        const themeNum = (!isNaN(firstNum) && firstNum >= 1 && firstNum <= 16) ? firstNum : ((!isNaN(secondNum) && secondNum >= 1 && secondNum <= 16) ? secondNum : null);
+
+        if (themeNum !== null) {
+          paletteIdx = themeNum - 1;
         } else if (userData.cardTheme && userData.cardTheme >= 1 && userData.cardTheme <= 16) {
           paletteIdx = userData.cardTheme - 1;
         } else {
-          paletteIdx = (targetUser.id.charCodeAt(targetUser.id.length - 1) % 16);
+          // Dynamic random rotation across all 16 gradient palettes on every .rank call
+          paletteIdx = Math.floor(Math.random() * 16);
         }
+
         const palette = RANK_GRADIENT_PALETTES[paletteIdx] || RANK_GRADIENT_PALETTES[0];
         const primaryColor = palette.colors[0];
         const secondaryColor = palette.colors[1] || palette.colors[0];
