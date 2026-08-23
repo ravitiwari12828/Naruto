@@ -42,6 +42,12 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
+    // .role icon
+    if (invoked === 'role' && args[0] === 'icon') {
+      const roleiconCmd = message.client.commands.get('roleicon');
+      if (roleiconCmd) return roleiconCmd.execute(message, args.slice(1));
+    }
+
     // .cleanuproles
     if (invoked === 'cleanuproles' || (invoked === 'roles' && args[0] === 'cleanup')) {
       if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && message.guild.ownerId !== author.id) {
