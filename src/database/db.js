@@ -121,6 +121,7 @@ class ResilientDatabase {
       } catch (retryErr) {
         this.useMongo = false;
         this.mongoReady = false;
+        console.log('<a:wrong_animated:1537179702928875631> [MongoDB Atlas Connection Failure]:', retryErr?.message || err?.message || 'IP Not Whitelisted / Network Access Blocked');
         console.log('<a:infox_animated:1537177409428787251> [Local High-Speed Database Active] Running seamlessly on local JSON database.');
         return;
       }
