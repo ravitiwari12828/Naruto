@@ -31,42 +31,65 @@ function getOrCreateLoggingConfig(guildId) {
   return loggingConfigs.get(guildId);
 }
 
-function findExistingLogChannel(guild, chKey, defaultName) {
+function findExistingLogChannel(guild, chKey, defaultName, assignedSet = new Set()) {
   const channelAliases = {
-    modlogs: ['mod-logs', 'modlogs', 'moderation-logs', 'mod-log', 'moderation', 'modcases'],
-    modcases: ['mod-cases', 'cases-log', 'modcases', 'mod-logs'],
-    automod: ['automod-logs', 'automod', 'naruto-automod-logs'],
-    antinuke: ['antinuke-logs', 'security-logs', 'naruto-security-logs'],
     securitydef: ['security-defense', 'security-logs', 'defense-logs'],
     noprefix: ['noprefix-audit', 'audit-logs'],
     narutologs: ['naruto-logs', 'all-logs', 'bot-logs'],
-    server: ['server-logs', 'server-log', 'serverlogs', 'audit-logs', 'guild-logs'],
+    server: ['server-logs', 'server-log', 'serverlogs', 'guild-logs'],
     messages: ['message-logs', 'message-log', 'msg-logs', 'chat-logs'],
     channels: ['channel-logs', 'channel-log', 'chan-logs'],
     roles: ['role-logs', 'role-log', 'roles-log'],
-    members: ['member-logs', 'member-log', 'user-logs'],
+    members: ['member-logs', 'member-log'],
+    users: ['user-logs', 'users-log'],
     voice: ['voice-logs', 'vc-logs', 'voice-log'],
     joinleave: ['join-leave-logs', 'join-leave', 'welcome-logs'],
-    emojis: ['emoji-logs', 'emojis-log', 'naruto-emoji-logs'],
+    emojis: ['naruto-emoji-logs', 'emoji-logs', 'emojis-log'],
+    emojiaudit: ['emoji-logs', 'emojis-log'],
     ticketlogs: ['ticket-logs', 'tickets-log'],
     transcripts: ['ticket-transcripts', 'transcripts'],
     modmaillogs: ['modmail-logs', 'modmail-log'],
-    modmailtranscripts: ['modmail-transcripts']
+    modmailtranscripts: ['modmail-transcripts'],
+    applications: ['application-logs', 'applications-logs', 'apps-log'],
+    automodrules: ['automod-logs', 'automod-log'],
+    automod: ['naruto-automod-logs', 'automod-logs'],
+    events: ['event-logs', 'events-log', 'scheduled-events-logs'],
+    invites: ['invite-logs', 'invites-log'],
+    polls: ['poll-logs', 'polls-log'],
+    stage: ['stage-logs', 'stage-log'],
+    stickers: ['sticker-logs', 'stickers-log'],
+    soundboard: ['soundboard-logs', 'soundboard-log'],
+    threads: ['thread-logs', 'threads-log'],
+    webhooks: ['webhook-logs', 'webhooks-log'],
+    moderation: ['mod-logs', 'moderation-logs'],
+    modlogs: ['naruto-mod-logs', 'mod-logs'],
+    modcases: ['naruto-mod-cases', 'mod-cases'],
+    antinuke: ['naruto-security-logs', 'security-logs'],
+    limitlogs: ['naruto-limit-logs', 'limit-logs']
   };
 
   const aliases = channelAliases[chKey] || [defaultName];
-  aliases.push(defaultName);
+  if (!aliases.includes(defaultName)) aliases.push(defaultName);
 
-  // 1. Check exact name match first across text channels
-  let found = guild.channels.cache.find(c => c.isTextBased() && aliases.some(a => c.name.toLowerCase() === a.toLowerCase()));
-  if (found) return found;
+  // 1. Check exact name match first across text channels (not already assigned)
+  let found = guild.channels.cache.find(c => c.isTextBased() && !assignedSet.has(c.id) && aliases.some(a => c.name.toLowerCase() === a.toLowerCase()));
+  if (found) {
+    assignedSet.add(found.id);
+    return found;
+  }
 
-  // 2. Check fuzzy name includes e.g. "my-server-logs" or "mod-logs-2"
-  found = guild.channels.cache.find(c => c.isTextBased() && aliases.some(a => {
-    const cleanAlias = a.toLowerCase().replace(/naruto-/g, '');
-    return c.name.toLowerCase().includes(cleanAlias);
+  // 2. Check strict cleanAlias match
+  found = guild.channels.cache.find(c => c.isTextBased() && !assignedSet.has(c.id) && aliases.some(a => {
+    const cleanAlias = a.toLowerCase().replace(/^naruto-/, '');
+    return c.name.toLowerCase() === cleanAlias || c.name.toLowerCase().endsWith('-' + cleanAlias) || c.name.toLowerCase().startsWith(cleanAlias + '-');
   }));
-  return found || null;
+
+  if (found) {
+    assignedSet.add(found.id);
+    return found;
+  }
+
+  return null;
 }
 
 module.exports = {
@@ -284,12 +307,13 @@ module.exports = {
         config.mode = 'multi';
         let reusedCount = 0;
         let createdCount = 0;
+        const assignedSet = new Set();
 
         for (const catDef of categoryStructure) {
           let categoryChan = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name === catDef.name || c.name.toLowerCase().includes(catDef.name.replace(/[^a-zA-Z]/g, '').toLowerCase())));
 
           for (const chDef of catDef.channels) {
-            let textChan = findExistingLogChannel(guild, chDef.key, chDef.name);
+            let textChan = findExistingLogChannel(guild, chDef.key, chDef.name, assignedSet);
 
             if (textChan) {
               reusedCount++;

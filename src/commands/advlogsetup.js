@@ -165,12 +165,13 @@ module.exports = {
 
         let reusedCount = 0;
         let createdCount = 0;
+        const assignedSet = new Set();
 
         for (const catDef of categoryStructure) {
           let categoryChan = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name === catDef.name || c.name.toLowerCase().includes(catDef.name.replace(/[^a-zA-Z]/g, '').toLowerCase())));
 
           for (const chDef of catDef.channels) {
-            let textChan = findExistingLogChannel(guild, chDef.key, chDef.name);
+            let textChan = findExistingLogChannel(guild, chDef.key, chDef.name, assignedSet);
 
             if (textChan) {
               reusedCount++;
