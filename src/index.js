@@ -239,6 +239,13 @@ client.once('ready', async () => {
 // Guild Join Listener — Bot Owner Private Whitelist & Lockdown
 client.on('guildCreate', async (guild) => {
   console.log(`<a:welcome_animated:1537179700349243402> [Bot Added to Server] ${guild.name} (ID: ${guild.id})`);
+
+  // Instant Slash Command Registration for newly joined server
+  try {
+    const { registerSlashCommands } = require('./utils/slashCommands');
+    registerSlashCommands(client);
+  } catch (e) {}
+
   const botlockCmd = client.commands.get('botlock');
   if (botlockCmd && botlockCmd.isGuildAuthorized) {
     const isAuth = botlockCmd.isGuildAuthorized(guild.id, guild.ownerId);
