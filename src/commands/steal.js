@@ -137,7 +137,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: 'Only the command requester can choose what to steal.', ephemeral: true });
+        return interaction.reply({ content: 'Only the command requester can choose what to steal.', flags: 64, ephemeral: true });
       }
 
       await interaction.deferUpdate();

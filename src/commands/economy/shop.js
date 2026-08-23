@@ -42,7 +42,7 @@ module.exports = {
     const collector = sent.createMessageComponentCollector({ time: 60000 });
 
     collector.on('collect', async (i) => {
-      if (i.user.id !== message.author.id) return i.reply({ content: `${emojis.error} This is not your shop menu.`, ephemeral: true });
+      if (i.user.id !== message.author.id) return i.reply({ content: `${emojis.error} This is not your shop menu.`, flags: 64, ephemeral: true });
       await i.update({ embeds: [buildShopEmbed(i.values[0])], components: [row] });
     });
 

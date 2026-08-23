@@ -118,16 +118,16 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const ownerCmd = message.client.commands.get('owners');
-    const isBotOwner = ownerCmd && ownerCmd.isOwner ? ownerCmd.isOwner(author.id) : [ '1420687548807905324'].includes(author.id);
+    const { isBotOwner } = require('../utils/owners');
+    const isOwner = isBotOwner(author, message.client);
 
     // ─────────────────────────────────────────
     // BOT APPEARANCE CUSTOMIZATION SUITE (PREMIUM FEATURE)
     // ─────────────────────────────────────────
     if (['appearance', 'avatar', 'banner', 'bio', 'nickname', 'save', 'refresh', 'reset'].includes(sub)) {
-      const hasAccess = isBotOwner || isGuildPremium(guild.id) || isUserPremium(author.id);
+      const hasAccess = isOwner || isGuildPremium(guild.id) || isUserPremium(author.id);
       if (!hasAccess) {
-        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Premium Required!** Bot Appearance Customization (Avatar, Banner, Bio & Nickname) requires **Premium Tier**! Type \`.premium status\` to check eligibility.`);
+        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} **Premium Required!** Bot Appearance Customization (Avatar, Banner, Bio & Nickname) requires **Premium Tier**! Type \`.premium status\` to check eligibility.`);
       }
 
       const storedApp = db.getGuildAppearance(guild.id);
@@ -146,7 +146,7 @@ module.exports = {
       // 1. SET NICKNAME (.botnickname <name> / .premium nickname <name>)
       if (sub === 'nickname') {
         const newNick = args.slice(invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1).join(' ');
-        if (!newNick) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Please specify a nickname! Usage: \`.botnickname <name>\``);
+        if (!newNick) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Please specify a nickname! Usage: \`.botnickname <name>\``);
 
         draft.nickname = newNick;
         db.setGuildAppearance(guild.id, { nickname: newNick });
@@ -162,7 +162,7 @@ module.exports = {
       // 2. SET BIO (.botbio <text> / .premium bio <text>)
       if (sub === 'bio') {
         const newBio = args.slice(invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1).join(' ');
-        if (!newBio) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Please specify a status bio! Usage: \`.botbio <text>\``);
+        if (!newBio) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Please specify a status bio! Usage: \`.botbio <text>\``);
 
         draft.bio = newBio;
         db.setGuildAppearance(guild.id, { bio: newBio });
@@ -174,28 +174,21 @@ module.exports = {
       if (sub === 'avatar') {
         const attachment = message.attachments.first();
         const imgUrl = attachment ? attachment.url : args[invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1];
-        if (!imgUrl) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Provide an image URL or attach an image! Usage: \`.setavatar <imageURL/attachment>\``);
+        if (!imgUrl) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Provide an image URL or attach an image! Usage: \`.setavatar <imageURL/attachment>\``);
 
         draft.avatar = imgUrl;
         db.setGuildAppearance(guild.id, { avatar: imgUrl });
 
-        let setStatus = '';
         try {
-          // Attempt Server-Specific Bot Avatar first
           if (guild.members.me && typeof guild.members.me.setAvatar === 'function') {
             await guild.members.me.setAvatar(imgUrl).catch(() => {});
           }
-          // Attempt Global Bot Avatar update
-          await message.client.user.setAvatar(imgUrl);
-          setStatus = 'Updated globally & for this server!';
-        } catch (err) {
-          setStatus = `Saved in bot DB! *(Note: Discord limits global avatar changes to 2 per hour: ${err.message})*`;
-        }
+        } catch (err) {}
 
         const embed = new EmbedBuilder()
           .setColor(0x57F287)
-          .setTitle(`${emojis.SUCCESS || '✅'} Bot Avatar Updated`)
-          .setDescription(`Bot avatar image updated for **${guild.name}**!\n> Status: ${setStatus}`)
+          .setTitle(`${emojis.SUCCESS || '✅'} Server Bot Avatar Updated`)
+          .setDescription(`Server bot avatar updated for **${guild.name}**!\n*(Global bot profile remains unchanged)*.`)
           .setThumbnail(imgUrl);
 
         return message.reply({ embeds: [embed] });
@@ -205,24 +198,15 @@ module.exports = {
       if (sub === 'banner') {
         const attachment = message.attachments.first();
         const imgUrl = attachment ? attachment.url : args[invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1];
-        if (!imgUrl) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Provide a banner image URL or attach an image! Usage: \`.setbanner <imageURL/attachment>\``);
+        if (!imgUrl) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Provide a banner image URL or attach an image! Usage: \`.setbanner <imageURL/attachment>\``);
 
         draft.banner = imgUrl;
         db.setGuildAppearance(guild.id, { banner: imgUrl });
 
-        let setStatus = '';
-        try {
-          // Update Global Bot Profile Banner in Discord
-          await message.client.user.setBanner(imgUrl);
-          setStatus = 'Successfully set live on Discord!';
-        } catch (err) {
-          setStatus = `Saved in bot DB! *(Note: Discord requires Nitro / Developer Banner permission: ${err.message})*`;
-        }
-
         const embed = new EmbedBuilder()
           .setColor(0x57F287)
-          .setTitle(`${emojis.SUCCESS || '✅'} Bot Banner Updated`)
-          .setDescription(`Bot profile banner updated!\n> Status: ${setStatus}`)
+          .setTitle(`${emojis.SUCCESS || '✅'} Server Bot Banner Saved`)
+          .setDescription(`Server bot banner updated for **${guild.name}**!\n*(Global bot profile remains unchanged)*.`)
           .setImage(imgUrl);
 
         return message.reply({ embeds: [embed] });
@@ -268,9 +252,9 @@ module.exports = {
             if (draft.nickname && guild.members.me?.permissions.has('ChangeNickname')) {
               await guild.members.me.setNickname(draft.nickname).catch(() => {});
             }
-            await i.reply({ content: `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Server bot appearance settings saved and active for ${guild.name}!** *(Original global bot account is untouched)*.`, ephemeral: true });
+            await i.reply({ content: `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Server bot appearance settings saved and active for ${guild.name}!** *(Original global bot account is untouched)*.`, flags: 64, ephemeral: true });
           } catch (err) {
-            await i.reply({ content: `<a:wrong_animated:1537179702928875631> Error applying settings: ${err.message}`, ephemeral: true });
+            await i.reply({ content: `<a:wrong_animated:1537179702928875631> Error applying settings: ${err.message}`, flags: 64, ephemeral: true });
           }
         } else if (i.customId === 'app_refresh') {
           // REFRESH BOT PROFILE STATUS
@@ -301,7 +285,7 @@ module.exports = {
 
     // 1. PREMIUM ACTIVATE GUILD (.premium guild [guildId] [duration])
     if (sub === 'activate' || sub === 'addguild' || sub === 'guild' || sub === 'server') {
-      if (!isBotOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can activate Premium for servers.`);
+      if (!isOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can activate Premium for servers.`);
 
       const targetGuildId = (args[1] && !args[1].match(/^[0-9]+[dhmyw]$/i) && args[1] !== 'infinite') ? args[1] : guild.id;
       const durationArg = args[2] || (args[1] && args[1] !== targetGuildId ? args[1] : 'infinite');
@@ -332,7 +316,7 @@ module.exports = {
 
     // 2. PREMIUM REVOKE GUILD (.premium revoke <guildId>)
     if (sub === 'revoke' || sub === 'removeguild') {
-      if (!isBotOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can revoke Premium from servers.`);
+      if (!isOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can revoke Premium from servers.`);
 
       const targetGuildId = args[1] || guild.id;
       premiumGuilds.delete(targetGuildId);
@@ -353,7 +337,7 @@ module.exports = {
 
     // 3. PREMIUM ADD USER (.premium adduser @user [duration])
     if (sub === 'adduser' || sub === 'add') {
-      if (!isBotOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can grant user Premium.`);
+      if (!isOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can grant user Premium.`);
 
       const user = message.mentions.users.first() || message.client.users.cache.get(args[1]);
       if (!user) return message.reply(`${emojis.WARNING} Mention a user or provide a User ID e.g. \`.premium adduser @user [30d / infinite]\``);
@@ -383,7 +367,7 @@ module.exports = {
 
     // 4. PREMIUM REVOKE USER (.premium revokeuser @user)
     if (sub === 'revokeuser' || sub === 'removeuser') {
-      if (!isBotOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can revoke user Premium.`);
+      if (!isOwner) return message.reply(`${emojis.WARNING} Only Bot Owners & Extra Owners can revoke user Premium.`);
 
       const user = message.mentions.users.first() || message.client.users.cache.get(args[1]);
       if (!user) return message.reply(`${emojis.WARNING} Mention a user or provide a User ID e.g. \`.premium revokeuser @user\``);

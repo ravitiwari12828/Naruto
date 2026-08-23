@@ -135,7 +135,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: '${emojis.ERROR} Only the command requester can use these buttons.', ephemeral: true });
+        return interaction.reply({ content: '${emojis.ERROR} Only the command requester can use these buttons.', flags: 64, ephemeral: true });
       }
 
       await interaction.deferUpdate();

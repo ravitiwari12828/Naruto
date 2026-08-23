@@ -129,7 +129,7 @@ module.exports = {
 
       collector.on('collect', async (interaction) => {
         if (interaction.user.id !== author.id) {
-          return interaction.reply({ content: `<a:wrong_animated:1537179702928875631> Only the administrator who ran .testlogs can use this button.`, ephemeral: true });
+          return interaction.reply({ content: `<a:wrong_animated:1537179702928875631> Only the administrator who ran .testlogs can use this button.`, flags: 64, ephemeral: true });
         }
 
         await interaction.deferUpdate();

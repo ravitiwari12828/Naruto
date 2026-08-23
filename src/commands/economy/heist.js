@@ -31,9 +31,9 @@ module.exports = {
     const sent = await message.channel.send({ embeds: [buildEmbed()], components: [row] });
     const collector = sent.createMessageComponentCollector({ time: JOIN_TIME });
     collector.on('collect', async (i) => {
-      if (participants.has(i.user.id)) return i.reply({ content: `${emojis.warning} You're already in the crew.`, ephemeral: true });
+      if (participants.has(i.user.id)) return i.reply({ content: `${emojis.warning} You're already in the crew.`, flags: 64, ephemeral: true });
       const eco = db.economy(message.guild.id, i.user.id);
-      if (eco.balance < ENTRY_FEE) return i.reply({ content: `${emojis.error} You need **${fmt(ENTRY_FEE)}** coins to join.`, ephemeral: true });
+      if (eco.balance < ENTRY_FEE) return i.reply({ content: `${emojis.error} You need **${fmt(ENTRY_FEE)}** coins to join.`, flags: 64, ephemeral: true });
       participants.set(i.user.id, i.user);
       await i.update({ embeds: [buildEmbed()] }).catch(() => {});
     });

@@ -240,7 +240,7 @@ module.exports = {
       const collector = promptMsg.createMessageComponentCollector({ time: 60000 });
       collector.on('collect', async (i) => {
         if (i.user.id !== author.id) {
-          return i.reply({ content: 'Only the prompt author can interact with this confirmation.', ephemeral: true });
+          return i.reply({ content: 'Only the prompt author can interact with this confirmation.', flags: 64, ephemeral: true });
         }
 
         if (i.customId.startsWith('cancel_restore_')) {

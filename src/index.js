@@ -1939,7 +1939,6 @@ client.on('messageCreate', async (message) => {
   const startTime = Date.now();
   const chanName = message.channel ? `#${message.channel.name}` : 'DM';
   const guildName = message.guild ? message.guild.name : 'DM';
-  console.log(`<a:rapid_animated:1537177482006896692> [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
   flushLog(`<a:rapid_animated:1537177482006896692> [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
   db.recordAnalyticsEvent(message.guild ? message.guild.id : 'DM', message.author.id, 'command', 1);
 

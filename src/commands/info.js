@@ -362,7 +362,7 @@ module.exports = {
             requestedBy: author,
             clientUser
           });
-          return i.reply({ embeds: [iconEmbed], ephemeral: true });
+          return i.reply({ embeds: [iconEmbed], flags: 64, ephemeral: true });
         } else if (i.customId === 'sinfo_banner') {
           const banner = guild.bannerURL({ dynamic: true, size: 1024 });
           const bannerEmbed = createStyledEmbed({
@@ -371,7 +371,7 @@ module.exports = {
             requestedBy: author,
             clientUser
           });
-          return i.reply({ embeds: [bannerEmbed], ephemeral: true });
+          return i.reply({ embeds: [bannerEmbed], flags: 64, ephemeral: true });
         } else if (i.customId === 'sinfo_splash') {
           const splash = guild.splashURL({ dynamic: true, size: 1024 });
           const splashEmbed = createStyledEmbed({
@@ -380,7 +380,7 @@ module.exports = {
             requestedBy: author,
             clientUser
           });
-          return i.reply({ embeds: [splashEmbed], ephemeral: true });
+          return i.reply({ embeds: [splashEmbed], flags: 64, ephemeral: true });
         } else if (i.customId.startsWith('sinfo_')) {
           activeTab = i.customId.replace('sinfo_', '');
           const newEmbed = buildServerInfoMainEmbed(guild, owner, activeTab, author, clientUser);

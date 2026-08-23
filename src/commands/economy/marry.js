@@ -41,7 +41,7 @@ module.exports = {
     const collector = sent.createMessageComponentCollector({ time: 60000 });
 
     collector.on('collect', async (i) => {
-      if (i.user.id !== target.id) return i.reply({ content: `${emojis.error} Only ${target.username} can respond to this proposal.`, ephemeral: true });
+      if (i.user.id !== target.id) return i.reply({ content: `${emojis.error} Only ${target.username} can respond to this proposal.`, flags: 64, ephemeral: true });
 
       if (i.customId === 'marry_accept') {
         senderEco.marry = target.id;

@@ -375,7 +375,7 @@ module.exports = {
 
       if (i.customId === 'mm_setup') {
         if (!i.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-          return i.reply({ content: `${emojis.WARNING} Only Administrators can run ModMail setup.`, ephemeral: true });
+          return i.reply({ content: `${emojis.WARNING} Only Administrators can run ModMail setup.`, flags: 64, ephemeral: true });
         }
         let category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && c.name.toLowerCase().includes('modmail'));
         if (!category) {
@@ -402,12 +402,12 @@ module.exports = {
         config.transcriptChanId = transcriptChan ? transcriptChan.id : null;
         config.enabled = true;
         modmailConfigs.set(guild.id, config);
-        await i.reply({ content: `${emojis.SUCCESS} ModMail system deployed successfully!`, ephemeral: true });
+        await i.reply({ content: `${emojis.SUCCESS} ModMail system deployed successfully!`, flags: 64, ephemeral: true });
       } else if (i.customId === 'mm_active') {
-        await i.reply({ content: `<a:openeddooraperture_animated:1537177450411462766> Current Active ModMail Tickets in server: **${activeCount}**`, ephemeral: true });
+        await i.reply({ content: `<a:openeddooraperture_animated:1537177450411462766> Current Active ModMail Tickets in server: **${activeCount}**`, flags: 64, ephemeral: true });
       } else if (i.customId === 'mm_transcripts') {
         const chan = config.transcriptChanId ? `<#${config.transcriptChanId}>` : 'None';
-        await i.reply({ content: `<a:scroll_animated:1537179663791693844> HTML ModMail Transcripts Channel: ${chan}`, ephemeral: true });
+        await i.reply({ content: `<a:scroll_animated:1537179663791693844> HTML ModMail Transcripts Channel: ${chan}`, flags: 64, ephemeral: true });
       }
 
       const updatedConfig = getOrCreateModmailConfig(guild.id);

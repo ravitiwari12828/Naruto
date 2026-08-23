@@ -101,7 +101,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: `${emojis.ERROR || '<a:wrong_animated:1537179702928875631>'} Only the administrator can use these buttons.`, ephemeral: true });
+        return interaction.reply({ content: `${emojis.ERROR || '<a:wrong_animated:1537179702928875631>'} Only the administrator can use these buttons.`, flags: 64, ephemeral: true });
       }
 
       await interaction.deferUpdate();
