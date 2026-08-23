@@ -1971,15 +1971,18 @@ client.on('messageCreate', async (message) => {
 client.on('interactionCreate', async (interaction) => {
   // Slash Command Handler
   if (interaction.isChatInputCommand()) {
-    const cmdName = interaction.commandName;
-    const command = client.commands.get(cmdName) || client.commands.find(c => c.aliases && c.aliases.includes(cmdName));
+    const subCommandName = interaction.options.getSubcommand(false);
+    const rootName = interaction.commandName;
+    const targetCmdName = subCommandName || rootName;
+
+    const command = client.commands.get(targetCmdName) || client.commands.find(c => c.aliases && c.aliases.includes(targetCmdName));
     if (!command) return;
 
     try {
       const args = [];
-      const input = interaction.options.getString('input') || interaction.options.getString('query') || interaction.options.getString('options') || interaction.options.getString('action');
-      const targetUser = interaction.options.getUser('user') || interaction.options.getUser('target');
-      const amount = interaction.options.getInteger('amount');
+      const input = interaction.options.getString('input') || interaction.options.getString('query') || interaction.options.getString('options') || interaction.options.getString('action') || interaction.options.getString('item') || interaction.options.getString('title');
+      const targetUser = interaction.options.getUser('user') || interaction.options.getUser('target') || interaction.options.getUser('role');
+      const amount = interaction.options.getInteger('amount') || interaction.options.getInteger('count') || interaction.options.getInteger('level');
 
       if (targetUser) args.push(targetUser.id);
       if (input) args.push(...input.trim().split(/ +/));
@@ -1992,14 +1995,14 @@ client.on('interactionCreate', async (interaction) => {
         author: interaction.user,
         member: interaction.member,
         client: interaction.client,
-        content: `.${cmdName} ${args.join(' ')}`.trim(),
+        content: `.${targetCmdName} ${args.join(' ')}`.trim(),
         reply: (opts) => interaction.reply(opts).catch(() => {}),
         delete: () => Promise.resolve()
       };
 
       await command.execute(fakeMsg, args);
     } catch (err) {
-      console.error(`Slash command error /${cmdName}:`, err.message);
+      console.error(`Slash command error /${rootName} ${subCommandName || ''}:`, err.message);
       interaction.reply({ content: `⚠️ Error executing slash command: ${err.message}`, flags: 64 }).catch(() => {});
     }
     return;

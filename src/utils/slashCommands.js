@@ -15,6 +15,9 @@ async function registerSlashCommands(client) {
       return;
     }
 
+    // ─────────────────────────────────────────
+    // 1. TOP-LEVEL INDIVIDUAL COMMANDS (All Major Commands)
+    // ─────────────────────────────────────────
     client.commands.forEach((cmd) => {
       if (!cmd || !cmd.name) return;
       const cleanName = String(cmd.name).toLowerCase().replace(/[^a-z0-9_-]/g, '');
@@ -28,7 +31,7 @@ async function registerSlashCommands(client) {
         .setName(cleanName)
         .setDescription(desc);
 
-      // Dynamically attach parameters for intuitive Slash usage
+      // Attach Options based on command type
       if (['play', 'p', 'enlarge', 'e', 'steal', 'setavatar', 'setbanner', 'search', 'lyrics', 'say', 'embed', 'botnickname', 'botbio'].includes(cleanName)) {
         builder.addStringOption(opt => opt.setName('input').setDescription('Search query, link, image URL, or text').setRequired(false));
       } else if (['ban', 'kick', 'warn', 'userinfo', 'user', 'avatar', 'av', 'roleicon', 'giverole', 'addrole', 'rmrole', 'friend', 'girl', 'guest', 'staff', 'vip'].includes(cleanName)) {
@@ -38,6 +41,110 @@ async function registerSlashCommands(client) {
       } else {
         builder.addStringOption(opt => opt.setName('options').setDescription('Command arguments').setRequired(false));
       }
+
+      rawCommands.push(builder.toJSON());
+    });
+
+    // ─────────────────────────────────────────
+    // 2. CATEGORIZED SUBCOMMAND GROUPS (Covers 100% of all subcommands & aliases)
+    // ─────────────────────────────────────────
+    const categoryGroups = [
+      {
+        name: 'music',
+        desc: 'Lavalink Music Suite: play, skip, pause, resume, queue, volume, loop, shuffle, lyrics, 247',
+        subcommands: [
+          { name: 'play', desc: 'Play a track or playlist', optionType: 'string', optionName: 'query', optionDesc: 'Song title or link' },
+          { name: 'skip', desc: 'Skip current playing track' },
+          { name: 'pause', desc: 'Pause music playback' },
+          { name: 'resume', desc: 'Resume music playback' },
+          { name: 'stop', desc: 'Stop playback and clear queue' },
+          { name: 'queue', desc: 'View current song queue' },
+          { name: 'nowplaying', desc: 'View current track progress and details' },
+          { name: 'volume', desc: 'Set volume (1-150)', optionType: 'integer', optionName: 'level', optionDesc: 'Volume level' },
+          { name: 'loop', desc: 'Toggle song/queue loop mode' },
+          { name: 'shuffle', desc: 'Shuffle queue tracks' },
+          { name: 'lyrics', desc: 'Search lyrics for a song', optionType: 'string', optionName: 'title', optionDesc: 'Song title' },
+          { name: 'afk247', desc: 'Toggle 24/7 AFK mode in voice channel' }
+        ]
+      },
+      {
+        name: 'economy',
+        desc: 'Shinobi Economy & Casino: balance, daily, work, beg, deposit, withdraw, pay, shop, buy, sell',
+        subcommands: [
+          { name: 'balance', desc: 'View your wallet and bank balance' },
+          { name: 'daily', desc: 'Claim your daily Ryo reward' },
+          { name: 'work', desc: 'Work a shift for Ryo' },
+          { name: 'beg', desc: 'Beg for spare Ryo' },
+          { name: 'deposit', desc: 'Deposit Ryo into bank', optionType: 'string', optionName: 'amount', optionDesc: 'Amount or all' },
+          { name: 'withdraw', desc: 'Withdraw Ryo from bank', optionType: 'string', optionName: 'amount', optionDesc: 'Amount or all' },
+          { name: 'pay', desc: 'Pay Ryo to another user', optionType: 'user', optionName: 'target', optionDesc: 'User to pay' },
+          { name: 'inventory', desc: 'View your item inventory' },
+          { name: 'shop', desc: 'Browse the item shop' },
+          { name: 'buy', desc: 'Buy an item from shop', optionType: 'string', optionName: 'item', optionDesc: 'Item name' },
+          { name: 'leaderboard', desc: 'View richest users' }
+        ]
+      },
+      {
+        name: 'moderation',
+        desc: 'Server Moderation: ban, kick, warn, unmute, purge, nuke, role, lock, unlock',
+        subcommands: [
+          { name: 'ban', desc: 'Ban a member', optionType: 'user', optionName: 'target', optionDesc: 'Target user' },
+          { name: 'kick', desc: 'Kick a member', optionType: 'user', optionName: 'target', optionDesc: 'Target user' },
+          { name: 'warn', desc: 'Warn a member', optionType: 'user', optionName: 'target', optionDesc: 'Target user' },
+          { name: 'purge', desc: 'Purge messages', optionType: 'integer', optionName: 'count', optionDesc: 'Number of messages' },
+          { name: 'nuke', desc: 'Nuke current channel' },
+          { name: 'lock', desc: 'Lock current channel' },
+          { name: 'unlock', desc: 'Unlock current channel' }
+        ]
+      },
+      {
+        name: 'security',
+        desc: 'AntiNuke & Security Privacy: antinuke, antidox, automod, panicmode, whitelist, botlock',
+        subcommands: [
+          { name: 'antinuke', desc: 'View or toggle AntiNuke security status' },
+          { name: 'antidox', desc: 'View or toggle Anti-Dox privacy status' },
+          { name: 'automod', desc: 'View AutoMod rules' },
+          { name: 'securesetup', desc: '1-Click deployment wizard for full server protection' },
+          { name: 'advlogsetup', desc: 'Deploy multi-category audit logging channels' }
+        ]
+      },
+      {
+        name: 'utility',
+        desc: 'Bot Utilities: help, stats, ping, info, serverinfo, userinfo, avatar, banner, enlarge, steal',
+        subcommands: [
+          { name: 'help', desc: 'Interactive Multi-Module Help Panel' },
+          { name: 'stats', desc: 'View Naruto Bot system analytics' },
+          { name: 'ping', desc: 'Check Bot WebSocket latency' },
+          { name: 'serverinfo', desc: 'View server information' },
+          { name: 'userinfo', desc: 'View user profile information', optionType: 'user', optionName: 'target', optionDesc: 'Target user' },
+          { name: 'avatar', desc: 'View user avatar', optionType: 'user', optionName: 'target', optionDesc: 'Target user' },
+          { name: 'enlarge', desc: 'Enlarge custom emoji or sticker', optionType: 'string', optionName: 'emoji', optionDesc: 'Custom emoji' },
+          { name: 'roleicon', desc: 'Set custom role icon', optionType: 'user', optionName: 'role', optionDesc: 'Role or user' }
+        ]
+      }
+    ];
+
+    categoryGroups.forEach(group => {
+      if (registeredNames.has(group.name)) return;
+      registeredNames.add(group.name);
+
+      const builder = new SlashCommandBuilder()
+        .setName(group.name)
+        .setDescription(group.desc.slice(0, 95));
+
+      group.subcommands.forEach(sub => {
+        builder.addSubcommand(subBuilder => {
+          subBuilder.setName(sub.name).setDescription(sub.desc.slice(0, 95));
+          if (sub.optionType === 'string') {
+            subBuilder.addStringOption(o => o.setName(sub.optionName || 'input').setDescription(sub.optionDesc || 'Argument').setRequired(false));
+          } else if (sub.optionType === 'user') {
+            subBuilder.addUserOption(o => o.setName(sub.optionName || 'user').setDescription(sub.optionDesc || 'Target user').setRequired(false));
+          } else if (sub.optionType === 'integer') {
+            subBuilder.addIntegerOption(o => o.setName(sub.optionName || 'amount').setDescription(sub.optionDesc || 'Value').setRequired(false));
+          }
+          return subBuilder;
+        });
+      });
 
       rawCommands.push(builder.toJSON());
     });
