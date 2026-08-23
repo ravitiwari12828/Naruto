@@ -1,65 +1,55 @@
-const { REST, Routes, SlashCommandBuilder, PermissionsBitField } = require('discord.js');
+const { REST, Routes, SlashCommandBuilder } = require('discord.js');
 
 async function registerSlashCommands(client) {
+  if (!process.env.DISCORD_TOKEN) {
+    console.warn('⚠️ [Slash Commands] DISCORD_TOKEN is missing. Skipping Slash Command registration.');
+    return;
+  }
+
   try {
-    const commands = [
-      new SlashCommandBuilder()
-        .setName('play')
-        .setDescription('Play a track from YouTube, Spotify, or SoundCloud')
-        .addStringOption(option => option.setName('query').setDescription('Song title, link, or keywords').setRequired(true)),
+    const rawCommands = [];
+    const registeredNames = new Set();
 
-      new SlashCommandBuilder()
-        .setName('help')
-        .setDescription('Interactive Multi-Module Help Panel'),
+    if (!client.commands || client.commands.size === 0) {
+      console.warn('⚠️ [Slash Commands] No commands loaded in client.commands. Skipping registration.');
+      return;
+    }
 
-      new SlashCommandBuilder()
-        .setName('stats')
-        .setDescription('View Naruto Bot System & Server Analytics Stats'),
+    client.commands.forEach((cmd) => {
+      if (!cmd || !cmd.name) return;
+      const cleanName = String(cmd.name).toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      if (!cleanName || cleanName.length < 1 || cleanName.length > 32 || registeredNames.has(cleanName)) return;
 
-      new SlashCommandBuilder()
-        .setName('ping')
-        .setDescription('Check Bot Latency & Gateway WebSocket Ping'),
+      registeredNames.add(cleanName);
 
-      new SlashCommandBuilder()
-        .setName('antidox')
-        .setDescription('Configure Anti-Dox Security Privacy Suite')
-        .addStringOption(option =>
-          option.setName('action')
-            .setDescription('Action to perform')
-            .setRequired(false)
-            .addChoices(
-              { name: 'Enable', value: 'enable' },
-              { name: 'Disable', value: 'disable' },
-              { name: 'Status', value: 'status' }
-            )
-        ),
+      const desc = String(cmd.description || `${cleanName} command`).slice(0, 95);
 
-      new SlashCommandBuilder()
-        .setName('antinuke')
-        .setDescription('AntiNuke & Server Security Configuration'),
+      const builder = new SlashCommandBuilder()
+        .setName(cleanName)
+        .setDescription(desc);
 
-      new SlashCommandBuilder()
-        .setName('ban')
-        .setDescription('Ban a user from the server')
-        .addUserOption(opt => opt.setName('target').setDescription('User to ban').setRequired(true))
-        .addStringOption(opt => opt.setName('reason').setDescription('Reason for ban').setRequired(false)),
+      // Dynamically attach parameters for intuitive Slash usage
+      if (['play', 'p', 'enlarge', 'e', 'steal', 'setavatar', 'setbanner', 'search', 'lyrics', 'say', 'embed', 'botnickname', 'botbio'].includes(cleanName)) {
+        builder.addStringOption(opt => opt.setName('input').setDescription('Search query, link, image URL, or text').setRequired(false));
+      } else if (['ban', 'kick', 'warn', 'userinfo', 'user', 'avatar', 'av', 'roleicon', 'giverole', 'addrole', 'rmrole', 'friend', 'girl', 'guest', 'staff', 'vip'].includes(cleanName)) {
+        builder.addUserOption(opt => opt.setName('user').setDescription('Target member or user').setRequired(false));
+      } else if (['purge', 'volume', 'vol', 'seek', 'limit'].includes(cleanName)) {
+        builder.addIntegerOption(opt => opt.setName('amount').setDescription('Number or value').setRequired(false));
+      } else {
+        builder.addStringOption(opt => opt.setName('options').setDescription('Command arguments').setRequired(false));
+      }
 
-      new SlashCommandBuilder()
-        .setName('kick')
-        .setDescription('Kick a user from the server')
-        .addUserOption(opt => opt.setName('target').setDescription('User to kick').setRequired(true))
-        .addStringOption(opt => opt.setName('reason').setDescription('Reason for kick').setRequired(false)),
+      rawCommands.push(builder.toJSON());
+    });
 
-      new SlashCommandBuilder()
-        .setName('purge')
-        .setDescription('Purge/Delete messages from channel')
-        .addIntegerOption(opt => opt.setName('amount').setDescription('Number of messages (1-100)').setRequired(true))
-    ];
+    // Discord API caps top-level Application Commands at 100 per bot
+    const finalCommands = rawCommands.slice(0, 100);
 
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
-    console.log('⚡ [Slash Commands] Registering Application Slash Commands with Discord API...');
-    await rest.put(Routes.applicationCommands(client.user.id), { body: commands.map(c => c.toJSON()) });
-    console.log('<a:accept_animated:1537177319603703969> [Slash Commands] Successfully registered Discord Slash Commands globally!');
+    console.log(`⚡ [Slash Commands] Registering ${finalCommands.length} Application Slash Commands with Discord API...`);
+
+    await rest.put(Routes.applicationCommands(client.user.id), { body: finalCommands });
+    console.log(`<a:accept_animated:1537177319603703969> [Slash Commands] Successfully registered ${finalCommands.length} Discord Slash Commands globally!`);
   } catch (err) {
     console.error('<a:wrong_animated:1537179702928875631> [Slash Commands Registration Error]:', err.message);
   }

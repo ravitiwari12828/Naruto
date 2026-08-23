@@ -193,9 +193,17 @@ client.once('ready', async () => {
   console.log(`• System Prefix : ${PREFIX}`);
   console.log(`==============================================\n`);
 
+  // Register Application Slash Commands globally with Discord API
+  try {
+    const { registerSlashCommands } = require('./utils/slashCommands');
+    registerSlashCommands(client);
+  } catch (e) {
+    console.error('Slash Commands Registration Error:', e.message);
+  }
+
   client.user.setPresence({
     status: 'online',
-    activities: [{ name: '💻 DM me for Support | .help', type: 3 }]
+    activities: [{ name: '💻 DM me for Support | .help | /help', type: 3 }]
   });
 
   // Startup Cleanup: Sweep and delete leftover empty VoiceMaster temporary channels across all guilds
@@ -1964,26 +1972,18 @@ client.on('interactionCreate', async (interaction) => {
   // Slash Command Handler
   if (interaction.isChatInputCommand()) {
     const cmdName = interaction.commandName;
-    const command = client.commands.get(cmdName);
+    const command = client.commands.get(cmdName) || client.commands.find(c => c.aliases && c.aliases.includes(cmdName));
     if (!command) return;
 
     try {
       const args = [];
-      if (cmdName === 'play') {
-        const q = interaction.options.getString('query');
-        if (q) args.push(q);
-      } else if (cmdName === 'antidox') {
-        const act = interaction.options.getString('action');
-        if (act) args.push(act);
-      } else if (cmdName === 'ban' || cmdName === 'kick') {
-        const target = interaction.options.getUser('target');
-        const reason = interaction.options.getString('reason');
-        if (target) args.push(target.id);
-        if (reason) args.push(reason);
-      } else if (cmdName === 'purge') {
-        const amt = interaction.options.getInteger('amount');
-        if (amt) args.push(amt.toString());
-      }
+      const input = interaction.options.getString('input') || interaction.options.getString('query') || interaction.options.getString('options') || interaction.options.getString('action');
+      const targetUser = interaction.options.getUser('user') || interaction.options.getUser('target');
+      const amount = interaction.options.getInteger('amount');
+
+      if (targetUser) args.push(targetUser.id);
+      if (input) args.push(...input.trim().split(/ +/));
+      if (amount !== null && amount !== undefined) args.push(String(amount));
 
       // Convert interaction context for standard command execution
       const fakeMsg = {
