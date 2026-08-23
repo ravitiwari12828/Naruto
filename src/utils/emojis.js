@@ -9,10 +9,35 @@ const CUSTOM = {
   OBJ_AUTORESPOND: '<a:code_animated:1537177358912725033>',
   OBJ_VOICE: '<a:volumeup_animated:1537177548121968650>',
   OBJ_INVITES: '<a:linkx_animated:1537177423324512327>',
+  OBJ_INVITE: '<a:linkx_animated:1537177423324512327>',
+  OBJ_INVITELINK: '<a:linkx_animated:1537177423324512327>',
   OBJ_PROFILE: '<a:membercard_animated:1537177436146638993>',
   OBJ_MESSAGES: '<a:code_animated:1537177358912725033>',
   OBJ_RANK: '<a:rank_animated:1537179656090943538>',
   OBJ_NINJUTSU: '<a:naruto_animated:1537179622024814733>',
+  OBJ_ZAP: '<a:rapid_animated:1537177482006896692>',
+  OBJ_DISABLED: '<a:wrong_animated:1537179702928875631>',
+  OBJ_LOCK: '<a:key_lock_animated:1537179601493561404>',
+  OBJ_UNLOCK: '<a:unlock_animated:1537177539297157150>',
+  OBJ_AN_SHIELD: '<a:security_animated:1537177499862171741>',
+  OBJ_REFRESH: '<a:refresh_animated:1537447225679020133>',
+  OBJ_REMOVE: '<a:remove_animated:1537177488168456202>',
+  OBJ_TOOLS: '<a:settings_animated:1537177506170404905>',
+  OBJ_OWNER: '<a:crown_animated:1537177361093500968>',
+  OBJ_MODMAIL: '<a:modmail_animated:1537447208553811999>',
+  OBJ_AN_PANIC: '<a:quarantine_animated:1537447221350633472>',
+  OBJ_AN_JOINGATE: '<a:joingate_animated:1537179596334698627>',
+  OBJ_AN_QUARANTINE: '<a:quarantine_animated:1537447221350633472>',
+  OBJ_AN_WHITELIST: '<a:whitelist_animated:1537447233472036964>',
+  OBJ_AN_BAN: '<a:banuser_animated:1537177336007364709>',
+  OBJ_AN_KICK: '<a:kick_animated:1537177415552602223>',
+  OBJ_AN_BOT: '<a:robot_animated:1537177494183088199>',
+  OBJ_AN_CHANNEL: '<a:openfolder_animated:1537177452936437760>',
+  OBJ_AN_ROLE: '<a:permission_animated:1537177468811739146>',
+  OBJ_AN_WEBHOOK: '<a:webhook_animated:1537177550990741534>',
+  OBJ_AN_SPAM: '<a:police_animated:1537179639418462350>',
+  OBJ_AN_RAID: '<a:antinuke_animated:1537447188823805972>',
+  OBJ_AN_GUILD: '<a:home_animated:1537177403875401889>',
 
   accept_animated: '<a:accept_animated:1537177319603703969>',
   add_animated: '<a:add_animated:1537177324435283998>',
@@ -894,7 +919,8 @@ const emojisProxy = new Proxy(baseExports, {
           return obj;
         }
       }
-      return undefined; // NEVER return sparkles for missing button emojis!
+      // Bulletproof fallback object so ButtonBuilder.setEmoji() NEVER receives undefined!
+      return { id: '1537177319603703969', animated: true };
     }
 
     // Handle string key lookups
