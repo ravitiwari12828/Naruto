@@ -111,6 +111,18 @@ module.exports = {
       let actionStatus = '';
 
       if (interaction.customId === 'advlog_deploy_all') {
+        const isSupportServer = (process.env.SUPPORT_GUILD_ID && guild.id === process.env.SUPPORT_GUILD_ID) || guild.name.toLowerCase().includes('support') || guild.name.toLowerCase().includes('synn');
+
+        const ticketChannels = [
+          { key: 'ticketlogs', name: 'ticket-logs' },
+          { key: 'transcripts', name: 'ticket-transcripts' }
+        ];
+
+        if (isSupportServer) {
+          ticketChannels.push({ key: 'modmaillogs', name: 'modmail-logs' });
+          ticketChannels.push({ key: 'modmailtranscripts', name: 'modmail-transcripts' });
+        }
+
         const categoryStructure = [
           {
             name: '🛡️ · Security Logs ·',
@@ -153,13 +165,8 @@ module.exports = {
             ]
           },
           {
-            name: '🎟️ · Ticket & ModMail Logs ·',
-            channels: [
-              { key: 'ticketlogs', name: 'ticket-logs' },
-              { key: 'transcripts', name: 'ticket-transcripts' },
-              { key: 'modmaillogs', name: 'modmail-logs' },
-              { key: 'modmailtranscripts', name: 'modmail-transcripts' }
-            ]
+            name: isSupportServer ? '🎟️ · Ticket & ModMail Logs ·' : '🎟️ · Ticket Logs ·',
+            channels: ticketChannels
           }
         ];
 

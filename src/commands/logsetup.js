@@ -251,6 +251,18 @@ module.exports = {
         const { getOrCreateAdvLogStore } = require('../utils/logger');
         const store = getOrCreateAdvLogStore(guild.id);
 
+        const isSupportServer = (process.env.SUPPORT_GUILD_ID && guild.id === process.env.SUPPORT_GUILD_ID) || guild.name.toLowerCase().includes('support') || guild.name.toLowerCase().includes('synn');
+
+        const ticketChannels = [
+          { key: 'ticketlogs', name: 'ticket-logs' },
+          { key: 'transcripts', name: 'ticket-transcripts' }
+        ];
+
+        if (isSupportServer) {
+          ticketChannels.push({ key: 'modmaillogs', name: 'modmail-logs' });
+          ticketChannels.push({ key: 'modmailtranscripts', name: 'modmail-transcripts' });
+        }
+
         const categoryStructure = [
           {
             name: '<a:security_animated:1537177499862171741> · Security Logs ·',
@@ -293,13 +305,8 @@ module.exports = {
             ]
           },
           {
-            name: '<a:tickety_animated:1537177533961732106> · Ticket & ModMail Logs ·',
-            channels: [
-              { key: 'ticketlogs', name: 'ticket-logs' },
-              { key: 'transcripts', name: 'ticket-transcripts' },
-              { key: 'modmaillogs', name: 'modmail-logs' },
-              { key: 'modmailtranscripts', name: 'modmail-transcripts' }
-            ]
+            name: isSupportServer ? '<a:tickety_animated:1537177533961732106> · Ticket & ModMail Logs ·' : '<a:tickety_animated:1537177533961732106> · Ticket Logs ·',
+            channels: ticketChannels
           }
         ];
 
