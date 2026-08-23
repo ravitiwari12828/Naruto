@@ -91,9 +91,8 @@ class ResilientDatabase {
     }
 
     const connectOptions = {
-      serverSelectionTimeoutMS: 4000,
-      connectTimeoutMS: 4000,
-      family: 4
+      serverSelectionTimeoutMS: 5000,
+      connectTimeoutMS: 5000
     };
 
     try {
