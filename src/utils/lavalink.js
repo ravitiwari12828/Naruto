@@ -84,108 +84,173 @@ function initLavalink(client) {
   });
 
   // ─────────────────────────────────────────
-  // AUTOPLAY ENGINE: Instant pre-fetched + fallback recommendation engine
+  // SYNN REFERENCE AUTOPLAY ENGINE (Last.fm + Multi-Source Fallback Pool)
   // ─────────────────────────────────────────
+  const LASTFM_API_KEY = '478947eed2f2b1dfa0c1306ca16700a7';
+  const LASTFM_BASE_URL = 'http://ws.audioscrobbler.com/2.0/';
+
+  function normalizeTrackTitle(title) {
+    if (!title) return '';
+    let core = title;
+    const cutMatch = core.match(/\s*[\(\[|]|\s+-\s+|\s+[–—]\s+|\s+(ft\.?|feat\.?|prod\.?)\s+/i);
+    if (cutMatch && cutMatch.index > 0) {
+      core = core.slice(0, cutMatch.index);
+    }
+    const iSepMatch = core.match(/\s+I\s+/);
+    if (iSepMatch && iSepMatch.index > 0) {
+      core = core.slice(0, iSepMatch.index);
+    }
+    return core
+      .toLowerCase()
+      .replace(/\b(official|video|audio|lyrics?|lyric|remix|lofi|slowed|reverb|reverbed|extended|full song|with lyrics|mv|hd|4k|8d|cover|reprise|acoustic|version)\b/g, '')
+      .replace(/[^\w\s]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  async function fetchLastFmSimilarTracks(artist, title) {
+    if (!artist || !title) return [];
+    try {
+      const params = new URLSearchParams({
+        method: 'track.getsimilar',
+        artist: artist,
+        track: title,
+        api_key: LASTFM_API_KEY,
+        format: 'json',
+        autocorrect: '1',
+        limit: '30'
+      });
+      const res = await fetch(`${LASTFM_BASE_URL}?${params.toString()}`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      const similarTracks = data.similartracks?.track;
+      if (!similarTracks) return [];
+      const list = Array.isArray(similarTracks) ? similarTracks : [similarTracks];
+      return list.map(t => ({
+        artist: t.artist?.name || t.artist || '',
+        name: t.name || ''
+      })).filter(t => t.name && t.artist);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  async function fetchFallbackSimilarTracks(artist, player, client) {
+    if (!artist) return [];
+    const queries = [
+      `scsearch:${artist} mix`,
+      `spsearch:${artist} radio`,
+      `scsearch:${artist} best songs`
+    ];
+    const candidates = [];
+    for (const q of queries) {
+      try {
+        const res = await player.search({ query: q }, client.user);
+        if (res?.tracks?.length) {
+          candidates.push(...res.tracks.slice(0, 5));
+        }
+      } catch (e) {}
+    }
+    return candidates;
+  }
+
+  async function handleAutoplay(player, lastTrack, client) {
+    if (!player || player.isAutoplaySearching) return;
+    player.isAutoplaySearching = true;
+
+    if (!player.autoplayHistory) player.autoplayHistory = new Set();
+    const artist = lastTrack?.info?.author || '';
+    const title = lastTrack?.info?.title || '';
+    const normLastTitle = normalizeTrackTitle(title);
+
+    if (lastTrack?.info?.identifier) player.autoplayHistory.add(lastTrack.info.identifier);
+    if (normLastTitle) player.autoplayHistory.add(normLastTitle);
+
+    console.log(`♾️ [Autoplay Engine] Finding recommendations for "${title}" by "${artist}"...`);
+
+    try {
+      const candidates = [];
+
+      // 1. Last.fm Similar Tracks Search
+      const lastFmRecs = await fetchLastFmSimilarTracks(artist, title);
+      for (const rec of lastFmRecs.slice(0, 15)) {
+        try {
+          const q = `scsearch:${rec.artist} ${rec.name}`;
+          let res = await player.search({ query: q }, client.user);
+          if (!res?.tracks?.length) {
+            res = await player.search({ query: `spsearch:${rec.artist} ${rec.name}` }, client.user);
+          }
+          if (res?.tracks?.length) {
+            candidates.push(res.tracks[0]);
+          }
+        } catch (e) {}
+      }
+
+      // 2. Fallback Multi-Query Search if Last.fm candidate count is low
+      if (candidates.length < 5) {
+        const fallbackTracks = await fetchFallbackSimilarTracks(artist, player, client);
+        candidates.push(...fallbackTracks);
+      }
+
+      // 3. Filter candidate tracks against history & duplicates
+      const validTracks = [];
+      for (const cand of candidates) {
+        const cId = cand.info?.identifier;
+        const cNormTitle = normalizeTrackTitle(cand.info?.title);
+
+        if (cId && player.autoplayHistory.has(cId)) continue;
+        if (cNormTitle && player.autoplayHistory.has(cNormTitle)) continue;
+
+        if (cId) player.autoplayHistory.add(cId);
+        if (cNormTitle) player.autoplayHistory.add(cNormTitle);
+
+        validTracks.push(cand);
+        if (validTracks.length >= 5) break;
+      }
+
+      if (validTracks.length > 0) {
+        for (const trk of validTracks) {
+          await player.queue.add(trk);
+        }
+
+        console.log(`▶️ [Autoplay Engine] Successfully added ${validTracks.length} recommendation tracks to queue.`);
+
+        if (!player.playing && !player.paused) {
+          await player.play().catch(() => {});
+        }
+
+        if (player.textChannelId) {
+          const channel = client.channels.cache.get(player.textChannelId) || await client.channels.fetch(player.textChannelId).catch(() => null);
+          if (channel) {
+            const addedNames = validTracks.slice(0, 3).map((t, i) => `\`${i + 1}.\` **[${t.info.title}](${t.info.uri || 'https://spotify.com'})** by \`${t.info.author}\``).join('\n');
+            channel.send(`♾️ **Autoplay Active:** Added ${validTracks.length} similar tracks to queue:\n${addedNames}`).catch(() => {});
+          }
+        }
+      } else {
+        console.warn('[Autoplay Engine] No new unique recommendation candidates found.');
+      }
+    } catch (err) {
+      console.error('[Autoplay Engine Error]', err.message || err);
+    } finally {
+      setTimeout(() => { player.isAutoplaySearching = false; }, 3000);
+    }
+  }
+
   lavalink.on('trackEnd', async (player, track, reason) => {
     if (!player) return;
 
     const reasonStr = typeof reason === 'object' ? (reason?.reason || '') : String(reason || '');
     const cleanReason = reasonStr.toLowerCase();
-
-    // Ignore stopped or replaced tracks to prevent rapid infinite autoplay loops
     if (cleanReason === 'replaced' || cleanReason === 'stopped') return;
 
-    // Initialize Autoplay History Set on player
-    if (!player.autoplayHistory) player.autoplayHistory = new Set();
-
-    if (track?.info) {
-      if (track.info.identifier) player.autoplayHistory.add(track.info.identifier);
-      if (track.info.title) player.autoplayHistory.add(track.info.title.toLowerCase().trim());
-    }
+    player.lastPlayedTrack = track;
 
     const musicCmd = client.commands?.get('music');
     const autoplayStore = musicCmd?.autoplayStore;
     const isAutoplay = player.autoplay || (autoplayStore ? autoplayStore.get(player.guildId) : false);
 
-    // Autoplay trigger ONLY when queue is empty and autoplay is enabled and not already searching
-    if (isAutoplay && player.queue.tracks.length === 0 && !player.isAutoplaySearching) {
-      player.isAutoplaySearching = true;
-      try {
-        console.log(`♾️ [Autoplay Engine] Triggering smart recommendation for "${track?.info?.title}" by "${track?.info?.author}"...`);
-
-        let nextTrack = null;
-
-        // 1. Instant Pick from Pre-fetched Suggested Tracks
-        if (player.suggestedTracks && player.suggestedTracks.length > 0) {
-          nextTrack = player.suggestedTracks.find(t => {
-            const tId = t.info?.identifier;
-            const tTitle = t.info?.title?.toLowerCase()?.trim();
-            return tId !== track?.info?.identifier &&
-                   !player.autoplayHistory.has(tId) &&
-                   !player.autoplayHistory.has(tTitle);
-          });
-        }
-
-        // 2. High-Reliability Search if suggestedTracks candidate is missing
-        if (!nextTrack) {
-          const artist = track?.info?.author || '';
-          const title = track?.info?.title || '';
-          const cleanTitle = title.replace(/\(Official Video\)/gi, '').replace(/\[Official Music Video\]/gi, '').trim();
-
-          const searchQueries = [
-            `ytsearch:${cleanTitle} ${artist}`.trim(),
-            `scsearch:${artist} ${cleanTitle}`.trim(),
-            `ytsearch:${artist} songs`.trim(),
-            `scsearch:${cleanTitle}`.trim()
-          ];
-
-          for (const query of searchQueries) {
-            if (!query.replace(/^(ytsearch:|scsearch:)/, '').trim()) continue;
-            try {
-              const res = await player.search({ query }, client.user);
-              if (res && res.tracks && res.tracks.length) {
-                const candidate = res.tracks.find(t => {
-                  const tId = t.info?.identifier;
-                  const tTitle = t.info?.title?.toLowerCase()?.trim();
-                  return tId !== track?.info?.identifier &&
-                         !player.autoplayHistory.has(tId) &&
-                         !player.autoplayHistory.has(tTitle);
-                });
-                if (candidate) {
-                  nextTrack = candidate;
-                  break;
-                }
-              }
-            } catch (e) {}
-          }
-        }
-
-        if (nextTrack) {
-          console.log(`▶️ [Autoplay Engine] Successfully queued and playing: "${nextTrack.info.title}" by "${nextTrack.info.author}"`);
-          if (nextTrack.info?.identifier) player.autoplayHistory.add(nextTrack.info.identifier);
-          if (nextTrack.info?.title) player.autoplayHistory.add(nextTrack.info.title.toLowerCase().trim());
-
-          await player.queue.add(nextTrack);
-          if (!player.playing && !player.paused) {
-            await player.play({ track: nextTrack }).catch(async () => {
-              await player.play().catch(() => {});
-            });
-          }
-
-          if (player.textChannelId) {
-            const channel = client.channels.cache.get(player.textChannelId) || await client.channels.fetch(player.textChannelId).catch(() => null);
-            if (channel) {
-              channel.send(`♾️ **Autoplay Recommended:** Now playing **[${nextTrack.info.title}](${nextTrack.info.uri || 'https://spotify.com'})** by \`${nextTrack.info.author}\``).catch(() => {});
-            }
-          }
-        } else {
-          console.warn('[Autoplay Engine] No new similar track candidates found.');
-        }
-      } catch (err) {
-        console.error('[Autoplay Engine Error]', err.message || err);
-      } finally {
-        setTimeout(() => { player.isAutoplaySearching = false; }, 2000);
-      }
+    if (isAutoplay && player.queue.tracks.length === 0) {
+      await handleAutoplay(player, track, client);
     }
   });
 
@@ -286,12 +351,18 @@ function initLavalink(client) {
 
     if (!player.textChannelId) return;
 
-    // If Autoplay is enabled, trackEnd handles loading recommended tracks
-    if (player.autoplay) return;
+    const musicCmd = client.commands?.get('music');
+    const autoplayStore = musicCmd?.autoplayStore;
+    const isAutoplay = player.autoplay || (autoplayStore ? autoplayStore.get(player.guildId) : false);
+
+    // If Autoplay is enabled, attempt to fetch autoplay tracks on queue end
+    if (isAutoplay && player.lastPlayedTrack) {
+      await handleAutoplay(player, player.lastPlayedTrack, client);
+      if (player.queue.tracks.length > 0 || player.playing) return;
+    }
 
     try {
       const channel = client.channels.cache.get(player.textChannelId);
-      const musicCmd = client.commands?.get('music');
       const afkStore = musicCmd?.afkStore;
       const isAfk247 = afkStore ? afkStore.has(player.guildId) : false;
 
