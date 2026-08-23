@@ -172,23 +172,51 @@ module.exports = {
 
       // 3. SET AVATAR (.setavatar <URL/Attachment>)
       if (sub === 'avatar') {
-        const attachment = message.attachments.first();
-        const imgUrl = attachment ? attachment.url : args[invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1];
-        if (!imgUrl) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Provide an image URL or attach an image! Usage: \`.setavatar <imageURL/attachment>\``);
+        const messageAttachment = message.attachments?.first();
+        let refAttachment = null;
+        if (!messageAttachment && message.reference) {
+          try {
+            const refMsg = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
+            refAttachment = refMsg?.attachments?.first();
+          } catch (e) {}
+        }
+        const attachment = messageAttachment || refAttachment;
+
+        let imgUrl = attachment ? attachment.url : (invoked === 'setavatar' || invoked === 'botavatar' ? args[0] : args[1]);
+
+        if (!imgUrl && message.mentions?.users?.first()) {
+          imgUrl = message.mentions.users.first().displayAvatarURL({ extension: 'png', size: 1024 });
+        }
+
+        if (!imgUrl) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Provide an image URL, attach an image, or reply to an image! Usage: \`.setavatar <imageURL/attachment>\``);
 
         draft.avatar = imgUrl;
         db.setGuildAppearance(guild.id, { avatar: imgUrl });
 
+        let setStatus = 'Saved in server database!';
+
         try {
-          if (guild.members.me && typeof guild.members.me.setAvatar === 'function') {
-            await guild.members.me.setAvatar(imgUrl).catch(() => {});
+          if (guild.members.me && typeof guild.members.me.edit === 'function') {
+            await guild.members.me.edit({ avatar: imgUrl });
+            setStatus = 'Updated for this server live on Discord!';
           }
-        } catch (err) {}
+        } catch (err) {
+          setStatus = `Saved in bot DB! *(Note: ${err.message})*`;
+        }
+
+        if (isOwner) {
+          try {
+            await message.client.user.setAvatar(imgUrl);
+            setStatus += ' *(Also updated live on Global Bot Profile!)*';
+          } catch (err) {
+            setStatus += ` *(Global update note: ${err.message})*`;
+          }
+        }
 
         const embed = new EmbedBuilder()
           .setColor(0x57F287)
-          .setTitle(`${emojis.SUCCESS || '✅'} Server Bot Avatar Updated`)
-          .setDescription(`Server bot avatar updated for **${guild.name}**!\n*(Global bot profile remains unchanged)*.`)
+          .setTitle(`${emojis.SUCCESS || '✅'} Bot Avatar Updated`)
+          .setDescription(`Bot avatar image updated for **${guild.name}**!\n> **Status:** ${setStatus}`)
           .setThumbnail(imgUrl);
 
         return message.reply({ embeds: [embed] });
@@ -196,9 +224,19 @@ module.exports = {
 
       // 4. SET BANNER (.setbanner <URL/Attachment>)
       if (sub === 'banner') {
-        const attachment = message.attachments.first();
-        const imgUrl = attachment ? attachment.url : args[invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1];
-        if (!imgUrl) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Provide a banner image URL or attach an image! Usage: \`.setbanner <imageURL/attachment>\``);
+        const messageAttachment = message.attachments?.first();
+        let refAttachment = null;
+        if (!messageAttachment && message.reference) {
+          try {
+            const refMsg = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
+            refAttachment = refMsg?.attachments?.first();
+          } catch (e) {}
+        }
+        const attachment = messageAttachment || refAttachment;
+
+        let imgUrl = attachment ? attachment.url : (invoked === 'setbanner' || invoked === 'botbanner' ? args[0] : args[1]);
+
+        if (!imgUrl) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Provide a banner image URL, attach an image, or reply to an image! Usage: \`.setbanner <imageURL/attachment>\``);
 
         draft.banner = imgUrl;
         db.setGuildAppearance(guild.id, { banner: imgUrl });
@@ -206,7 +244,7 @@ module.exports = {
         const embed = new EmbedBuilder()
           .setColor(0x57F287)
           .setTitle(`${emojis.SUCCESS || '✅'} Server Bot Banner Saved`)
-          .setDescription(`Server bot banner updated for **${guild.name}**!\n*(Global bot profile remains unchanged)*.`)
+          .setDescription(`Server bot banner updated for **${guild.name}**!`)
           .setImage(imgUrl);
 
         return message.reply({ embeds: [embed] });
