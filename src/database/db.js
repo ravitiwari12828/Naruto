@@ -1,5 +1,12 @@
 const fs = require('fs');
 const path = require('path');
+
+try {
+  const dns = require('dns');
+  if (typeof dns.setDefaultResultOrder === 'function') dns.setDefaultResultOrder('ipv4first');
+  if (typeof dns.setServers === 'function') dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+} catch (e) {}
+
 let mongoose = null;
 try {
   mongoose = require('mongoose');
@@ -84,21 +91,7 @@ class ResilientDatabase {
   }
 
   async initMongo(uri) {
-    try {
-      const dns = require('dns');
-      if (typeof dns.setDefaultResultOrder === 'function') {
-        dns.setDefaultResultOrder('ipv4first');
-      }
-      if (typeof dns.setServers === 'function') {
-        dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
-      }
-    } catch (e) {}
-
-    if (mongoose) {
-      try {
-        mongoose.set('bufferCommands', false);
-      } catch (e) {}
-    }
+    if (!mongoose) return;
 
     const connectOptions = {
       serverSelectionTimeoutMS: 10000,
@@ -107,19 +100,15 @@ class ResilientDatabase {
 
     console.log('<a:leaf_animated:1537179616400375939> [MongoDB Cloud] Connecting to MongoDB Atlas database...');
 
-    for (let attempt = 1; attempt <= 2; attempt++) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         await mongoose.connect(uri, connectOptions);
-        if (mongoose.connection && mongoose.connection.readyState === 1) {
-          this.useMongo = true;
-          console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
-          break;
-        } else {
-          throw new Error('Connection state not open');
-        }
+        this.useMongo = true;
+        console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
+        break;
       } catch (err) {
         await mongoose.disconnect().catch(() => {});
-        if (attempt === 2) {
+        if (attempt === 3) {
           this.useMongo = false;
           this.mongoReady = false;
           console.log('<a:wrong_animated:1537179702928875631> [MongoDB Atlas Connection Failure]:', err?.message || 'IP Not Whitelisted / Network Access Blocked');
