@@ -187,7 +187,8 @@ function buildAddedToQueueRow() {
  * Builds the exact 3-row 4-button grid layout + dropdown menus.
  */
 function buildMusicActionRows(player = null) {
-  const isAutoplay = player?.autoplay || false;
+  const storeVal = player?.guildId ? autoplayStore.get(player.guildId) : false;
+  const isAutoplay = (player?.autoplay !== undefined ? player.autoplay : storeVal) || false;
 
   const row1 = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('music_prev').setEmoji('⏮️').setStyle(ButtonStyle.Secondary),
@@ -808,7 +809,16 @@ module.exports = {
     if (['autoplay', 'ap'].includes(invoked)) {
       const player = lavalink?.getPlayer(guildId);
       if (!player) return message.reply(`${emojis.WARNING} No active music player!`);
-      player.autoplay = !player.autoplay;
+
+      const argStr = args.join(' ').toLowerCase();
+      if (argStr.includes('enable') || argStr.includes('on') || argStr.includes('true')) {
+        player.autoplay = true;
+      } else if (argStr.includes('disable') || argStr.includes('off') || argStr.includes('false')) {
+        player.autoplay = false;
+      } else {
+        player.autoplay = !player.autoplay;
+      }
+
       autoplayStore.set(guildId, player.autoplay);
 
       if (player.autoplay && player.queue.tracks.length <= 1) {
@@ -816,6 +826,10 @@ module.exports = {
         if (lastTrk && lavalink.handleAutoplay) {
           lavalink.handleAutoplay(player, lastTrk, message.client);
         }
+      }
+
+      if (player.queue.current) {
+        sendMusicCard(message.channel, player.queue.current, player).catch(() => {});
       }
 
       const status = player.autoplay ? '<a:accept_animated:1537177319603703969> **ENABLED**' : '<a:wrong_animated:1537179702928875631> **DISABLED**';
