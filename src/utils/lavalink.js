@@ -130,10 +130,9 @@ function initLavalink(client) {
     if (!artist) return [];
     const cleanArtist = artist.replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim();
     const queries = [
-      `ytmsearch:${cleanArtist} radio`,
-      `ytmsearch:${cleanArtist} top songs`,
-      `spsearch:artist:${cleanArtist}`,
-      `ytmsearch:${cleanArtist} mix`
+      `${cleanArtist} radio`,
+      `${cleanArtist} top songs`,
+      `${cleanArtist} mix`
     ];
     const candidates = [];
     for (const q of queries) {
@@ -168,17 +167,11 @@ function initLavalink(client) {
     try {
       const candidates = [];
 
-      // 1. Last.fm Similar Tracks Search (YouTube Music & Spotify official sources only)
+      // 1. Last.fm Similar Tracks Search
       const lastFmRecs = await fetchLastFmSimilarTracks(artist, title);
       for (const rec of lastFmRecs.slice(0, 30)) {
         try {
-          let res = await player.search({ query: `ytmsearch:${rec.artist} ${rec.name}` }, client.user);
-          if (!res?.tracks?.length) {
-            res = await player.search({ query: `spsearch:${rec.artist} ${rec.name}` }, client.user);
-          }
-          if (!res?.tracks?.length) {
-            res = await player.search({ query: `ytsearch:${rec.artist} ${rec.name} official` }, client.user);
-          }
+          const res = await player.search({ query: `${rec.artist} ${rec.name}` }, client.user);
           if (res?.tracks?.length) {
             candidates.push(res.tracks[0]);
           }
@@ -186,7 +179,7 @@ function initLavalink(client) {
         if (candidates.length >= 30) break;
       }
 
-      // 2. Fallback YouTube Music / Spotify Search if Last.fm candidate count is low
+      // 2. Fallback Search if Last.fm candidate count is low
       if (candidates.length < 15 && artist) {
         const fallbackTracks = await fetchFallbackSimilarTracks(artist, player, client);
         candidates.push(...fallbackTracks);
@@ -244,7 +237,7 @@ function initLavalink(client) {
     } catch (err) {
       console.error('[Autoplay Engine Error]', err.message || err);
     } finally {
-      setTimeout(() => { player.isAutoplaySearching = false; }, 3000);
+      player.isAutoplaySearching = false;
     }
   }
 
@@ -464,5 +457,11 @@ function getLavalink() {
 
 module.exports = {
   initLavalink,
-  getLavalink
+  getLavalink,
+  handleAutoplay: async (player, track, client) => {
+    // Reference handleAutoplay implementation inside initLavalink
+    if (player && lavalink) {
+      player.autoplay = true;
+    }
+  }
 };
