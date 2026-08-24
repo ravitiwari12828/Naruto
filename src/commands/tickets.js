@@ -92,11 +92,28 @@ async function ensureTicketLogChannels(guild) {
   const { getOrCreateAdvLogStore } = require('../utils/logger');
   const advStore = getOrCreateAdvLogStore(guild.id);
 
-  let category = guild.channels.cache.find(c => c.type === ChannelType.GuildCategory && (c.name.includes('Ticket') || c.name.includes('ticket')));
+  const excludedKeywords = ['promotion', 'promo', 'archive', 'closed', 'staff', 'vip', 'event'];
+  let category = guild.channels.cache.find(c => {
+    if (c.type !== ChannelType.GuildCategory) return false;
+    const nameLower = c.name.toLowerCase();
+    if (excludedKeywords.some(k => nameLower.includes(k))) return false;
+    return nameLower.includes('ticket logs') || nameLower.includes('ticket & modmail') || nameLower === 'tickets' || nameLower === 'ticket system' || nameLower === 'support tickets';
+  });
+
   if (!category) {
+    category = guild.channels.cache.find(c => {
+      if (c.type !== ChannelType.GuildCategory) return false;
+      const nameLower = c.name.toLowerCase();
+      if (excludedKeywords.some(k => nameLower.includes(k))) return false;
+      return nameLower.includes('ticket');
+    });
+  }
+
+  if (!category) {
+    const isSupportServer = (process.env.SUPPORT_GUILD_ID && guild.id === process.env.SUPPORT_GUILD_ID) || guild.name.toLowerCase().includes('support') || guild.name.toLowerCase().includes('synn');
     try {
       category = await guild.channels.create({
-        name: '<a:tickety_animated:1537177533961732106> · Ticket & ModMail Logs ·',
+        name: isSupportServer ? '🎟️ · Ticket & ModMail Logs ·' : '🎟️ · Ticket Logs ·',
         type: ChannelType.GuildCategory,
         permissionOverwrites: [
           { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
