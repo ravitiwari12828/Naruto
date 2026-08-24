@@ -220,6 +220,7 @@ client.once('ready', async () => {
 
               const isTemp = config.activeTempVCs.has(chan.id) ||
                 chan.name.includes("'s Room") ||
+                chan.name.startsWith("🔊 ") ||
                 chan.name.startsWith("<a:volumeup_animated:1537177548121968650> ") ||
                 (chan.parent && chan.parent.name.toLowerCase().includes('custom voice'));
 
@@ -486,7 +487,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
       const category = newState.channel?.parent;
       const cleanName = member.user.username.replace(/[^a-zA-Z0-9]/g, '') || 'Member';
       const tempVC = await guild.channels.create({
-        name: `<a:volumeup_animated:1537177548121968650> ${cleanName}'s Room`,
+        name: `🔊 ${cleanName}'s Room`,
         type: ChannelType.GuildVoice,
         parent: category ? category.id : undefined,
         permissionOverwrites: [
@@ -511,6 +512,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
   const isTempChannel = (oldState.channelId && config.activeTempVCs.has(oldState.channelId)) ||
     (oldState.channel && (
       oldState.channel.name.includes("'s Room") ||
+      oldState.channel.name.startsWith("🔊 ") ||
       oldState.channel.name.startsWith("<a:volumeup_animated:1537177548121968650> ") ||
       (config.triggerChanId && oldState.channel.id !== config.triggerChanId && !oldState.channel.name.toLowerCase().includes('join to create') &&
        oldState.channel.parent && oldState.channel.parent.name.toLowerCase().includes('custom voice'))
