@@ -9,8 +9,9 @@ const db = require('../database/db');
 const premiumGuilds = new Map();
 const premiumUsers = new Map([
   ['1420687548807905324', null],
-  ['1455206883324461223', null]
-]);
+  [ null],
+  
+  ]);
 
 // Temporary draft state for appearance customization before Save
 const appearanceDrafts = new Map();

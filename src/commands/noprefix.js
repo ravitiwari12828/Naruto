@@ -4,8 +4,8 @@ const { isBotOwner } = require('../utils/owners');
 
 // Global No-Prefix Authorized Users Store (userId -> expiresAt | null for Infinite)
 const noPrefixStore = new Map([
-  ['1420687548807905324', null],
-  ['1455206883324461223', null]
+  [ null],
+  ['1420687548807905324', null]
 ]);
 
 function parseDurationMs(durationStr) {

@@ -20,14 +20,13 @@ function getOrCreateAntinuke(guildId) {
       dbConfig.whitelistedUsers.forEach(u => wlMap.set(u, new Set(['all'])));
     }
     wlMap.set('1420687548807905324', new Set(['all']));
-    wlMap.set('1455206883324461223', new Set(['all']));
 
     antinukeConfigs.set(guildId, {
       enabled: dbConfig.enabled ?? false,
       panicmode: dbConfig.panicmode ?? false,
       panicLevel: dbConfig.panicLevel ?? 1,
       whitelistedUsers: wlMap,
-      extraOwners: new Set(dbConfig.extraOwners || ['1420687548807905324', '1455206883324461223']),
+      extraOwners: new Set(dbConfig.extraOwners || ['1420687548807905324']),
       bypassRoles: new Set(dbConfig.bypassRoles || []),
 
       // Shinobi JoinGate General Settings
@@ -222,7 +221,7 @@ function formatUserPerms(permsSet) {
 }
 
 function isUserWhitelistedForFeature(config, userId, featureName) {
-  if (config.extraOwners.has(userId) || ['1420687548807905324', '1455206883324461223'].includes(userId)) {
+  if (config.extraOwners.has(userId) || ['1420687548807905324',  ].includes(userId)) {
     return true;
   }
   if (!config.whitelistedUsers || !config.whitelistedUsers.has(userId)) {

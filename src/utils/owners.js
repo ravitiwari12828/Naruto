@@ -9,8 +9,7 @@
 const PRIMARY_BOT_OWNER_ID = '1420687548807905324'; // Synn
 
 const MAIN_BOT_OWNER_IDS = new Set([
-  '1420687548807905324', // Synn
-  '1455206883324461223'  // Bot Owner
+  '1420687548807905324' // Synn
 ]);
 
 const EXTRA_BOT_OWNER_IDS = new Set();
