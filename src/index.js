@@ -2457,27 +2457,6 @@ client.on('interactionCreate', async (interaction) => {
 
   if (!interaction.isButton()) return;
 
-  // LOCKDOWN BUTTON CONTROLS
-  if (interaction.customId === 'lockdown_unlock') {
-    await interaction.deferReply({ flags: 64 }).catch(() => {});
-    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator) && interaction.guild.ownerId !== interaction.user.id) {
-      return interaction.editReply({ content: `${emojis.WARNING} You need **Administrator** permission to lift server lockdown.` }).catch(() => {});
-    }
-
-    const lockdownCmd = client.commands.get('lockdown');
-    if (lockdownCmd) {
-      await lockdownCmd.execute({
-        content: '.unlockdown',
-        guild: interaction.guild,
-        author: interaction.user,
-        member: interaction.member,
-        channel: interaction.channel,
-        reply: (opts) => interaction.channel.send(opts)
-      }, ['off']).catch(() => {});
-      return interaction.editReply({ content: `🔓 **Server Unlockdown Initiated**.` }).catch(() => {});
-    }
-  }
-
   // MUSIC BUTTON CONTROLS
   if (interaction.customId.startsWith('music_') || interaction.customId.startsWith('queue_')) {
     await interaction.deferReply({ flags: 64 }).catch(() => {});
