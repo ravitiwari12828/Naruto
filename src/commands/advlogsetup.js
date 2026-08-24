@@ -111,6 +111,12 @@ module.exports = {
       let actionStatus = '';
 
       if (interaction.customId === 'advlog_deploy_all') {
+        if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
+          actionStatus = '⚠️ **Error:** Bot lacks **Manage Channels** permission to create missing log channels!';
+          await setupMsg.edit({ embeds: [buildDashboardEmbed(actionStatus)], components: buildButtons() });
+          return;
+        }
+
         const isSupportServer = (process.env.SUPPORT_GUILD_ID && guild.id === process.env.SUPPORT_GUILD_ID) || guild.name.toLowerCase().includes('support') || guild.name.toLowerCase().includes('synn');
 
         const ticketChannels = [
@@ -192,7 +198,9 @@ module.exports = {
                       { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
                     ]
                   });
-                } catch (e) {}
+                } catch (catErr) {
+                  console.error(`[AdvLogSetup Category Creation Error: ${catDef.name}]`, catErr.message);
+                }
               }
 
               try {
@@ -204,8 +212,13 @@ module.exports = {
                     { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
                   ]
                 });
-                createdCount++;
-              } catch (e) {}
+                if (textChan) {
+                  createdCount++;
+                  assignedSet.add(textChan.id);
+                }
+              } catch (chanErr) {
+                console.error(`[AdvLogSetup Channel Creation Error: ${chDef.name}]`, chanErr.message);
+              }
             }
 
             if (textChan) {

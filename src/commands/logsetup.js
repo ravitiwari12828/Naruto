@@ -247,6 +247,12 @@ module.exports = {
       }
 
       else if (interaction.customId === 'log_setup_multi') {
+        if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
+          actionStatus = '⚠️ **Error:** Bot lacks **Manage Channels** permission to create missing log channels!';
+          await setupMsg.edit({ embeds: [buildDashboardEmbed(actionStatus)], components: buildButtons() });
+          return;
+        }
+
         const db = require('../database/db');
         const { getOrCreateAdvLogStore } = require('../utils/logger');
         const store = getOrCreateAdvLogStore(guild.id);
@@ -334,7 +340,9 @@ module.exports = {
                       { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
                     ]
                   });
-                } catch (e) {}
+                } catch (catErr) {
+                  console.error(`[LogSetup Category Creation Error: ${catDef.name}]`, catErr.message);
+                }
               }
 
               try {
@@ -346,12 +354,16 @@ module.exports = {
                     { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
                   ]
                 });
-                createdCount++;
-              } catch (e) {}
+                if (textChan) {
+                  createdCount++;
+                  assignedSet.add(textChan.id);
+                }
+              } catch (chanErr) {
+                console.error(`[LogSetup Channel Creation Error: ${chDef.name}]`, chanErr.message);
+              }
             }
 
             if (textChan) {
-              config[chDef.key] = textChan.id;
               store.channels.set(chDef.key, textChan.id);
               db.saveLogChannel(guild.id, chDef.key, textChan.id);
             }
@@ -359,7 +371,7 @@ module.exports = {
         }
 
         loggingConfigs.set(guild.id, config);
-        actionStatus = `Logging channels mapped! (${reusedCount} existing channels re-used, ${createdCount} new created)`;
+        actionStatus = `Multi-category audit logging mapped into DB! (${reusedCount} existing channels re-used, ${createdCount} new created)`;
       }
 
       else if (interaction.customId === 'log_setup_disable') {
