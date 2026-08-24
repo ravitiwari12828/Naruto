@@ -128,19 +128,22 @@ function initLavalink(client) {
 
   async function fetchFallbackSimilarTracks(artist, player, client) {
     if (!artist) return [];
+    const cleanArtist = artist.replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim();
     const queries = [
-      `scsearch:${artist} mix`,
-      `spsearch:${artist} radio`,
-      `scsearch:${artist} best songs`
+      `ytmsearch:${cleanArtist} radio`,
+      `ytmsearch:${cleanArtist} top songs`,
+      `spsearch:artist:${cleanArtist}`,
+      `ytmsearch:${cleanArtist} mix`
     ];
     const candidates = [];
     for (const q of queries) {
       try {
         const res = await player.search({ query: q }, client.user);
         if (res?.tracks?.length) {
-          candidates.push(...res.tracks.slice(0, 5));
+          candidates.push(...res.tracks.slice(0, 8));
         }
       } catch (e) {}
+      if (candidates.length >= 25) break;
     }
     return candidates;
   }
@@ -150,53 +153,62 @@ function initLavalink(client) {
     player.isAutoplaySearching = true;
 
     if (!player.autoplayHistory) player.autoplayHistory = new Set();
-    const artist = lastTrack?.info?.author || '';
-    const title = lastTrack?.info?.title || '';
+    const rawArtist = lastTrack?.info?.author || '';
+    const rawTitle = lastTrack?.info?.title || '';
+    
+    const artist = rawArtist.replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim();
+    const title = rawTitle;
     const normLastTitle = normalizeTrackTitle(title);
 
     if (lastTrack?.info?.identifier) player.autoplayHistory.add(lastTrack.info.identifier);
     if (normLastTitle) player.autoplayHistory.add(normLastTitle);
 
-    console.log(`♾️ [Autoplay Engine] Finding recommendations for "${title}" by "${artist}"...`);
+    console.log(`♾️ [Autoplay Engine] Finding 15 similar recommendations for "${title}" by "${artist}"...`);
 
     try {
       const candidates = [];
 
-      // 1. Last.fm Similar Tracks Search
+      // 1. Last.fm Similar Tracks Search (YouTube Music & Spotify official sources only)
       const lastFmRecs = await fetchLastFmSimilarTracks(artist, title);
-      for (const rec of lastFmRecs.slice(0, 15)) {
+      for (const rec of lastFmRecs.slice(0, 30)) {
         try {
-          const q = `scsearch:${rec.artist} ${rec.name}`;
-          let res = await player.search({ query: q }, client.user);
+          let res = await player.search({ query: `ytmsearch:${rec.artist} ${rec.name}` }, client.user);
           if (!res?.tracks?.length) {
             res = await player.search({ query: `spsearch:${rec.artist} ${rec.name}` }, client.user);
+          }
+          if (!res?.tracks?.length) {
+            res = await player.search({ query: `ytsearch:${rec.artist} ${rec.name} official` }, client.user);
           }
           if (res?.tracks?.length) {
             candidates.push(res.tracks[0]);
           }
         } catch (e) {}
+        if (candidates.length >= 30) break;
       }
 
-      // 2. Fallback Multi-Query Search if Last.fm candidate count is low
-      if (candidates.length < 5) {
+      // 2. Fallback YouTube Music / Spotify Search if Last.fm candidate count is low
+      if (candidates.length < 15 && artist) {
         const fallbackTracks = await fetchFallbackSimilarTracks(artist, player, client);
         candidates.push(...fallbackTracks);
       }
 
-      // 3. Filter candidate tracks against history & duplicates
+      // 3. Filter candidate tracks against history & queue duplicates
       const validTracks = [];
+      const queueIds = new Set(player.queue.tracks.map(t => t.info?.identifier));
+      if (player.queue.current?.info?.identifier) queueIds.add(player.queue.current.info.identifier);
+
       for (const cand of candidates) {
         const cId = cand.info?.identifier;
         const cNormTitle = normalizeTrackTitle(cand.info?.title);
 
-        if (cId && player.autoplayHistory.has(cId)) continue;
+        if (cId && (player.autoplayHistory.has(cId) || queueIds.has(cId))) continue;
         if (cNormTitle && player.autoplayHistory.has(cNormTitle)) continue;
 
         if (cId) player.autoplayHistory.add(cId);
         if (cNormTitle) player.autoplayHistory.add(cNormTitle);
 
         validTracks.push(cand);
-        if (validTracks.length >= 5) break;
+        if (validTracks.length >= 15) break;
       }
 
       if (validTracks.length > 0) {
@@ -213,8 +225,17 @@ function initLavalink(client) {
         if (player.textChannelId) {
           const channel = client.channels.cache.get(player.textChannelId) || await client.channels.fetch(player.textChannelId).catch(() => null);
           if (channel) {
-            const addedNames = validTracks.slice(0, 3).map((t, i) => `\`${i + 1}.\` **[${t.info.title}](${t.info.uri || 'https://spotify.com'})** by \`${t.info.author}\``).join('\n');
-            channel.send(`♾️ **Autoplay Active:** Added ${validTracks.length} similar tracks to queue:\n${addedNames}`).catch(() => {});
+            const top5List = validTracks.slice(0, 5).map((t, i) => `\`${i + 1}.\` **[${t.info.title}](${t.info.uri || 'https://spotify.com'})** by \`${t.info.author}\``).join('\n');
+            const summaryEmbed = createStyledEmbed({
+              title: `♾️ Autoplay Recommendations Added (${validTracks.length} Songs)`,
+              subtitle: `Similar tracks related to ${artist || 'current song'}`,
+              description:
+                `Added **${validTracks.length} similar songs** to queue based on **${lastTrack?.info?.title || 'last song'}**!\n\n` +
+                `**Upcoming Autoplay Highlights:**\n${top5List}` +
+                (validTracks.length > 5 ? `\n\n*...and ${validTracks.length - 5} more similar tracks queued!*` : ''),
+              clientUser: client.user
+            });
+            channel.send({ embeds: [summaryEmbed] }).catch(() => {});
           }
         }
       } else {
@@ -240,7 +261,7 @@ function initLavalink(client) {
     const autoplayStore = musicCmd?.autoplayStore;
     const isAutoplay = player.autoplay || (autoplayStore ? autoplayStore.get(player.guildId) : false);
 
-    if (isAutoplay && player.queue.tracks.length === 0) {
+    if (isAutoplay && player.queue.tracks.length <= 1) {
       await handleAutoplay(player, track, client);
     }
   });

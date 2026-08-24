@@ -810,8 +810,16 @@ module.exports = {
       if (!player) return message.reply(`${emojis.WARNING} No active music player!`);
       player.autoplay = !player.autoplay;
       autoplayStore.set(guildId, player.autoplay);
+
+      if (player.autoplay && player.queue.tracks.length <= 1) {
+        const lastTrk = player.queue.current || player.lastPlayedTrack;
+        if (lastTrk && lavalink.handleAutoplay) {
+          lavalink.handleAutoplay(player, lastTrk, message.client);
+        }
+      }
+
       const status = player.autoplay ? '<a:accept_animated:1537177319603703969> **ENABLED**' : '<a:wrong_animated:1537179702928875631> **DISABLED**';
-      return message.reply(`♾️ **Autoplay Mode:** ${status}! ${player.autoplay ? '(Auto-queuing recommended tracks when queue ends)' : ''}`);
+      return message.reply(`♾️ **Autoplay Mode:** ${status}! ${player.autoplay ? '(Auto-queuing 15 similar artist tracks continuously)' : ''}`);
     }
 
     // 17. FAVORITES (.fav add/list/remove/play)
