@@ -181,7 +181,7 @@ module.exports = {
       if (!category) {
         try {
           category = await guild.channels.create({
-            name: '<a:openeddooraperture_animated:1537177450411462766> ModMail Tickets',
+            name: '📩 · ModMail Tickets ·',
             type: ChannelType.GuildCategory,
             permissionOverwrites: [
               { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
@@ -381,7 +381,7 @@ module.exports = {
         if (!category) {
           try {
             category = await guild.channels.create({
-              name: '<a:openeddooraperture_animated:1537177450411462766> ModMail Tickets',
+              name: '📩 · ModMail Tickets ·',
               type: ChannelType.GuildCategory,
               permissionOverwrites: [{ id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }]
             });

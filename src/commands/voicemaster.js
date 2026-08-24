@@ -198,13 +198,13 @@ module.exports = {
       try {
         // Create Category
         const category = await guild.channels.create({
-          name: '<a:volumeup_animated:1537177548121968650> Custom Voice Calls',
+          name: '🔊 · Custom Voice Calls ·',
           type: ChannelType.GuildCategory
         });
 
         // Create Trigger VC
         const triggerChan = await guild.channels.create({
-          name: '<a:volumeup_animated:1537177548121968650> <a:sparkles_animated:1537179684175872171> 「 Join to Create 」',
+          name: '🔊 「 Join to Create 」',
           type: ChannelType.GuildVoice,
           parent: category.id
         });

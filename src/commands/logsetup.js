@@ -271,7 +271,7 @@ module.exports = {
 
         const categoryStructure = [
           {
-            name: '<a:security_animated:1537177499862171741> · Security Logs ·',
+            name: '🛡️ · Security Logs ·',
             channels: [
               { key: 'narutologs', name: 'naruto-logs' },
               { key: 'automod', name: 'naruto-automod-logs' },
@@ -283,7 +283,7 @@ module.exports = {
             ]
           },
           {
-            name: '<a:openfolder_animated:1537177452936437760> · Server Audit Logs (Part 1) ·',
+            name: '📁 · Server Audit Logs (Part 1) ·',
             channels: [
               { key: 'applications', name: 'application-logs' },
               { key: 'channels', name: 'channel-logs' },
@@ -297,7 +297,7 @@ module.exports = {
             ]
           },
           {
-            name: '<a:openfolder_animated:1537177452936437760> · Server Audit Logs (Part 2) ·',
+            name: '📁 · Server Audit Logs (Part 2) ·',
             channels: [
               { key: 'stage', name: 'stage-logs' },
               { key: 'server', name: 'server-logs' },
@@ -311,7 +311,7 @@ module.exports = {
             ]
           },
           {
-            name: isSupportServer ? '<a:tickety_animated:1537177533961732106> · Ticket & ModMail Logs ·' : '<a:tickety_animated:1537177533961732106> · Ticket Logs ·',
+            name: isSupportServer ? '🎟️ · Ticket & ModMail Logs ·' : '🎟️ · Ticket Logs ·',
             channels: ticketChannels
           }
         ];
