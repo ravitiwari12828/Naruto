@@ -735,7 +735,50 @@ client.on('guildBanAdd', async (ban) => {
   }
 });
 
-// ${emojis.SHIELD} 2. ANTICHANNEL CREATED / DELETED LISTENERS
+function isDynamicOrTempChannel(channel) {
+  if (!channel) return false;
+
+  // 1. Voice channels, Stage channels, and Threads are inherently dynamic
+  if (channel.type === ChannelType.GuildVoice ||
+      channel.type === ChannelType.GuildStageVoice ||
+      channel.isThread?.() ||
+      channel.type === ChannelType.PublicThread ||
+      channel.type === ChannelType.PrivateThread ||
+      channel.type === ChannelType.AnnouncementThread) {
+    return true;
+  }
+
+  const chanName = (channel.name || '').toLowerCase();
+  const parentName = (channel.parent?.name || '').toLowerCase();
+  const topic = (channel.topic || '').toLowerCase();
+
+  // 2. Common keywords used by Ticket, VoiceMaster, ModMail, Giveaway, RPG, Poketwo, and Utility bots
+  const dynamicKeywords = [
+    'ticket', 'modmail', 'support', 'temp', 'voice', 'vc', 'room',
+    'claim', 'help', 'panel', 'order', 'request', 'contact', 'purchase',
+    'giveaway', 'poketwo', 'counting', 'bump', 'custom', 'ramen', 'lounge',
+    'general', 'chat', 'forum', 'bot'
+  ];
+
+  if (dynamicKeywords.some(k => chanName.includes(k) || parentName.includes(k) || topic.includes(k))) {
+    return true;
+  }
+
+  // 3. Common prefixes for temporary & ticket channels created by third-party bots
+  const dynamicPrefixes = [
+    'ticket-', 'modmail-', 'support-', 'temp-', 'vc-', 'room-',
+    'claim-', 'help-', 'panel-', 'order-', 'req-', 'user-', 'synn-',
+    'chat-', 'general-', 'contact-', 'closed-', 'archived-'
+  ];
+
+  if (dynamicPrefixes.some(p => chanName.startsWith(p))) {
+    return true;
+  }
+
+  return false;
+}
+
+// 🛡️ 2. ANTICHANNEL CREATED / DELETED LISTENERS
 client.on('channelCreate', async (channel) => {
   if (!channel.guild) return;
   const guild = channel.guild;
@@ -744,37 +787,39 @@ client.on('channelCreate', async (channel) => {
   if (antinukeCmd) {
     const config = antinukeCmd.getOrCreateAntinuke(guild.id);
     if (config.enabled && (config.filters.antiChannelCreate || config.panicmode)) {
-      try {
-        const { AuditLogEvent } = require('discord.js');
-        let executor = null;
-        for (let i = 0; i < 3; i++) {
-          await new Promise(r => setTimeout(r, 400));
-          const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelCreate }).catch(() => null);
-          const log = logs?.entries.first();
-          if (log && log.target?.id === channel.id && (Date.now() - log.createdTimestamp) < 15000) {
-            executor = log.executor;
-            break;
+      if (!isDynamicOrTempChannel(channel)) {
+        try {
+          const { AuditLogEvent } = require('discord.js');
+          let executor = null;
+          for (let i = 0; i < 3; i++) {
+            await new Promise(r => setTimeout(r, 400));
+            const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelCreate }).catch(() => null);
+            const log = logs?.entries.first();
+            if (log && log.target?.id === channel.id && (Date.now() - log.createdTimestamp) < 15000) {
+              executor = log.executor;
+              break;
+            }
           }
-        }
 
-        if (executor && executor.id !== guild.ownerId) {
-          const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiChannel');
-          if (!isWhitelisted) {
-            // Delete rogue channel
-            await channel.delete('AntiNuke: Unauthorized Channel Creation').catch(() => {});
-            await punishRogueAdmin(guild, executor.id, 'Unauthorized Channel Creation');
+          if (executor && executor.id !== guild.ownerId && executor.id !== client.user.id) {
+            const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiChannel');
+            if (!isWhitelisted) {
+              // Delete rogue channel
+              await channel.delete('AntiNuke: Unauthorized Channel Creation').catch(() => {});
+              await punishRogueAdmin(guild, executor.id, 'Unauthorized Channel Creation');
 
-            const { dispatchAntiNukeLog } = require('./utils/logger');
-            dispatchAntiNukeLog(guild, {
-              title: 'Anti Nuke',
-              rogueUser: executor,
-              actionReason: `suspicious activity (Creating channel: ${channel.name})`,
-              banStatusText: 'Successfully Banned'
-            });
-            return;
+              const { dispatchAntiNukeLog } = require('./utils/logger');
+              dispatchAntiNukeLog(guild, {
+                title: 'Anti Nuke',
+                rogueUser: executor,
+                actionReason: `suspicious activity (Creating channel: ${channel.name})`,
+                banStatusText: 'Successfully Banned'
+              });
+              return;
+            }
           }
-        }
-      } catch (e) {}
+        } catch (e) {}
+      }
     }
   }
 
@@ -795,75 +840,61 @@ client.on('channelDelete', async (channel) => {
     const config = antinukeCmd.getOrCreateAntinuke(guild.id);
     const quarantineCmd = client.commands.get('quarantine');
 
-    try {
-      const { AuditLogEvent } = require('discord.js');
-      let executor = null;
-      for (let i = 0; i < 3; i++) {
-        await new Promise(r => setTimeout(r, 100));
-        const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelDelete }).catch(() => null);
-        const log = logs?.entries.first();
-        if (log && (Date.now() - log.createdTimestamp) < 15000) {
-          executor = log.executor;
-          break;
-        }
-      }
-
-      if (executor && executor.id !== guild.ownerId) {
-        // Ignore deletions performed by the bot itself
-        if (executor.id === client.user.id) return;
-
-        // Ignore temporary VoiceMaster channels & Support Tickets / ModMail channels
-        const chanName = (channel.name || '').toLowerCase();
-        const parentName = (channel.parent?.name || '').toLowerCase();
-
-        const isTempVoice = chanName.includes("'s room") || chanName.startsWith('<a:volumeup_animated:1537177548121968650> ') || chanName.includes('temp') || parentName.includes('custom voice') || parentName.includes('voicemaster');
-        const isTicketOrModmail = chanName.startsWith('ticket-') || chanName.startsWith('modmail-') || chanName.startsWith('support-') || chanName.startsWith('synn-') || parentName.includes('ticket') || parentName.includes('modmail') || parentName.includes('support');
-
-        if (isTempVoice || isTicketOrModmail) return;
-
-        const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiChannel');
-        const executorMember = await guild.members.fetch(executor.id).catch(() => null);
-        const isQuarantined = executorMember ? quarantineCmd?.isMemberInQuarantine(executorMember)?.isQuarantined : false;
-        const isBotRogue = executor.bot;
-
-        const shouldIntervene = (config.enabled && (config.filters.antiChannelDelete || config.panicmode)) || isBotRogue || isQuarantined;
-
-        if (!isWhitelisted && shouldIntervene) {
-          // Recreate deleted channel immediately with all properties
-          const restoredChan = await guild.channels.create({
-            name: channel.name,
-            type: channel.type,
-            topic: channel.topic,
-            nsfw: channel.nsfw,
-            parent: channel.parentId,
-            permissionOverwrites: channel.permissionOverwrites?.cache?.map(p => ({
-              id: p.id,
-              allow: p.allow,
-              deny: p.deny
-            })) || []
-          }).catch(() => null);
-
-          if (restoredChan && restoredChan.isTextBased()) {
-            restoredChan.send(`<a:security_animated:1537177499862171741> **SHINOBI ANTINUKE EMERGENCY RECOVERY** <a:security_animated:1537177499862171741>\n\nChannel \`#${channel.name}\` was nuked/deleted by rogue bot/user <@${executor.id}> (\`${executor.tag || executor.username}\`) and has been **RECOVERED & RESTORED INSTANTLY**!\n• **Rogue Entity:** <@${executor.id}>\n• **Action Taken:** Banned & Admin Locked Out!`).catch(() => {});
+    if (config.enabled && (config.filters.antiChannelDelete || config.panicmode)) {
+      if (!isDynamicOrTempChannel(channel)) {
+        try {
+          const { AuditLogEvent } = require('discord.js');
+          let executor = null;
+          for (let i = 0; i < 3; i++) {
+            await new Promise(r => setTimeout(r, 100));
+            const logs = await guild.fetchAuditLogs({ limit: 1, type: AuditLogEvent.ChannelDelete }).catch(() => null);
+            const log = logs?.entries.first();
+            if (log && (Date.now() - log.createdTimestamp) < 15000) {
+              executor = log.executor;
+              break;
+            }
           }
 
-          // Ban rogue bot/user immediately
-          await guild.members.ban(executor.id, { reason: 'AntiNuke Critical Fail-Safe: Unauthorized Channel Deletion / Nuke Attempt' }).catch(() => {});
+          if (executor && executor.id !== guild.ownerId && executor.id !== client.user.id) {
+            const isWhitelisted = antinukeCmd.isUserWhitelistedForFeature(config, executor.id, 'antiChannel');
+            const executorMember = await guild.members.fetch(executor.id).catch(() => null);
+            const isQuarantined = executorMember ? quarantineCmd?.isMemberInQuarantine(executorMember)?.isQuarantined : false;
 
-          // Lockout admin who added/authorized the rogue bot
-          await punishRogueAdmin(guild, executor.id, 'Unauthorized Channel Nuke');
+            if (!isWhitelisted) {
+              // Recreate deleted channel immediately with all properties
+              const restoredChan = await guild.channels.create({
+                name: channel.name,
+                type: channel.type,
+                topic: channel.topic,
+                nsfw: channel.nsfw,
+                parent: channel.parentId,
+                permissionOverwrites: channel.permissionOverwrites?.cache?.map(p => ({
+                  id: p.id,
+                  allow: p.allow,
+                  deny: p.deny
+                })) || []
+              }).catch(() => null);
 
-          const { dispatchAntiNukeLog } = require('./utils/logger');
-          dispatchAntiNukeLog(guild, {
-            title: 'Anti Nuke Channel Recovery',
-            rogueUser: executor,
-            actionReason: `Unauthorized Nuke Attempt (Deleted channel: #${channel.name})`,
-            banStatusText: 'Permanently Banned & Channel Restored'
-          });
-          return;
-        }
+              if (restoredChan && restoredChan.isTextBased()) {
+                restoredChan.send(`<a:security_animated:1537177499862171741> **SHINOBI ANTINUKE EMERGENCY RECOVERY** <a:security_animated:1537177499862171741>\n\nChannel \`#${channel.name}\` was nuked/deleted by rogue entity <@${executor.id}> (\`${executor.tag || executor.username}\`) and has been **RECOVERED & RESTORED INSTANTLY**!\n• **Rogue Entity:** <@${executor.id}>\n• **Action Taken:** Admin Locked Out!`).catch(() => {});
+              }
+
+              // Punish rogue admin
+              await punishRogueAdmin(guild, executor.id, 'Unauthorized Channel Nuke');
+
+              const { dispatchAntiNukeLog } = require('./utils/logger');
+              dispatchAntiNukeLog(guild, {
+                title: 'Anti Nuke Channel Recovery',
+                rogueUser: executor,
+                actionReason: `Unauthorized Nuke Attempt (Deleted channel: #${channel.name})`,
+                banStatusText: 'Channel Restored & Rogue Admin Punished'
+              });
+              return;
+            }
+          }
+        } catch (e) {}
       }
-    } catch (e) {}
+    }
   }
 
   dispatchLog(guild, 'channels', {
