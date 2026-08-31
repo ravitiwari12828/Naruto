@@ -29,11 +29,7 @@ function createAdaptiveButton({
   const btn = new ButtonBuilder();
 
   if (customId) btn.setCustomId(customId);
-  if (emoji) {
-    try {
-      btn.setEmoji(emoji);
-    } catch (e) {}
-  }
+  if (label) btn.setLabel(label);
   if (disabled) btn.setDisabled(true);
   if (url) {
     btn.setURL(url);

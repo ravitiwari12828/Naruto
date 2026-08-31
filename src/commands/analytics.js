@@ -87,22 +87,18 @@ function buildServerStatsCategoryRow(activeCategory = 'overview') {
     new ButtonBuilder()
       .setCustomId('scat_overview')
       .setLabel('Overview')
-      .setEmoji(emojis.OBJ_ANALYTICS || '<a:chart_animated:1537179539514462308>')
       .setStyle(activeCategory === 'overview' ? ButtonStyle.Success : ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('scat_chat')
       .setLabel('Chat')
-      .setEmoji(emojis.OBJ_AUTORESPOND || '<a:code_animated:1537177358912725033>')
       .setStyle(activeCategory === 'chat' ? ButtonStyle.Success : ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('scat_voice')
       .setLabel('Voice')
-      .setEmoji(emojis.OBJ_VOICE || '<a:volumeup_animated:1537177548121968650>')
       .setStyle(activeCategory === 'voice' ? ButtonStyle.Success : ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId('scat_invites')
       .setLabel('Invites')
-      .setEmoji(emojis.OBJ_INVITES || emojis.OBJ_INVITELINK || '<a:linkx_animated:1537177423324512327>')
       .setStyle(activeCategory === 'invites' ? ButtonStyle.Success : ButtonStyle.Primary)
   );
 }
@@ -113,27 +109,22 @@ function buildUserMetricRow(activeCat) {
     new ButtonBuilder()
       .setCustomId('ucat_all')
       .setLabel('Overview')
-      .setEmoji(emojis.OBJ_PROFILE || '<a:membercard_animated:1537177436146638993>')
       .setStyle(activeCat === 'all' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_messages')
       .setLabel('Msgs')
-      .setEmoji(emojis.OBJ_MESSAGES || '<a:code_animated:1537177358912725033>')
       .setStyle(activeCat === 'messages' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_voice')
       .setLabel('Voice')
-      .setEmoji(emojis.OBJ_VOICE || '<a:volumeup_animated:1537177548121968650>')
       .setStyle(activeCat === 'voice' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_invites')
       .setLabel('Invites')
-      .setEmoji(emojis.OBJ_INVITES || emojis.OBJ_INVITELINK || '<a:linkx_animated:1537177423324512327>')
       .setStyle(activeCat === 'invites' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
       .setCustomId('ucat_shinobi')
       .setLabel('Rank')
-      .setEmoji(emojis.OBJ_RANK || emojis.OBJ_NINJUTSU || '<a:rank_animated:1537179656090943538>')
       .setStyle(activeCat === 'shinobi' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 }
