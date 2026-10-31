@@ -29,6 +29,18 @@ process.on('unhandledRejection', (reason, promise) => {
 const http = require('http');
 const PORT = process.env.PORT || 10000;
 http.createServer((req, res) => {
+  if (req.url === '/api/status') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    const wsStates = ['READY', 'CONNECTING', 'RECONNECTING', 'IDLE', 'NEARLY', 'DISCONNECTED', 'WAITING_FOR_GUILDS', 'IDENTIFYING', 'RESUMING'];
+    return res.end(JSON.stringify({
+      botStatus: client.isReady() ? 'online' : (client.ws ? wsStates[client.ws.status] || 'unknown' : 'offline'),
+      user: client.user ? client.user.tag : null,
+      guilds: client.guilds ? client.guilds.cache.size : 0,
+      uptime: client.uptime,
+      ping: client.ws ? client.ws.ping : -1,
+      hasToken: !!process.env.DISCORD_TOKEN
+    }));
+  }
   const commandsHtmlPath = path.join(__dirname, '..', 'public', 'commands.html');
   if (fs.existsSync(commandsHtmlPath)) {
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -43,7 +55,7 @@ http.createServer((req, res) => {
 });
 
 // Render Keepalive Self-Ping Loop (Pings every 4 minutes to keep Render Free Tier 24/7 active)
-const keepaliveUrl = process.env.RENDER_EXTERNAL_URL || 'https://naruto-4pe4.onrender.com';
+const keepaliveUrl = process.env.RENDER_EXTERNAL_URL || 'https://naruto-nz08.onrender.com';
 const httpsModule = require('https');
 const httpModule = require('http');
 const clientModule = keepaliveUrl.startsWith('https:') ? httpsModule : httpModule;
