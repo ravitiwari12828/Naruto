@@ -26,6 +26,86 @@ const afkStore = new Map();
 const autoplayStore = new Map();
 const musicCardRenderer = MusicCard ? new MusicCard() : null;
 
+const https = require('https');
+
+/**
+ * High-speed zero-dependency Spotify track & playlist resolver
+ * Extracts embed metadata and og tags in ~150ms to bypass broken node Spotify plugin
+ */
+function resolveSpotifyUrl(url) {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(null), 4000);
+    const cleanUrl = url.trim();
+    const match = cleanUrl.match(/spotify\.com\/.*?(track|playlist|album)\/([a-zA-Z0-9]+)/i);
+    if (!match) {
+      clearTimeout(timer);
+      return resolve(null);
+    }
+
+    const type = match[1].toLowerCase();
+    const id = match[2];
+    const embedUrl = `https://open.spotify.com/embed/${type}/${id}`;
+
+    https.get(embedUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        clearTimeout(timer);
+        try {
+          const nextDataMatch = data.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+          if (nextDataMatch) {
+            const parsed = JSON.parse(nextDataMatch[1]);
+            const entity = parsed.props?.pageProps?.state?.data?.entity;
+            if (entity) {
+              if (type === 'track') {
+                const artist = entity.artists && entity.artists[0] ? entity.artists[0].name : (entity.subtitle || '');
+                const title = entity.title || entity.name || '';
+                return resolve({
+                  type: 'track',
+                  title,
+                  artist,
+                  query: `${artist ? artist + ' ' : ''}${title}`.trim()
+                });
+              } else if (type === 'playlist' || type === 'album') {
+                const title = entity.title || entity.name || (type === 'playlist' ? 'Spotify Playlist' : 'Spotify Album');
+                const trackList = entity.trackList || [];
+                const tracks = trackList.map(t => `${t.subtitle ? t.subtitle + ' ' : ''}${t.title}`.trim());
+                return resolve({
+                  type: 'playlist',
+                  title,
+                  tracks
+                });
+              }
+            }
+          }
+        } catch (e) {}
+
+        const titleMatch = data.match(/<meta property="og:title" content="([^"]+)"/);
+        const descMatch = data.match(/<meta property="og:description" content="([^"]+)"/);
+        if (titleMatch) {
+          const title = titleMatch[1];
+          let artist = '';
+          if (descMatch && descMatch[1]) {
+            const parts = descMatch[1].split(/[·•]/);
+            artist = parts[0].trim();
+          }
+          return resolve({
+            type: 'track',
+            title,
+            artist,
+            query: `${artist ? artist + ' ' : ''}${title}`.trim()
+          });
+        }
+
+        resolve(null);
+      });
+    }).on('error', () => {
+      clearTimeout(timer);
+      resolve(null);
+    });
+  });
+}
+
 /**
  * Sends or updates the Music Player Card in the channel.
  */
@@ -393,17 +473,64 @@ module.exports = {
           let res = null;
           const isUrl = /^https?:\/\//i.test(query);
 
-          if (isUrl) {
-            res = await player.search({ query }, author);
-          } else if (source) {
-            res = await player.search({ query, source }, author);
-          } else {
-            const sources = ['scsearch', 'spsearch', 'ytmsearch', 'ytsearch', 'amsearch', 'dzsearch'];
-            for (const s of sources) {
+          // Fast Native Spotify Resolver (Bypasses broken Lavalink node Spotify plugin 10s timeout)
+          if (isUrl && /spotify\.com\/.*?(track|playlist|album)\/([a-zA-Z0-9]+)/i.test(query)) {
+            const spotifyData = await resolveSpotifyUrl(query);
+            if (spotifyData) {
+              if (spotifyData.type === 'track') {
+                res = await player.search({ query: `ytsearch:${spotifyData.query}` }, author).catch(() => null);
+                if (!res || !res.tracks || !res.tracks.length) {
+                  res = await player.search({ query: `amsearch:${spotifyData.title}` }, author).catch(() => null);
+                }
+              } else if (spotifyData.type === 'playlist' && spotifyData.tracks && spotifyData.tracks.length) {
+                const isPrem = isGuildPremium(message.guild.id) || isUserPremium(author.id);
+                const maxQueue = isPrem ? 200 : 50;
+                const roomLeft = Math.max(0, maxQueue - player.queue.tracks.length);
+
+                if (roomLeft <= 0) {
+                  return message.reply(`${emojis.WARNING} **Queue Limit Reached!** ${isPrem ? 'Premium limit is **200 songs**.' : 'Free Tier limit is **50 songs**. Upgrade to **Premium** (\\`.premium\\`) to queue up to **200 songs**!'}`);
+                }
+
+                const tracksToFetch = spotifyData.tracks.slice(0, Math.min(roomLeft, 30));
+                const queuedTracks = [];
+                for (const songName of tracksToFetch) {
+                  try {
+                    const sRes = await player.search({ query: `ytsearch:${songName}` }, author);
+                    if (sRes && sRes.tracks && sRes.tracks.length) {
+                      queuedTracks.push(sRes.tracks[0]);
+                    }
+                  } catch (e) {}
+                }
+
+                if (queuedTracks.length > 0) {
+                  await player.queue.add(queuedTracks);
+                  if (!player.playing && !player.paused) {
+                    await player.play();
+                  }
+                  return message.reply(`<a:musicplayer_animated:1537177445428633762> **Queued Spotify Playlist/Album:** Added **${queuedTracks.length} tracks** from **${spotifyData.title}** to queue! (Queue Usage: \`${player.queue.tracks.length}/${maxQueue}\`)`);
+                }
+              }
+            }
+          }
+
+          if (!res) {
+            if (isUrl) {
               try {
-                res = await player.search({ query, source: s }, author);
-                if (res && res.tracks && res.tracks.length) break;
-              } catch (e) {}
+                res = await player.search({ query }, author);
+              } catch (e) {
+                res = await player.search({ query: `ytsearch:${query}` }, author).catch(() => null);
+              }
+            } else if (source) {
+              const effectiveSource = (source === 'spsearch' || source === 'scsearch') ? 'ytsearch' : source;
+              res = await player.search({ query, source: effectiveSource }, author);
+            } else {
+              const sources = ['ytsearch', 'amsearch', 'jssearch', 'ytmsearch'];
+              for (const s of sources) {
+                try {
+                  res = await player.search({ query, source: s }, author);
+                  if (res && res.tracks && res.tracks.length) break;
+                } catch (e) {}
+              }
             }
           }
 
@@ -817,8 +944,13 @@ module.exports = {
 
       if (player.autoplay && player.queue.tracks.length <= 1) {
         const lastTrk = player.queue.current || player.lastPlayedTrack;
-        if (lastTrk && lavalink.handleAutoplay) {
-          lavalink.handleAutoplay(player, lastTrk, message.client);
+        if (lastTrk) {
+          if (lavalink?.handleAutoplay) {
+            lavalink.handleAutoplay(player, lastTrk, message.client);
+          } else {
+            const { handleAutoplay } = require('../utils/lavalink');
+            if (handleAutoplay) handleAutoplay(player, lastTrk, message.client);
+          }
         }
       }
 

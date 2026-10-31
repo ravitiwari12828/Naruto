@@ -2,6 +2,7 @@ const emojis = require('../utils/emojis');
 const { LavalinkManager } = require('lavalink-client');
 
 let lavalink = null;
+let _handleAutoplay = null;
 
 function initLavalink(client) {
   lavalink = new LavalinkManager({
@@ -38,7 +39,7 @@ function initLavalink(client) {
     autoSkip: true,
     autoSkipOnResolveError: true,
     playerOptions: {
-      defaultSearchPlatform: 'scsearch',
+      defaultSearchPlatform: 'ytsearch',
       applyVolumeAsFilter: true,
       onDisconnect: {
         autoReconnect: true,
@@ -130,19 +131,18 @@ function initLavalink(client) {
     if (!artist) return [];
     const cleanArtist = artist.replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim();
     const queries = [
-      `${cleanArtist} radio`,
-      `${cleanArtist} top songs`,
-      `${cleanArtist} mix`
+      `${cleanArtist} songs`,
+      `${cleanArtist} top hits`
     ];
     const candidates = [];
     for (const q of queries) {
       try {
-        const res = await player.search({ query: q }, client.user);
+        const res = await player.search({ query: q, source: 'ytsearch' }, client.user);
         if (res?.tracks?.length) {
-          candidates.push(...res.tracks.slice(0, 8));
+          candidates.push(...res.tracks.slice(0, 10));
         }
       } catch (e) {}
-      if (candidates.length >= 25) break;
+      if (candidates.length >= 20) break;
     }
     return candidates;
   }
@@ -154,7 +154,7 @@ function initLavalink(client) {
     if (!player.autoplayHistory) player.autoplayHistory = new Set();
     const rawArtist = lastTrack?.info?.author || '';
     const rawTitle = lastTrack?.info?.title || '';
-    
+
     const artist = rawArtist.replace(/\s*-\s*Topic$/i, '').replace(/VEVO$/i, '').trim();
     const title = rawTitle;
     const normLastTitle = normalizeTrackTitle(title);
@@ -162,30 +162,44 @@ function initLavalink(client) {
     if (lastTrack?.info?.identifier) player.autoplayHistory.add(lastTrack.info.identifier);
     if (normLastTitle) player.autoplayHistory.add(normLastTitle);
 
-    console.log(`♾️ [Autoplay Engine] Finding 15 similar recommendations for "${title}" by "${artist}"...`);
+    console.log(`🎵 [Autoplay Engine] Finding recommendations for "${title}" by "${artist}"...`);
 
     try {
       const candidates = [];
 
-      // 1. Last.fm Similar Tracks Search
-      const lastFmRecs = await fetchLastFmSimilarTracks(artist, title);
-      for (const rec of lastFmRecs.slice(0, 30)) {
+      // 1. Fast Primary YouTube Search (instant 20 tracks in 1.4s)
+      try {
+        const primaryQuery = artist ? `${artist} songs` : `${title} songs`;
+        const res = await player.search({ query: primaryQuery, source: 'ytsearch' }, client.user);
+        if (res?.tracks?.length) {
+          candidates.push(...res.tracks);
+        }
+      } catch (e) {}
+
+      // 2. Last.fm Similar Tracks (top 5 parallel search)
+      if (candidates.length < 25 && artist && title) {
         try {
-          const res = await player.search({ query: `${rec.artist} ${rec.name}` }, client.user);
-          if (res?.tracks?.length) {
-            candidates.push(res.tracks[0]);
+          const lastFmRecs = await fetchLastFmSimilarTracks(artist, title);
+          if (lastFmRecs.length > 0) {
+            const topRecs = lastFmRecs.slice(0, 5);
+            const recPromises = topRecs.map(rec =>
+              player.search({ query: `${rec.artist} ${rec.name}`, source: 'ytsearch' }, client.user).catch(() => null)
+            );
+            const recResults = await Promise.all(recPromises);
+            for (const r of recResults) {
+              if (r?.tracks?.length) candidates.push(r.tracks[0]);
+            }
           }
         } catch (e) {}
-        if (candidates.length >= 30) break;
       }
 
-      // 2. Fallback Search if Last.fm candidate count is low
+      // 3. Fallback Similar Tracks
       if (candidates.length < 15 && artist) {
         const fallbackTracks = await fetchFallbackSimilarTracks(artist, player, client);
         candidates.push(...fallbackTracks);
       }
 
-      // 3. Filter candidate tracks against history & queue duplicates
+      // 4. Deduplicate against history and current queue
       const validTracks = [];
       const queueIds = new Set(player.queue.tracks.map(t => t.info?.identifier));
       if (player.queue.current?.info?.identifier) queueIds.add(player.queue.current.info.identifier);
@@ -201,7 +215,7 @@ function initLavalink(client) {
         if (cNormTitle) player.autoplayHistory.add(cNormTitle);
 
         validTracks.push(cand);
-        if (validTracks.length >= 15) break;
+        if (validTracks.length >= 12) break;
       }
 
       if (validTracks.length > 0) {
@@ -209,7 +223,7 @@ function initLavalink(client) {
           await player.queue.add(trk);
         }
 
-        console.log(`▶️ [Autoplay Engine] Successfully added ${validTracks.length} recommendation tracks to queue.`);
+        console.log(`✨ [Autoplay Engine] Successfully added ${validTracks.length} recommendation tracks to queue.`);
 
         if (!player.playing && !player.paused) {
           await player.play().catch(() => {});
@@ -218,9 +232,9 @@ function initLavalink(client) {
         if (player.textChannelId) {
           const channel = client.channels.cache.get(player.textChannelId) || await client.channels.fetch(player.textChannelId).catch(() => null);
           if (channel) {
-            const top5List = validTracks.slice(0, 5).map((t, i) => `\`${i + 1}.\` **[${t.info.title}](${t.info.uri || 'https://spotify.com'})** by \`${t.info.author}\``).join('\n');
+            const top5List = validTracks.slice(0, 5).map((t, i) => `\`${i + 1}.\` **[${t.info.title}](${t.info.uri || 'https://youtube.com'})** by \`${t.info.author}\``).join('\n');
             const summaryEmbed = createStyledEmbed({
-              title: `♾️ Autoplay Recommendations Added (${validTracks.length} Songs)`,
+              title: `🎵 Autoplay Recommendations Added (${validTracks.length} Songs)`,
               subtitle: `Similar tracks related to ${artist || 'current song'}`,
               description:
                 `Added **${validTracks.length} similar songs** to queue based on **${lastTrack?.info?.title || 'last song'}**!\n\n` +
@@ -240,6 +254,9 @@ function initLavalink(client) {
       player.isAutoplaySearching = false;
     }
   }
+
+  _handleAutoplay = handleAutoplay;
+  lavalink.handleAutoplay = handleAutoplay;
 
   lavalink.on('trackEnd', async (player, track, reason) => {
     if (!player) return;
@@ -323,7 +340,7 @@ function initLavalink(client) {
       const searchQuery = `${artist} top hits song`.trim();
 
       try {
-        let res = await player.search({ query: searchQuery, source: 'spsearch' }, client.user);
+        let res = await player.search({ query: searchQuery, source: 'ytsearch' }, client.user);
         if (!res || !res.tracks || !res.tracks.length) {
           res = await player.search({ query: searchQuery, source: 'ytmsearch' }, client.user);
         }
@@ -360,11 +377,22 @@ function initLavalink(client) {
     const autoplayStore = musicCmd?.autoplayStore;
     const isAutoplay = player.autoplay || (autoplayStore ? autoplayStore.get(player.guildId) : false);
 
-    // If Autoplay is enabled, attempt to fetch autoplay tracks on queue end
-    if (isAutoplay && player.lastPlayedTrack) {
-      await handleAutoplay(player, player.lastPlayedTrack, client);
-      if (player.queue.tracks.length > 0 || player.playing) return;
+    // If Autoplay is currently searching, wait for it to finish
+    if (isAutoplay && player.isAutoplaySearching) {
+      let waitCount = 0;
+      while (player.isAutoplaySearching && waitCount < 20) {
+        await new Promise(r => setTimeout(r, 200));
+        waitCount++;
+      }
     }
+
+    // If Autoplay is enabled and no tracks in queue, trigger handleAutoplay now
+    if (isAutoplay && player.lastPlayedTrack && player.queue.tracks.length === 0) {
+      await handleAutoplay(player, player.lastPlayedTrack, client);
+    }
+
+    // If songs are now queued or playing, do NOT send Queue Ended!
+    if (player.queue.tracks.length > 0 || player.playing) return;
 
     try {
       const channel = client.channels.cache.get(player.textChannelId);
@@ -459,9 +487,8 @@ module.exports = {
   initLavalink,
   getLavalink,
   handleAutoplay: async (player, track, client) => {
-    // Reference handleAutoplay implementation inside initLavalink
-    if (player && lavalink) {
-      player.autoplay = true;
+    if (_handleAutoplay) {
+      return _handleAutoplay(player, track, client);
     }
   }
 };
