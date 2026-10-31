@@ -38,7 +38,12 @@ http.createServer((req, res) => {
       guilds: client.guilds ? client.guilds.cache.size : 0,
       uptime: client.uptime,
       ping: client.ws ? client.ws.ping : -1,
-      hasToken: !!process.env.DISCORD_TOKEN
+      hasToken: !!process.env.DISCORD_TOKEN,
+      tokenLength: process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim().length : 0,
+      tokenStart: process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim().slice(0, 10) : '',
+      loginAttempted: !!global.loginAttempted,
+      loginSuccess: !!global.loginSuccess,
+      loginError: global.lastLoginError || null
     }));
   }
   const commandsHtmlPath = path.join(__dirname, '..', 'public', 'commands.html');
@@ -3501,11 +3506,17 @@ require('./events/serverAuditLogs')(client);
 require('./events/messageLogs')(client);
 
 const token = process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim() : null;
+global.loginAttempted = true;
 if (token && token !== 'your_discord_bot_token_here') {
-  client.login(token).catch(err => {
+  client.login(token).then(() => {
+    global.loginSuccess = true;
+    console.log('[Discord Gateway] Login Promise resolved!');
+  }).catch(err => {
+    global.lastLoginError = err.message || String(err);
     flushLog(`<a:wrong_animated:1537179702928875631> [Discord Login Failed]: ${err.message}`, true);
   });
 } else {
+  global.lastLoginError = 'DISCORD_TOKEN is missing or placeholder';
   flushLog(`<a:wrong_animated:1537179702928875631> DISCORD_TOKEN is not set in environment variables!`, true);
 }
 
