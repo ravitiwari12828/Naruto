@@ -95,11 +95,7 @@ module.exports = {
   async execute(message, args) {
     try {
       const author = message.author;
-      let botUser = message.client.user;
-
-      try {
-        botUser = await message.client.users.fetch(message.client.user.id, { force: true });
-      } catch (e) {}
+      const botUser = message.client.user;
 
       const botAvatar = botUser.displayAvatarURL({ dynamic: true, size: 512 });
       const devPortalBanner = message.client.botBannerURL || null;

@@ -624,10 +624,7 @@ module.exports = {
     const author = message.author;
     const guild = message.guild;
 
-    let clientUser = message.client.user;
-    try {
-      clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
-    } catch (e) {}
+    const clientUser = message.client.user;
 
     if (sub === 'server') {
       // ── State ────────────────────────────────────────────────────────────

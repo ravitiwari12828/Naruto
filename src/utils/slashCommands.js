@@ -225,16 +225,7 @@ async function registerSlashCommands(client) {
     // 1. Global Registration (Single primary command list)
     await rest.put(Routes.applicationCommands(client.user.id), { body: finalCommands });
     console.log(`<a:accept_animated:1537177319603703969> [Slash Commands] Successfully registered ${finalCommands.length} Discord Slash Commands globally!`);
-
-    // 2. Clear Guild-level Command Duplicates (Instantly removes duplicate entries from Discord UI)
-    if (client.guilds && client.guilds.cache) {
-      client.guilds.cache.forEach(async (guild) => {
-        try {
-          await rest.put(Routes.applicationGuildCommands(client.user.id, guild.id), { body: [] });
-          console.log(`🧹 [Slash Commands Cleanup] Removed duplicate guild commands for ${guild.name} (${guild.id})`);
-        } catch (e) {}
-      });
-    }
+    // Guild commands kept clean globally without unthrottled burst PUT requests
   } catch (err) {
     console.error('<a:wrong_animated:1537179702928875631> [Slash Commands Registration Error]:', err.message);
   }

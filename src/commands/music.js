@@ -314,10 +314,7 @@ module.exports = {
     const guildId = message.guild.id;
     const lavalink = getLavalink();
 
-    let clientUser = message.client.user;
-    try {
-      clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
-    } catch (e) {}
+    const clientUser = message.client.user;
 
     // 1. PLAY (.play, .p, .play yt/ytm/sc/sp/am/dz)
     if (['play', 'p'].includes(invoked) || (invoked === 'music' && args[0] === 'play')) {
@@ -742,10 +739,7 @@ module.exports = {
     if (['equalizer', 'eq', 'filter', 'filters'].includes(invoked)) {
       const inputFilters = args.map(a => a.toLowerCase());
       if (!inputFilters.length || inputFilters.includes('list')) {
-        let clientUser = message.client.user;
-        try {
-          clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
-        } catch (e) {}
+        const clientUser = message.client.user;
 
         const filtersBox = createDynamicBox('AVAILABLE AUDIO FILTERS', [
           'bassboost : Deep bass amplification',

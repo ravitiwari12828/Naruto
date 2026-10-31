@@ -190,10 +190,7 @@ module.exports = {
     const author = message.author;
     const targetUser = message.mentions.users.first() || message.author;
 
-    let clientUser = message.client.user;
-    try {
-      clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
-    } catch (e) {}
+    const clientUser = message.client.user;
 
     // <a:infox_animated:1537177409428787251> INFO / BOTINFO / ABOUT / NODE / UPTIME
     if (['info', 'botinfo', 'about', 'node', 'uptime'].includes(invoked)) {

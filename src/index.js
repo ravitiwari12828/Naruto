@@ -241,11 +241,7 @@ client.once('ready', async () => {
 client.on('guildCreate', async (guild) => {
   console.log(`<a:welcome_animated:1537179700349243402> [Bot Added to Server] ${guild.name} (ID: ${guild.id})`);
 
-  // Instant Slash Command Registration for newly joined server
-  try {
-    const { registerSlashCommands } = require('./utils/slashCommands');
-    registerSlashCommands(client);
-  } catch (e) {}
+  // Global commands are registered once on ready; guild joins do not re-register
 
   const botlockCmd = client.commands.get('botlock');
   if (botlockCmd && botlockCmd.isGuildAuthorized) {
@@ -2018,6 +2014,10 @@ client.on('interactionCreate', async (interaction) => {
     const command = client.commands.get(targetCmdName) || client.commands.find(c => c.aliases && c.aliases.includes(targetCmdName));
     if (!command) return;
 
+    // Immediately defer interaction reply to prevent Discord 3000ms timeout
+    const isEphemeral = ['economy', 'moderation', 'antinuke', 'automod'].includes(rootName);
+    await interaction.deferReply({ flags: isEphemeral ? 64 : 0 }).catch(() => {});
+
     try {
       const args = [];
       const input = interaction.options.getString('input') || interaction.options.getString('query') || interaction.options.getString('options') || interaction.options.getString('action') || interaction.options.getString('item') || interaction.options.getString('title');
@@ -2028,6 +2028,16 @@ client.on('interactionCreate', async (interaction) => {
       if (input) args.push(...input.trim().split(/ +/));
       if (amount !== null && amount !== undefined) args.push(String(amount));
 
+      let responded = false;
+      const sendInteractionReply = async (opts) => {
+        responded = true;
+        if (interaction.deferred || interaction.replied) {
+          return interaction.editReply(opts).catch(() => {});
+        } else {
+          return interaction.reply(opts).catch(() => {});
+        }
+      };
+
       // Convert interaction context for standard command execution
       const fakeMsg = {
         guild: interaction.guild,
@@ -2036,14 +2046,25 @@ client.on('interactionCreate', async (interaction) => {
         member: interaction.member,
         client: interaction.client,
         content: `.${targetCmdName} ${args.join(' ')}`.trim(),
-        reply: (opts) => interaction.reply(opts).catch(() => {}),
+        reply: sendInteractionReply,
         delete: () => Promise.resolve()
       };
 
       await command.execute(fakeMsg, args);
+
+      // If command sent directly to channel (like sendMusicCard) without calling reply(), acknowledge interaction cleanly
+      if (!responded && (interaction.deferred || !interaction.replied)) {
+        await interaction.deleteReply().catch(async () => {
+          await interaction.editReply({ content: `✅ Executed \`/${rootName}${subCommandName ? ' ' + subCommandName : ''}\` successfully!` }).catch(() => {});
+        });
+      }
     } catch (err) {
       console.error(`Slash command error /${rootName} ${subCommandName || ''}:`, err.message);
-      interaction.reply({ content: `⚠️ Error executing slash command: ${err.message}`, flags: 64 }).catch(() => {});
+      if (interaction.deferred || interaction.replied) {
+        interaction.editReply({ content: `⚠️ Error executing slash command: ${err.message}` }).catch(() => {});
+      } else {
+        interaction.reply({ content: `⚠️ Error executing slash command: ${err.message}`, flags: 64 }).catch(() => {});
+      }
     }
     return;
   }
