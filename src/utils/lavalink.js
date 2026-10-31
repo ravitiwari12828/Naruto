@@ -8,9 +8,9 @@ function initLavalink(client) {
     nodes: [
       {
         id: 'synn-node-main',
-        host: process.env.LAVALINK_HOST || 'usa5.kerit.cloud',
-        port: parseInt(process.env.LAVALINK_PORT) || 9013,
-        authorization: process.env.LAVALINK_PASSWORD || '781312113c683e27',
+        host: process.env.LAVALINK_HOST || '92.119.165.177',
+        port: parseInt(process.env.LAVALINK_PORT) || 8540,
+        authorization: process.env.LAVALINK_PASSWORD || 'Iloveher',
         secure: process.env.LAVALINK_SECURE === 'true',
         retryAmount: 15,
         retryDelay: 5000
