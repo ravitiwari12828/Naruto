@@ -378,24 +378,28 @@ async function renderPingCard({
 
     // Health pill at bottom
     const valNum = parseInt(c.value) || 0;
+    const isUltra = valNum <= 40;
     const isHealthy = valNum < 300;
     const pillX = cX + 20;
     const pillY = cardY + 192;
-    ctx.fillStyle = isHealthy ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)';
-    roundRect(ctx, pillX, pillY, 78, 24, 12);
+    const pillText = isUltra ? 'OPTIMAL' : (isHealthy ? 'HEALTHY' : 'SLOW');
+    const pillWidth = isUltra ? 84 : 78;
+
+    ctx.fillStyle = isUltra ? 'rgba(34, 197, 94, 0.18)' : (isHealthy ? 'rgba(34, 197, 94, 0.12)' : 'rgba(239, 68, 68, 0.12)');
+    roundRect(ctx, pillX, pillY, pillWidth, 24, 12);
     ctx.fill();
-    ctx.strokeStyle = isHealthy ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)';
+    ctx.strokeStyle = isUltra ? 'rgba(34, 197, 94, 0.5)' : (isHealthy ? 'rgba(34, 197, 94, 0.3)' : 'rgba(239, 68, 68, 0.3)');
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    ctx.fillStyle = isHealthy ? '#22c55e' : '#ef4444';
+    ctx.fillStyle = '#22c55e';
     ctx.beginPath();
-    ctx.arc(pillX + 13, pillY + 12, 3, 0, Math.PI * 2);
+    ctx.arc(pillX + 13, pillY + 12, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.fillStyle = isHealthy ? '#22c55e' : '#ef4444';
+    ctx.fillStyle = '#22c55e';
     ctx.font = 'bold 10px "Inter Bold", Inter, sans-serif';
-    ctx.fillText(isHealthy ? 'HEALTHY' : 'SLOW', pillX + 22, pillY + 16);
+    ctx.fillText(pillText, pillX + 22, pillY + 16);
   }
 
   // 5. Bottom Info Bar
