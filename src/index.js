@@ -7186,10 +7186,21 @@ function runGatewayWatchdogProbe() {
             flushLog('❌ [Gateway Watchdog] Login retry failed: ' + err.message, true);
           });
         }, 2000);
+      } else if (res.statusCode === 429) {
+        // Read exact Retry-After header sent by Discord
+        let retrySeconds = parseInt(res.headers['retry-after'], 10);
+        if (!isNaN(retrySeconds) && retrySeconds > 0) {
+          // Add 10s buffer to guarantee the cooldown has fully expired on Discord
+          watchdogIntervalMs = (retrySeconds + 10) * 1000;
+          const mins = Math.ceil(retrySeconds / 60);
+          flushLog(`⏳ [Gateway Watchdog] Discord 429 Rate-Limit active! Discord specified Retry-After: ${retrySeconds}s (~${mins} minutes). Silencing all probes for ${mins}m to allow cooldown to expire safely without resetting!`, true);
+        } else {
+          watchdogIntervalMs = 5 * 60 * 1000;
+          flushLog(`⏳ [Gateway Watchdog] Discord API rate-limited (HTTP 429). Pausing probes for 5 minutes...`, true);
+        }
       } else {
-        // Cloudflare Error 1015 / 429: back off to 3-5 minutes so Cloudflare cooldown window is not reset by probing
-        watchdogIntervalMs = Math.min(watchdogIntervalMs * 2, 5 * 60 * 1000);
-        flushLog(`⏳ [Gateway Watchdog] Discord API rate-limited (HTTP ${res.statusCode}). Backing off probe for ${Math.round(watchdogIntervalMs / 1000)}s to allow Cloudflare cooldown...`, true);
+        watchdogIntervalMs = 60 * 1000;
+        flushLog(`⏳ [Gateway Watchdog] Discord API returned HTTP ${res.statusCode}. Checking again in 60s...`, true);
       }
       watchdogTimer = setTimeout(runGatewayWatchdogProbe, watchdogIntervalMs);
     });
