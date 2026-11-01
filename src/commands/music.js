@@ -32,83 +32,102 @@ const https = require('https');
  * High-speed zero-dependency Spotify track & playlist resolver
  * Extracts embed metadata and og tags in ~150ms to bypass broken node Spotify plugin
  */
-function resolveSpotifyUrl(url) {
-  return new Promise((resolve) => {
-    const timer = setTimeout(() => resolve(null), 4000);
+async function resolveSpotifyUrl(url) {
+  try {
     const cleanUrl = url.trim();
     const match = cleanUrl.match(/spotify\.com\/.*?(track|playlist|album)\/([a-zA-Z0-9]+)/i);
-    if (!match) {
-      clearTimeout(timer);
-      return resolve(null);
-    }
+    if (!match) return null;
 
     const type = match[1].toLowerCase();
     const id = match[2];
-    const embedUrl = `https://open.spotify.com/embed/${type}/${id}`;
 
-    https.get(embedUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } }, (res) => {
-      let data = '';
-      res.on('data', chunk => data += chunk);
-      res.on('end', () => {
-        clearTimeout(timer);
-        try {
-          const nextDataMatch = data.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
-          if (nextDataMatch) {
-            const parsed = JSON.parse(nextDataMatch[1]);
+    // 1. High-speed Spotify oEmbed resolution (~100ms)
+    try {
+      const oEmbedUrl = 'https://open.spotify.com/oembed?url=' + encodeURIComponent(cleanUrl);
+      const oRes = await fetch(oEmbedUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+        signal: AbortSignal.timeout(3000)
+      });
+      if (oRes.ok) {
+        const oJson = await oRes.json();
+        if (oJson && oJson.title) {
+          if (type === 'track') {
+            return {
+              type: 'track',
+              title: oJson.title,
+              artist: oJson.author_name || '',
+              query: (oJson.author_name ? oJson.author_name + ' - ' : '') + oJson.title
+            };
+          }
+        }
+      }
+    } catch (oeErr) {}
+
+    // 2. Spotify Embed page Next.js data parser
+    const embedUrl = 'https://open.spotify.com/embed/' + type + '/' + id;
+    const res = await fetch(embedUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(4500)
+    });
+
+    if (res.ok) {
+      const data = await res.text();
+      const idx = data.indexOf('__NEXT_DATA__');
+      if (idx !== -1) {
+        const start = data.indexOf('>', idx) + 1;
+        const end = data.indexOf('</script>', start);
+        if (start > 0 && end > start) {
+          try {
+            const parsed = JSON.parse(data.substring(start, end));
             const entity = parsed.props?.pageProps?.state?.data?.entity;
             if (entity) {
               if (type === 'track') {
                 const artist = entity.artists && entity.artists[0] ? entity.artists[0].name : (entity.subtitle || '');
                 const title = entity.title || entity.name || '';
-                return resolve({
+                return {
                   type: 'track',
                   title,
                   artist,
-                  query: `${artist ? artist + ' ' : ''}${title}`.trim()
-                });
+                  query: (artist ? artist + ' ' : '') + title
+                };
               } else if (type === 'playlist' || type === 'album') {
                 const title = entity.title || entity.name || (type === 'playlist' ? 'Spotify Playlist' : 'Spotify Album');
                 const trackList = entity.trackList || [];
-                const tracks = trackList.map(t => `${t.subtitle ? t.subtitle + ' ' : ''}${t.title}`.trim());
-                return resolve({
+                const tracks = trackList.map(t => ((t.subtitle ? t.subtitle + ' ' : '') + t.title).trim());
+                return {
                   type: 'playlist',
                   title,
                   tracks
-                });
+                };
               }
             }
-          }
-        } catch (e) {}
-
-        const titleMatch = data.match(/<meta property="og:title" content="([^"]+)"/);
-        const descMatch = data.match(/<meta property="og:description" content="([^"]+)"/);
-        if (titleMatch) {
-          const title = titleMatch[1];
-          let artist = '';
-          if (descMatch && descMatch[1]) {
-            const parts = descMatch[1].split(/[·•]/);
-            artist = parts[0].trim();
-          }
-          return resolve({
-            type: 'track',
-            title,
-            artist,
-            query: `${artist ? artist + ' ' : ''}${title}`.trim()
-          });
+          } catch (pe) {}
         }
+      }
 
-        resolve(null);
-      });
-    }).on('error', () => {
-      clearTimeout(timer);
-      resolve(null);
-    });
-  });
+      // 3. OpenGraph meta tag fallback
+      const titleMatch = data.match(/<meta property="og:title" content="([^"]+)"/);
+      const descMatch = data.match(/<meta property="og:description" content="([^"]+)"/);
+      if (titleMatch && titleMatch[1]) {
+        const title = titleMatch[1];
+        let artist = '';
+        if (descMatch && descMatch[1]) {
+          const parts = descMatch[1].split(/[·•]/);
+          artist = parts[0].trim();
+        }
+        return {
+          type: 'track',
+          title,
+          artist,
+          query: (artist ? artist + ' ' : '') + title
+        };
+      }
+    }
+  } catch (err) {}
+  return null;
 }
 
-/**
- * Sends or updates the Music Player Card in the channel.
- */
 async function sendMusicCard(channel, track, player) {
   if (player) {
     // Delete previous main player card via Message instance

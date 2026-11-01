@@ -336,6 +336,15 @@ module.exports = {
     ];
 
     if (ticketOnlySubcommands.includes(sub) && !isTicketChannel) {
+      if (sub === 'claim') {
+        const userTicket = message.guild.channels.cache.find(c =>
+          c.isTextBased() && c.topic && c.topic.includes('owner:' + message.author.id)
+        );
+        if (userTicket) {
+          return message.reply(`${emojis.INFO || '<a:infox_animated:1537177409428787251>'} You already have an active ticket in ${userTicket}! Please use \`.claim\` inside that ticket channel.`);
+        }
+        return message.reply(`${emojis.INFO || '<a:infox_animated:1537177409428787251>'} If you won a giveaway, please click the **Claim Reward** button on the giveaway message to create your private ticket channel!`);
+      }
       return message.reply(`${emojis.WARNING} The \`.${sub}\` command can only be used inside active ticket channels!`);
     }
 

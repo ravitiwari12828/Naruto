@@ -61,84 +61,59 @@ function recordImageUse(userId) {
   imageLimitsStore.set(userId, timestamps);
 }
 
-function fetchImageBuffer(imageUrl, timeoutMs = 75000) {
-  return new Promise((resolve, reject) => {
-    const req = https.get(imageUrl, (res) => {
-      if (res.statusCode !== 200) {
-        return reject(new Error(`Failed to fetch image (HTTP ${res.statusCode})`));
-      }
-
-      const chunks = [];
-      res.on('data', chunk => chunks.push(chunk));
-      res.on('end', () => resolve(Buffer.concat(chunks)));
-      res.on('error', err => reject(err));
-    });
-
-    req.setTimeout(timeoutMs, () => {
-      req.destroy();
-      reject(new Error('Rendering Timeout'));
-    });
-
-    req.on('error', err => reject(err));
+async function fetchImageBuffer(imageUrl, timeoutMs = 25000) {
+  const res = await fetch(imageUrl, {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+    },
+    redirect: 'follow',
+    signal: AbortSignal.timeout(timeoutMs)
   });
+
+  if (!res.ok) {
+    throw new Error('Failed to fetch image (HTTP ' + res.status + ')');
+  }
+
+  const arrayBuf = await res.arrayBuffer();
+  const buffer = Buffer.from(arrayBuf);
+  if (!buffer || buffer.length < 1000) {
+    throw new Error('Image response too small or empty');
+  }
+  return buffer;
 }
 
-
-function fetchDallE3Image(prompt, apiKey) {
-  return new Promise((resolve, reject) => {
-    const postData = JSON.stringify({
+async function fetchDallE3Image(prompt, apiKey) {
+  const res = await fetch('https://api.openai.com/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey
+    },
+    body: JSON.stringify({
       model: 'dall-e-3',
       prompt: prompt,
       n: 1,
       size: '1024x1024',
-      quality: 'hd'
-    });
-
-    const options = {
-      hostname: 'api.openai.com',
-      path: '/v1/images/generations',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Length': Buffer.byteLength(postData)
-      }
-    };
-
-    const req = https.request(options, (res) => {
-      let body = '';
-      res.on('data', chunk => body += chunk);
-      res.on('end', () => {
-        try {
-          const json = JSON.parse(body);
-          if (json.data && json.data[0] && json.data[0].url) {
-            fetchImageBuffer(json.data[0].url).then(resolve).catch(reject);
-          } else if (json.error) {
-            reject(new Error(json.error.message || 'DALL-E 3 API Error'));
-          } else {
-            reject(new Error('Invalid response from DALL-E 3 API'));
-          }
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-
-    req.on('error', reject);
-    req.setTimeout(60000, () => {
-      req.destroy();
-      reject(new Error('DALL-E 3 API Timeout'));
-    });
-
-    req.write(postData);
-    req.end();
+      quality: 'standard'
+    }),
+    signal: AbortSignal.timeout(30000)
   });
+
+  const json = await res.json();
+  if (json.data && json.data[0] && json.data[0].url) {
+    return await fetchImageBuffer(json.data[0].url, 20000);
+  }
+  if (json.error) {
+    throw new Error(json.error.message || 'DALL-E 3 API Error');
+  }
+  throw new Error('Invalid response from DALL-E 3 API');
 }
 
 module.exports = {
   name: 'imagine',
   description: 'Generate high-definition AI art & realistic anime scenes (Free: 1 image/24h, Premium: 3 images/24h)',
-  aliases: [],
+  aliases: ['image', 'draw', 'aiimage', 'generate', 'art'],
   imageLimitsStore,
   checkImageLimit,
   recordImageUse,
@@ -148,10 +123,7 @@ module.exports = {
     const guild = message.guild;
     const client = message.client;
 
-    let clientUser = client.user;
-    try {
-      clientUser = await client.users.fetch(client.user.id, { force: true });
-    } catch (e) {}
+    const clientUser = client.user;
 
     const promptText = args.join(' ').trim();
 
@@ -235,11 +207,11 @@ module.exports = {
       }
 
       if (!imageBuffer) {
-        const modelsToTry = ['flux', 'flux-realism', 'turbo'];
+        const modelsToTry = ['flux', 'turbo', 'flux-realism'];
         for (const model of modelsToTry) {
           try {
             const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&nologo=true&enhance=false&model=${model}&seed=${seed}`;
-            imageBuffer = await fetchImageBuffer(url, 45000);
+            imageBuffer = await fetchImageBuffer(url, 15000); if (imageBuffer) usedEngine = 'Flux (' + model + ')';
             if (imageBuffer && imageBuffer.length > 5000) break;
           } catch (e) {}
         }
