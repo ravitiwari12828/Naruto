@@ -223,8 +223,7 @@ client.once('ready', async () => {
   }
 
   try {
-    const fetchedUser = await client.users.fetch(client.user.id, { force: true });
-    client.botBannerURL = fetchedUser.bannerURL({ dynamic: true, size: 1024 });
+    client.botBannerURL = client.user.bannerURL({ dynamic: true, size: 1024 });
     console.log(`[Developer Portal Banner URL]: ${client.botBannerURL || 'None set'}`);
   } catch (e) {}
 
@@ -240,12 +239,14 @@ client.once('ready', async () => {
   console.log(`• System Prefix : ${PREFIX}`);
   console.log(`==============================================\n`);
 
-  // Register Application Slash Commands globally with Discord API
-  try {
-    const { registerSlashCommands } = require('./utils/slashCommands');
-    registerSlashCommands(client);
-  } catch (e) {
-    console.error('Slash Commands Registration Error:', e.message);
+  // Register Application Slash Commands globally with Discord API (only on explicit demand to avoid 429 Cloudflare IP bans)
+  if (process.env.SYNC_SLASH_COMMANDS === 'true') {
+    try {
+      const { registerSlashCommands } = require('./utils/slashCommands');
+      registerSlashCommands(client);
+    } catch (e) {
+      console.error('Slash Commands Registration Error:', e.message);
+    }
   }
 
   client.user.setPresence({

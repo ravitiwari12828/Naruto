@@ -1,4 +1,5 @@
 const emojis = require('../utils/emojis');
+const { createStyledEmbed } = require('./embedBuilder');
 const { LavalinkManager } = require('lavalink-client');
 
 let lavalink = null;
