@@ -120,6 +120,51 @@ http.createServer((req, res) => {
 
   }
 
+  if (req.url === '/api/relogin') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    if (client.isReady()) {
+      return res.end(JSON.stringify({ success: true, message: 'Bot is already online and connected!' }));
+    }
+    
+    // Probe Discord reachability first
+    const https = require('https');
+    const t = process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim() : '';
+    const options = {
+      hostname: 'discord.com',
+      path: '/api/v10/gateway/bot',
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bot ' + t,
+        'User-Agent': 'DiscordBot (https://github.com/ravitiwari12828/Naruto, 1.0.0)'
+      }
+    };
+    
+    const probe = https.request(options, (pRes) => {
+      let pBody = '';
+      pRes.on('data', chunk => pBody += chunk);
+      pRes.on('end', () => {
+        if (pRes.statusCode === 200) {
+          client.destroy().catch(() => {});
+          setTimeout(() => {
+            client.login(t).then(() => {
+              global.loginSuccess = true;
+            }).catch(e => {
+              global.lastLoginError = e.message;
+            });
+          }, 1500);
+          return res.end(JSON.stringify({ success: true, message: 'Discord API reachable! Triggered login reconnect...' }));
+        } else {
+          return res.end(JSON.stringify({ success: false, statusCode: pRes.statusCode, message: 'Discord API blocked by Cloudflare (HTTP ' + pRes.statusCode + '). Please wait for cooldown or restart service in Render.' }));
+        }
+      });
+    });
+    probe.on('error', (err) => {
+      res.end(JSON.stringify({ success: false, error: err.message }));
+    });
+    probe.end();
+    return;
+  }
+
   if (req.url === '/api/status') {
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -7078,6 +7123,49 @@ if (token && token !== 'your_discord_bot_token_here') {
 }
 
 
+
+// 🛡️ Automatic Discord Gateway 429 Rate-Limit Watchdog
+function startGatewayWatchdog() {
+  setInterval(() => {
+    if (!client.isReady() && token) {
+      const https = require('https');
+      const req = https.request({
+        hostname: 'discord.com',
+        path: '/api/v10/gateway/bot',
+        method: 'GET',
+        headers: {
+          'Authorization': 'Bot ' + token,
+          'User-Agent': 'DiscordBot (https://github.com/ravitiwari12828/Naruto, 1.0.0)'
+        }
+      }, (res) => {
+        let body = '';
+        res.on('data', chunk => body += chunk);
+        res.on('end', () => {
+          if (res.statusCode === 200) {
+            flushLog('✨ [Gateway Watchdog] Discord API is reachable (HTTP 200)! Auto-reconnecting bot...');
+            client.destroy().catch(() => {});
+            setTimeout(() => {
+              client.login(token).then(() => {
+                global.loginSuccess = true;
+                flushLog('🎉 [Gateway Watchdog] Bot successfully connected to Discord Gateway!');
+              }).catch(err => {
+                flushLog('❌ [Gateway Watchdog] Login retry failed: ' + err.message, true);
+              });
+            }, 2000);
+          } else {
+            flushLog('⏳ [Gateway Watchdog] Discord API still rate-limited (HTTP ' + res.statusCode + '). Checking again in 60s...', true);
+          }
+        });
+      });
+      req.on('error', (err) => {
+        flushLog('❌ [Gateway Watchdog] Probe error: ' + err.message, true);
+      });
+      req.end();
+    }
+  }, 60 * 1000);
+}
+
+setTimeout(startGatewayWatchdog, 30000);
 
 module.exports = client;
 
