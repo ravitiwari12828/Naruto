@@ -120,6 +120,32 @@ http.createServer((req, res) => {
 
   }
 
+  if (req.url === '/api/restart') {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, message: 'Restart initiated. Process exiting to trigger Render container redeployment/restart.' }));
+    flushLog('🔄 [/api/restart] Restart triggered via API. Exiting process with code 1 in 500ms...');
+    setTimeout(() => {
+      process.exit(1);
+    }, 500);
+    return;
+  }
+
+  if (req.url === '/api/ip') {
+    const https = require('https');
+    https.get('https://api.ipify.org?format=json', (ipRes) => {
+      let data = '';
+      ipRes.on('data', chunk => data += chunk);
+      ipRes.on('end', () => {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(data);
+      });
+    }).on('error', (err) => {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    });
+    return;
+  }
+
   if (req.url === '/api/relogin') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     if (client.isReady()) {
@@ -7124,48 +7150,62 @@ if (token && token !== 'your_discord_bot_token_here') {
 
 
 
-// 🛡️ Automatic Discord Gateway 429 Rate-Limit Watchdog
-function startGatewayWatchdog() {
-  setInterval(() => {
-    if (!client.isReady() && token) {
-      const https = require('https');
-      const req = https.request({
-        hostname: 'discord.com',
-        path: '/api/v10/gateway/bot',
-        method: 'GET',
-        headers: {
-          'Authorization': 'Bot ' + token,
-          'User-Agent': 'DiscordBot (https://github.com/ravitiwari12828/Naruto, 1.0.0)'
-        }
-      }, (res) => {
-        let body = '';
-        res.on('data', chunk => body += chunk);
-        res.on('end', () => {
-          if (res.statusCode === 200) {
-            flushLog('✨ [Gateway Watchdog] Discord API is reachable (HTTP 200)! Auto-reconnecting bot...');
-            client.destroy().catch(() => {});
-            setTimeout(() => {
-              client.login(token).then(() => {
-                global.loginSuccess = true;
-                flushLog('🎉 [Gateway Watchdog] Bot successfully connected to Discord Gateway!');
-              }).catch(err => {
-                flushLog('❌ [Gateway Watchdog] Login retry failed: ' + err.message, true);
-              });
-            }, 2000);
-          } else {
-            flushLog('⏳ [Gateway Watchdog] Discord API still rate-limited (HTTP ' + res.statusCode + '). Checking again in 60s...', true);
-          }
-        });
-      });
-      req.on('error', (err) => {
-        flushLog('❌ [Gateway Watchdog] Probe error: ' + err.message, true);
-      });
-      req.end();
+// 🛡️ Automatic Discord Gateway 429 Rate-Limit Watchdog (with Exponential Backoff)
+let watchdogTimer = null;
+let watchdogIntervalMs = 60 * 1000;
+
+function runGatewayWatchdogProbe() {
+  if (client.isReady() || !token) {
+    watchdogTimer = setTimeout(runGatewayWatchdogProbe, 60 * 1000);
+    return;
+  }
+
+  const https = require('https');
+  const req = https.request({
+    hostname: 'discord.com',
+    path: '/api/v10/gateway/bot',
+    method: 'GET',
+    headers: {
+      'Authorization': 'Bot ' + token,
+      'User-Agent': 'DiscordBot (https://github.com/ravitiwari12828/Naruto, 1.0.0)'
     }
-  }, 60 * 1000);
+  }, (res) => {
+    let body = '';
+    res.on('data', chunk => body += chunk);
+    res.on('end', () => {
+      if (res.statusCode === 200) {
+        flushLog('✨ [Gateway Watchdog] Discord API is reachable (HTTP 200)! Auto-reconnecting bot...');
+        watchdogIntervalMs = 60 * 1000; // Reset backoff
+        client.destroy().catch(() => {});
+        setTimeout(() => {
+          client.login(token).then(() => {
+            global.loginSuccess = true;
+            flushLog('🎉 [Gateway Watchdog] Bot successfully connected to Discord Gateway!');
+          }).catch(err => {
+            flushLog('❌ [Gateway Watchdog] Login retry failed: ' + err.message, true);
+          });
+        }, 2000);
+      } else {
+        // Cloudflare Error 1015 / 429: back off to 3-5 minutes so Cloudflare cooldown window is not reset by probing
+        watchdogIntervalMs = Math.min(watchdogIntervalMs * 2, 5 * 60 * 1000);
+        flushLog(`⏳ [Gateway Watchdog] Discord API rate-limited (HTTP ${res.statusCode}). Backing off probe for ${Math.round(watchdogIntervalMs / 1000)}s to allow Cloudflare cooldown...`, true);
+      }
+      watchdogTimer = setTimeout(runGatewayWatchdogProbe, watchdogIntervalMs);
+    });
+  });
+
+  req.on('error', (err) => {
+    flushLog('❌ [Gateway Watchdog] Probe error: ' + err.message, true);
+    watchdogTimer = setTimeout(runGatewayWatchdogProbe, 60 * 1000);
+  });
+  req.end();
 }
 
-setTimeout(startGatewayWatchdog, 30000);
+function startGatewayWatchdog() {
+  runGatewayWatchdogProbe();
+}
+
+setTimeout(startGatewayWatchdog, 15000);
 
 module.exports = client;
 

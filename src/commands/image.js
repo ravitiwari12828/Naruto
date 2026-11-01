@@ -89,10 +89,41 @@ async function fetchDallE3Image(prompt, apiKey) {
   throw new Error('Invalid response from DALL-E 3 API');
 }
 
+// 1.2. Hugging Face Inference API (FLUX.1-schnell / SDXL)
+async function fetchHuggingFaceImage(prompt, apiKey) {
+  const models = [
+    'black-forest-labs/FLUX.1-schnell',
+    'stabilityai/stable-diffusion-xl-base-1.0'
+  ];
+  for (const model of models) {
+    try {
+      const res = await fetch(`https://router.huggingface.co/hf-inference/models/${model}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey.trim()}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ inputs: prompt }),
+        signal: AbortSignal.timeout(25000)
+      });
+      if (res.ok) {
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('image')) {
+          const buf = Buffer.from(await res.arrayBuffer());
+          if (buf && buf.length > 5000) {
+            const label = model.includes('FLUX') ? 'Hugging Face (FLUX.1 Schnell HD)' : 'Hugging Face (SDXL)';
+            return { buffer: buf, engine: label };
+          }
+        }
+      }
+    } catch (e) {}
+  }
+  return null;
+}
 
 // 1.5. Google Gemini Imagen 3 (Ultra-HD Google AI Engine)
 async function fetchGeminiImagen3(prompt, apiKey) {
-  const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=' + apiKey;
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=' + apiKey.trim();
   const res = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -119,28 +150,37 @@ async function fetchGeminiImagen3(prompt, apiKey) {
   throw new Error('Invalid response from Gemini Imagen 3 API');
 }
 
-// 2. Pollinations Fast Engine (Zero-Auth ~1-2s HD Image)
-async function fetchPollinationsImage(prompt, timeoutMs = 8000) {
+// 2. Pollinations Fast Engine (Zero-Auth ~1-2s HD Image with Multi-Model Failover)
+async function fetchPollinationsImage(prompt, timeoutMs = 15000) {
   const encoded = encodeURIComponent(prompt);
-  const endpoints = [
-    `https://image.pollinations.ai/prompt/${encoded}?nologo=true`,
-    `https://pollinations.ai/p/${encoded}`
+  const seed = Math.floor(Math.random() * 9999999);
+  const models = [
+    { name: 'flux', label: 'Pollinations (FLUX Engine)' },
+    { name: 'turbo', label: 'Pollinations (Turbo HD)' },
+    { name: 'flux-realism', label: 'Pollinations (Photorealism)' },
+    { name: 'sana', label: 'Pollinations (Sana HD)' }
   ];
 
-  for (const url of endpoints) {
+  for (const m of models) {
     try {
+      const url = `https://image.pollinations.ai/prompt/${encoded}?model=${m.name}&seed=${seed}&nologo=true&enhance=true`;
       const res = await fetch(url, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'
+          'Accept': 'image/jpeg,image/png,image/*,*/*'
         },
         redirect: 'follow',
         signal: AbortSignal.timeout(timeoutMs)
       });
 
       if (res.ok) {
-        const buf = Buffer.from(await res.arrayBuffer());
-        if (buf && buf.length > 5000) return buf;
+        const ct = res.headers.get('content-type') || '';
+        if (ct.includes('image')) {
+          const buf = Buffer.from(await res.arrayBuffer());
+          if (buf && buf.length > 5000) {
+            return { buffer: buf, engine: m.label };
+          }
+        }
       }
     } catch (e) {}
   }
@@ -148,24 +188,32 @@ async function fetchPollinationsImage(prompt, timeoutMs = 8000) {
 }
 
 // 3. AI Horde (Free Distributed Stable Diffusion Cluster - 100% High-Availability Fallback)
-async function fetchHordeImage(prompt, timeoutMs = 25000) {
+async function fetchHordeImage(prompt, timeoutMs = 30000) {
   const submitRes = await fetch('https://aihorde.net/api/v2/generate/async', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'apikey': '0000000000',
+      'apikey': process.env.AI_HORDE_API_KEY || '0000000000',
       'Client-Agent': 'NarutoBot:1.0:discord'
     },
     body: JSON.stringify({
-      prompt: prompt + ', masterpiece, highly detailed, 8k resolution, cinematic lighting, sharp focus, digital art ### ugly, deformed, bad anatomy, bad eyes, disfigured, blurry, low quality, distorted, extra limbs, watermark, text',
+      prompt: `${prompt}, masterpiece, award winning photography, 8k resolution, highly detailed, photorealistic, cinematic lighting ### text, watermark, bad anatomy, deformed, mutated, extra fingers, blurry, ugly, disfigured, low quality, bad hands, distorted, logo`,
       params: {
         steps: 25,
         n: 1,
         sampler_name: 'k_euler_a',
         width: 512,
         height: 512,
-        cfg_scale: 7.5
-      }
+        cfg_scale: 7.0,
+        post_processing: ['GFPGAN'],
+        karras: true
+      },
+      models: [
+        'ICBINP - I Can\'t Believe It\'s Not Photography',
+        'AlbedoBase XL (SDXL)',
+        'Deliberate',
+        'stable_diffusion'
+      ]
     }),
     signal: AbortSignal.timeout(8000)
   });
@@ -266,9 +314,9 @@ module.exports = {
 
     try {
       let imageBuffer = null;
-      let usedEngine = 'Pollinations Flux';
+      let usedEngine = 'Pollinations FLUX HD';
 
-            // 1. Try Google Gemini Imagen 3 if API Key is configured
+      // 1. Try Google Gemini Imagen 3 if API Key is configured
       const geminiKey = process.env.GEMINI_API_KEY;
       if (geminiKey) {
         try {
@@ -279,9 +327,23 @@ module.exports = {
         }
       }
 
+      // 1.2. Try Hugging Face FLUX.1 Schnell if API Key is configured
+      const hfKey = process.env.HUGGINGFACE_TOKEN || process.env.HF_TOKEN;
+      if (!imageBuffer && hfKey) {
+        try {
+          const hfResult = await fetchHuggingFaceImage(promptText, hfKey);
+          if (hfResult && hfResult.buffer) {
+            imageBuffer = hfResult.buffer;
+            usedEngine = hfResult.engine || 'Hugging Face FLUX.1';
+          }
+        } catch (hfErr) {
+          console.error('[Hugging Face Fallback]:', hfErr.message);
+        }
+      }
+
       // 1.5. Try ChatGPT DALL-E if API Key is configured
       const openAiKey = process.env.OPENAI_API_KEY;
-      if (openAiKey) {
+      if (!imageBuffer && openAiKey) {
         try {
           imageBuffer = await fetchDallE3Image(promptText, openAiKey);
           if (imageBuffer) usedEngine = 'ChatGPT DALL-E 3 HD';
@@ -290,21 +352,24 @@ module.exports = {
         }
       }
 
-      // 2. Try Pollinations Fast Engine (~1-2s)
+      // 2. Try Pollinations Multi-Engine Fast (~1-3s HD, FLUX/Turbo/Realism)
       if (!imageBuffer) {
         try {
-          imageBuffer = await fetchPollinationsImage(promptText, 7000);
-          if (imageBuffer) usedEngine = 'Pollinations AI';
+          const polyRes = await fetchPollinationsImage(promptText, 15000);
+          if (polyRes && polyRes.buffer) {
+            imageBuffer = polyRes.buffer;
+            usedEngine = polyRes.engine;
+          }
         } catch (polyErr) {
           console.error('[Pollinations Fallback]:', polyErr.message);
         }
       }
 
-      // 3. Fallback to AI Horde Distributed Cluster (100% Reliable & Free)
+      // 3. Fallback to AI Horde High-Quality SDXL Cluster (100% Reliable & Free)
       if (!imageBuffer) {
         try {
-          imageBuffer = await fetchHordeImage(promptText, 25000);
-          if (imageBuffer) usedEngine = 'Stable Diffusion (AI Horde)';
+          imageBuffer = await fetchHordeImage(promptText, 30000);
+          if (imageBuffer) usedEngine = 'Stable Diffusion XL (AI Horde)';
         } catch (hordeErr) {
           console.error('[AI Horde Fallback]:', hordeErr.message);
         }
