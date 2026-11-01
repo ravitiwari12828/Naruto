@@ -93,13 +93,10 @@ http.createServer((req, res) => {
       discordRes.on('end', () => {
 
         res.writeHead(200, { 'Content-Type': 'application/json' });
-
         res.end(JSON.stringify({
-
           statusCode: discordRes.statusCode,
-
+          headers: discordRes.headers,
           body: body
-
         }));
 
       });
