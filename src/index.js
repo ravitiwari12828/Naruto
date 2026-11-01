@@ -335,6 +335,10 @@ const everyonePingViolations = new Map();
 
 const client = new Client({
 
+  rest: {
+    api: process.env.DISCORD_API_URL || 'https://discord.com/api'
+  },
+
   presence: {
 
     status: 'online',
