@@ -157,13 +157,14 @@ async function fetchHordeImage(prompt, timeoutMs = 25000) {
       'Client-Agent': 'NarutoBot:1.0:discord'
     },
     body: JSON.stringify({
-      prompt: prompt,
+      prompt: prompt + ', masterpiece, highly detailed, 8k resolution, cinematic lighting, sharp focus, digital art ### ugly, deformed, bad anatomy, bad eyes, disfigured, blurry, low quality, distorted, extra limbs, watermark, text',
       params: {
-        steps: 20,
+        steps: 25,
         n: 1,
-        sampler_name: 'k_euler',
+        sampler_name: 'k_euler_a',
         width: 512,
-        height: 512
+        height: 512,
+        cfg_scale: 7.5
       }
     }),
     signal: AbortSignal.timeout(8000)
