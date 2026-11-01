@@ -89,6 +89,36 @@ async function fetchDallE3Image(prompt, apiKey) {
   throw new Error('Invalid response from DALL-E 3 API');
 }
 
+
+// 1.5. Google Gemini Imagen 3 (Ultra-HD Google AI Engine)
+async function fetchGeminiImagen3(prompt, apiKey) {
+  const url = 'https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=' + apiKey;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      instances: [{ prompt: prompt }],
+      parameters: {
+        sampleCount: 1,
+        aspectRatio: '1:1',
+        outputOptions: { mimeType: 'image/jpeg' }
+      }
+    }),
+    signal: AbortSignal.timeout(30000)
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error?.message || 'Gemini Imagen 3 HTTP ' + res.status);
+  }
+
+  const json = await res.json();
+  if (json.predictions && json.predictions[0] && json.predictions[0].bytesBase64Encoded) {
+    return Buffer.from(json.predictions[0].bytesBase64Encoded, 'base64');
+  }
+  throw new Error('Invalid response from Gemini Imagen 3 API');
+}
+
 // 2. Pollinations Fast Engine (Zero-Auth ~1-2s HD Image)
 async function fetchPollinationsImage(prompt, timeoutMs = 8000) {
   const encoded = encodeURIComponent(prompt);
@@ -237,7 +267,18 @@ module.exports = {
       let imageBuffer = null;
       let usedEngine = 'Pollinations Flux';
 
-      // 1. Try ChatGPT DALL-E 3 if API Key is configured
+            // 1. Try Google Gemini Imagen 3 if API Key is configured
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (geminiKey) {
+        try {
+          imageBuffer = await fetchGeminiImagen3(promptText, geminiKey);
+          if (imageBuffer) usedEngine = 'Google Gemini (Imagen 3 HD)';
+        } catch (gErr) {
+          console.error('[Gemini Imagen 3 Fallback]:', gErr.message);
+        }
+      }
+
+      // 1.5. Try ChatGPT DALL-E if API Key is configured
       const openAiKey = process.env.OPENAI_API_KEY;
       if (openAiKey) {
         try {
