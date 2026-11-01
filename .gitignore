@@ -17,7 +17,7 @@ generate_all_exact_emojis.py
 generate_missing_single_emojis.py
 
 # Assets (local only)
-assets/
+/assets/
 
 # Logs
 *.log
