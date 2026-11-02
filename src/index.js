@@ -506,6 +506,12 @@ loadCommands(commandsPath);
 
 // Ready Event
 
+// Log Discord REST rate limits explicitly for zero-confusion diagnostics
+client.rest.on('rateLimited', (info) => {
+  const waitSec = Math.round((info.timeToReset || 1000) / 1000);
+  flushLog(`⏳ [Discord REST 429 Rate-Limit] Discord has temporarily paused REST requests for ${waitSec}s (Route: ${info.route || 'Global'} | Global: ${info.global})`, true);
+});
+
 client.once('ready', async () => {
 
   try {
@@ -4127,10 +4133,7 @@ client.on('messageCreate', async (message) => {
 
   try {
 
-    await Promise.race([
-      command.execute(message, args),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Command execution timed out after 15s')), 15000))
-    ]);
+    await command.execute(message, args);
 
     const latency = Date.now() - startTime;
 
