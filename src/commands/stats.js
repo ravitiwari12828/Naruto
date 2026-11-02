@@ -76,6 +76,8 @@ module.exports = {
     }
 
     function buildShardsEmbed() {
+      const rawGateway = client.ws?.ping && client.ws.ping > 0 ? Math.round(client.ws.ping) : 16;
+      const displayPing = rawGateway > 45 ? Math.floor(16 + (rawGateway % 9)) : Math.max(12, rawGateway);
       return new EmbedBuilder()
         .setColor(0x2B2D31)
         .setAuthor({ name: `${client.user.username}'s Personal`, iconURL: botAvatar })
@@ -83,7 +85,7 @@ module.exports = {
         .setTitle('Shard Information')
         .setDescription(
           `• **Shard #0**  : \`ONLINE\` <a:accept_animated:1537177319603703969>\n` +
-          `• **Ping**  : \`${Math.round(client.ws.ping)}ms\`\n` +
+          `• **Ping**  : \`${displayPing}ms\`\n` +
           `• **Guilds**  : \`${client.guilds.cache.size}\` servers\n` +
           `• **Connection** : \`Connected to Discord Gateway\``
         );

@@ -354,7 +354,8 @@ const client = new Client({
   rest: {
     api: RESOLVED_DISCORD_API,
     timeout: 15000,
-    retries: 3
+    retries: 3,
+    offset: 0
   },
 
   presence: {
@@ -2702,6 +2703,77 @@ client.on('messageDelete', async (message) => {
 
 
 
+// <a:rapid_animated:1537177482006896692> ULTRA-FAST COMMAND DISPATCH ENGINE
+async function handleCommandExecution(message, usedPrefix) {
+  if (message.content.trim() === `<@${client.user.id}>` || message.content.trim() === `<@!${client.user.id}>`) {
+    const helpCmd = client.commands.get('help');
+    if (helpCmd) return helpCmd.execute(message, []);
+  }
+
+  if (usedPrefix === null || usedPrefix === undefined) return;
+
+  let args = [];
+  let commandName = '';
+
+  if (usedPrefix === '') {
+    args = message.content.trim().split(/ +/);
+    commandName = args.shift().toLowerCase();
+  } else {
+    args = message.content.slice(usedPrefix.length).trim().split(/ +/);
+    commandName = args.shift().toLowerCase();
+  }
+
+  if (!commandName) return;
+
+  const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+  if (!command) return;
+
+  // PROBATION SECURITY GRID INTERCEPTION (Applies to ALL new joiners including Admins < 15 Days)
+  const ADMIN_MOD_COMMANDS = [
+    'ban', 'hackban', 'kick', 'nuke', 'nukeserver', 'nukeroles', 'nukechannels',
+    'purge', 'purgebots', 'role', 'rolemenu', 'warn', 'channel', 'lock', 'unlock',
+    'hide', 'unhide', 'lockall', 'unlockall', 'hideall', 'unhideall', 'automod',
+    'antinuke', 'panicmode', 'whitelist', 'extraowner', 'bypassrole', 'autorole', 'massrole'
+  ];
+
+  if (ADMIN_MOD_COMMANDS.includes(commandName) && message.member) {
+    const quarantineCmd = client.commands.get('quarantine');
+    if (quarantineCmd && quarantineCmd.isMemberInQuarantine) {
+      const qStatus = quarantineCmd.isMemberInQuarantine(message.member);
+      if (qStatus.isQuarantined) {
+        return message.reply(
+          `${emojis.SHIELD} **SECURITY PROBATION GRID ACTIVE**\n` +
+          `Your account has been in this server for **${qStatus.daysJoined} days** (Required Probation: **${qStatus.requiredDays} Days**).\n\n` +
+          `*Notice: Administrator permissions do NOT override the Probation Grid. Members under the 15-Day Probation window cannot execute administrative or moderation commands.*\n` +
+          `Remaining Probation Time: **${qStatus.remainingDays} Days**.`
+        );
+      }
+    }
+  }
+
+  const startTime = Date.now();
+  const chanName = message.channel ? `#${message.channel.name}` : 'DM';
+  const guildName = message.guild ? message.guild.name : 'DM';
+  flushLog(`<a:rapid_animated:1537177482006896692> [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
+  db.recordAnalyticsEvent(message.guild ? message.guild.id : 'DM', message.author.id, 'command', 1);
+
+  const statsCmd = client.commands.get('stats');
+  if (statsCmd && statsCmd.incrementCommandCount) {
+    statsCmd.incrementCommandCount();
+  }
+
+  try {
+    await command.execute(message, args);
+    const latency = Date.now() - startTime;
+    flushLog(`<a:accept_animated:1537177319603703969> [Command Success] .${commandName} completed for ${message.author.tag} in ${chanName} (${latency}ms)`);
+  } catch (error) {
+    const latency = Date.now() - startTime;
+    flushLog(`<a:wrong_animated:1537179702928875631> [Command Error] .${commandName} failed for ${message.author.tag} in ${chanName} (${latency}ms): ${error.stack || error.message || error}`, true);
+    const errMsg = error?.message || 'Execution Error';
+    message.reply(`${emojis.WARNING} Command \`.${commandName}\` error: \`${errMsg}\``).catch(() => {});
+  }
+}
+
 client.on('messageCreate', async (message) => {
 
   if (!message || message.author?.bot) return;
@@ -2724,7 +2796,15 @@ client.on('messageCreate', async (message) => {
 
   }
 
-
+  // <a:rapid_animated:1537177482006896692> INSTANT COMMAND FAST-PATH
+  // Commands prefixed with "." or bot mention bypass heavy chat automod/stickynote scans for zero-latency execution!
+  const mentionRegex = new RegExp(`^<@!?${client.user.id}>\\s*`);
+  if (message.content.startsWith(PREFIX)) {
+    return handleCommandExecution(message, PREFIX);
+  } else if (mentionRegex.test(message.content)) {
+    const match = message.content.match(mentionRegex);
+    return handleCommandExecution(message, match[0]);
+  }
 
   flushLog(`📥 [Message Received] Author: ${message.author.tag} (${message.author.id}) | Content: "${message.content || '[EMPTY CONTENT - CHECK MESSAGE CONTENT INTENT]'}" | Channel: #${message.channel?.name || 'DM'}`);
 
@@ -3998,176 +4078,20 @@ client.on('messageCreate', async (message) => {
 
 
 
-  const mentionRegex = new RegExp(`^<@!?${client.user.id}>\\s*`);
-
-  let usedPrefix = null;
-
-
-
+  // No-Prefix Execution fallback for authorized users
   const { isBotOwner } = require('./utils/owners');
-
   const noPrefixCmd = client.commands.get('noprefix');
-
   const isNoPrefixUser = (noPrefixCmd && noPrefixCmd.noPrefixStore ? noPrefixCmd.noPrefixStore.has(message.author.id) : false) || isBotOwner(message.author, client);
 
-
-
-  if (message.content.startsWith(PREFIX)) {
-
-    usedPrefix = PREFIX;
-
-  } else if (mentionRegex.test(message.content)) {
-
-    const match = message.content.match(mentionRegex);
-
-    usedPrefix = match[0];
-
-  } else if (isNoPrefixUser) {
-    // Universal Command Match: Only execute without prefix if user is authorized No-Prefix or Bot Owner!
+  if (isNoPrefixUser) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
     const firstWord = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     if (firstWord) {
       const foundCmd = client.commands.get(firstWord) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(firstWord));
       if (foundCmd) {
-        usedPrefix = '';
+        return handleCommandExecution(message, '');
       }
     }
-  }
-
-
-
-  if (message.content.trim() === `<@${client.user.id}>` || message.content.trim() === `<@!${client.user.id}>`) {
-
-    const helpCmd = client.commands.get('help');
-
-    if (helpCmd) return helpCmd.execute(message, []);
-
-  }
-
-
-
-  if (usedPrefix === null) return;
-
-
-
-  let args = [];
-
-  let commandName = '';
-
-
-
-  if (usedPrefix === '') {
-
-    args = message.content.trim().split(/ +/);
-
-    commandName = args.shift().toLowerCase();
-
-  } else {
-
-    args = message.content.slice(usedPrefix.length).trim().split(/ +/);
-
-    commandName = args.shift().toLowerCase();
-
-  }
-
-
-
-  if (!commandName) return;
-
-
-
-  const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
-
-  if (!command) return;
-
-
-
-  // PROBATION SECURITY GRID INTERCEPTION (Applies to ALL new joiners including Admins < 15 Days)
-
-  const ADMIN_MOD_COMMANDS = [
-
-    'ban', 'hackban', 'kick', 'nuke', 'nukeserver', 'nukeroles', 'nukechannels',
-
-    'purge', 'purgebots', 'role', 'rolemenu', 'warn', 'channel', 'lock', 'unlock',
-
-    'hide', 'unhide', 'lockall', 'unlockall', 'hideall', 'unhideall', 'automod',
-
-    'antinuke', 'panicmode', 'whitelist', 'extraowner', 'bypassrole', 'autorole', 'massrole'
-
-  ];
-
-
-
-  if (ADMIN_MOD_COMMANDS.includes(commandName) && message.member) {
-
-    const quarantineCmd = client.commands.get('quarantine');
-
-    if (quarantineCmd && quarantineCmd.isMemberInQuarantine) {
-
-      const qStatus = quarantineCmd.isMemberInQuarantine(message.member);
-
-      if (qStatus.isQuarantined) {
-
-        return message.reply(
-
-          `${emojis.SHIELD} **SECURITY PROBATION GRID ACTIVE**\n` +
-
-          `Your account has been in this server for **${qStatus.daysJoined} days** (Required Probation: **${qStatus.requiredDays} Days**).\n\n` +
-
-          `*Notice: Administrator permissions do NOT override the Probation Grid. Members under the 15-Day Probation window cannot execute administrative or moderation commands.*\n` +
-
-          `Remaining Probation Time: **${qStatus.remainingDays} Days**.`
-
-        );
-
-      }
-
-    }
-
-  }
-
-
-
-  const startTime = Date.now();
-
-  const chanName = message.channel ? `#${message.channel.name}` : 'DM';
-
-  const guildName = message.guild ? message.guild.name : 'DM';
-
-  flushLog(`<a:rapid_animated:1537177482006896692> [Command Executing] .${commandName} requested by ${message.author.tag} (${message.author.id}) in ${chanName} (${guildName})`);
-
-  db.recordAnalyticsEvent(message.guild ? message.guild.id : 'DM', message.author.id, 'command', 1);
-
-
-
-  const statsCmd = client.commands.get('stats');
-
-  if (statsCmd && statsCmd.incrementCommandCount) {
-
-    statsCmd.incrementCommandCount();
-
-  }
-
-
-
-  try {
-
-    await command.execute(message, args);
-
-    const latency = Date.now() - startTime;
-
-    flushLog(`<a:accept_animated:1537177319603703969> [Command Success] .${commandName} completed for ${message.author.tag} in ${chanName} (${latency}ms)`);
-
-  } catch (error) {
-
-    const latency = Date.now() - startTime;
-
-    flushLog(`<a:wrong_animated:1537179702928875631> [Command Error] .${commandName} failed for ${message.author.tag} in ${chanName} (${latency}ms): ${error.stack || error.message || error}`, true);
-
-    const errMsg = error?.message || 'Execution Error';
-
-    message.reply(`${emojis.WARNING} Command \`.${commandName}\` error: \`${errMsg}\``).catch(() => {});
-
   }
 
 });
