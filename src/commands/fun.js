@@ -435,7 +435,7 @@ async function fetchActionAnimeGif(action) {
     try {
       const res = await fetch(url, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-        signal: AbortSignal.timeout(3500)
+        signal: AbortSignal.timeout(1500)
       });
       if (res.ok) {
         const data = await res.json();

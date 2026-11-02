@@ -14,22 +14,17 @@ try {
 
 // Instant Unbuffered Render Log Helper (Bypasses stream buffering for zero log delay on Render)
 
+const recentLogBuffer = [];
 function flushLog(msg, isError = false) {
-
   const timeStr = new Date().toLocaleTimeString('en-US', { hour12: false });
-
   const formatted = `[${timeStr}] ${msg}\n`;
-
+  recentLogBuffer.push(formatted);
+  if (recentLogBuffer.length > 300) recentLogBuffer.shift();
   if (isError) {
-
     process.stderr.write(formatted);
-
   } else {
-
     process.stdout.write(formatted);
-
   }
-
 }
 
 
@@ -222,6 +217,11 @@ http.createServer((req, res) => {
 
   }
 
+  if (req.url === '/api/logs') {
+    res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end(recentLogBuffer.join(''));
+  }
+
   const commandsHtmlPath = path.join(__dirname, '..', 'public', 'commands.html');
 
   if (fs.existsSync(commandsHtmlPath)) {
@@ -333,7 +333,9 @@ const everyonePingViolations = new Map();
 const client = new Client({
 
   rest: {
-    api: process.env.DISCORD_API_URL || 'https://discord.com/api'
+    api: process.env.DISCORD_API_URL || 'https://discord.com/api',
+    timeout: 15000,
+    retries: 3
   },
 
   presence: {
@@ -4125,7 +4127,10 @@ client.on('messageCreate', async (message) => {
 
   try {
 
-    await command.execute(message, args);
+    await Promise.race([
+      command.execute(message, args),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Command execution timed out after 15s')), 15000))
+    ]);
 
     const latency = Date.now() - startTime;
 
