@@ -47,6 +47,16 @@ process.on('unhandledRejection', (reason, promise) => {
 
 
 
+// Discord REST API Proxy Configuration (Cloudflare Worker Reverse Proxy)
+const RAW_DISCORD_API = (process.env.DISCORD_API_URL || '').trim().replace(/\/+$/, '');
+const RESOLVED_DISCORD_API = RAW_DISCORD_API 
+  ? (RAW_DISCORD_API.endsWith('/api') ? RAW_DISCORD_API : `${RAW_DISCORD_API}/api`)
+  : 'https://discord.com/api';
+
+if (RAW_DISCORD_API) {
+  flushLog(`🛡️ [Discord API Proxy Active] Routing REST traffic via: ${RESOLVED_DISCORD_API}`);
+}
+
 // Render / Web Hosting Keepalive & Commands Web Dashboard HTTP Server
 
 const http = require('http');
@@ -58,28 +68,25 @@ http.createServer((req, res) => {
   if (req.url === '/api/test-discord') {
 
     const https = require('https');
+    const http = require('http');
 
     const t = process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim() : '';
+    const targetUrl = new URL(RESOLVED_DISCORD_API + '/v10/gateway/bot');
+    const isHttps = targetUrl.protocol === 'https:';
+    const mod = isHttps ? https : http;
 
     const options = {
-
-      hostname: 'discord.com',
-
-      path: '/api/v10/gateway/bot',
-
+      hostname: targetUrl.hostname,
+      port: targetUrl.port || (isHttps ? 443 : 80),
+      path: targetUrl.pathname + targetUrl.search,
       method: 'GET',
-
       headers: {
-
         'Authorization': 'Bot ' + t,
-
         'User-Agent': 'DiscordBot (https://github.com/ravitiwari12828/Naruto, 1.0.0)'
-
       }
-
     };
 
-    const discordReq = https.request(options, (discordRes) => {
+    const discordReq = mod.request(options, (discordRes) => {
 
       let body = '';
 
@@ -90,6 +97,9 @@ http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           statusCode: discordRes.statusCode,
+          targetHost: targetUrl.hostname,
+          proxyActive: !!RAW_DISCORD_API,
+          resolvedApi: RESOLVED_DISCORD_API,
           headers: discordRes.headers,
           body: body
         }));
@@ -102,7 +112,7 @@ http.createServer((req, res) => {
 
       res.writeHead(500, { 'Content-Type': 'application/json' });
 
-      res.end(JSON.stringify({ error: err.message }));
+      res.end(JSON.stringify({ error: err.message, targetHost: targetUrl.hostname }));
 
     });
 
@@ -146,10 +156,15 @@ http.createServer((req, res) => {
     
     // Probe Discord reachability first
     const https = require('https');
+    const http = require('http');
     const t = process.env.DISCORD_TOKEN ? process.env.DISCORD_TOKEN.trim() : '';
+    const targetUrl = new URL(RESOLVED_DISCORD_API + '/v10/gateway/bot');
+    const isHttps = targetUrl.protocol === 'https:';
+    const mod = isHttps ? https : http;
     const options = {
-      hostname: 'discord.com',
-      path: '/api/v10/gateway/bot',
+      hostname: targetUrl.hostname,
+      port: targetUrl.port || (isHttps ? 443 : 80),
+      path: targetUrl.pathname + targetUrl.search,
       method: 'GET',
       headers: {
         'Authorization': 'Bot ' + t,
@@ -157,7 +172,7 @@ http.createServer((req, res) => {
       }
     };
     
-    const probe = https.request(options, (pRes) => {
+    const probe = mod.request(options, (pRes) => {
       let pBody = '';
       pRes.on('data', chunk => pBody += chunk);
       pRes.on('end', () => {
@@ -211,7 +226,11 @@ http.createServer((req, res) => {
 
       loginSuccess: !!global.loginSuccess,
 
-      loginError: global.lastLoginError || null
+      loginError: global.lastLoginError || null,
+
+      proxyActive: !!RAW_DISCORD_API,
+
+      resolvedApi: RESOLVED_DISCORD_API
 
     }));
 
@@ -333,7 +352,7 @@ const everyonePingViolations = new Map();
 const client = new Client({
 
   rest: {
-    api: process.env.DISCORD_API_URL || 'https://discord.com/api',
+    api: RESOLVED_DISCORD_API,
     timeout: 15000,
     retries: 3
   },
