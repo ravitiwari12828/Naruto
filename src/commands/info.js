@@ -195,7 +195,7 @@ module.exports = {
     // <a:infox_animated:1537177409428787251> INFO / BOTINFO / ABOUT / NODE / UPTIME
     if (['info', 'botinfo', 'about', 'node', 'uptime'].includes(invoked)) {
       const totalGuilds = message.client.guilds.cache.size;
-      const totalUsers = message.client.users.cache.size;
+      const totalUsers = message.client.guilds.cache.reduce((acc, g) => acc + (g.memberCount || 0), 0) || message.client.users.cache.size;
       const uptimeSec = Math.floor(message.client.uptime / 1000);
       const days = Math.floor(uptimeSec / 86400);
       const hours = Math.floor((uptimeSec % 86400) / 3600);

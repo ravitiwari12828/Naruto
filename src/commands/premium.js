@@ -413,13 +413,16 @@ module.exports = {
       const guildExp = premiumGuilds.get(guild.id);
       const userExp = premiumUsers.get(author.id);
 
+      const totalGlobalMembers = message.client.guilds.cache.reduce((acc, g) => acc + (g.memberCount || 0), 0);
       const box = createDynamicBox('PREMIUM STATUS DASHBOARD', [
-        { key: 'Server Status', value: isGuildPrem ? 'PREMIUM (ACTIVE)' : 'STANDARD TIER' },
-        { key: 'Server Expiry', value: formatExpiryText(guildExp) },
-        { key: 'User VIP     ', value: isUserPrem ? 'VIP (ACTIVE)' : 'STANDARD USER' },
-        { key: 'User Expiry  ', value: formatExpiryText(userExp) },
-        { key: 'Total Guilds ', value: String(premiumGuilds.size) + ' servers' },
-        { key: 'Total Users  ', value: String(premiumUsers.size) + ' users' }
+        { key: 'Server Status ', value: isGuildPrem ? 'PREMIUM (ACTIVE)' : 'STANDARD TIER' },
+        { key: 'Server Expiry ', value: formatExpiryText(guildExp) },
+        { key: 'Server Members', value: String(guild.memberCount || 1) + ' members' },
+        { key: 'User VIP      ', value: isUserPrem ? 'VIP (ACTIVE)' : 'STANDARD USER' },
+        { key: 'User Expiry   ', value: formatExpiryText(userExp) },
+        { key: 'Premium Guilds', value: String(premiumGuilds.size) + ' servers' },
+        { key: 'Premium VIPs  ', value: String(premiumUsers.size) + ' users' },
+        { key: 'Global Users  ', value: String(totalGlobalMembers) + ' users' }
       ]);
 
       const embed = createStyledEmbed({

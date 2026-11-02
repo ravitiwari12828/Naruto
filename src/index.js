@@ -211,6 +211,7 @@ http.createServer((req, res) => {
       user: client.user ? client.user.tag : null,
 
       guilds: client.guilds ? client.guilds.cache.size : 0,
+      totalUsers: client.guilds ? client.guilds.cache.reduce((acc, g) => acc + (g.memberCount || 0), 0) : 0,
 
       uptime: client.uptime,
 
@@ -564,9 +565,10 @@ client.once('ready', async () => {
 
   console.log(`• Tag & ID      : ${client.user.tag} (${client.user.id})`);
 
+  const totalUsersAcrossGuilds = client.guilds.cache.reduce((acc, g) => acc + (g.memberCount || 0), 0) || client.users.cache.size;
   console.log(`• Total Servers : ${client.guilds.cache.size} Guilds`);
 
-  console.log(`• Total Users   : ${client.users.cache.size} Users`);
+  console.log(`• Total Users   : ${totalUsersAcrossGuilds} Users`);
 
   console.log(`• Gateway Ping  : ${client.ws.ping}ms`);
 
