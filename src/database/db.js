@@ -65,7 +65,8 @@ class ResilientDatabase {
       settings: {},
       analytics: [],
       reactionChannels: {},
-      reactionVotes: {}
+      reactionVotes: {},
+      voicemaster: {}
     };
 
     // 1. Initial Load from Local JSON
@@ -1384,6 +1385,39 @@ class ResilientDatabase {
     this.saveJSON();
     return user;
   }
+
+  // --- VOICEMASTER & JOIN TO CREATE PERSISTENCE ---
+  getVoicemaster(guildId) {
+    if (!this.data.voicemaster) this.data.voicemaster = {};
+    if (!this.data.voicemaster[guildId]) {
+      this.data.voicemaster[guildId] = {
+        enabled: true,
+        triggerChanId: null,
+        interfaceChanId: null,
+        inVcRoleId: null,
+        activeTempVCs: {}
+      };
+    }
+    return this.data.voicemaster[guildId];
+  }
+
+  saveVoicemaster(guildId, config) {
+    if (!this.data.voicemaster) this.data.voicemaster = {};
+    let tempVCs = config.activeTempVCs;
+    if (tempVCs instanceof Map) {
+      tempVCs = Object.fromEntries(tempVCs);
+    }
+    this.data.voicemaster[guildId] = {
+      enabled: config.enabled !== undefined ? config.enabled : true,
+      triggerChanId: config.triggerChanId || null,
+      interfaceChanId: config.interfaceChanId || null,
+      inVcRoleId: config.inVcRoleId || null,
+      activeTempVCs: tempVCs || {}
+    };
+    this.saveJSON();
+    return this.data.voicemaster[guildId];
+  }
+
 }
 
 const db = new ResilientDatabase();

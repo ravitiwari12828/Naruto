@@ -8,22 +8,50 @@ const {
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 
 // Global VoiceMaster store
 const voicemasterConfigs = new Map();
 
-function getOrCreateVMConfig(guildId) {
+function getOrCreateVMConfig(guildId, guild = null) {
   if (!voicemasterConfigs.has(guildId)) {
+    const saved = db.getVoicemaster ? db.getVoicemaster(guildId) : {};
+    const activeMap = new Map();
+    if (saved && saved.activeTempVCs && typeof saved.activeTempVCs === 'object') {
+      for (const [k, v] of Object.entries(saved.activeTempVCs)) {
+        activeMap.set(k, v);
+      }
+    }
     voicemasterConfigs.set(guildId, {
-      enabled: false,
-      triggerChanId: null,
-      interfaceChanId: null,
-      inVcRoleId: null,
-      activeTempVCs: new Map()
+      enabled: saved ? (saved.enabled !== false) : true,
+      triggerChanId: saved ? (saved.triggerChanId || null) : null,
+      interfaceChanId: saved ? (saved.interfaceChanId || null) : null,
+      inVcRoleId: saved ? (saved.inVcRoleId || null) : null,
+      activeTempVCs: activeMap
     });
   }
+
   const cfg = voicemasterConfigs.get(guildId);
-  if (!cfg.activeTempVCs) cfg.activeTempVCs = new Map();
+  if (!cfg.activeTempVCs || !(cfg.activeTempVCs instanceof Map)) {
+    cfg.activeTempVCs = new Map();
+  }
+
+  // Auto-detect existing custom voice setup if not bound or channel deleted
+  if (guild && (!cfg.triggerChanId || !guild.channels.cache.has(cfg.triggerChanId))) {
+    const cat = guild.channels.cache.find(ch => ch.type === 4 && (ch.name.toLowerCase().includes('custom voice') || ch.name.toLowerCase().includes('custom calls')));
+    if (cat) {
+      const vChan = guild.channels.cache.find(ch => ch.parentId === cat.id && ch.type === 2 && !ch.name.includes("'s Room"));
+      const tChan = guild.channels.cache.find(ch => ch.parentId === cat.id && ch.type === 0 && ch.name.toLowerCase().includes('interface'));
+      if (vChan) {
+        cfg.triggerChanId = vChan.id;
+        cfg.enabled = true;
+        if (tChan) cfg.interfaceChanId = tChan.id;
+        voicemasterConfigs.set(guildId, cfg);
+        if (db.saveVoicemaster) db.saveVoicemaster(guildId, cfg);
+      }
+    }
+  }
+
   return cfg;
 }
 
@@ -223,9 +251,11 @@ module.exports = {
           ]
         });
 
+        config.enabled = true;
         config.triggerChanId = triggerChan.id;
         config.interfaceChanId = interfaceChan.id;
         voicemasterConfigs.set(guild.id, config);
+        if (db.saveVoicemaster) db.saveVoicemaster(guild.id, config);
 
         const embed = buildCustomVoiceChannelsEmbed(guild, triggerChan.id);
         const rows = buildCustomVoiceChannelButtons(guild.id, triggerChan.id);

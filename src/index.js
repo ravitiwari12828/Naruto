@@ -1024,7 +1024,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
   const vmCmd = client.commands.get('voicemaster');
 
-  const config = vmCmd ? vmCmd.getOrCreateVMConfig(guild.id) : { enabled: false };
+  const config = vmCmd ? vmCmd.getOrCreateVMConfig(guild.id, guild) : { enabled: true, activeTempVCs: new Map() };
 
 
 
@@ -1119,137 +1119,118 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
 
   // 3. VoiceMaster Join to Create Private VC
+  const chanName = newState.channel?.name || '';
+  const normName = chanName.normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+  const parentCat = newState.channel?.parent;
+  const isCustomVoiceCategory = parentCat && (parentCat.name.toLowerCase().includes('custom voice') || parentCat.name.toLowerCase().includes('custom calls'));
 
   const isTrigger = (config.enabled && newState.channelId && newState.channelId === config.triggerChanId) ||
+                    normName.includes('join to create') ||
+                    normName.includes('create vc') ||
+                    normName.includes('jtc') ||
+                    (isCustomVoiceCategory && !chanName.includes("'s Room") && !chanName.includes("’s Room") && !chanName.toLowerCase().includes('interface'));
 
-                    (newState.channel?.name?.toLowerCase().includes('join to create'));
-
-
-
-  if (isTrigger) {
+  if (isTrigger && newState.channelId) {
+    if (config.triggerChanId !== newState.channelId) {
+      config.triggerChanId = newState.channelId;
+      config.enabled = true;
+      db.saveVoicemaster(guild.id, config);
+    }
 
     try {
-
       const category = newState.channel?.parent;
-
       const cleanName = member.user.username.replace(/[^a-zA-Z0-9]/g, '') || 'Member';
+      const botMember = guild.members.me || client.user;
 
       const tempVC = await guild.channels.create({
-
         name: `🔊 ${cleanName}'s Room`,
-
         type: ChannelType.GuildVoice,
-
         parent: category ? category.id : undefined,
-
         permissionOverwrites: [
-
-          { id: guild.roles.everyone.id, allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.Connect] },
-
-          { id: member.id, allow: [PermissionsBitField.Flags.ManageChannels, PermissionsBitField.Flags.MoveMembers, PermissionsBitField.Flags.MuteMembers, PermissionsBitField.Flags.DeafenMembers] }
-
+          {
+            id: guild.roles.everyone.id,
+            allow: [PermissionsBitField.Flags.ViewChannel, PermissionsBitField.Flags.Connect]
+          },
+          {
+            id: member.id,
+            allow: [
+              PermissionsBitField.Flags.ManageChannels,
+              PermissionsBitField.Flags.MoveMembers,
+              PermissionsBitField.Flags.MuteMembers,
+              PermissionsBitField.Flags.DeafenMembers,
+              PermissionsBitField.Flags.SendMessages
+            ]
+          },
+          {
+            id: botMember.id,
+            allow: [
+              PermissionsBitField.Flags.ViewChannel,
+              PermissionsBitField.Flags.Connect,
+              PermissionsBitField.Flags.MoveMembers,
+              PermissionsBitField.Flags.ManageChannels,
+              PermissionsBitField.Flags.SendMessages
+            ]
+          }
         ]
-
       });
 
+      config.activeTempVCs.set(tempVC.id, { ownerId: member.id, guildId: guild.id, createdAt: Date.now() });
+      db.saveVoicemaster(guild.id, config);
 
-
-      config.activeTempVCs.set(tempVC.id, { ownerId: member.id, guildId: guild.id });
-
-      await newState.setChannel(tempVC).catch(() => {});
-
-
-
-      if (vmCmd && vmCmd.buildChannelCreatedEmbed) {
-
-        const embed = vmCmd.buildChannelCreatedEmbed(member);
-
-        await tempVC.send({ content: `<@${member.id}>`, embeds: [embed] }).catch(() => {});
-
+      // Move member into newly created private room
+      try {
+        await member.voice.setChannel(tempVC);
+      } catch (err1) {
+        await newState.setChannel(tempVC).catch(err2 => {
+          console.error('[VoiceMaster] Failed to move member to temp VC:', err1.message || err2.message);
+        });
       }
 
+      // Welcome embed in text chat of voice room
+      if (vmCmd && vmCmd.buildChannelCreatedEmbed) {
+        const embed = vmCmd.buildChannelCreatedEmbed(member);
+        await tempVC.send({ content: `<@${member.id}>`, embeds: [embed] }).catch(() => {});
+      }
     } catch (e) {
-
-      console.error('Failed to create temp VC:', e.message);
-
+      console.error('[VoiceMaster Error] Failed to create temp VC:', e.message);
     }
-
   }
 
-
-
-  // Left temp VC (delete if no human members remain)
-
+  // 4. Left temp VC (Delete when empty)
   const isTempChannel = (oldState.channelId && config.activeTempVCs.has(oldState.channelId)) ||
-
     (oldState.channel && (
-
       oldState.channel.name.includes("'s Room") ||
-
-      oldState.channel.name.startsWith("🔊 ") ||
-
-      oldState.channel.name.startsWith("<a:volumeup_animated:1537177548121968650> ") ||
-
-      (config.triggerChanId && oldState.channel.id !== config.triggerChanId && !oldState.channel.name.toLowerCase().includes('join to create') &&
-
-       oldState.channel.parent && oldState.channel.parent.name.toLowerCase().includes('custom voice'))
-
+      oldState.channel.name.includes("’s Room") ||
+      (oldState.channel.parent && (oldState.channel.parent.name.toLowerCase().includes('custom voice') || oldState.channel.parent.name.toLowerCase().includes('custom calls')) && oldState.channel.id !== config.triggerChanId)
     ));
 
-
-
   if (oldState.channelId && isTempChannel && oldState.channelId !== config.triggerChanId) {
-
     const oldChan = oldState.channel;
-
-    if (oldChan && !oldChan.name.toLowerCase().includes('join to create')) {
-
+    if (oldChan && oldChan.id !== config.triggerChanId) {
       const humanCount = oldChan.members.filter(m => !m.user.bot).size;
-
       if (humanCount === 0) {
-
         config.activeTempVCs.delete(oldChan.id);
-
-
+        db.saveVoicemaster(guild.id, config);
 
         // Destroy Lavalink player if active in this temp VC
-
         try {
-
           const { getLavalink } = require('./utils/lavalink');
-
           const lavalink = getLavalink();
-
           const player = lavalink?.getPlayer(guild.id);
-
           if (player && player.voiceChannelId === oldChan.id) {
-
             player.destroy().catch(() => {});
-
           }
-
         } catch (e) {}
 
-
-
-        // Delete empty temporary voice channel
-
+        // Delete empty temporary voice channel after 1s
         setTimeout(() => {
-
-          if (oldChan.members.filter(m => !m.user.bot).size === 0) {
-
+          if (!oldChan.deleted && oldChan.members.filter(m => !m.user.bot).size === 0) {
             oldChan.delete().catch(() => {});
-
           }
-
-        }, 1000);
-
+        }, 1200);
       }
-
     }
-
   }
-
 });
 
 
