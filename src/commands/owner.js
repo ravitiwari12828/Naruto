@@ -10,7 +10,7 @@ const { isBotOwner } = require('../utils/owners');
 
 module.exports = {
   name: 'owner',
-  description: 'Dedicated Bot Owner Panel & Hub: Premium, No-Prefix, Server Lockdown, Extra Owner & PanicMode',
+  description: 'Dedicated Bot Owner Panel & Hub: Premium, No-Prefix, Server Lockdown, Extra Owner, PanicMode & Economy Controls',
   aliases: [],
 
   async execute(message, args) {
@@ -31,7 +31,7 @@ module.exports = {
       .setColor(0x7E0808)
       .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatar })
       .setThumbnail(botAvatar)
-      .setTitle(`${emojis.OWNER_CROWN} Bot Owner Executive Commands`)
+      .setTitle(`${emojis.OWNER_CROWN || '👑'} Bot Owner Executive Commands`)
       .setDescription(
         `Welcome **${author.username}**! Below is your executive management suite for **Bot Owner Controls**.\n` +
         `Type any command below in your server to execute.\n\n` +
@@ -77,6 +77,15 @@ module.exports = {
         `.securesetup\n` +
         `.botstats\n` +
         `.stat\n` +
+        `\`\`\`\n\n` +
+        `**${emojis.money || '<a:money_animated:1537177442672709707>'} Economy & Casino Executive Controls**\n` +
+        `\`\`\`\n` +
+        `.addmoney [@user] <amount|inf> [bank|gems]\n` +
+        `.setmoney [@user] <amount>\n` +
+        `.removemoney [@user] <amount>\n` +
+        `.resetmoney [@user]\n` +
+        `.giveitem [@user] <itemId|all> [amount|inf]\n` +
+        `.takeitem [@user] <itemId> [amount]\n` +
         `\`\`\``
       )
       .setFooter({
