@@ -7132,73 +7132,37 @@ if (token && token !== 'your_discord_bot_token_here') {
 
 
 
-// 🛡️ Automatic Discord Gateway 429 Rate-Limit Watchdog (with Exponential Backoff)
-let watchdogTimer = null;
-let watchdogIntervalMs = 60 * 1000;
+// 🛡️ Native Discord Gateway Connection Monitoring & Resilient Reconnection
+client.on('shardDisconnect', (event, shardId) => {
+  flushLog(`[Discord Gateway] Shard ${shardId} disconnected (code: ${event.code}). Discord.js will automatically reconnect...`);
+});
 
-function runGatewayWatchdogProbe() {
-  if (client.isReady() || !token) {
-    watchdogTimer = setTimeout(runGatewayWatchdogProbe, 60 * 1000);
-    return;
-  }
+client.on('shardReconnecting', (shardId) => {
+  flushLog(`[Discord Gateway] Shard ${shardId} reconnecting to Discord Gateway...`);
+});
 
-  const https = require('https');
-  const req = https.request({
-    hostname: 'discord.com',
-    path: '/api/v10/gateway/bot',
-    method: 'GET',
-    headers: {
-      'Authorization': 'Bot ' + token,
-      'User-Agent': 'DiscordBot (https://github.com/ravitiwari12828/Naruto, 1.0.0)'
-    }
-  }, (res) => {
-    let body = '';
-    res.on('data', chunk => body += chunk);
-    res.on('end', () => {
-      if (res.statusCode === 200) {
-        flushLog('✨ [Gateway Watchdog] Discord API is reachable (HTTP 200)! Auto-reconnecting bot...');
-        watchdogIntervalMs = 60 * 1000; // Reset backoff
-        client.destroy().catch(() => {});
-        setTimeout(() => {
-          client.login(token).then(() => {
-            global.loginSuccess = true;
-            flushLog('🎉 [Gateway Watchdog] Bot successfully connected to Discord Gateway!');
-          }).catch(err => {
-            flushLog('❌ [Gateway Watchdog] Login retry failed: ' + err.message, true);
-          });
-        }, 2000);
-      } else if (res.statusCode === 429) {
-        // Read exact Retry-After header sent by Discord
-        let retrySeconds = parseInt(res.headers['retry-after'], 10);
-        if (!isNaN(retrySeconds) && retrySeconds > 0) {
-          // Add 10s buffer to guarantee the cooldown has fully expired on Discord
-          watchdogIntervalMs = (retrySeconds + 10) * 1000;
-          const mins = Math.ceil(retrySeconds / 60);
-          flushLog(`⏳ [Gateway Watchdog] Discord 429 Rate-Limit active! Discord specified Retry-After: ${retrySeconds}s (~${mins} minutes). Silencing all probes for ${mins}m to allow cooldown to expire safely without resetting!`, true);
-        } else {
-          watchdogIntervalMs = 5 * 60 * 1000;
-          flushLog(`⏳ [Gateway Watchdog] Discord API rate-limited (HTTP 429). Pausing probes for 5 minutes...`, true);
-        }
-      } else {
-        watchdogIntervalMs = 60 * 1000;
-        flushLog(`⏳ [Gateway Watchdog] Discord API returned HTTP ${res.statusCode}. Checking again in 60s...`, true);
-      }
-      watchdogTimer = setTimeout(runGatewayWatchdogProbe, watchdogIntervalMs);
+client.on('shardResume', (shardId, replayedEvents) => {
+  flushLog(`✨ [Discord Gateway] Shard ${shardId} session resumed (${replayedEvents} events replayed)!`);
+});
+
+client.on('shardError', (error, shardId) => {
+  flushLog(`⚠️ [Discord Gateway] Shard ${shardId} error: ${error.message}`, true);
+});
+
+// Safe initial connection retry (only if boot login failed and bot is not yet ready)
+function checkInitialConnection() {
+  if (!global.loginSuccess && !client.isReady() && token) {
+    flushLog('🔄 [Discord Gateway] Retrying initial connection...');
+    client.login(token).then(() => {
+      global.loginSuccess = true;
+      flushLog('🎉 [Discord Gateway] Bot successfully connected!');
+    }).catch(err => {
+      flushLog('⚠️ [Discord Gateway] Connection retry pending: ' + err.message, true);
+      setTimeout(checkInitialConnection, 30000);
     });
-  });
-
-  req.on('error', (err) => {
-    flushLog('❌ [Gateway Watchdog] Probe error: ' + err.message, true);
-    watchdogTimer = setTimeout(runGatewayWatchdogProbe, 60 * 1000);
-  });
-  req.end();
+  }
 }
-
-function startGatewayWatchdog() {
-  runGatewayWatchdogProbe();
-}
-
-setTimeout(startGatewayWatchdog, 15000);
+setTimeout(checkInitialConnection, 20000);
 
 module.exports = client;
 
