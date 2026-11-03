@@ -566,171 +566,188 @@ module.exports = {
 
       // Granular 21-Event Audit View for a specific target user (.whitelist @user or .whitelist status @user)
       if (user && (action === 'status' || !action || action === user.id || action.startsWith('<@'))) {
-        const permsSet = config.whitelistedUsers.get(user.id) || new Set();
+        let userPerms = config.whitelistedUsers.get(user.id) || new Set();
 
-        const isAll = permsSet.has('all');
-        const has = (p) => isAll || permsSet.has(p);
+        function buildOlympusDescription(perms) {
+          const isAll = perms.has('all');
+          const has = (p) => isAll || perms.has(p);
 
-        const auditBox = createDynamicBox(`PERMISSIONS AUDIT — ${user.username.toUpperCase()}`, [
-          { key: 'Ban', value: has('ban') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Unban', value: has('unban') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Kick', value: has('kick') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Prune Members', value: has('prune') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Bot Add', value: has('bot') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Guild Update', value: has('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Channel Create', value: has('channel_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Channel Delete', value: has('channel_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Channel Update', value: has('channel_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Role Create', value: has('role_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Role Delete', value: has('role_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Role Update', value: has('role_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Role Dangerous', value: has('role_dangerous') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Mention @everyone', value: has('everyone') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Webhook Create', value: has('webhook_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Webhook Update', value: has('webhook_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Webhook Delete', value: has('webhook_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Member Update', value: has('member_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Member Dangerous', value: has('member_dangerous') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Anti Integration', value: has('integration') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Anti Sticker', value: has('sticker') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-          { key: 'Anti Emoji', value: has('emoji') ? 'ALLOWED [OK]' : 'BLOCKED [X]' }
-        ]);
+          return [
+            `• ${has('ban') ? '✅' : '❌'} :**Ban**`,
+            `• ${has('kick') ? '✅' : '❌'} :**Kick**`,
+            `• ${has('prune') ? '✅' : '❌'} :**Prune Members**`,
+            `• ${has('bot') ? '✅' : '❌'} :**Bot Add**`,
+            `• ${has('guild') ? '✅' : '❌'} :**Guild Update**`,
+            `• ${has('channel_create') ? '✅' : '❌'} :**Channel Create**`,
+            `• ${has('channel_delete') ? '✅' : '❌'} :**Channel Delete**`,
+            `• ${has('channel_update') ? '✅' : '❌'} :**Channel Update**`,
+            `• ${has('role_create') ? '✅' : '❌'} :**Role Create**`,
+            `• ${has('role_delete') ? '✅' : '❌'} :**Role Delete**`,
+            `• ${has('role_update') ? '✅' : '❌'} :**Role Update**`,
+            `• ${has('role_dangerous') ? '✅' : '❌'} :**Role Update With Dangerous Permissions**`,
+            `• ${has('everyone') ? '✅' : '❌'} :**Mention @everyone**`,
+            `• ${has('webhook_create') ? '✅' : '❌'} :**Webhook Create**`,
+            `• ${has('webhook_update') ? '✅' : '❌'} :**Webhook Update**`,
+            `• ${has('webhook_delete') ? '✅' : '❌'} :**Webhook Delete**`,
+            `• ${has('member_update') ? '✅' : '❌'} :**Member Update**`,
+            `• ${has('member_dangerous') ? '✅' : '❌'} :**Member Update With Dangerous Permissions**`,
+            `• ${has('integration') ? '✅' : '❌'} :**Anti Integration (Re-Adding Bot)**`,
+            `• ${has('sticker') ? '✅' : '❌'} :**Anti Sticker Update**`,
+            `• ${has('emoji') ? '✅' : '❌'} :**Anti Emoji Update**`
+          ].join('\n') +
+          `\n\n` +
+          `👤 **Author**             👥 **Target**\n` +
+          `<@${author.id}>           <@${user.id}>`;
+        }
 
-        const cmdBox = createDynamicBox('WHITELIST COMMANDS', [
-          '.whitelist add @user [perms]',
-          '.whitelist perms @user +ban -role',
-          '.whitelist remove @user',
-          '.whitelisted'
-        ]);
+        function buildOlympusComponents(perms) {
+          const isAll = perms.has('all');
 
-        const embed = createStyledEmbed({
-          title: `<a:security_animated:1537177499862171741> Whitelist Granular Event Audit — ${user.username}`,
-          subtitle: `Realtime Permission Bypass Audit for ${guild.name}`,
-          description:
-            `**Target User:** <@${user.id}> (\`${user.tag}\`)\n` +
-            `**Global Bypass Status:** ${isAll ? '`FULL BYPASS (ALL EVENTS)`' : (permsSet.size > 0 ? `\`PARTIAL BYPASS (${permsSet.size} EVENTS)\`` : '`NOT WHITELISTED`')}\n\n` +
-            '```\n' + auditBox + '\n```\n' +
-            '```\n' + cmdBox + '\n```',
-          requestedBy: author,
-          clientUser
-        });
+          const selectRow = new ActionRowBuilder().addComponents(
+            new StringSelectMenuBuilder()
+              .setCustomId(`wl_cat_${user.id}`)
+              .setPlaceholder('Choose a category')
+              .addOptions([
+                { label: 'Mention @everyone', value: 'everyone', description: 'Allow or block @everyone & @here pings', emoji: '📢' },
+                { label: 'All Permissions', value: 'all', description: 'Grant or revoke full bypass for ALL events', emoji: '🛡️' },
+                { label: 'Ban & Kick', value: 'cat_ban_kick', description: 'Whitelist for Ban, Unban, Kick & Prune', emoji: '🔨' },
+                { label: 'Channel Management', value: 'cat_channel', description: 'Whitelist for Channel Create, Delete, Update', emoji: '📁' },
+                { label: 'Role Management', value: 'cat_role', description: 'Whitelist for Role Create, Delete, Update & Dangerous', emoji: '🎭' },
+                { label: 'Webhook Management', value: 'cat_webhook', description: 'Whitelist for Webhook Create, Delete, Update', emoji: '🔗' },
+                { label: 'Member Management', value: 'cat_member', description: 'Whitelist for Member Updates & Dangerous perms', emoji: '👥' },
+                { label: 'Bot & Integrations', value: 'cat_bot', description: 'Whitelist for Adding Bots & Integrations', emoji: '🤖' },
+                { label: 'Guild Settings', value: 'cat_guild', description: 'Whitelist for Server Name, Icon & Settings', emoji: '⚙️' },
+                { label: 'Stickers & Emojis', value: 'cat_assets', description: 'Whitelist for Sticker & Emoji updates', emoji: '🎨' }
+              ])
+          );
 
-        const selectRow = new ActionRowBuilder().addComponents(
-          new StringSelectMenuBuilder()
-            .setCustomId(`wl_select_perm_${user.id}`)
-            .setPlaceholder('❯ Select Permissions to Grant (Multi-Select Allowed)...')
-            .setMinValues(1)
-            .setMaxValues(23)
-            .addOptions([
-              { label: 'All Permissions', value: 'all', description: 'Grant or revoke full bypass for ALL events', emoji: emojis.OBJ_AN_SHIELD },
-              { label: 'Anti Ban', value: 'ban', description: 'Whitelist for ban actions', emoji: emojis.OBJ_AN_BAN },
-              { label: 'Anti Unban', value: 'unban', description: 'Whitelist for unban actions', emoji: emojis.OBJ_AN_BAN },
-              { label: 'Anti Kick', value: 'kick', description: 'Whitelist for kick actions', emoji: emojis.OBJ_AN_KICK },
-              { label: 'Anti Member Prune', value: 'prune', description: 'Whitelist for member pruning', emoji: emojis.OBJ_AN_KICK },
-              { label: 'Anti Bot Add', value: 'bot', description: 'Whitelist for adding bots', emoji: emojis.OBJ_AN_BOT },
-              { label: 'Anti Guild Update', value: 'guild', description: 'Whitelist for server settings updates', emoji: emojis.OBJ_AN_GUILD },
-              { label: 'Anti Channel Create', value: 'channel_create', description: 'Whitelist for channel creation', emoji: emojis.OBJ_AN_CHANNEL },
-              { label: 'Anti Channel Delete', value: 'channel_delete', description: 'Whitelist for channel deletion', emoji: emojis.OBJ_AN_CHANNEL },
-              { label: 'Anti Channel Update', value: 'channel_update', description: 'Whitelist for channel updates', emoji: emojis.OBJ_AN_CHANNEL },
-              { label: 'Anti Role Create', value: 'role_create', description: 'Whitelist for role creation', emoji: emojis.OBJ_AN_ROLE },
-              { label: 'Anti Role Delete', value: 'role_delete', description: 'Whitelist for role deletion', emoji: emojis.OBJ_AN_ROLE },
-              { label: 'Anti Role Update', value: 'role_update', description: 'Whitelist for role updates', emoji: emojis.OBJ_AN_ROLE },
-              { label: 'Anti Role Dangerous', value: 'role_dangerous', description: 'Whitelist for admin perms in roles', emoji: emojis.OBJ_AN_QUARANTINE },
-              { label: 'Anti Mention @everyone', value: 'everyone', description: 'Whitelist for @everyone & @here pings', emoji: emojis.OBJ_AN_SHIELD },
-              { label: 'Anti Webhook Create', value: 'webhook_create', description: 'Whitelist for webhook creation', emoji: emojis.OBJ_AN_WEBHOOK },
-              { label: 'Anti Webhook Update', value: 'webhook_update', description: 'Whitelist for webhook updates', emoji: emojis.OBJ_AN_WEBHOOK },
-              { label: 'Anti Webhook Delete', value: 'webhook_delete', description: 'Whitelist for webhook deletion', emoji: emojis.OBJ_AN_WEBHOOK },
-              { label: 'Anti Member Update', value: 'member_update', description: 'Whitelist for member updates & nicknames', emoji: emojis.OBJ_AN_ROLE },
-              { label: 'Anti Member Dangerous', value: 'member_dangerous', description: 'Whitelist for giving dangerous perms to members', emoji: emojis.OBJ_AN_QUARANTINE },
-              { label: 'Anti Integration', value: 'integration', description: 'Whitelist for re-adding bot integrations', emoji: emojis.OBJ_AN_BOT },
-              { label: 'Anti Sticker Update', value: 'sticker', description: 'Whitelist for sticker creation & deletion', emoji: emojis.OBJ_AN_GUILD },
-              { label: 'Anti Emoji Update', value: 'emoji', description: 'Whitelist for emoji creation & deletion', emoji: emojis.OBJ_AN_GUILD }
-            ])
-        );
+          const btnRow = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+              .setCustomId(`wl_btn_all_${user.id}`)
+              .setLabel(isAll ? 'Unwhitelist All Event' : 'Whitelist All Event')
+              .setEmoji('🛡️')
+              .setStyle(isAll ? ButtonStyle.Secondary : ButtonStyle.Danger)
+          );
 
-        const btnRow = new ActionRowBuilder().addComponents(
-          new ButtonBuilder().setCustomId(`an_wl_all_${user.id}`).setLabel('Grant All Permissions').setEmoji(emojis.OBJ_AN_SHIELD).setStyle(ButtonStyle.Success),
-          new ButtonBuilder().setCustomId(`an_unwl_all_${user.id}`).setLabel('Revoke All Permissions').setEmoji(emojis.OBJ_REMOVE).setStyle(ButtonStyle.Danger)
-        );
+          return [selectRow, btnRow];
+        }
 
-        const msg = await message.channel.send({ embeds: [embed], components: [selectRow, btnRow] });
-        const collector = msg.createMessageComponentCollector({ time: 180000 });
+        const guildIcon = guild.iconURL({ dynamic: true, size: 512 }) || clientUser.displayAvatarURL({ dynamic: true });
+
+        const embed = new EmbedBuilder()
+          .setColor(0xE74C3C)
+          .setTitle(guild.name)
+          .setThumbnail(guildIcon)
+          .setDescription(buildOlympusDescription(userPerms))
+          .setFooter({
+            text: 'Powered by Naruto Bot Development™',
+            iconURL: clientUser.displayAvatarURL({ dynamic: true })
+          });
+
+        const msg = await message.channel.send({ embeds: [embed], components: buildOlympusComponents(userPerms) });
+        const collector = msg.createMessageComponentCollector({ time: 300000 });
 
         collector.on('collect', async (interaction) => {
           if (interaction.user.id !== author.id && author.id !== guild.ownerId) {
-            return interaction.reply({ content: `${emojis.WARNING} Only **${author.username}** (who requested this panel) can use these controls.`, flags: 64 });
+            return interaction.reply({ content: `${emojis.WARNING} Only **${author.username}** (who requested this panel) or Server Owner can use these controls.`, flags: 64 });
           }
 
-          let userPerms = config.whitelistedUsers.get(user.id) || new Set();
+          let currentPerms = config.whitelistedUsers.get(user.id) || new Set();
 
-          if (interaction.customId === `wl_select_perm_${user.id}`) {
-            const selectedValues = interaction.values;
+          if (interaction.customId === `wl_cat_${user.id}`) {
+            const selected = interaction.values[0];
 
-            if (selectedValues.includes('all')) {
-              userPerms.clear();
-              userPerms.add('all');
-            } else {
-              userPerms.delete('all');
-              // Multi-select sync: Grant exact set of selected checkboxes!
-              userPerms.clear();
-              selectedValues.forEach(v => userPerms.add(v));
+            if (selected === 'all') {
+              if (currentPerms.has('all')) {
+                currentPerms.clear();
+              } else {
+                currentPerms.clear();
+                currentPerms.add('all');
+              }
+            } else if (selected === 'everyone') {
+              if (currentPerms.has('all')) {
+                currentPerms = new Set(ALL_PERMS.filter(p => p !== 'all' && p !== 'everyone'));
+              } else if (currentPerms.has('everyone')) {
+                currentPerms.delete('everyone');
+              } else {
+                currentPerms.add('everyone');
+              }
+            } else if (selected === 'cat_ban_kick') {
+              const keys = ['ban', 'unban', 'kick', 'prune'];
+              const hasAny = keys.some(k => currentPerms.has(k) || currentPerms.has('all'));
+              if (currentPerms.has('all')) currentPerms = new Set(ALL_PERMS.filter(p => p !== 'all' && !keys.includes(p)));
+              else if (hasAny) keys.forEach(k => currentPerms.delete(k));
+              else keys.forEach(k => currentPerms.add(k));
+            } else if (selected === 'cat_channel') {
+              const keys = ['channel_create', 'channel_delete', 'channel_update'];
+              const hasAny = keys.some(k => currentPerms.has(k) || currentPerms.has('all'));
+              if (currentPerms.has('all')) currentPerms = new Set(ALL_PERMS.filter(p => p !== 'all' && !keys.includes(p)));
+              else if (hasAny) keys.forEach(k => currentPerms.delete(k));
+              else keys.forEach(k => currentPerms.add(k));
+            } else if (selected === 'cat_role') {
+              const keys = ['role_create', 'role_delete', 'role_update', 'role_dangerous'];
+              const hasAny = keys.some(k => currentPerms.has(k) || currentPerms.has('all'));
+              if (currentPerms.has('all')) currentPerms = new Set(ALL_PERMS.filter(p => p !== 'all' && !keys.includes(p)));
+              else if (hasAny) keys.forEach(k => currentPerms.delete(k));
+              else keys.forEach(k => currentPerms.add(k));
+            } else if (selected === 'cat_webhook') {
+              const keys = ['webhook_create', 'webhook_update', 'webhook_delete'];
+              const hasAny = keys.some(k => currentPerms.has(k) || currentPerms.has('all'));
+              if (currentPerms.has('all')) currentPerms = new Set(ALL_PERMS.filter(p => p !== 'all' && !keys.includes(p)));
+              else if (hasAny) keys.forEach(k => currentPerms.delete(k));
+              else keys.forEach(k => currentPerms.add(k));
+            } else if (selected === 'cat_member') {
+              const keys = ['member_update', 'member_dangerous'];
+              const hasAny = keys.some(k => currentPerms.has(k) || currentPerms.has('all'));
+              if (currentPerms.has('all')) currentPerms = new Set(ALL_PERMS.filter(p => p !== 'all' && !keys.includes(p)));
+              else if (hasAny) keys.forEach(k => currentPerms.delete(k));
+              else keys.forEach(k => currentPerms.add(k));
+            } else if (selected === 'cat_bot') {
+              const keys = ['bot', 'integration'];
+              const hasAny = keys.some(k => currentPerms.has(k) || currentPerms.has('all'));
+              if (currentPerms.has('all')) currentPerms = new Set(ALL_PERMS.filter(p => p !== 'all' && !keys.includes(p)));
+              else if (hasAny) keys.forEach(k => currentPerms.delete(k));
+              else keys.forEach(k => currentPerms.add(k));
+            } else if (selected === 'cat_guild') {
+              const keys = ['guild'];
+              const hasAny = keys.some(k => currentPerms.has(k) || currentPerms.has('all'));
+              if (currentPerms.has('all')) currentPerms = new Set(ALL_PERMS.filter(p => p !== 'all' && !keys.includes(p)));
+              else if (hasAny) keys.forEach(k => currentPerms.delete(k));
+              else keys.forEach(k => currentPerms.add(k));
+            } else if (selected === 'cat_assets') {
+              const keys = ['sticker', 'emoji'];
+              const hasAny = keys.some(k => currentPerms.has(k) || currentPerms.has('all'));
+              if (currentPerms.has('all')) currentPerms = new Set(ALL_PERMS.filter(p => p !== 'all' && !keys.includes(p)));
+              else if (hasAny) keys.forEach(k => currentPerms.delete(k));
+              else keys.forEach(k => currentPerms.add(k));
             }
-          } else if (interaction.customId === `an_wl_all_${user.id}`) {
-            userPerms = new Set(['all']);
-          } else if (interaction.customId === `an_unwl_all_${user.id}`) {
-            userPerms = new Set();
+          } else if (interaction.customId === `wl_btn_all_${user.id}`) {
+            if (currentPerms.has('all')) {
+              currentPerms.clear();
+            } else {
+              currentPerms = new Set(['all']);
+            }
           }
 
-          if (userPerms.size > 0) {
-            config.whitelistedUsers.set(user.id, userPerms);
+          if (currentPerms.size > 0) {
+            config.whitelistedUsers.set(user.id, currentPerms);
           } else {
             config.whitelistedUsers.delete(user.id);
           }
           antinukeConfigs.set(guild.id, config);
           saveAntinukeToDb(guild.id, config);
 
-          // Live Re-render
-          const isAllNew = userPerms.has('all');
-          const hasNew = (p) => isAllNew || userPerms.has(p);
+          const updatedEmbed = new EmbedBuilder()
+            .setColor(0xE74C3C)
+            .setTitle(guild.name)
+            .setThumbnail(guildIcon)
+            .setDescription(buildOlympusDescription(currentPerms))
+            .setFooter({
+              text: 'Powered by Naruto Bot Development™',
+              iconURL: clientUser.displayAvatarURL({ dynamic: true })
+            });
 
-          const updatedAuditBox = createDynamicBox(`PERMISSIONS AUDIT — ${user.username.toUpperCase()}`, [
-            { key: 'Ban', value: hasNew('ban') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Unban', value: hasNew('unban') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Kick', value: hasNew('kick') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Prune Members', value: hasNew('prune') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Bot Add', value: hasNew('bot') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Guild Update', value: hasNew('guild') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Channel Create', value: hasNew('channel_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Channel Delete', value: hasNew('channel_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Channel Update', value: hasNew('channel_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Role Create', value: hasNew('role_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Role Delete', value: hasNew('role_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Role Update', value: hasNew('role_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Role Dangerous', value: hasNew('role_dangerous') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Mention @everyone', value: hasNew('everyone') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Webhook Create', value: hasNew('webhook_create') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Webhook Update', value: hasNew('webhook_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Webhook Delete', value: hasNew('webhook_delete') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Member Update', value: hasNew('member_update') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Member Dangerous', value: hasNew('member_dangerous') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Anti Integration', value: hasNew('integration') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Anti Sticker', value: hasNew('sticker') ? 'ALLOWED [OK]' : 'BLOCKED [X]' },
-            { key: 'Anti Emoji', value: hasNew('emoji') ? 'ALLOWED [OK]' : 'BLOCKED [X]' }
-          ]);
-
-          const updatedEmbed = createStyledEmbed({
-            title: `<a:security_animated:1537177499862171741> Whitelist Granular Event Audit — ${user.username}`,
-            subtitle: `Realtime Permission Bypass Audit for ${guild.name}`,
-            description:
-              `**Target User:** <@${user.id}> (\`${user.tag}\`)\n` +
-              `**Global Bypass Status:** ${isAllNew ? '`FULL BYPASS (ALL EVENTS)`' : (userPerms.size > 0 ? `\`PARTIAL BYPASS (${userPerms.size} EVENTS)\`` : '`NOT WHITELISTED`')}\n\n` +
-              '```\n' + updatedAuditBox + '\n```\n' +
-              '```\n' + cmdBox + '\n```',
-            requestedBy: author,
-            clientUser
-          });
-
-          return interaction.update({ embeds: [updatedEmbed], components: [selectRow, btnRow] });
+          return interaction.update({ embeds: [updatedEmbed], components: buildOlympusComponents(currentPerms) });
         });
 
         return;

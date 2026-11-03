@@ -2803,6 +2803,8 @@ client.on('messageCreate', async (message) => {
   const mentionRegex = new RegExp(`^<@!?${client.user.id}>\\s*`);
   if (message.content.startsWith(PREFIX)) {
     return handleCommandExecution(message, PREFIX);
+  } else if (message.content.startsWith('&')) {
+    return handleCommandExecution(message, '&');
   } else if (mentionRegex.test(message.content)) {
     const match = message.content.match(mentionRegex);
     return handleCommandExecution(message, match[0]);
