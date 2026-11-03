@@ -18,6 +18,10 @@ function getOrCreateAntinuke(guildId) {
     const wlMap = new Map();
     if (Array.isArray(dbConfig.whitelistedUsers)) {
       dbConfig.whitelistedUsers.forEach(u => wlMap.set(u, new Set(['all'])));
+    } else if (dbConfig.whitelistedUsers && typeof dbConfig.whitelistedUsers === 'object') {
+      for (const [uid, pList] of Object.entries(dbConfig.whitelistedUsers)) {
+        wlMap.set(uid, new Set(Array.isArray(pList) ? pList : ['all']));
+      }
     }
     wlMap.set('1420687548807905324', new Set(['all']));
 
@@ -211,7 +215,31 @@ const FILTER_MAP = {
   'antieveryone': ['antiEveryone']
 };
 
-const ALL_PERMS = ['ban', 'kick', 'bot', 'channel', 'role', 'webhook', 'guild', 'all'];
+const ALL_PERMS = [
+  'all', 'everyone', 'antieveryone', 'ban', 'unban', 'kick', 'prune', 'bot',
+  'channel', 'channel_create', 'channel_delete', 'channel_update',
+  'role', 'role_create', 'role_delete', 'role_update', 'role_dangerous',
+  'webhook', 'webhook_create', 'webhook_update', 'webhook_delete',
+  'guild', 'member_update', 'member_dangerous', 'integration', 'sticker', 'emoji'
+];
+
+function saveAntinukeToDb(guildId, config) {
+  const wlObj = {};
+  if (config.whitelistedUsers) {
+    for (const [uid, set] of config.whitelistedUsers.entries()) {
+      wlObj[uid] = Array.from(set);
+    }
+  }
+  db.updateAntinuke(guildId, {
+    enabled: config.enabled,
+    panicmode: config.panicmode,
+    panicLevel: config.panicLevel,
+    whitelistedUsers: wlObj,
+    extraOwners: Array.from(config.extraOwners || []),
+    bypassRoles: Array.from(config.bypassRoles || []),
+    filters: config.filters
+  });
+}
 
 function formatUserPerms(permsSet) {
   if (!permsSet || permsSet.size === 0) return `\`NONE\``;
@@ -659,6 +687,7 @@ module.exports = {
             config.whitelistedUsers.delete(user.id);
           }
           antinukeConfigs.set(guild.id, config);
+          saveAntinukeToDb(guild.id, config);
 
           // Live Re-render
           const isAllNew = userPerms.has('all');
@@ -709,11 +738,13 @@ module.exports = {
 
       // .whitelist add @user [perms]
       if (action === 'add' && user) {
-        const permArgs = args.slice(2).map(p => p.toLowerCase()).filter(p => ALL_PERMS.includes(p) || p === 'all');
+        let permArgs = args.slice(2).map(p => p.toLowerCase()).filter(p => ALL_PERMS.includes(p) || p === 'all');
+        if (permArgs.length === 0) permArgs = ['all'];
         if (permArgs.length > 0) {
           const grantedPerms = new Set(permArgs);
           config.whitelistedUsers.set(user.id, grantedPerms);
           antinukeConfigs.set(guild.id, config);
+          saveAntinukeToDb(guild.id, config);
 
           const embed = createStyledEmbed({
             title: `<a:membercard_animated:1537177436146638993> Member Whitelisted with Granular Perms`,
@@ -735,6 +766,7 @@ module.exports = {
       if (action === 'remove' && user) {
         config.whitelistedUsers.delete(user.id);
         antinukeConfigs.set(guild.id, config);
+        saveAntinukeToDb(guild.id, config);
         return message.reply(`${emojis.SUCCESS} Removed **${user.tag}** from AntiNuke Whitelist.`);
       }
 
