@@ -7,7 +7,7 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 module.exports = {
   name: 'msg',
   description: 'Shinobi Message Tracking Suite: .msg, .msg add, .msg remove, .msg clear, .msg allowed view',
-  aliases: ['messaged', 'message', 'messages', 'addmessages', 'removemessages', 'clearmsgs', 'msgfilter', 'blacklist', 'whitelist'],
+  aliases: ['messaged', 'message', 'messages', 'addmessages', 'removemessages', 'clearmsgs', 'msgfilter', 'msgblacklist', 'msgwhitelist'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';

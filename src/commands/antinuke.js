@@ -3,6 +3,7 @@ const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  EmbedBuilder,
   StringSelectMenuBuilder,
   UserFlags
 } = require('discord.js');
@@ -558,14 +559,67 @@ module.exports = {
     }
 
     // ─────────────────────────────────────────
-    // DEDICATED WHITELIST PANEL & GRANULAR PERMS (.whitelist / .whitelisted)
+    // DEDICATED WHITELIST PANEL & GRANULAR PERMS (.whitelist / .whitelisted / &whitelist)
     // ─────────────────────────────────────────
     if (invoked === 'whitelist' || invoked === 'whitelisted' || sub === 'whitelist' || sub === 'whitelisted') {
-      const action = (invoked === 'whitelist' || invoked === 'whitelisted' ? args[0] : args[1])?.toLowerCase();
-      const user = message.mentions.users.first() || (args[0] && args[0].match(/^\d{17,20}$/) ? await message.client.users.fetch(args[0]).catch(() => null) : null) || (args[1] && args[1].match(/^\d{17,20}$/) ? await message.client.users.fetch(args[1]).catch(() => null) : null);
+      const cleanArgs = args.filter(a => a && a.toLowerCase() !== 'whitelist' && a.toLowerCase() !== 'whitelisted');
 
-      // Granular 21-Event Audit View for a specific target user (.whitelist @user or .whitelist status @user)
-      if (user && (action === 'status' || !action || action === user.id || action.startsWith('<@'))) {
+      // 1. Resolve Target User (Mention or numeric Snowflake ID)
+      let user = message.mentions.users.first();
+      let userArgIndex = -1;
+
+      if (!user) {
+        for (let i = 0; i < cleanArgs.length; i++) {
+          const raw = cleanArgs[i].replace(/[<@!>]/g, '');
+          if (/^\d{17,20}$/.test(raw)) {
+            user = await message.client.users.fetch(raw).catch(() => null);
+            if (user) {
+              userArgIndex = i;
+              break;
+            }
+          }
+        }
+      } else {
+        userArgIndex = cleanArgs.findIndex(a => a.includes(user.id));
+      }
+
+      const lowerTokens = cleanArgs.map(x => x.toLowerCase());
+      const isRemove = lowerTokens.includes('remove') || lowerTokens.includes('delete') || lowerTokens.includes('del');
+
+      // A. REMOVE ACTION (.whitelist remove @user or .whitelist @user remove)
+      if (user && isRemove) {
+        config.whitelistedUsers.delete(user.id);
+        antinukeConfigs.set(guild.id, config);
+        saveAntinukeToDb(guild.id, config);
+        return message.reply(`${emojis.SUCCESS} Removed **${user.tag}** from AntiNuke Whitelist.`);
+      }
+
+      // B. TARGET USER SPECIFIED -> ALWAYS DISPLAY THE OLYMPUS WHITELIST PANEL!
+      // Covers: .whitelist @user, .whitelist add @user, .whitelist user @user, .whitelist status @user, &whitelist @user
+      if (user) {
+        // If specific perms were passed alongside 'add' (e.g. .whitelist add @user everyone ban)
+        if (lowerTokens.includes('add')) {
+          const specificPerms = cleanArgs.filter(a => {
+            const low = a.toLowerCase();
+            return low !== 'add' && !a.includes(user.id) && (ALL_PERMS.includes(low) || low === 'all');
+          }).map(p => p.toLowerCase());
+
+          if (specificPerms.length > 0) {
+            let currentPerms = config.whitelistedUsers.get(user.id) || new Set();
+            specificPerms.forEach(p => {
+              if (p === 'all') {
+                currentPerms.clear();
+                currentPerms.add('all');
+              } else {
+                currentPerms.add(p);
+              }
+            });
+            config.whitelistedUsers.set(user.id, currentPerms);
+            antinukeConfigs.set(guild.id, config);
+            saveAntinukeToDb(guild.id, config);
+          }
+        }
+
         let userPerms = config.whitelistedUsers.get(user.id) || new Set();
 
         function buildOlympusDescription(perms) {
@@ -573,27 +627,27 @@ module.exports = {
           const has = (p) => isAll || perms.has(p);
 
           return [
-            `• ${has('ban') ? '✅' : '❌'} :**Ban**`,
-            `• ${has('kick') ? '✅' : '❌'} :**Kick**`,
-            `• ${has('prune') ? '✅' : '❌'} :**Prune Members**`,
-            `• ${has('bot') ? '✅' : '❌'} :**Bot Add**`,
-            `• ${has('guild') ? '✅' : '❌'} :**Guild Update**`,
-            `• ${has('channel_create') ? '✅' : '❌'} :**Channel Create**`,
-            `• ${has('channel_delete') ? '✅' : '❌'} :**Channel Delete**`,
-            `• ${has('channel_update') ? '✅' : '❌'} :**Channel Update**`,
-            `• ${has('role_create') ? '✅' : '❌'} :**Role Create**`,
-            `• ${has('role_delete') ? '✅' : '❌'} :**Role Delete**`,
-            `• ${has('role_update') ? '✅' : '❌'} :**Role Update**`,
-            `• ${has('role_dangerous') ? '✅' : '❌'} :**Role Update With Dangerous Permissions**`,
-            `• ${has('everyone') ? '✅' : '❌'} :**Mention @everyone**`,
-            `• ${has('webhook_create') ? '✅' : '❌'} :**Webhook Create**`,
-            `• ${has('webhook_update') ? '✅' : '❌'} :**Webhook Update**`,
-            `• ${has('webhook_delete') ? '✅' : '❌'} :**Webhook Delete**`,
-            `• ${has('member_update') ? '✅' : '❌'} :**Member Update**`,
-            `• ${has('member_dangerous') ? '✅' : '❌'} :**Member Update With Dangerous Permissions**`,
-            `• ${has('integration') ? '✅' : '❌'} :**Anti Integration (Re-Adding Bot)**`,
-            `• ${has('sticker') ? '✅' : '❌'} :**Anti Sticker Update**`,
-            `• ${has('emoji') ? '✅' : '❌'} :**Anti Emoji Update**`
+            `• ${has('ban') ? '✅' : '❌'} :Ban`,
+            `• ${has('kick') ? '✅' : '❌'} :Kick`,
+            `• ${has('prune') ? '✅' : '❌'} :Prune Members`,
+            `• ${has('bot') ? '✅' : '❌'} :Bot Add`,
+            `• ${has('guild') ? '✅' : '❌'} :Guild Update`,
+            `• ${has('channel_create') ? '✅' : '❌'} :Channel Create`,
+            `• ${has('channel_delete') ? '✅' : '❌'} :Channel Delete`,
+            `• ${has('channel_update') ? '✅' : '❌'} :Channel Update`,
+            `• ${has('role_create') ? '✅' : '❌'} :Role Create`,
+            `• ${has('role_delete') ? '✅' : '❌'} :Role Delete`,
+            `• ${has('role_update') ? '✅' : '❌'} :Role Update`,
+            `• ${has('role_dangerous') ? '✅' : '❌'} :Role Update With Dangerous Permissions`,
+            `• ${has('everyone') ? '✅' : '❌'} :Mention @everyone`,
+            `• ${has('webhook_create') ? '✅' : '❌'} :Webhook Create`,
+            `• ${has('webhook_update') ? '✅' : '❌'} :Webhook Update`,
+            `• ${has('webhook_delete') ? '✅' : '❌'} :Webhook Delete`,
+            `• ${has('member_update') ? '✅' : '❌'} :Member Update`,
+            `• ${has('member_dangerous') ? '✅' : '❌'} :Member Update With Dangerous Permissions`,
+            `• ${has('integration') ? '✅' : '❌'} :Anti Integration (Re-Adding Bot)`,
+            `• ${has('sticker') ? '✅' : '❌'} :Anti Sticker Update`,
+            `• ${has('emoji') ? '✅' : '❌'} :Anti Emoji Update`
           ].join('\n') +
           `\n\n` +
           `👤 **Author**             👥 **Target**\n` +
@@ -632,24 +686,28 @@ module.exports = {
           return [selectRow, btnRow];
         }
 
-        const guildIcon = guild.iconURL({ dynamic: true, size: 512 }) || clientUser.displayAvatarURL({ dynamic: true });
+        const targetAvatar = user.displayAvatarURL({ dynamic: true, size: 512 }) || clientUser.displayAvatarURL({ dynamic: true });
 
         const embed = new EmbedBuilder()
           .setColor(0xE74C3C)
           .setTitle(guild.name)
-          .setThumbnail(guildIcon)
+          .setThumbnail(targetAvatar)
           .setDescription(buildOlympusDescription(userPerms))
           .setFooter({
             text: 'Powered by Naruto Bot Development™',
             iconURL: clientUser.displayAvatarURL({ dynamic: true })
           });
 
-        const msg = await message.channel.send({ embeds: [embed], components: buildOlympusComponents(userPerms) });
+        const msg = await message.channel.send({
+          embeds: [embed],
+          components: buildOlympusComponents(userPerms),
+          allowedMentions: { parse: [] }
+        });
         const collector = msg.createMessageComponentCollector({ time: 300000 });
 
         collector.on('collect', async (interaction) => {
-          if (interaction.user.id !== author.id && author.id !== guild.ownerId) {
-            return interaction.reply({ content: `${emojis.WARNING} Only **${author.username}** (who requested this panel) or Server Owner can use these controls.`, flags: 64 });
+          if (interaction.user.id !== author.id && interaction.user.id !== guild.ownerId && !config.extraOwners.has(interaction.user.id)) {
+            return interaction.reply({ content: `${emojis.WARNING} Only **${author.username}** (who opened this panel), Server Owner, or Extra Owners can use these controls.`, flags: 64 });
           }
 
           let currentPerms = config.whitelistedUsers.get(user.id) || new Set();
@@ -740,7 +798,7 @@ module.exports = {
           const updatedEmbed = new EmbedBuilder()
             .setColor(0xE74C3C)
             .setTitle(guild.name)
-            .setThumbnail(guildIcon)
+            .setThumbnail(targetAvatar)
             .setDescription(buildOlympusDescription(currentPerms))
             .setFooter({
               text: 'Powered by Naruto Bot Development™',
@@ -751,40 +809,6 @@ module.exports = {
         });
 
         return;
-      }
-
-      // .whitelist add @user [perms]
-      if (action === 'add' && user) {
-        let permArgs = args.slice(2).map(p => p.toLowerCase()).filter(p => ALL_PERMS.includes(p) || p === 'all');
-        if (permArgs.length === 0) permArgs = ['all'];
-        if (permArgs.length > 0) {
-          const grantedPerms = new Set(permArgs);
-          config.whitelistedUsers.set(user.id, grantedPerms);
-          antinukeConfigs.set(guild.id, config);
-          saveAntinukeToDb(guild.id, config);
-
-          const embed = createStyledEmbed({
-            title: `<a:membercard_animated:1537177436146638993> Member Whitelisted with Granular Perms`,
-            description:
-              `**User:** <@${user.id}> (\`${user.tag}\`)\n` +
-              `**Granted Permissions:** ${formatUserPerms(grantedPerms)}\n\n` +
-              `**Management Panel:**\n` +
-              `\`\`\`\n` +
-              `.whitelist @${user.username}\n` +
-              `\`\`\``,
-            requestedBy: author,
-            clientUser
-          });
-          return message.channel.send({ embeds: [embed] });
-        }
-      }
-
-      // .whitelist remove @user
-      if (action === 'remove' && user) {
-        config.whitelistedUsers.delete(user.id);
-        antinukeConfigs.set(guild.id, config);
-        saveAntinukeToDb(guild.id, config);
-        return message.reply(`${emojis.SUCCESS} Removed **${user.tag}** from AntiNuke Whitelist.`);
       }
 
       // Default DEDICATED WHITELISTED USERS LIST PANEL (&whitelisted / .whitelist list)
