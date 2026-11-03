@@ -2746,7 +2746,7 @@ async function handleCommandExecution(message, usedPrefix) {
         return message.reply(
           `${emojis.SHIELD} **SECURITY PROBATION GRID ACTIVE**\n` +
           `Your account has been in this server for **${qStatus.daysJoined} days** (Required Probation: **${qStatus.requiredDays} Days**).\n\n` +
-          `*Notice: Administrator permissions do NOT override the Probation Grid. Members under the 15-Day Probation window cannot execute administrative or moderation commands.*\n` +
+          `*Notice: Only whitelisted members and the Server Owner can bypass the Security Probation Grid. Ask the Server Owner to whitelist you using \`.whitelist @user\`.*\n` +
           `Remaining Probation Time: **${qStatus.remainingDays} Days**.`
         );
       }

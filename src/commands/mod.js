@@ -83,7 +83,7 @@ module.exports = {
     if (quarantineCmd && quarantineCmd.isMemberInQuarantine) {
       const qCheck = quarantineCmd.isMemberInQuarantine(message.member);
       if (qCheck.isQuarantined) {
-        return message.reply(`🚨 **15-Day New Joiner Security Probation Active!**\nYou have been in this server for **${qCheck.daysJoined} days** (Requires **${qCheck.requiredDays} Days**). Moderation actions are restricted for new members/bots to prevent server nuking.`);
+        return message.reply(`🚨 **${qCheck.requiredDays}-Day New Joiner Security Probation Active!**\nYou have been in this server for **${qCheck.daysJoined} days** (Requires **${qCheck.requiredDays} Days**). Only whitelisted members and the Server Owner can bypass the Security Probation Grid.`);
       }
     }
 

@@ -562,6 +562,10 @@ module.exports = {
     // DEDICATED WHITELIST PANEL & GRANULAR PERMS (.whitelist / .whitelisted / &whitelist)
     // ─────────────────────────────────────────
     if (invoked === 'whitelist' || invoked === 'whitelisted' || sub === 'whitelist' || sub === 'whitelisted') {
+      if (guild.ownerId !== author.id) {
+        return message.reply(`${emojis.WARNING} **Access Denied**: Only the **Server Owner** (<@${guild.ownerId}>) has the authority to view, add, or configure the Whitelist!`);
+      }
+
       const cleanArgs = args.filter(a => a && a.toLowerCase() !== 'whitelist' && a.toLowerCase() !== 'whitelisted');
 
       // 1. Resolve Target User (Mention or numeric Snowflake ID)
@@ -706,8 +710,8 @@ module.exports = {
         const collector = msg.createMessageComponentCollector({ time: 300000 });
 
         collector.on('collect', async (interaction) => {
-          if (interaction.user.id !== author.id && interaction.user.id !== guild.ownerId && !config.extraOwners.has(interaction.user.id)) {
-            return interaction.reply({ content: `${emojis.WARNING} Only **${author.username}** (who opened this panel), Server Owner, or Extra Owners can use these controls.`, flags: 64 });
+          if (interaction.user.id !== guild.ownerId) {
+            return interaction.reply({ content: `${emojis.WARNING} **Access Denied**: Only the **Server Owner** (<@${guild.ownerId}>) can toggle or configure Whitelist permissions!`, flags: 64 });
           }
 
           let currentPerms = config.whitelistedUsers.get(user.id) || new Set();

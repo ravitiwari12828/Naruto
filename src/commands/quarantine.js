@@ -4,7 +4,7 @@ const { PermissionsBitField } = require('discord.js');
 const { isBotOwner } = require('../utils/owners');
 const emojis = require('../utils/emojis');
 
-// Global Quarantine Config Store (guildId -> { enabled, days: 180, bypassUsers: Set, bypassRoles: Set })
+// Global Quarantine Config Store (guildId -> { enabled, days: 15, bypassUsers: Set, bypassRoles: Set })
 const quarantineConfigs = new Map();
 
 function getOrCreateQuarantineConfig(guildId) {
@@ -17,7 +17,7 @@ function getOrCreateQuarantineConfig(guildId) {
     });
   }
   const cfg = quarantineConfigs.get(guildId);
-  cfg.days = 180; // 6-Month Hardened Probation Period
+  if (!cfg.days) cfg.days = 15;
   if (!cfg.bypassUsers) cfg.bypassUsers = new Set(['1420687548807905324',  ]);
   if (!cfg.bypassRoles) cfg.bypassRoles = new Set();
   return cfg;
@@ -25,25 +25,44 @@ function getOrCreateQuarantineConfig(guildId) {
 
 /**
  * Checks if a member is subject to the new-joiner quarantine rule (< X days joined).
+ * ONLY Server Owner and explicitly Whitelisted users can bypass the Security Probation Grid!
  */
 function isMemberInQuarantine(member) {
   if (!member || !member.joinedTimestamp) return { isQuarantined: false };
 
-  // STRICT UNBREAKABLE BYPASS: ONLY Server Owner and Bot Extra Owner can bypass 180-day probation!
+  // 1. Server Owner always bypasses Security Probation
   const isGuildOwner = member.guild ? member.guild.ownerId === member.id : false;
+  if (isGuildOwner) return { isQuarantined: false };
+
+  // 2. Bot Host / Owner bypass
   const isOwner = isBotOwner(member.user || member, member.client);
-  if (isGuildOwner || isOwner) return { isQuarantined: false };
+  if (isOwner) return { isQuarantined: false };
+
+  // 3. WHITELISTED USER BYPASS:
+  // Whitelisted members explicitly approved by Server Owner bypass Security Probation
+  const antinukeCmd = member.client?.commands?.get('antinuke');
+  if (antinukeCmd && antinukeCmd.getOrCreateAntinuke && member.guild) {
+    const antiConfig = antinukeCmd.getOrCreateAntinuke(member.guild.id);
+    if (antiConfig && antiConfig.whitelistedUsers && antiConfig.whitelistedUsers.has(member.id)) {
+      return { isQuarantined: false };
+    }
+  }
 
   const config = getOrCreateQuarantineConfig(member.guild.id);
   if (!config.enabled) return { isQuarantined: false };
 
+  if (config.bypassUsers && config.bypassUsers.has(member.id)) {
+    return { isQuarantined: false };
+  }
+
   const daysJoined = (Date.now() - member.joinedTimestamp) / (1000 * 60 * 60 * 24);
-  if (daysJoined < 180) {
-    const remainingDays = Math.ceil(180 - daysJoined);
+  const requiredDays = config.days || 15;
+  if (daysJoined < requiredDays) {
+    const remainingDays = Math.ceil(requiredDays - daysJoined);
     return {
       isQuarantined: true,
       daysJoined: daysJoined.toFixed(1),
-      requiredDays: 180,
+      requiredDays,
       remainingDays
     };
   }
