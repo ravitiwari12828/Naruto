@@ -51,6 +51,18 @@ module.exports = {
     const recruiterData = db.getRecruiterData(guild.id, targetUser.id);
     const allMembers = recruiterData.members || [];
 
+    // Resolve live member display names and joined timestamps if available
+    for (const m of allMembers) {
+      try {
+        const mem = guild.members.cache.get(m.userId) || await guild.members.fetch(m.userId).catch(() => null);
+        if (mem) {
+          if (mem.joinedTimestamp) m.joinedAt = mem.joinedTimestamp;
+          m.displayName = mem.displayName || mem.user.globalName || mem.user.username;
+          m.tag = mem.user.tag || mem.user.username;
+        }
+      } catch (e) {}
+    }
+
     // Filter categories
     const invitedList = allMembers;
     const rejoinsList = allMembers.filter(m => m.isRejoin);
@@ -58,10 +70,10 @@ module.exports = {
     const leavesList = allMembers.filter(m => m.leftAt);
 
     const counts = {
-      invited: invitedList.length || recruiterData.joins || 0,
-      rejoins: rejoinsList.length || recruiterData.rejoins || 0,
-      fake: fakesList.length || recruiterData.fakes || 0,
-      leaves: leavesList.length || recruiterData.leaves || 0
+      invited: Math.max(invitedList.length, recruiterData.joins || 0),
+      rejoins: Math.max(rejoinsList.length, recruiterData.rejoins || 0),
+      fake: Math.max(fakesList.length, recruiterData.fakes || 0),
+      leaves: Math.max(leavesList.length, recruiterData.leaves || 0)
     };
 
     function buildOverviewEmbed() {
@@ -95,24 +107,33 @@ module.exports = {
       if (category === 'cat_invited') {
         title += ` [Invited Members]`;
         list = invitedList;
-        formatFn = (m) => `• <@${m.userId}> (\`${m.tag || m.userId}\`) — Joined: **${formatIST(m.joinedAt)}**`;
+        formatFn = (m, idx) => `#${idx + 1} • <@${m.userId}> (**${m.displayName || m.tag}**) — Joined: **${formatIST(m.joinedAt)}**`;
       } else if (category === 'cat_rejoins') {
         title += ` [Rejoins Members]`;
         list = rejoinsList;
-        formatFn = (m) => `• <@${m.userId}> (\`${m.tag || m.userId}\`) — Joined: **${formatIST(m.joinedAt)}**${m.leftAt ? ` | Left: **${formatIST(m.leftAt)}**` : ''}`;
+        formatFn = (m, idx) => `#${idx + 1} • <@${m.userId}> (**${m.displayName || m.tag}**) — Joined: **${formatIST(m.joinedAt)}**${m.leftAt ? ` | Left: **${formatIST(m.leftAt)}**` : ''}`;
       } else if (category === 'cat_fake') {
         title += ` [Fake Members]`;
         list = fakesList;
-        formatFn = (m) => `• <@${m.userId}> (\`${m.tag || m.userId}\`) — Joined: **${formatIST(m.joinedAt)}** [Flagged: New Account]`;
+        formatFn = (m, idx) => `#${idx + 1} • <@${m.userId}> (**${m.displayName || m.tag}**) — Joined: **${formatIST(m.joinedAt)}** [Flagged: New Account]`;
       } else if (category === 'cat_leaves') {
         title += ` [Leave Members]`;
         list = leavesList;
-        formatFn = (m) => `• <@${m.userId}> (\`${m.tag || m.userId}\`) — Joined: **${formatIST(m.joinedAt)}** | Left: **${formatIST(m.leftAt)}**`;
+        formatFn = (m, idx) => `#${idx + 1} • <@${m.userId}> (**${m.displayName || m.tag}**) — Joined: **${formatIST(m.joinedAt)}** | Left: **${formatIST(m.leftAt)}**`;
       }
 
       let contentStr = '';
       if (list.length === 0) {
-        contentStr = `*No members recorded under this category yet for <@${targetUser.id}>.*`;
+        if (category === 'cat_invited' && (recruiterData.joins || 0) > 0) {
+          contentStr =
+            `📊 **${recruiterData.joins} Total Joins Recorded** via server invites.\n` +
+            `• *Historical joins recorded prior to live join logging. Live join logger is active for upcoming joins.*`;
+          if (recruiterData.activeCodes && recruiterData.activeCodes.length > 0) {
+            contentStr += `\n• 🔗 **Active Invite Code(s):** ` + recruiterData.activeCodes.map(c => `discord.gg/${c}`).join(', ');
+          }
+        } else {
+          contentStr = `*No members recorded under this category yet for <@${targetUser.id}>.*`;
+        }
       } else {
         contentStr = list.slice(0, 25).map(formatFn).join('\n');
         if (list.length > 25) {

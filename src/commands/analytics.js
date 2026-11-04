@@ -147,6 +147,39 @@ function formatAsciiBox(title, rows) {
   return '```\n' + [top, titleLine, mid, ...contentLines, bot].join('\n') + '\n```';
 }
 
+function getUsernameCached(guild, userId) {
+  if (!userId) return 'None';
+  const mem = guild.members.cache.get(userId);
+  if (mem) return mem.user.username;
+  const rec = db.getRecruiterData(guild.id, userId);
+  if (rec && (rec.displayName || rec.username)) return rec.displayName || rec.username;
+  const u = guild.client?.users?.cache?.get(userId);
+  if (u) return u.globalName || u.username;
+  return `User_${userId.slice(-4)}`;
+}
+
+async function resolveUsername(guild, userId) {
+  if (!userId) return 'Unknown';
+  const mem = guild.members.cache.get(userId);
+  if (mem) return mem.user.username;
+  const rec = db.getRecruiterData(guild.id, userId);
+  if (rec && (rec.displayName || rec.username)) return rec.displayName || rec.username;
+  const cachedUser = guild.client?.users?.cache?.get(userId);
+  if (cachedUser) return cachedUser.globalName || cachedUser.username;
+  try {
+    const fetchedUser = await guild.client?.users?.fetch(userId).catch(() => null);
+    if (fetchedUser) {
+      if (rec) {
+        rec.username = fetchedUser.username;
+        rec.displayName = fetchedUser.globalName || fetchedUser.displayName || fetchedUser.username;
+        rec.tag = fetchedUser.tag || fetchedUser.username;
+      }
+      return fetchedUser.globalName || fetchedUser.username;
+    }
+  } catch (e) {}
+  return `User_${userId.slice(-4)}`;
+}
+
 function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', activeCategory = 'overview', author, clientUser) {
   const windowMs = WINDOWS[timeframeKey];
   const label = TIMEFRAME_NAMES[timeframeKey] || 'All Time';
@@ -156,7 +189,7 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
 
   if (activeCategory === 'chat') {
     const chatLb = db.getTopLeaderboard(guild.id, 'message', windowMs, 5);
-    const topChatter = chatLb.length > 0 ? (guild.members.cache.get(chatLb[0].userId)?.user.username || `User${chatLb[0].userId}`) : 'None';
+    const topChatter = chatLb.length > 0 ? getUsernameCached(guild, chatLb[0].userId) : 'None';
     const topMsgs = chatLb.length > 0 ? chatLb[0].total.toLocaleString() : '0';
 
     const boxText = formatAsciiBox('CHAT ACTIVITY STATS', [
@@ -180,7 +213,7 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
 
   if (activeCategory === 'voice') {
     const voiceLb = db.getTopLeaderboard(guild.id, 'voice', windowMs, 5);
-    const topSpeaker = voiceLb.length > 0 ? (guild.members.cache.get(voiceLb[0].userId)?.user.username || `User${voiceLb[0].userId}`) : 'None';
+    const topSpeaker = voiceLb.length > 0 ? getUsernameCached(guild, voiceLb[0].userId) : 'None';
     const topVcTime = voiceLb.length > 0 ? formatDuration(voiceLb[0].total) : '0m';
 
     const boxText = formatAsciiBox('VOICE ACTIVITY STATS', [
@@ -204,7 +237,7 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
 
   if (activeCategory === 'invites') {
     const invLb = db.getTopLeaderboard(guild.id, 'invite', windowMs, 5);
-    const topInviter = invLb.length > 0 ? (guild.members.cache.get(invLb[0].userId)?.user.username || `User${invLb[0].userId}`) : 'None';
+    const topInviter = invLb.length > 0 ? getUsernameCached(guild, invLb[0].userId) : 'None';
     const topJoins = invLb.length > 0 ? invLb[0].total.toLocaleString() : '0';
 
     const boxText = formatAsciiBox('INVITE RECRUIT STATS', [
@@ -345,7 +378,7 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
   });
 }
 
-function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
+async function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey] || null;
   const label = TIMEFRAME_NAMES[timeframeKey] || 'All Time';
   const allLeaderboard = db.getTopLeaderboard(guild.id, 'message', windowMs, 100);
@@ -356,28 +389,32 @@ function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, a
   const startIdx = (currentPage - 1) * perPage;
   const pageEntries = allLeaderboard.slice(startIdx, startIdx + perPage);
 
-  const titlePadded = 'TOP 10 CHATTER LEADER'.padStart(Math.floor((24 + 21) / 2), ' ').padEnd(24, ' ');
+  // Pre-resolve usernames for this page
+  for (const item of pageEntries) {
+    item.resolvedName = await resolveUsername(guild, item.userId);
+  }
+
+  const titlePadded = 'TOP 10 CHATTER LEADER'.padStart(Math.floor((30 + 21) / 2), ' ').padEnd(30, ' ');
   const boxLines = [
-    '╭──────────────────────────╮',
+    '╭──────────────────────────────╮',
     '│ ' + titlePadded + ' │',
-    '├──────────────────────────┤'
+    '├──────────────────────────────┤'
   ];
 
   if (pageEntries.length === 0) {
-    boxLines.push('│ ' + 'No recorded chat data'.padEnd(24, ' ') + ' │');
+    boxLines.push('│ ' + 'No recorded chat data'.padEnd(30, ' ') + ' │');
   } else {
     pageEntries.forEach((item, idx) => {
       const rankNum = '#' + (startIdx + idx + 1);
       const rankStr = rankNum.padEnd(4, ' ');
-      const member = guild.members.cache.get(item.userId);
-      const rawName = member ? member.user.username : `User${item.userId}`;
-      const nameStr = rawName.slice(0, 8).padEnd(8, ' ');
+      const rawName = item.resolvedName || `User_${item.userId.slice(-4)}`;
+      const nameStr = rawName.slice(0, 14).padEnd(14, ' ');
       const valStr = `${item.total.toLocaleString()} msgs`.slice(0, 10).padEnd(10, ' ');
       boxLines.push('│ ' + rankStr + nameStr + ': ' + valStr + ' │');
     });
   }
 
-  boxLines.push('╰──────────────────────────╯');
+  boxLines.push('╰──────────────────────────────╯');
   const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   const embed = createStyledEmbed({
@@ -393,7 +430,7 @@ function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, a
   return { embed, currentPage, totalPages };
 }
 
-function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
+async function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey] || null;
   const label = TIMEFRAME_NAMES[timeframeKey] || 'All Time';
   const allLeaderboard = db.getTopLeaderboard(guild.id, 'voice', windowMs, 100);
@@ -404,28 +441,32 @@ function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, auth
   const startIdx = (currentPage - 1) * perPage;
   const pageEntries = allLeaderboard.slice(startIdx, startIdx + perPage);
 
-  const titlePadded = 'TOP 10 VOICE LEADER'.padStart(Math.floor((24 + 19) / 2), ' ').padEnd(24, ' ');
+  // Pre-resolve usernames for this page
+  for (const item of pageEntries) {
+    item.resolvedName = await resolveUsername(guild, item.userId);
+  }
+
+  const titlePadded = 'TOP 10 VOICE LEADER'.padStart(Math.floor((30 + 19) / 2), ' ').padEnd(30, ' ');
   const boxLines = [
-    '╭──────────────────────────╮',
+    '╭──────────────────────────────╮',
     '│ ' + titlePadded + ' │',
-    '├──────────────────────────┤'
+    '├──────────────────────────────┤'
   ];
 
   if (pageEntries.length === 0) {
-    boxLines.push('│ ' + 'No recorded voice data'.padEnd(24, ' ') + ' │');
+    boxLines.push('│ ' + 'No recorded voice data'.padEnd(30, ' ') + ' │');
   } else {
     pageEntries.forEach((item, idx) => {
       const rankNum = '#' + (startIdx + idx + 1);
       const rankStr = rankNum.padEnd(4, ' ');
-      const member = guild.members.cache.get(item.userId);
-      const rawName = member ? member.user.username : `User${item.userId}`;
-      const nameStr = rawName.slice(0, 8).padEnd(8, ' ');
+      const rawName = item.resolvedName || `User_${item.userId.slice(-4)}`;
+      const nameStr = rawName.slice(0, 14).padEnd(14, ' ');
       const valStr = formatDuration(item.total).slice(0, 10).padEnd(10, ' ');
       boxLines.push('│ ' + rankStr + nameStr + ': ' + valStr + ' │');
     });
   }
 
-  boxLines.push('╰──────────────────────────╯');
+  boxLines.push('╰──────────────────────────────╯');
   const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   const embed = createStyledEmbed({
@@ -441,7 +482,7 @@ function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, auth
   return { embed, currentPage, totalPages };
 }
 
-function renderInvitesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
+async function renderInvitesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey] || null;
   const label = TIMEFRAME_NAMES[timeframeKey] || 'All Time';
   let allLeaderboard = db.getTopLeaderboard(guild.id, 'invite', windowMs, 100);
@@ -461,28 +502,32 @@ function renderInvitesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, au
   const startIdx = (currentPage - 1) * perPage;
   const pageEntries = allLeaderboard.slice(startIdx, startIdx + perPage);
 
-  const titlePadded = 'TOP 10 INVITE LEADER'.padStart(Math.floor((24 + 20) / 2), ' ').padEnd(24, ' ');
+  // Pre-resolve usernames for this page
+  for (const item of pageEntries) {
+    item.resolvedName = await resolveUsername(guild, item.userId);
+  }
+
+  const titlePadded = 'TOP 10 INVITE LEADER'.padStart(Math.floor((30 + 20) / 2), ' ').padEnd(30, ' ');
   const boxLines = [
-    '╭──────────────────────────╮',
+    '╭──────────────────────────────╮',
     '│ ' + titlePadded + ' │',
-    '├──────────────────────────┤'
+    '├──────────────────────────────┤'
   ];
 
   if (pageEntries.length === 0) {
-    boxLines.push('│ ' + 'No recorded invite data'.padEnd(24, ' ') + ' │');
+    boxLines.push('│ ' + 'No recorded invite data'.padEnd(30, ' ') + ' │');
   } else {
     pageEntries.forEach((item, idx) => {
       const rankNum = '#' + (startIdx + idx + 1);
       const rankStr = rankNum.padEnd(4, ' ');
-      const member = guild.members.cache.get(item.userId);
-      const rawName = member ? member.user.username : `User${item.userId}`;
-      const nameStr = rawName.slice(0, 8).padEnd(8, ' ');
+      const rawName = item.resolvedName || `User_${item.userId.slice(-4)}`;
+      const nameStr = rawName.slice(0, 14).padEnd(14, ' ');
       const valStr = `${item.total.toLocaleString()} joins`.slice(0, 10).padEnd(10, ' ');
       boxLines.push('│ ' + rankStr + nameStr + ': ' + valStr + ' │');
     });
   }
 
-  boxLines.push('╰──────────────────────────╯');
+  boxLines.push('╰──────────────────────────────╯');
   const boxText = '```\n' + boxLines.join('\n') + '\n```';
 
   const embed = createStyledEmbed({
@@ -710,7 +755,7 @@ module.exports = {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || 'lifetime') : (arg0 || 'lifetime');
       if (!WINDOWS[activeKey]) activeKey = 'lifetime';
       let page = 1;
-      let { embed, currentPage, totalPages } = renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
+      let { embed, currentPage, totalPages } = await renderMessagesLeaderboard(guild, activeKey, page, author, clientUser);
       const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'msgtf_'), buildPaginationRow(currentPage, totalPages)] });
       let editQueue = Promise.resolve();
       const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id && i.message.id === msg.id, time: 300000 });
@@ -723,8 +768,8 @@ module.exports = {
         else if (i.customId === 'page_next') page++;
         else if (i.customId === 'page_last') page = 999;
         const snapKey = activeKey; const snapPage = page;
-        editQueue = editQueue.then(() => {
-          const res = renderMessagesLeaderboard(guild, snapKey, snapPage, author, clientUser);
+        editQueue = editQueue.then(async () => {
+          const res = await renderMessagesLeaderboard(guild, snapKey, snapPage, author, clientUser);
           page = res.currentPage;
           return msg.edit({ embeds: [res.embed], components: [buildTimeframeRow(snapKey, 'msgtf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
         });
@@ -738,7 +783,7 @@ module.exports = {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || 'lifetime') : (arg0 || 'lifetime');
       if (!WINDOWS[activeKey]) activeKey = 'lifetime';
       let page = 1;
-      let { embed, currentPage, totalPages } = renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
+      let { embed, currentPage, totalPages } = await renderVoiceLeaderboard(guild, activeKey, page, author, clientUser);
       const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'vctf_'), buildPaginationRow(currentPage, totalPages)] });
       let editQueue = Promise.resolve();
       const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id && i.message.id === msg.id, time: 300000 });
@@ -751,8 +796,8 @@ module.exports = {
         else if (i.customId === 'page_next') page++;
         else if (i.customId === 'page_last') page = 999;
         const snapKey = activeKey; const snapPage = page;
-        editQueue = editQueue.then(() => {
-          const res = renderVoiceLeaderboard(guild, snapKey, snapPage, author, clientUser);
+        editQueue = editQueue.then(async () => {
+          const res = await renderVoiceLeaderboard(guild, snapKey, snapPage, author, clientUser);
           page = res.currentPage;
           return msg.edit({ embeds: [res.embed], components: [buildTimeframeRow(snapKey, 'vctf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
         });
@@ -770,7 +815,7 @@ module.exports = {
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || 'lifetime') : (arg0 || 'lifetime');
       if (!WINDOWS[activeKey]) activeKey = 'lifetime';
       let page = 1;
-      let { embed, currentPage, totalPages } = renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
+      let { embed, currentPage, totalPages } = await renderInvitesLeaderboard(guild, activeKey, page, author, clientUser);
       const msg = await message.channel.send({ embeds: [embed], components: [buildTimeframeRow(activeKey, 'invtf_'), buildPaginationRow(currentPage, totalPages)] });
       let editQueue = Promise.resolve();
       const collector = msg.createMessageComponentCollector({ filter: (i) => i.user.id === author.id && i.message.id === msg.id, time: 300000 });
@@ -783,8 +828,8 @@ module.exports = {
         else if (i.customId === 'page_next') page++;
         else if (i.customId === 'page_last') page = 999;
         const snapKey = activeKey; const snapPage = page;
-        editQueue = editQueue.then(() => {
-          const res = renderInvitesLeaderboard(guild, snapKey, snapPage, author, clientUser);
+        editQueue = editQueue.then(async () => {
+          const res = await renderInvitesLeaderboard(guild, snapKey, snapPage, author, clientUser);
           page = res.currentPage;
           return msg.edit({ embeds: [res.embed], components: [buildTimeframeRow(snapKey, 'invtf_'), buildPaginationRow(res.currentPage, res.totalPages)] }).catch(() => {});
         });

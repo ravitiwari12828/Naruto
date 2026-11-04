@@ -16,6 +16,15 @@ function initLavalink(client) {
         secure: process.env.LAVALINK_SECURE === 'true',
         retryAmount: 15,
         retryDelay: 5000
+      },
+      {
+        id: 'kaal-node-backup',
+        host: process.env.BACKUP_LAVALINK_HOST || 'us.wlfkaal.store',
+        port: parseInt(process.env.BACKUP_LAVALINK_PORT) || 23100,
+        authorization: process.env.BACKUP_LAVALINK_PASSWORD || 'kaalontop',
+        secure: String(process.env.BACKUP_LAVALINK_SECURE).toLowerCase() === 'true',
+        retryAmount: 15,
+        retryDelay: 5000
       }
     ],
     sendToShard: (guildId, payload) => {

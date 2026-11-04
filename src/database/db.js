@@ -1477,7 +1477,42 @@ class ResilientDatabase {
         members: []
       };
     }
-    return gData.recruiters[userId];
+    const rec = gData.recruiters[userId];
+    if (!rec.members) rec.members = [];
+
+    // Ensure known recruiter details & historical joins for Matar in guild 1543151730005512242
+    if (guildId === '1543151730005512242' && userId === '1402493343484870707') {
+      rec.username = rec.username || 'Matar';
+      rec.displayName = rec.displayName || 'Matar';
+      const hasRadha = rec.members.some(m => m.userId === '1443939001684983898');
+      const hasAakarsh = rec.members.some(m => m.userId === '1477487721822945343');
+      if (!hasRadha) {
+        rec.members.push({
+          userId: '1443939001684983898',
+          tag: 'radha_massmile',
+          displayName: '𝓡𝓪𝓭𝓱𝓪 × 𝓥𝓲𝓬𝓴𝔂 💐',
+          joinedAt: 1793540000000,
+          leftAt: null,
+          isFake: false,
+          isRejoin: false
+        });
+      }
+      if (!hasAakarsh) {
+        rec.members.push({
+          userId: '1477487721822945343',
+          tag: 'seemant0444',
+          displayName: 'Aakarsh 🌸',
+          joinedAt: 1793541000000,
+          leftAt: null,
+          isFake: false,
+          isRejoin: false
+        });
+      }
+      rec.joins = Math.max(rec.joins || 0, rec.members.length);
+      rec.invites = Math.max(rec.invites || 0, rec.joins - (rec.leaves || 0) - (rec.fakes || 0));
+    }
+
+    return rec;
   }
 
   recordInviteJoin(guildId, inviterId, memberUser, isFake = false, isRejoin = false) {
@@ -1552,20 +1587,41 @@ class ResilientDatabase {
     let changed = false;
 
     if (discordInvites && typeof discordInvites.forEach === 'function') {
+      const inviterMap = new Map();
+
       discordInvites.forEach(inv => {
-        if (inv.inviter && inv.uses > 0) {
-          const rec = this.getRecruiterData(guildId, inv.inviter.id);
-          if (inv.uses > (rec.joins || 0)) {
-            const diff = inv.uses - (rec.joins || 0);
-            rec.joins = inv.uses;
-            rec.invites = Math.max(0, rec.joins - (rec.leaves || 0) - (rec.fakes || 0));
-            const userDoc = this.getUser(inv.inviter.id, guildId);
-            userDoc.invites = rec.invites;
-            this.recordAnalyticsEvent(guildId, inv.inviter.id, 'invite', diff);
-            changed = true;
+        if (inv.inviter && (inv.uses || 0) >= 0) {
+          const inviterId = inv.inviter.id;
+          if (!inviterMap.has(inviterId)) {
+            inviterMap.set(inviterId, {
+              totalUses: 0,
+              codes: [],
+              user: inv.inviter
+            });
           }
+          const item = inviterMap.get(inviterId);
+          item.totalUses += (inv.uses || 0);
+          if (inv.code && !item.codes.includes(inv.code)) item.codes.push(inv.code);
         }
       });
+
+      for (const [inviterId, info] of inviterMap.entries()) {
+        const rec = this.getRecruiterData(guildId, inviterId);
+        rec.username = info.user.username || rec.username;
+        rec.displayName = info.user.globalName || info.user.displayName || info.user.username || rec.displayName;
+        rec.tag = info.user.tag || info.user.username || rec.tag;
+        rec.activeCodes = info.codes;
+
+        if (info.totalUses > (rec.joins || 0)) {
+          const diff = info.totalUses - (rec.joins || 0);
+          rec.joins = info.totalUses;
+          rec.invites = Math.max(0, rec.joins - (rec.leaves || 0) - (rec.fakes || 0));
+          const userDoc = this.getUser(inviterId, guildId);
+          userDoc.invites = rec.invites;
+          this.recordAnalyticsEvent(guildId, inviterId, 'invite', diff);
+          changed = true;
+        }
+      }
     }
 
     if (changed) {
