@@ -161,9 +161,72 @@ function buildServerInfoRow3(guild, activeTab = 'overview') {
   );
 }
 
+function buildAfkEmbed(data, author, clientUser, nickChanged = false) {
+  const authorId = typeof author === 'string' ? author : (author?.id || data?.authorId);
+  const scopeText = data.scope === 'global' ? 'Global' : 'Server Only';
+  const dmText = data.notifyDM !== false ? 'Enabled' : 'Disabled';
 
+  const boxText =
+    '```\n' +
+    '╭──────────────────────────╮\n' +
+    '│       AFK SETTINGS       │\n' +
+    '├──────────────────────────┤\n' +
+    '│ Status   : ACTIVE (AFK)  │\n' +
+    '│ Reason   : ' + String(data.reason || 'I am afk :)').slice(0, 13).padEnd(13, ' ') + ' │\n' +
+    '│ Scope    : ' + scopeText.padEnd(13, ' ') + ' │\n' +
+    '│ DM Notify: ' + dmText.padEnd(13, ' ') + ' │\n' +
+    '╰──────────────────────────╯\n' +
+    '```';
 
+  return createStyledEmbed({
+    title: `${emojis.SUCCESS} AFK Status Configured`,
+    subtitle: `<@${authorId}>, you are now marked as AFK.${nickChanged ? ' Nickname updated to [AFK].' : ''}`,
+    description: boxText,
+    requestedBy: typeof author === 'object' && author?.id ? author : { id: authorId, tag: `<@${authorId}>` },
+    clientUser
+  });
+}
 
+function buildAfkButtons(data, authorId) {
+  const btnGlobal = new ButtonBuilder()
+    .setCustomId(`afk_scope_global_${authorId}`)
+    .setEmoji('🌐')
+    .setLabel('Global AFK')
+    .setStyle(data.scope === 'global' ? ButtonStyle.Success : ButtonStyle.Secondary);
+
+  const btnServer = new ButtonBuilder()
+    .setCustomId(`afk_scope_server_${authorId}`)
+    .setLabel('Server Only')
+    .setStyle(data.scope === 'server' ? ButtonStyle.Primary : ButtonStyle.Secondary);
+
+  try {
+    btnServer.setEmoji('1537179700349243402');
+  } catch (e) {
+    btnServer.setEmoji('🏠');
+  }
+
+  const btnDmEnable = new ButtonBuilder()
+    .setCustomId(`afk_dm_enable_${authorId}`)
+    .setLabel('Enable DM Mention')
+    .setStyle(data.notifyDM !== false ? ButtonStyle.Success : ButtonStyle.Secondary);
+
+  try {
+    btnDmEnable.setEmoji('1537177512365260911');
+  } catch (e) {
+    btnDmEnable.setEmoji('🔔');
+  }
+
+  const btnDmDisable = new ButtonBuilder()
+    .setCustomId(`afk_dm_disable_${authorId}`)
+    .setEmoji('🔕')
+    .setLabel('Disable DM Mention')
+    .setStyle(data.notifyDM === false ? ButtonStyle.Danger : ButtonStyle.Secondary);
+
+  const row1 = new ActionRowBuilder().addComponents(btnGlobal, btnServer);
+  const row2 = new ActionRowBuilder().addComponents(btnDmEnable, btnDmDisable);
+
+  return [row1, row2];
+}
 
 module.exports = {
   name: 'info',
@@ -172,13 +235,15 @@ module.exports = {
   buildServerInfoRow1,
   buildServerInfoRow2,
   buildServerInfoRow3,
+  buildAfkEmbed,
+  buildAfkButtons,
 
   aliases: [
     'ping', 'about', 'invite', 'node',
     'profile', 'serverinfo', 'si',
     'userinfo', 'user', 'membercount', 'members', 'mc',
     'botinfo', 'uptime', 'vote',
-    'afk', 'avatar', 'av', 'roleinfo', 'serverbanner', 'servericon', 'snipe'
+    'afk', 'mentions', 'avatar', 'av', 'roleinfo', 'serverbanner', 'servericon', 'snipe'
   ],
   snipeStore,
   afkStore,
@@ -232,10 +297,109 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 💤 AFK [reason]
+    // 💤 AFK [reason / subcommands]
     if (invoked === 'afk') {
-      const reason = args.join(' ') || 'I am afk :)';
       const authorId = author.id;
+      const sub = (args[0] || '').toLowerCase();
+
+      // Subcommand: .afk clear / off / remove / reset
+      if (['clear', 'off', 'remove', 'reset'].includes(sub)) {
+        if (!afkStore.has(authorId)) {
+          return message.reply(`${emojis.INFO || 'ℹ️'} You are not currently marked as AFK.`);
+        }
+        const prevData = afkStore.get(authorId);
+        afkStore.delete(authorId);
+        db.clearAfk(authorId);
+
+        if (message.member && prevData.oldNickname !== undefined) {
+          try {
+            await message.member.setNickname(prevData.oldNickname, 'AFK Status Cleared');
+          } catch (e) {}
+        }
+        const afkTime = Math.floor((Date.now() - prevData.timestamp) / 1000);
+        const mins = Math.floor(afkTime / 60);
+        const secs = afkTime % 60;
+        const durStr = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
+        const mCount = Array.isArray(prevData.mentions) ? prevData.mentions.length : 0;
+        return message.reply(`${emojis.SUCCESS} Removed your AFK status! You were AFK for **${durStr}**${mCount > 0 ? ` and received **${mCount} mention(s)**` : ''}.`);
+      }
+
+      // Subcommand: .afk list
+      if (sub === 'list') {
+        const afkEntries = [];
+        for (const [uId, aData] of afkStore.entries()) {
+          if (aData.scope === 'global' || aData.guildId === guild.id) {
+            const member = guild.members.cache.get(uId);
+            const userTag = member ? member.user.tag : `<@${uId}>`;
+            const timeAgoSec = Math.floor((Date.now() - aData.timestamp) / 1000);
+            const tm = Math.floor(timeAgoSec / 60);
+            const ts = timeAgoSec % 60;
+            const timeStr = tm > 0 ? `${tm}m ago` : `${ts}s ago`;
+            afkEntries.push(`• <@${uId}> (**${userTag}**) — *${aData.reason}* (${timeStr}) [${aData.scope === 'global' ? 'Global' : 'Server'}]`);
+          }
+        }
+        if (afkEntries.length === 0) {
+          return message.reply(`${emojis.INFO || 'ℹ️'} No members are currently AFK in **${guild.name}**.`);
+        }
+        const listEmbed = createStyledEmbed({
+          title: `💤 Currently AFK Members (${afkEntries.length})`,
+          subtitle: `Active AFK users in ${guild.name}`,
+          description: afkEntries.slice(0, 15).join('\n') + (afkEntries.length > 15 ? `\n\n*...and ${afkEntries.length - 15} more*` : ''),
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [listEmbed] });
+      }
+
+      // Subcommand: .afk mentions
+      if (sub === 'mentions') {
+        const curData = afkStore.get(authorId);
+        if (!curData) {
+          return message.reply(`${emojis.INFO || 'ℹ️'} You are not currently marked as AFK.`);
+        }
+        const mList = Array.isArray(curData.mentions) ? curData.mentions : [];
+        if (mList.length === 0) {
+          return message.reply(`${emojis.INFO || 'ℹ️'} You have not received any mentions while AFK yet.`);
+        }
+        const mentionLines = mList.slice(0, 10).map((m, idx) => {
+          const snip = m.content ? (m.content.length > 60 ? m.content.slice(0, 60) + '...' : m.content) : '*Attachment/Media*';
+          return `**${idx + 1}.** <@${m.authorId}> in <#${m.channelId}>: "${snip}" — [Jump](${m.messageUrl})`;
+        }).join('\n');
+
+        const mEmbed = createStyledEmbed({
+          title: `${emojis.BELL || '🔔'} Your AFK Mentions (${mList.length})`,
+          subtitle: `Recorded mentions while you are AFK`,
+          description: mentionLines + (mList.length > 10 ? `\n\n*...and ${mList.length - 10} more mentions.*` : ''),
+          requestedBy: author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [mEmbed] });
+      }
+
+      // Subcommand: .afk dm on / off
+      if (sub === 'dm') {
+        const val = (args[1] || '').toLowerCase();
+        const curData = afkStore.get(authorId);
+        if (!curData) {
+          return message.reply(`${emojis.WARNING || '⚠️'} You need to be AFK to configure DM settings. Use \`.afk [reason]\` first.`);
+        }
+        if (['on', 'enable', 'true', 'yes'].includes(val)) {
+          curData.notifyDM = true;
+          afkStore.set(authorId, curData);
+          db.setAfk(authorId, curData);
+          return message.reply(`${emojis.SUCCESS} **DM Mentions Enabled!** You will receive a direct message when someone mentions you.`);
+        } else if (['off', 'disable', 'false', 'no'].includes(val)) {
+          curData.notifyDM = false;
+          afkStore.set(authorId, curData);
+          db.setAfk(authorId, curData);
+          return message.reply(`${emojis.SUCCESS} **DM Mentions Disabled!** You will not receive DMs when mentioned.`);
+        } else {
+          return message.reply(`${emojis.INFO || 'ℹ️'} Usage: \`.afk dm on\` or \`.afk dm off\`. Currently: **${curData.notifyDM ? 'Enabled' : 'Disabled'}**.`);
+        }
+      }
+
+      // Default: Set AFK status
+      const reason = args.join(' ') || 'I am afk :)';
 
       // 1. Save original nickname in DB and change name to [AFK] <oldName>
       let originalNickname = null;
@@ -260,81 +424,16 @@ module.exports = {
         scope: 'global',
         guildId: guild.id,
         notifyDM: true,
-        oldNickname: originalNickname
+        oldNickname: originalNickname,
+        mentions: []
       };
 
       afkStore.set(authorId, afkData);
       db.setAfk(authorId, afkData);
 
-      function buildAfkEmbed(data) {
-        const scopeText = data.scope === 'global' ? 'Global' : 'Server Only';
-        const dmText = data.notifyDM ? 'Enabled' : 'Disabled';
-
-        const boxText =
-          '```\n' +
-          '╭──────────────────────────╮\n' +
-          '│       AFK SETTINGS       │\n' +
-          '├──────────────────────────┤\n' +
-          '│ Status   : ACTIVE (AFK)  │\n' +
-          '│ Reason   : ' + String(data.reason || 'I am afk :)').slice(0, 13).padEnd(13, ' ') + ' │\n' +
-          '│ Scope    : ' + scopeText.padEnd(13, ' ') + ' │\n' +
-          '│ DM Notify: ' + dmText.padEnd(13, ' ') + ' │\n' +
-          '╰──────────────────────────╯\n' +
-          '```';
-
-        return createStyledEmbed({
-          title: `${emojis.SUCCESS} AFK Status Configured`,
-          subtitle: `<@${authorId}>, you are now marked as AFK.${nickChanged ? ' Nickname updated to [AFK].' : ''}`,
-          description: boxText,
-          requestedBy: author,
-          clientUser
-        });
-      }
-
-      function buildAfkButtons(data) {
-        const btnGlobal = new ButtonBuilder()
-          .setCustomId(`afk_scope_global_${authorId}`)
-          .setEmoji('🌐')
-          .setLabel('Global AFK')
-          .setStyle(data.scope === 'global' ? ButtonStyle.Success : ButtonStyle.Secondary);
-
-        const btnServer = new ButtonBuilder()
-          .setCustomId(`afk_scope_server_${authorId}`)
-          .setLabel('Server Only')
-          .setStyle(data.scope === 'server' ? ButtonStyle.Primary : ButtonStyle.Secondary);
-
-        try {
-          btnServer.setEmoji('1537179700349243402');
-        } catch (e) {
-          btnServer.setEmoji('🏠');
-        }
-
-        const btnDmEnable = new ButtonBuilder()
-          .setCustomId(`afk_dm_enable_${authorId}`)
-          .setLabel('Enable DM Mention')
-          .setStyle(data.notifyDM ? ButtonStyle.Success : ButtonStyle.Secondary);
-
-        try {
-          btnDmEnable.setEmoji('1537177512365260911');
-        } catch (e) {
-          btnDmEnable.setEmoji('🔔');
-        }
-
-        const btnDmDisable = new ButtonBuilder()
-          .setCustomId(`afk_dm_disable_${authorId}`)
-          .setEmoji('🔕')
-          .setLabel('Disable DM Mention')
-          .setStyle(!data.notifyDM ? ButtonStyle.Danger : ButtonStyle.Secondary);
-
-        const row1 = new ActionRowBuilder().addComponents(btnGlobal, btnServer);
-        const row2 = new ActionRowBuilder().addComponents(btnDmEnable, btnDmDisable);
-
-        return [row1, row2];
-      }
-
       const msg = await message.channel.send({
-        embeds: [buildAfkEmbed(afkData)],
-        components: buildAfkButtons(afkData)
+        embeds: [buildAfkEmbed(afkData, author, clientUser, nickChanged)],
+        components: buildAfkButtons(afkData, authorId)
       });
 
       const collector = msg.createMessageComponentCollector({
@@ -349,26 +448,52 @@ module.exports = {
           curData.scope = 'global';
           afkStore.set(authorId, curData);
           db.setAfk(authorId, curData);
-          await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
+          await i.update({ embeds: [buildAfkEmbed(curData, author, clientUser, nickChanged)], components: buildAfkButtons(curData, authorId) }).catch(() => {});
         } else if (i.customId.startsWith('afk_scope_server_')) {
           curData.scope = 'server';
           afkStore.set(authorId, curData);
           db.setAfk(authorId, curData);
-          await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
+          await i.update({ embeds: [buildAfkEmbed(curData, author, clientUser, nickChanged)], components: buildAfkButtons(curData, authorId) }).catch(() => {});
         } else if (i.customId.startsWith('afk_dm_enable_')) {
           curData.notifyDM = true;
           afkStore.set(authorId, curData);
           db.setAfk(authorId, curData);
-          await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
+          await i.update({ embeds: [buildAfkEmbed(curData, author, clientUser, nickChanged)], components: buildAfkButtons(curData, authorId) }).catch(() => {});
         } else if (i.customId.startsWith('afk_dm_disable_')) {
           curData.notifyDM = false;
           afkStore.set(authorId, curData);
           db.setAfk(authorId, curData);
-          await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
+          await i.update({ embeds: [buildAfkEmbed(curData, author, clientUser, nickChanged)], components: buildAfkButtons(curData, authorId) }).catch(() => {});
         }
       });
 
       return;
+    }
+
+    // 🔔 .mentions command
+    if (invoked === 'mentions') {
+      const authorId = author.id;
+      const curData = afkStore.get(authorId);
+      if (!curData) {
+        return message.reply(`${emojis.INFO || 'ℹ️'} You are not currently marked as AFK.`);
+      }
+      const mList = Array.isArray(curData.mentions) ? curData.mentions : [];
+      if (mList.length === 0) {
+        return message.reply(`${emojis.INFO || 'ℹ️'} You have not received any mentions while AFK yet.`);
+      }
+      const mentionLines = mList.slice(0, 10).map((m, idx) => {
+        const snip = m.content ? (m.content.length > 60 ? m.content.slice(0, 60) + '...' : m.content) : '*Attachment/Media*';
+        return `**${idx + 1}.** <@${m.authorId}> in <#${m.channelId}>: "${snip}" — [Jump](${m.messageUrl})`;
+      }).join('\n');
+
+      const mEmbed = createStyledEmbed({
+        title: `${emojis.BELL || '🔔'} Your AFK Mentions (${mList.length})`,
+        subtitle: `Recorded mentions while you are AFK`,
+        description: mentionLines + (mList.length > 10 ? `\n\n*...and ${mList.length - 10} more mentions.*` : ''),
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [mEmbed] });
     }
 
     // <a:welcome_animated:1537179700349243402> SERVERINFO / SERVER / SI

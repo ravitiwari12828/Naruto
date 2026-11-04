@@ -3620,7 +3620,35 @@ client.on('messageCreate', async (message) => {
 
 
 
-        message.channel.send(`${emojis.LEAF || '<a:leaf_animated:1537179616400375939>'} Welcome back <@${message.author.id}>! I removed your AFK status (AFK for **${durationStr}**).`).catch(() => {});
+        const mentionList = Array.isArray(afkData.mentions) ? afkData.mentions : [];
+        let welcomeMsg = `${emojis.LEAF || '<a:leaf_animated:1537179616400375939>'} Welcome back <@${message.author.id}>! I removed your AFK status (AFK for **${durationStr}**).`;
+        if (mentionList.length > 0) {
+          welcomeMsg += ` You received **${mentionList.length} mention(s)** while you were away!`;
+        }
+
+        message.channel.send(welcomeMsg).catch(() => {});
+
+        // If DM notify was enabled and they received mentions, send a summary DM
+        if (afkData.notifyDM !== false && mentionList.length > 0) {
+          try {
+            const summaryLines = mentionList.slice(0, 10).map((m, idx) => {
+              const snippet = m.content ? (m.content.length > 60 ? m.content.slice(0, 60) + '...' : m.content) : '*Attachment/Media*';
+              return `**${idx + 1}.** <@${m.authorId}> in **#${m.channelName}**: "${snippet}" — [Jump](${m.messageUrl})`;
+            }).join('\n');
+
+            const summaryEmbed = createStyledEmbed({
+              title: `${emojis.BELL || '🔔'} AFK Mentions Summary`,
+              subtitle: `You were mentioned ${mentionList.length} time(s) while away`,
+              description:
+                `While you were away for **${durationStr}**, you received **${mentionList.length} mention(s)**:\n\n` +
+                summaryLines + (mentionList.length > 10 ? `\n\n*...and ${mentionList.length - 10} more mentions.*` : ''),
+              requestedBy: message.author,
+              clientUser: client.user
+            });
+
+            await message.author.send({ embeds: [summaryEmbed] }).catch(() => {});
+          } catch (e) {}
+        }
 
       }
 
@@ -3656,7 +3684,61 @@ client.on('messageCreate', async (message) => {
 
 
 
-          // DM notifications disabled to prevent Discord Anti-Spam DM Quarantine flags
+          // Track this mention in afkData
+          if (!Array.isArray(afkData.mentions)) afkData.mentions = [];
+          afkData.mentions.push({
+            authorId: message.author.id,
+            authorTag: message.author.tag || message.author.username,
+            guildId: message.guild.id,
+            guildName: message.guild.name,
+            channelId: message.channel.id,
+            channelName: message.channel.name,
+            messageUrl: message.url,
+            content: message.content || '',
+            timestamp: Date.now()
+          });
+          db.setAfk(mentionedUser.id, afkData);
+
+          // DM Notification to the AFK user if enabled
+          if (afkData.notifyDM !== false) {
+            try {
+              const jumpBtn = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                  .setLabel('Jump to Message')
+                  .setStyle(ButtonStyle.Link)
+                  .setURL(message.url)
+              );
+
+              const contentSnippet = message.content && message.content.trim().length > 0
+                ? (message.content.length > 800 ? message.content.slice(0, 800) + '...' : message.content)
+                : (message.attachments.size > 0 ? `*[Attached ${message.attachments.size} file(s)/media]*` : '*[No text content]*');
+
+              const dmEmbed = createStyledEmbed({
+                title: `${emojis.BELL || '🔔'} You were mentioned while AFK!`,
+                subtitle: `Mentioned in ${message.guild.name} • #${message.channel.name}`,
+                description:
+                  '```\n' +
+                  '╭──────────────────────────╮\n' +
+                  '│     AFK MENTION ALERT    │\n' +
+                  '├──────────────────────────┤\n' +
+                  '│ Server  : ' + String(message.guild.name).slice(0, 14).padEnd(14, ' ') + ' │\n' +
+                  '│ Channel : #' + String(message.channel.name).slice(0, 13).padEnd(13, ' ') + ' │\n' +
+                  '│ Author  : ' + String(message.author.username).slice(0, 14).padEnd(14, ' ') + ' │\n' +
+                  '╰──────────────────────────╯\n' +
+                  '```\n\n' +
+                  `**Sender:** <@${message.author.id}> (\`${message.author.tag || message.author.username}\`)\n` +
+                  `**Channel:** <#${message.channel.id}> in **${message.guild.name}**\n` +
+                  `**Message:**\n>>> ${contentSnippet}\n\n` +
+                  `🔗 **[Jump to Message](${message.url})**`,
+                requestedBy: message.author,
+                clientUser: client.user
+              });
+
+              await mentionedUser.send({ embeds: [dmEmbed], components: [jumpBtn] });
+            } catch (dmErr) {
+              // User might have DMs closed or blocked bot
+            }
+          }
 
         }
 
@@ -5182,7 +5264,46 @@ client.on('interactionCreate', async (interaction) => {
 
   if (!interaction.isButton()) return;
 
+  // AFK CONFIGURATION BUTTONS
+  if (interaction.customId.startsWith('afk_')) {
+    const parts = interaction.customId.split('_');
+    const targetUserId = parts[parts.length - 1];
 
+    if (interaction.user.id !== targetUserId) {
+      return interaction.reply({ content: `${emojis.CROSS || '❌'} This AFK configuration panel belongs to <@${targetUserId}>!`, ephemeral: true }).catch(() => {});
+    }
+
+    const infoCmd = client.commands.get('info');
+    const afkStore = infoCmd ? infoCmd.afkStore : null;
+    let curData = afkStore?.get(targetUserId) || (db.getAfk ? db.getAfk(targetUserId) : null);
+
+    if (!curData) {
+      return interaction.reply({ content: `${emojis.WARNING || '⚠️'} You are not currently marked as AFK. Use \`.afk [reason]\` to set your status.`, ephemeral: true }).catch(() => {});
+    }
+
+    if (interaction.customId.startsWith('afk_scope_global_')) {
+      curData.scope = 'global';
+    } else if (interaction.customId.startsWith('afk_scope_server_')) {
+      curData.scope = 'server';
+    } else if (interaction.customId.startsWith('afk_dm_enable_')) {
+      curData.notifyDM = true;
+    } else if (interaction.customId.startsWith('afk_dm_disable_')) {
+      curData.notifyDM = false;
+    }
+
+    if (afkStore) afkStore.set(targetUserId, curData);
+    if (db.setAfk) db.setAfk(targetUserId, curData);
+
+    const embed = infoCmd?.buildAfkEmbed ? infoCmd.buildAfkEmbed(curData, interaction.user, client.user) : null;
+    const components = infoCmd?.buildAfkButtons ? infoCmd.buildAfkButtons(curData, targetUserId) : [];
+
+    if (embed && components.length > 0) {
+      await interaction.update({ embeds: [embed], components }).catch(() => {});
+    } else {
+      await interaction.reply({ content: `${emojis.SUCCESS || '✅'} AFK settings updated!`, ephemeral: true }).catch(() => {});
+    }
+    return;
+  }
 
   // MUSIC BUTTON CONTROLS
 

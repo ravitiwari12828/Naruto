@@ -1438,7 +1438,8 @@ class ResilientDatabase {
       scope: afkData.scope || 'global',
       guildId: afkData.guildId || null,
       notifyDM: afkData.notifyDM !== undefined ? afkData.notifyDM : true,
-      oldNickname: afkData.oldNickname !== undefined ? afkData.oldNickname : null
+      oldNickname: afkData.oldNickname !== undefined ? afkData.oldNickname : null,
+      mentions: Array.isArray(afkData.mentions) ? afkData.mentions : []
     };
     this.saveJSON();
     return this.data.afk[userId];
