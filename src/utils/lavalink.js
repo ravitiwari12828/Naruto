@@ -12,7 +12,7 @@ function initLavalink(client) {
         id: 'visihost-node-main',
         host: process.env.LAVALINK_HOST?.trim() || 'noida8.visihost.in',
         port: parseInt(process.env.LAVALINK_PORT) || 25648,
-        authorization: (process.env.LAVALINK_HOST && process.env.LAVALINK_HOST.includes('visihost') && (!process.env.LAVALINK_PASSWORD || process.env.LAVALINK_PASSWORD.trim() === 'SynnIsLob')) ? 'youshallnotpass' : (process.env.LAVALINK_PASSWORD?.trim() || 'youshallnotpass'),
+        authorization: process.env.LAVALINK_PASSWORD?.trim() || 'SynnIsLob',
         secure: process.env.LAVALINK_SECURE === 'true',
         retryAmount: 15,
         retryDelay: 5000
