@@ -434,6 +434,8 @@ const client = new Client({
 
 
 client.commands = new Collection();
+client.rawMessageCache = new Map();
+client.guildInvites = new Map();
 
 
 
@@ -470,6 +472,22 @@ client.on('shardError', (error, id) => {
 });
 
 
+
+
+// Invite Tracker Gateway Listeners
+client.on('inviteCreate', (invite) => {
+  if (!client.guildInvites) client.guildInvites = new Map();
+  if (!invite.guild) return;
+  const map = client.guildInvites.get(invite.guild.id) || new Map();
+  map.set(invite.code, { code: invite.code, uses: invite.uses, inviterId: invite.inviter?.id });
+  client.guildInvites.set(invite.guild.id, map);
+});
+
+client.on('inviteDelete', (invite) => {
+  if (!client.guildInvites || !invite.guild) return;
+  const map = client.guildInvites.get(invite.guild.id);
+  if (map) map.delete(invite.code);
+});
 
 // Load Commands Dynamically (Recursively scan subdirectories)
 
@@ -577,6 +595,33 @@ client.once('ready', async () => {
   console.log(`• Command Count : ${client.commands.size} Commands Loaded`);
 
   console.log(`• System Prefix : ${PREFIX}`);
+
+  // Sync Discord Invites across all guilds
+  try {
+    client.guilds.cache.forEach(async (g) => {
+      try {
+        const invs = await g.invites.fetch().catch(() => null);
+        if (invs) {
+          const invMap = new Map();
+          invs.forEach(inv => invMap.set(inv.code, { code: inv.code, uses: inv.uses, inviterId: inv.inviter?.id }));
+          client.guildInvites.set(g.id, invMap);
+          db.syncGuildInvitesFromApi(g.id, invs);
+        }
+      } catch (e) {}
+    });
+  } catch (e) {}
+
+  // Restore persistent AFK store from database
+  try {
+    const allAfk = db.getAllAfk ? db.getAllAfk() : {};
+    const infoCmd = client.commands.get('info');
+    if (infoCmd && infoCmd.afkStore && allAfk) {
+      Object.entries(allAfk).forEach(([uId, data]) => {
+        infoCmd.afkStore.set(uId, data);
+      });
+    }
+  } catch (e) {}
+
 
   console.log(`==============================================\n`);
 
@@ -727,6 +772,40 @@ const voiceJoinTimes = new Map();
 client.on('guildMemberAdd', async (member) => {
 
   db.recordAnalyticsEvent(member.guild.id, member.id, 'join', 1);
+
+  // --- INVITE TRACKER ENGINE ---
+  try {
+    if (!client.guildInvites) client.guildInvites = new Map();
+    const cachedInvites = client.guildInvites.get(member.guild.id);
+    const currentInvites = await member.guild.invites.fetch().catch(() => null);
+
+    let usedInvite = null;
+    if (currentInvites && cachedInvites) {
+      for (const [code, inv] of currentInvites.entries()) {
+        const prev = cachedInvites.get(code);
+        if (prev && inv.uses > prev.uses) {
+          usedInvite = inv;
+          break;
+        }
+      }
+    }
+
+    if (currentInvites) {
+      const newMap = new Map();
+      currentInvites.forEach(inv => newMap.set(inv.code, { code: inv.code, uses: inv.uses, inviterId: inv.inviter?.id }));
+      client.guildInvites.set(member.guild.id, newMap);
+    }
+
+    if (usedInvite && usedInvite.inviter) {
+      const isFake = (Date.now() - member.user.createdTimestamp) < (3 * 24 * 60 * 60 * 1000);
+      const gData = db.getInviteData(member.guild.id);
+      const isRejoin = !!gData.memberHistory[member.id];
+      db.recordInviteJoin(member.guild.id, usedInvite.inviter.id, member.user, isFake, isRejoin);
+    }
+  } catch (invErr) {
+    console.error('[Invite Track Error]:', invErr.message);
+  }
+
 
   try {
 
@@ -1302,6 +1381,7 @@ client.on('messageDelete', (deletedMessage) => {
 client.on('guildMemberRemove', async (member) => {
 
   db.recordAnalyticsEvent(member.guild.id, member.id, 'leave', 1);
+  try { db.recordInviteLeave(member.guild.id, member.id); } catch (e) {}
 
   try {
 
@@ -2780,6 +2860,61 @@ client.on('messageCreate', async (message) => {
 
   if (!message || message.author?.bot) return;
 
+  // Archive message in memory LRU cache for Wick-grade Purge logging
+  if (message.guild && message.id) {
+    if (!client.rawMessageCache) client.rawMessageCache = new Map();
+
+    const gifUrls = [];
+    const urlRegex = /(https?:\/\/[^\s]+)/gi;
+    const matches = message.content ? message.content.match(urlRegex) : null;
+    if (matches) {
+      matches.forEach(u => {
+        if (/tenor\.com|giphy\.com|\.gif(\?.*)?$/i.test(u)) gifUrls.push(u);
+      });
+    }
+    if (message.embeds && message.embeds.length > 0) {
+      message.embeds.forEach(emb => {
+        if (emb.url && /tenor\.com|giphy\.com|\.gif/i.test(emb.url)) gifUrls.push(emb.url);
+        if (emb.image?.url) gifUrls.push(emb.image.url);
+        if (emb.video?.url) gifUrls.push(emb.video.url);
+      });
+    }
+
+    const attachments = message.attachments ? Array.from(message.attachments.values()).map(a => ({
+      name: a.name || 'Attachment',
+      url: a.url,
+      proxyURL: a.proxyURL,
+      contentType: a.contentType || 'file'
+    })) : [];
+
+    const stickers = message.stickers ? Array.from(message.stickers.values()).map(s => ({
+      name: s.name,
+      url: s.url
+    })) : [];
+
+    client.rawMessageCache.set(message.id, {
+      id: message.id,
+      channelId: message.channel?.id,
+      channelName: message.channel?.name || 'unknown',
+      guildId: message.guild.id,
+      authorId: message.author?.id || 'unknown',
+      authorTag: message.author?.tag || message.author?.username || 'Unknown',
+      authorUsername: message.author?.username || 'unknown',
+      authorDisplayName: message.member?.displayName || message.author?.displayName || message.author?.username || 'unknown',
+      content: message.content || '',
+      attachments,
+      gifUrls,
+      stickers,
+      timestamp: message.createdTimestamp || Date.now()
+    });
+
+    if (client.rawMessageCache.size > 20000) {
+      const oldestKey = client.rawMessageCache.keys().next().value;
+      client.rawMessageCache.delete(oldestKey);
+    }
+  }
+
+
 
 
   // <a:key_lock_animated:1537179601493561404> GLOBAL MESSAGE DEDUPLICATION LOCK: Prevent duplicate processing across events
@@ -3467,6 +3602,13 @@ client.on('messageCreate', async (message) => {
       if (!afkData.scope || afkData.scope === 'global' || afkData.guildId === message.guild.id) {
 
         afkStore.delete(message.author.id);
+        db.clearAfk(message.author.id);
+
+        if (message.member && afkData.oldNickname !== undefined) {
+          try {
+            await message.member.setNickname(afkData.oldNickname, 'AFK Status Removed');
+          } catch (e) {}
+        }
 
         const afkTime = Math.floor((Date.now() - afkData.timestamp) / 1000);
 

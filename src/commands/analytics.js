@@ -444,7 +444,16 @@ function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, auth
 function renderInvitesLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey] || null;
   const label = TIMEFRAME_NAMES[timeframeKey] || 'All Time';
-  const allLeaderboard = db.getTopLeaderboard(guild.id, 'invite', windowMs, 100);
+  let allLeaderboard = db.getTopLeaderboard(guild.id, 'invite', windowMs, 100);
+  if (allLeaderboard.length === 0) {
+    const invData = db.getInviteData(guild.id);
+    if (invData && invData.recruiters) {
+      allLeaderboard = Object.values(invData.recruiters)
+        .filter(r => (r.invites || r.joins || 0) > 0)
+        .map(r => ({ userId: r.userId, total: r.invites || r.joins || 0 }))
+        .sort((a, b) => b.total - a.total);
+    }
+  }
 
   const perPage = 10;
   const totalPages = Math.max(1, Math.ceil(allLeaderboard.length / perPage));
@@ -753,6 +762,11 @@ module.exports = {
     }
 
     if (sub === 'invites') {
+      try {
+        const liveInvites = await guild.invites.fetch().catch(() => null);
+        if (liveInvites) db.syncGuildInvitesFromApi(guild.id, liveInvites);
+      } catch (e) {}
+
       let activeKey = (invoked === 'lb' || invoked === 'leaderboard') ? (arg1 || 'lifetime') : (arg0 || 'lifetime');
       if (!WINDOWS[activeKey]) activeKey = 'lifetime';
       let page = 1;

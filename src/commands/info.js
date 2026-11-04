@@ -237,15 +237,34 @@ module.exports = {
       const reason = args.join(' ') || 'I am afk :)';
       const authorId = author.id;
 
+      // 1. Save original nickname in DB and change name to [AFK] <oldName>
+      let originalNickname = null;
+      let nickChanged = false;
+      if (message.member) {
+        originalNickname = message.member.nickname || null;
+        const currentDisplayName = originalNickname || message.member.displayName || author.username;
+        if (!currentDisplayName.startsWith('[AFK]')) {
+          const afkNick = `[AFK] ${currentDisplayName}`.slice(0, 32);
+          try {
+            await message.member.setNickname(afkNick, 'AFK Status Set');
+            nickChanged = true;
+          } catch (e) {
+            // Ignored if bot lacks Manage Nicknames or member is Server Owner / higher role
+          }
+        }
+      }
+
       const afkData = {
         reason,
         timestamp: Date.now(),
         scope: 'global',
         guildId: guild.id,
-        notifyDM: true
+        notifyDM: true,
+        oldNickname: originalNickname
       };
 
       afkStore.set(authorId, afkData);
+      db.setAfk(authorId, afkData);
 
       function buildAfkEmbed(data) {
         const scopeText = data.scope === 'global' ? 'Global' : 'Server Only';
@@ -265,7 +284,7 @@ module.exports = {
 
         return createStyledEmbed({
           title: `${emojis.SUCCESS} AFK Status Configured`,
-          subtitle: `<@${authorId}>, you are now marked as AFK.`,
+          subtitle: `<@${authorId}>, you are now marked as AFK.${nickChanged ? ' Nickname updated to [AFK].' : ''}`,
           description: boxText,
           requestedBy: author,
           clientUser
@@ -273,27 +292,42 @@ module.exports = {
       }
 
       function buildAfkButtons(data) {
-        const row1 = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId(`afk_scope_global_${authorId}`)
-            .setLabel('🌐 Global AFK')
-            .setStyle(data.scope === 'global' ? ButtonStyle.Success : ButtonStyle.Secondary),
-          new ButtonBuilder()
-            .setCustomId(`afk_scope_server_${authorId}`)
-            .setLabel('<a:welcome_animated:1537179700349243402> Server Only')
-            .setStyle(data.scope === 'server' ? ButtonStyle.Primary : ButtonStyle.Secondary)
-        );
+        const btnGlobal = new ButtonBuilder()
+          .setCustomId(`afk_scope_global_${authorId}`)
+          .setEmoji('🌐')
+          .setLabel('Global AFK')
+          .setStyle(data.scope === 'global' ? ButtonStyle.Success : ButtonStyle.Secondary);
 
-        const row2 = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId(`afk_dm_enable_${authorId}`)
-            .setLabel('<a:signal_animated:1537177512365260911> Enable DM Mention')
-            .setStyle(data.notifyDM ? ButtonStyle.Success : ButtonStyle.Secondary),
-          new ButtonBuilder()
-            .setCustomId(`afk_dm_disable_${authorId}`)
-            .setLabel('🔕 Disable DM Mention')
-            .setStyle(!data.notifyDM ? ButtonStyle.Danger : ButtonStyle.Secondary)
-        );
+        const btnServer = new ButtonBuilder()
+          .setCustomId(`afk_scope_server_${authorId}`)
+          .setLabel('Server Only')
+          .setStyle(data.scope === 'server' ? ButtonStyle.Primary : ButtonStyle.Secondary);
+
+        try {
+          btnServer.setEmoji('1537179700349243402');
+        } catch (e) {
+          btnServer.setEmoji('🏠');
+        }
+
+        const btnDmEnable = new ButtonBuilder()
+          .setCustomId(`afk_dm_enable_${authorId}`)
+          .setLabel('Enable DM Mention')
+          .setStyle(data.notifyDM ? ButtonStyle.Success : ButtonStyle.Secondary);
+
+        try {
+          btnDmEnable.setEmoji('1537177512365260911');
+        } catch (e) {
+          btnDmEnable.setEmoji('🔔');
+        }
+
+        const btnDmDisable = new ButtonBuilder()
+          .setCustomId(`afk_dm_disable_${authorId}`)
+          .setEmoji('🔕')
+          .setLabel('Disable DM Mention')
+          .setStyle(!data.notifyDM ? ButtonStyle.Danger : ButtonStyle.Secondary);
+
+        const row1 = new ActionRowBuilder().addComponents(btnGlobal, btnServer);
+        const row2 = new ActionRowBuilder().addComponents(btnDmEnable, btnDmDisable);
 
         return [row1, row2];
       }
@@ -314,18 +348,22 @@ module.exports = {
         if (i.customId.startsWith('afk_scope_global_')) {
           curData.scope = 'global';
           afkStore.set(authorId, curData);
+          db.setAfk(authorId, curData);
           await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
         } else if (i.customId.startsWith('afk_scope_server_')) {
           curData.scope = 'server';
           afkStore.set(authorId, curData);
+          db.setAfk(authorId, curData);
           await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
         } else if (i.customId.startsWith('afk_dm_enable_')) {
           curData.notifyDM = true;
           afkStore.set(authorId, curData);
+          db.setAfk(authorId, curData);
           await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
         } else if (i.customId.startsWith('afk_dm_disable_')) {
           curData.notifyDM = false;
           afkStore.set(authorId, curData);
+          db.setAfk(authorId, curData);
           await i.update({ embeds: [buildAfkEmbed(curData)], components: buildAfkButtons(curData) }).catch(() => {});
         }
       });

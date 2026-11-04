@@ -1418,7 +1418,164 @@ class ResilientDatabase {
     return this.data.voicemaster[guildId];
   }
 
+
+  // --- AFK PERSISTENCE ---
+  getAfk(userId) {
+    if (!this.data.afk) this.data.afk = {};
+    return this.data.afk[userId] || null;
+  }
+
+  getAllAfk() {
+    if (!this.data.afk) this.data.afk = {};
+    return this.data.afk;
+  }
+
+  setAfk(userId, afkData) {
+    if (!this.data.afk) this.data.afk = {};
+    this.data.afk[userId] = {
+      reason: afkData.reason || 'I am afk :)',
+      timestamp: afkData.timestamp || Date.now(),
+      scope: afkData.scope || 'global',
+      guildId: afkData.guildId || null,
+      notifyDM: afkData.notifyDM !== undefined ? afkData.notifyDM : true,
+      oldNickname: afkData.oldNickname !== undefined ? afkData.oldNickname : null
+    };
+    this.saveJSON();
+    return this.data.afk[userId];
+  }
+
+  clearAfk(userId) {
+    if (!this.data.afk) this.data.afk = {};
+    const previous = this.data.afk[userId] || null;
+    delete this.data.afk[userId];
+    this.saveJSON();
+    return previous;
+  }
+
+  // --- INVITE TRACKING & DETAILED LOGS PERSISTENCE ---
+  getInviteData(guildId) {
+    if (!this.data.guildInvites) this.data.guildInvites = {};
+    if (!this.data.guildInvites[guildId]) {
+      this.data.guildInvites[guildId] = {
+        recruiters: {},
+        memberHistory: {}
+      };
+    }
+    return this.data.guildInvites[guildId];
+  }
+
+  getRecruiterData(guildId, userId) {
+    const gData = this.getInviteData(guildId);
+    if (!gData.recruiters[userId]) {
+      gData.recruiters[userId] = {
+        userId,
+        invites: 0,
+        joins: 0,
+        leaves: 0,
+        fakes: 0,
+        rejoins: 0,
+        members: []
+      };
+    }
+    return gData.recruiters[userId];
+  }
+
+  recordInviteJoin(guildId, inviterId, memberUser, isFake = false, isRejoin = false) {
+    const gData = this.getInviteData(guildId);
+    const rec = this.getRecruiterData(guildId, inviterId);
+
+    rec.joins = (rec.joins || 0) + 1;
+    if (isFake) rec.fakes = (rec.fakes || 0) + 1;
+    if (isRejoin) rec.rejoins = (rec.rejoins || 0) + 1;
+
+    rec.invites = Math.max(0, (rec.joins || 0) - (rec.leaves || 0) - (rec.fakes || 0));
+
+    const existingIdx = (rec.members || []).findIndex(m => m.userId === memberUser.id);
+    const memberEntry = {
+      userId: memberUser.id,
+      tag: memberUser.tag || memberUser.username,
+      displayName: memberUser.displayName || memberUser.username,
+      joinedAt: Date.now(),
+      leftAt: null,
+      isFake: !!isFake,
+      isRejoin: !!isRejoin
+    };
+
+    if (existingIdx >= 0) {
+      rec.members[existingIdx] = memberEntry;
+    } else {
+      rec.members.unshift(memberEntry);
+    }
+
+    gData.memberHistory[memberUser.id] = {
+      inviterId,
+      joinedAt: Date.now(),
+      isFake,
+      isRejoin
+    };
+
+    const userDoc = this.getUser(inviterId, guildId);
+    userDoc.invites = rec.invites;
+    this.recordAnalyticsEvent(guildId, inviterId, 'invite', 1);
+
+    this.saveJSON();
+    return rec;
+  }
+
+  recordInviteLeave(guildId, leftUserId) {
+    const gData = this.getInviteData(guildId);
+    const history = gData.memberHistory[leftUserId];
+    if (!history || !history.inviterId) return null;
+
+    const inviterId = history.inviterId;
+    const rec = this.getRecruiterData(guildId, inviterId);
+
+    rec.leaves = (rec.leaves || 0) + 1;
+    rec.invites = Math.max(0, (rec.joins || 0) - (rec.leaves || 0) - (rec.fakes || 0));
+
+    const m = (rec.members || []).find(x => x.userId === leftUserId);
+    if (m) {
+      m.leftAt = Date.now();
+    }
+
+    history.leftAt = Date.now();
+
+    const userDoc = this.getUser(inviterId, guildId);
+    userDoc.invites = rec.invites;
+
+    this.saveJSON();
+    return rec;
+  }
+
+  syncGuildInvitesFromApi(guildId, discordInvites) {
+    const gData = this.getInviteData(guildId);
+    let changed = false;
+
+    if (discordInvites && typeof discordInvites.forEach === 'function') {
+      discordInvites.forEach(inv => {
+        if (inv.inviter && inv.uses > 0) {
+          const rec = this.getRecruiterData(guildId, inv.inviter.id);
+          if (inv.uses > (rec.joins || 0)) {
+            const diff = inv.uses - (rec.joins || 0);
+            rec.joins = inv.uses;
+            rec.invites = Math.max(0, rec.joins - (rec.leaves || 0) - (rec.fakes || 0));
+            const userDoc = this.getUser(inv.inviter.id, guildId);
+            userDoc.invites = rec.invites;
+            this.recordAnalyticsEvent(guildId, inv.inviter.id, 'invite', diff);
+            changed = true;
+          }
+        }
+      });
+    }
+
+    if (changed) {
+      this.saveJSON();
+    }
+    return gData;
+  }
+
 }
+
 
 const db = new ResilientDatabase();
 module.exports = db;
