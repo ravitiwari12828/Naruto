@@ -176,7 +176,9 @@ module.exports = {
 
     // 3. 👢 KICK
     if (invoked === 'kick') {
-      if (!author.permissions.has(PermissionsBitField.Flags.KickMembers)) return missingPerms(message, 'Kick Members');
+      if (!author.permissions.has(PermissionsBitField.Flags.KickMembers)) {
+        return message.reply(`${emojis.WARNING} You need **Kick Members** permission to kick members from the server. *(Tip: Use \`.pkick @user\` for playful fun kick!)*`);
+      }
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.KickMembers)) return botMissingPerms(message, 'Kick Members');
 
       const targetId = message.mentions.users.first()?.id || (args[0] && args[0].replace(/[<@!>]/g, '').match(/^\d{17,20}$/) ? args[0].replace(/[<@!>]/g, '') : null);

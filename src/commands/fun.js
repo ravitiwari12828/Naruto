@@ -299,7 +299,8 @@ const ACTIONS_MAP = {
   wave: '<a:wave_animated:1537179697421492304> waved at',
   boop: '👉 booped the nose of',
   snuggle: '🤗 snuggled with',
-  bully: '👿 playfully bullied'
+  bully: '👿 playfully bullied',
+  pkick: '🦵 playfully kicked'
 };
 
 module.exports = {
@@ -320,7 +321,7 @@ module.exports = {
     // Actions
     'cuddle', 'hug', 'kiss', 'lick', 'nom', 'pat', 'poke', 'slap', 'stare',
     'highfive', 'bite', 'greet', 'punch', 'handholding', 'tickle', 'kill',
-    'hold', 'pats', 'wave', 'boop', 'snuggle', 'bully'
+    'hold', 'pats', 'wave', 'boop', 'snuggle', 'bully', 'pkick'
   ],
 
   async execute(message, args) {
@@ -402,6 +403,7 @@ async function fetchActionAnimeGif(action) {
     snuggle: 'cuddle',
     bully: 'slap',
     kill: 'slap',
+    pkick: 'kick',
     stare: 'stare',
     highfive: 'highfive',
     bite: 'bite',
@@ -458,6 +460,7 @@ async function fetchActionAnimeGif(action) {
     cry: ['https://cdn.otakugifs.xyz/gifs/cry/0811e51b14a4805c.gif'],
     bite: ['https://cdn.otakugifs.xyz/gifs/bite/8b51a54b38d38a0f.gif'],
     punch: ['https://cdn.otakugifs.xyz/gifs/punch/95cf580459eb542b.gif'],
+    kick: ['https://cdn.otakugifs.xyz/gifs/kick/83a45c71cfb9ad6f.gif', 'https://cdn.purrbot.site/sfw/kick/gif/kick_001.gif'],
     wave: ['https://cdn.otakugifs.xyz/gifs/wave/8193f419842a537f.gif'],
     wink: ['https://cdn.otakugifs.xyz/gifs/wink/6b9b32c610996f4b.gif']
   };
