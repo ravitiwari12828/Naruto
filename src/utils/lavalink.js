@@ -6,36 +6,32 @@ let lavalink = null;
 let _handleAutoplay = null;
 
 function initLavalink(client) {
+  const nodes = [
+    {
+      id: 'visihost-node-main',
+      host: process.env.LAVALINK_HOST?.trim() || 'noida8.visihost.in',
+      port: parseInt(process.env.LAVALINK_PORT) || 25648,
+      authorization: process.env.LAVALINK_PASSWORD?.trim() || 'SynnIsLob',
+      secure: process.env.LAVALINK_SECURE === 'true',
+      retryAmount: 15,
+      retryDelay: 5000
+    }
+  ];
+
+  if (process.env.BACKUP_LAVALINK_HOST && process.env.BACKUP_LAVALINK_HOST.trim()) {
+    nodes.push({
+      id: 'backup-node',
+      host: process.env.BACKUP_LAVALINK_HOST.trim(),
+      port: parseInt(process.env.BACKUP_LAVALINK_PORT) || 23100,
+      authorization: process.env.BACKUP_LAVALINK_PASSWORD || 'kaalontop',
+      secure: String(process.env.BACKUP_LAVALINK_SECURE).toLowerCase() === 'true',
+      retryAmount: 2,
+      retryDelay: 5000
+    });
+  }
+
   lavalink = new LavalinkManager({
-    nodes: [
-      {
-        id: 'visihost-node-main',
-        host: process.env.LAVALINK_HOST?.trim() || 'noida8.visihost.in',
-        port: parseInt(process.env.LAVALINK_PORT) || 25648,
-        authorization: process.env.LAVALINK_PASSWORD?.trim() || 'SynnIsLob',
-        secure: process.env.LAVALINK_SECURE === 'true',
-        retryAmount: 15,
-        retryDelay: 5000
-      },
-      {
-        id: 'kaal-node-backup',
-        host: process.env.BACKUP_LAVALINK_HOST || 'us.wlfkaal.store',
-        port: parseInt(process.env.BACKUP_LAVALINK_PORT) || 23100,
-        authorization: process.env.BACKUP_LAVALINK_PASSWORD || 'kaalontop',
-        secure: String(process.env.BACKUP_LAVALINK_SECURE).toLowerCase() === 'true',
-        retryAmount: 3,
-        retryDelay: 5000
-      },
-      {
-        id: 'synn-node-backup',
-        host: '92.119.165.177',
-        port: 8540,
-        authorization: 'Iloveher',
-        secure: false,
-        retryAmount: 2,
-        retryDelay: 5000
-      }
-    ],
+    nodes,
     sendToShard: (guildId, payload) => {
       try {
         const guild = client.guilds.cache.get(guildId);
