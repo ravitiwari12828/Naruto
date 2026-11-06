@@ -4148,20 +4148,17 @@ client.on('messageCreate', async (message) => {
 
         const cleanTrigger = ar.trigger.toLowerCase().trim();
 
-        if (contentLower.includes(cleanTrigger)) {
+        const triggerUserId = cleanTrigger.match(/\d{17,21}/)?.[0];
+        const isMatched = contentLower.includes(cleanTrigger) || (triggerUserId && (message.author.id === triggerUserId || message.mentions.users.has(triggerUserId)));
 
-          const reactionTarget = emojis.resolveEmojiForReaction ? emojis.resolveEmojiForReaction(client, message.guild, ar.emoji) : ar.emoji;
-
-          if (reactionTarget) {
-
-            message.react(reactionTarget).catch(err => {
-
-              console.error(`[Autoreact Error] Failed to react with "${ar.emoji}":`, err.message);
-
-            });
-
+        if (isMatched) {
+          const emojiTokens = emojis.parseEmojisList ? emojis.parseEmojisList(ar.emoji) : [ar.emoji];
+          for (const rawToken of emojiTokens) {
+            const reactionTarget = emojis.resolveEmojiForReaction ? emojis.resolveEmojiForReaction(client, message.guild, rawToken) : rawToken;
+            if (reactionTarget) {
+              message.react(reactionTarget).catch(() => {});
+            }
           }
-
         }
 
       }

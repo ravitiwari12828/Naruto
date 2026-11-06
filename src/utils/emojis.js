@@ -891,7 +891,59 @@ const FALLBACK_MAP = {
   fire: '<a:fire_animated:1537179571697352774>'
 };
 
+
+function resolveEmojiForReaction(client, guild, emojiInput) {
+  if (!emojiInput || typeof emojiInput !== 'string') return null;
+  const trimmed = emojiInput.trim();
+
+  // 1. Custom emoji format: <:name:id> or <a:name:id>
+  const customMatch = trimmed.match(/^<a?:([a-zA-Z0-9_]+):(\d{17,21})>$/);
+  if (customMatch) {
+    const emojiId = customMatch[2];
+    const found = (guild && guild.emojis?.cache.get(emojiId)) || (client && client.emojis?.cache.get(emojiId));
+    if (found) return found.id;
+    return emojiId;
+  }
+
+  // 2. Just snowflake ID: \d{17,21}
+  if (/^\d{17,21}$/.test(trimmed)) {
+    const found = (guild && guild.emojis?.cache.get(trimmed)) || (client && client.emojis?.cache.get(trimmed));
+    if (found) return found.id;
+    return trimmed;
+  }
+
+  // 3. Emoji name or colons: :name: or name
+  const cleanName = trimmed.replace(/^:+|:+$/g, '');
+  if (cleanName) {
+    const found = (guild && guild.emojis?.cache.find(e => e.name.toLowerCase() === cleanName.toLowerCase())) ||
+                  (client && client.emojis?.cache.find(e => e.name.toLowerCase() === cleanName.toLowerCase()));
+    if (found) return found.id;
+  }
+
+  // 4. Standard Unicode Emoji
+  const emojiRegex = /(\p{Extended_Pictographic}|\p{Emoji_Presentation})/u;
+  if (emojiRegex.test(trimmed)) {
+    return trimmed;
+  }
+
+  return trimmed;
+}
+
+function parseEmojisList(input) {
+  if (!input || typeof input !== 'string') return [];
+  const customMatches = input.match(/<a?:[a-zA-Z0-9_]+:\d{17,21}>/g) || [];
+  let remaining = input;
+  for (const m of customMatches) {
+    remaining = remaining.replace(m, ' ');
+  }
+  const unicodeMatches = remaining.match(/\p{Extended_Pictographic}/gu) || [];
+  const all = [...customMatches, ...unicodeMatches];
+  return all.length > 0 ? all : input.trim().split(/\s+/).filter(Boolean);
+}
+
 const baseExports = {
+  resolveEmojiForReaction,
+  parseEmojisList,
   CUSTOM,
   EMOJI_IDS,
   RASENGAN: CUSTOM.rasengan_animated || '🌀',

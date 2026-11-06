@@ -31,7 +31,8 @@ module.exports = {
           return message.reply(`${emojis.WARNING} Usage: \`.react add <triggerWord> <emoji>\``);
         }
 
-        const validEmoji = emojis.resolveEmojiForReaction ? emojis.resolveEmojiForReaction(message.client, message.guild, emojiInput) : emojiInput;
+        const tokens = emojis.parseEmojisList ? emojis.parseEmojisList(emojiInput) : [emojiInput];
+        const validEmoji = tokens.length > 0 && tokens.every(t => emojis.resolveEmojiForReaction(message.client, message.guild, t));
         if (!validEmoji) {
           return message.reply(`${emojis.WARNING} Could not resolve emoji **${emojiInput}**. Please use a standard emoji (e.g. ❤️, <a:fire_animated:1537179571697352774>, 🚶‍♂️) or a custom emoji from a server this bot is in.`);
         }
