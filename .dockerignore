@@ -1,0 +1,23 @@
+# Environment secrets - NEVER push this
+.env
+
+# Node modules (installed by npm install on server)
+node_modules/
+
+# npm lockfile — each environment manages its own (prevents git pull conflicts on Pterodactyl)
+package-lock.json
+
+# SQLite database files (data persists on server)
+data/
+
+# Python scripts (local tooling only)
+*.py
+crop_emojis.py
+generate_all_exact_emojis.py
+generate_missing_single_emojis.py
+
+# Assets (local only)
+/assets/
+
+# Logs
+*.log
