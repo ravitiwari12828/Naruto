@@ -30,7 +30,7 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const statusMsg = await message.channel.send(`<a:hourglass_animated:1537179590982631575> **Building Konoha Shinobi Support Server Architecture...**`);
+    const statusMsg = await message.channel.send(`⏳ **Building Konoha Shinobi Support Server Architecture...**`);
 
     try {
       // ─────────────────────────────────────────
@@ -251,7 +251,7 @@ module.exports = {
       // POPULATE EMBEDS & TICKET PANEL
       // ─────────────────────────────────────────
       const rulesEmbed = createStyledEmbed({
-        title: `<a:scroll_animated:1537179663791693844> Konoha Shinobi Support Headquarters Rules`,
+        title: `📜 Konoha Shinobi Support Headquarters Rules`,
         subtitle: `Official Village Directives & Community Guidelines`,
         description:
           `1. **Respect Fellow Shinobi**: Courtesy is mandatory across all channels.\n` +
@@ -279,14 +279,14 @@ module.exports = {
         { id: 'cat_support', name: 'General Support', emoji: '🎫', description: 'Need help or general assistance?' },
         { id: 'cat_promo', name: 'Promotion', emoji: '📢', description: 'Inquire about promotional deals' },
         { id: 'cat_report', name: 'Report', emoji: '🚨', description: 'Report a user or server violation' },
-        { id: 'cat_reward', name: 'Reward', emoji: '<a:gift_animated:1537179583064055931>', description: 'Claim your event or activity rewards' },
+        { id: 'cat_reward', name: 'Reward', emoji: '🎁', description: 'Claim your event or activity rewards' },
         { id: 'cat_staff', name: 'Staff Apply', emoji: '💼', description: 'Apply for staff position' },
         { id: 'cat_server_promo', name: 'Server Promo', emoji: '🌐', description: 'Request server cross-promotions' }
       ];
 
       const ticketPanelEmbed = new EmbedBuilder()
         .setColor(0x00FFBB)
-        .setTitle(`<a:tickety_animated:1537177533961732106> ${guild.name} Private Support Desk`)
+        .setTitle(`🎫 ${guild.name} Private Support Desk`)
         .setDescription(
           `Welcome to **${guild.name}** Support Center!\n\n` +
           `Select a category from the dropdown menu below to open a private support ticket.\n\n` +
@@ -314,17 +314,17 @@ module.exports = {
 
       // Final Success Message
       const completeEmbed = createStyledEmbed({
-        title: `<a:tada_party_animated:1537179689381134356> Konoha Shinobi Support Server Built Successfully!`,
+        title: `🎉 Konoha Shinobi Support Server Built Successfully!`,
         subtitle: `9 Categories, 25+ Styled Channels & 6 Custom Roles Deployed`,
         description:
           `**Custom Created Roles:**\n` +
           `• <@&${ownerRole.id}> | <@&${staffRole.id}> | <@&${ticketStaffRole.id}>\n` +
           `• <@&${vipRole.id}> | <@&${premiumRole.id}> | <@&${noPrefixRole.id}>\n\n` +
           `**Deployed Sections:**\n` +
-          `• <a:scroll_animated:1537179663791693844> <#${aboutChan.id}> & <#${aboutPremium.id}>\n` +
-          `• <a:tickety_animated:1537177533961732106> <#${ticketChan.id}> with live Interactive Support Ticket Panel\n` +
-          `• <a:rank_animated:1537179656090943538> Locked VIP, Premium & No-Prefix Sanctuary\n` +
-          `• <a:key_lock_animated:1537179601493561404> Locked Staff & Owner Headquarters`,
+          `• 📜 <#${aboutChan.id}> & <#${aboutPremium.id}>\n` +
+          `• 🎫 <#${ticketChan.id}> with live Interactive Support Ticket Panel\n` +
+          `• 🏆 Locked VIP, Premium & No-Prefix Sanctuary\n` +
+          `• 🔒 Locked Staff & Owner Headquarters`,
         requestedBy: author,
         clientUser
       });

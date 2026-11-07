@@ -226,16 +226,16 @@ const NARUTO_OST = {
 function buildMusicPlayerEmbed(track, player) {
   return new EmbedBuilder()
     .setColor(0xFF007F)
-    .setTitle(`${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} Now Playing`)
+    .setTitle(`${emojis.MUSIC || '🎵'} Now Playing`)
     .setFooter({ text: '• Currently streaming in voice channel' });
 }
 
 function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
   const isPrem = (guildId && isGuildPremium(guildId)) || (author && isUserPremium(author.id));
   const maxQueue = isPrem ? 200 : 50;
-  const queueType = isPrem ? 'Premium Tier <a:sparkles_animated:1537179684175872171>' : 'Standard Tier';
-  const statusText = isPrem ? 'Premium active <a:crown_animated:1537177361093500968>' : 'Free Tier (50 max)';
-  const footerNote = isPrem ? '*Premium features unlocked <a:rank_animated:1537179656090943538>*' : '*Upgrade to Premium for 200 max queue*';
+  const queueType = isPrem ? 'Premium Tier ✨' : 'Standard Tier';
+  const statusText = isPrem ? 'Premium active 👑' : 'Free Tier (50 max)';
+  const footerNote = isPrem ? '*Premium features unlocked 🏆*' : '*Upgrade to Premium for 200 max queue*';
 
   const title = track?.info?.title || 'Unknown Track';
   const artist = track?.info?.author || 'Unknown Artist';
@@ -245,21 +245,21 @@ function buildAddedToQueueEmbed(track, position, author, guildId, queueLength) {
 
   return new EmbedBuilder()
     .setColor(isPrem ? 0x7289DA : 0xFF007F)
-    .setTitle(`${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} Added to Queue`)
+    .setTitle(`${emojis.MUSIC || '🎵'} Added to Queue`)
     .setThumbnail(artworkUrl)
     .setDescription(
-      `### ${emojis.SPARKLES || '<a:sparkles_animated:1537179684175872171>'} Track Information\n\n` +
-      `• ${emojis.MUSIC || '<a:musicplayer_animated:1537177445428633762>'} **Title:** ${title}\n` +
+      `### ${emojis.SPARKLES || '✨'} Track Information\n\n` +
+      `• ${emojis.MUSIC || '🎵'} **Title:** ${title}\n` +
       `• ${emojis.AN_LYRICS || '🎤'} **Artist:** ${artist}\n` +
       `• ${emojis.AN_LOOP || '⏱️'} **Duration:** \`${durationStr}\`\n` +
-      `• ${emojis.ANALYTICS_ZAP || '<a:rapid_animated:1537177482006896692>'} **Status:** Position #${position}\n\n` +
+      `• ${emojis.ANALYTICS_ZAP || '⚡'} **Status:** Position #${position}\n\n` +
       `*Track has been queued successfully*\n\n` +
       `---\n\n` +
-      `### ${emojis.STATS || '<a:chart_animated:1537179539514462308>'} Queue Information\n\n` +
-      `• ${emojis.AN_STAR || '<a:target_animated:1537179692174545037>'} **Position:** #${position}\n` +
-      `• ${emojis.OWNER_CROWN || '<a:crown_animated:1537177361093500968>'} **Queue Type:** ${queueType}\n` +
-      `• ${emojis.ANALYTICS_ZAP || '<a:chart_animated:1537179539514462308>'} **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
-      `• ${emojis.AN_STAR || '<a:sparkles_animated:1537179684175872171>'} **Status:** ${statusText}\n\n` +
+      `### ${emojis.STATS || '📊'} Queue Information\n\n` +
+      `• ${emojis.AN_STAR || '🎯'} **Position:** #${position}\n` +
+      `• ${emojis.OWNER_CROWN || '👑'} **Queue Type:** ${queueType}\n` +
+      `• ${emojis.ANALYTICS_ZAP || '📊'} **Usage:** \`${queueLength}/${maxQueue} songs\`\n` +
+      `• ${emojis.AN_STAR || '✨'} **Status:** ${statusText}\n\n` +
       `${footerNote}`
     )
     .setTimestamp();
@@ -526,7 +526,7 @@ module.exports = {
                   if (!player.playing && !player.paused) {
                     await player.play();
                   }
-                  return message.reply(`<a:musicplayer_animated:1537177445428633762> **Queued Spotify Playlist/Album:** Added **${queuedTracks.length} tracks** from **${spotifyData.title}** to queue! (Queue Usage: \`${player.queue.tracks.length}/${maxQueue}\`)`);
+                  return message.reply(`🎵 **Queued Spotify Playlist/Album:** Added **${queuedTracks.length} tracks** from **${spotifyData.title}** to queue! (Queue Usage: \`${player.queue.tracks.length}/${maxQueue}\`)`);
                 }
               }
             }
@@ -577,7 +577,7 @@ module.exports = {
               await player.play();
             }
 
-            return message.reply(`<a:musicplayer_animated:1537177445428633762> **Queued Playlist:** Added **${tracksToAdd.length} tracks** from **${playlistName}** to queue! (Queue Usage: \`${player.queue.tracks.length}/${maxQueue}\`)`);
+            return message.reply(`🎵 **Queued Playlist:** Added **${tracksToAdd.length} tracks** from **${playlistName}** to queue! (Queue Usage: \`${player.queue.tracks.length}/${maxQueue}\`)`);
           }
 
           // Single Track Playback
@@ -631,7 +631,7 @@ module.exports = {
           } else {
             player.paused = true;
           }
-          return message.reply('<a:pause_animated:1537177460469407887> **Paused** music playback.');
+          return message.reply('⏸️ **Paused** music playback.');
         } else {
           if (typeof player.resume === 'function') {
             await player.resume();
@@ -640,7 +640,7 @@ module.exports = {
           } else {
             player.paused = false;
           }
-          return message.reply('<a:playbuttton_animated:1537177472771166360> **Resumed** music playback.');
+          return message.reply('▶️ **Resumed** music playback.');
         }
       } catch (err) {
         console.error('[Music Pause/Resume Error]', err);
@@ -653,7 +653,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player || (!player.playing && !player.paused)) return message.reply(`${emojis.WARNING} No track currently playing.`);
       await player.skip();
-      return message.reply('<a:skip_animated:1537179678555770920> **Skipped** to next track.');
+      return message.reply('⏭️ **Skipped** to next track.');
     }
 
     if (['previous', 'prev', 'replay'].includes(invoked)) {
@@ -663,7 +663,7 @@ module.exports = {
         const prevTrack = player.queue.previous[player.queue.previous.length - 1];
         await player.queue.add(prevTrack, 0);
         await player.skip();
-        return message.reply(`<a:skip_animated:1537179678555770920> **Replaying Previous Track:** ${prevTrack.info.title}`);
+        return message.reply(`⏭️ **Replaying Previous Track:** ${prevTrack.info.title}`);
       }
       await player.seek(0);
       return message.reply('⏮️ Replayed current track from beginning.');
@@ -692,7 +692,7 @@ module.exports = {
         const conn = getVoiceConnection(guildId);
         if (conn) conn.destroy();
       } catch (e) {}
-      return message.reply('<a:stop_animated:1537179686663233536> Music player stopped, queue cleared, and disconnected.');
+      return message.reply('⏹️ Music player stopped, queue cleared, and disconnected.');
     }
 
     // 5. JOIN / CONNECT
@@ -740,11 +740,11 @@ module.exports = {
           .setTitle('Connected successfully!')
           .setThumbnail(botAvatar)
           .setDescription(
-            `• <a:accept_animated:1537177319603703969> **Channel:** <#${channel.id}>
+            `• ✅ **Channel:** <#${channel.id}>
 ` +
-            `• <a:membercard_animated:1537177436146638993> **Members:** ${memberCount} member${memberCount === 1 ? '' : 's'}
+            `• 👤 **Members:** ${memberCount} member${memberCount === 1 ? '' : 's'}
 ` +
-            `• <a:openfolder_animated:1537177452936437760> **Category:** [ <a:musicplayer_animated:1537177445428633762> - ${categoryName} ]
+            `• 📁 **Category:** [ 🎵 - ${categoryName} ]
 
 ` +
             `*Use a play command to start music!*`
@@ -767,7 +767,7 @@ module.exports = {
       const current = player.queue.current;
       const upcoming = player.queue.tracks;
 
-      let desc = `**Now Playing:**\n<a:musicplayer_animated:1537177445428633762> **[${current?.info?.title || 'Unknown'}](${current?.info?.uri || 'https://spotify.com'})** — \`${formatDuration(current?.info?.duration)}\`\n\n`;
+      let desc = `**Now Playing:**\n🎵 **[${current?.info?.title || 'Unknown'}](${current?.info?.uri || 'https://spotify.com'})** — \`${formatDuration(current?.info?.duration)}\`\n\n`;
 
       if (upcoming.length) {
         desc += `**Up Next (${upcoming.length} songs):**\n`;
@@ -779,7 +779,7 @@ module.exports = {
       }
 
       const queueEmbed = createStyledEmbed({
-        title: `<a:musicplayer_animated:1537177445428633762> Music Queue — ${message.guild.name}`,
+        title: `🎵 Music Queue — ${message.guild.name}`,
         description: desc,
         requestedBy: author,
         clientUser
@@ -804,10 +804,10 @@ module.exports = {
 
       if (player.repeatMode === 'off') {
         player.setRepeatMode('track');
-        return message.reply('<a:sparkles_animated:1537179684175872171> **Loop Mode:** Track Repeat (Current song will repeat).');
+        return message.reply('✨ **Loop Mode:** Track Repeat (Current song will repeat).');
       } else if (player.repeatMode === 'track') {
         player.setRepeatMode('queue');
-        return message.reply('<a:sparkles_animated:1537179684175872171> **Loop Mode:** Queue Repeat (Entire queue will repeat).');
+        return message.reply('✨ **Loop Mode:** Queue Repeat (Entire queue will repeat).');
       } else {
         player.setRepeatMode('off');
         return message.reply('➡️ **Loop Mode:** Disabled (Normal playback).');
@@ -819,7 +819,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player || !player.queue.tracks.length) return message.reply(`${emojis.WARNING} Queue is empty or has only 1 track.`);
       player.queue.shuffle();
-      return message.reply('<a:membercard_animated:1537177436146638993> **Shuffled** the queue randomly!');
+      return message.reply('👤 **Shuffled** the queue randomly!');
     }
 
     // 10. CLEAR QUEUE (.clear)
@@ -827,7 +827,7 @@ module.exports = {
       const player = lavalink?.getPlayer(guildId);
       if (!player) return message.reply(`${emojis.WARNING} No active music player.`);
       player.queue.clear();
-      return message.reply('<a:sparkles_animated:1537179684175872171> **Cleared** all upcoming songs in queue.');
+      return message.reply('✨ **Cleared** all upcoming songs in queue.');
     }
 
     // 11. REMOVE / MOVE (.remove 3, .move 5 2)
@@ -839,7 +839,7 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Invalid song index. Usage: \`.remove <position>\` (1-${player.queue.tracks.length}).`);
       }
       const removed = player.queue.tracks.splice(idx, 1)[0];
-      return message.reply(`<a:stop_animated:1537179686663233536> Removed **${removed.info.title}** from queue.`);
+      return message.reply(`⏹️ Removed **${removed.info.title}** from queue.`);
     }
 
     if (['move'].includes(invoked)) {
@@ -852,17 +852,17 @@ module.exports = {
       }
       const item = player.queue.tracks.splice(from, 1)[0];
       player.queue.tracks.splice(to, 0, item);
-      return message.reply(`<a:openfolder_animated:1537177452936437760> Moved **${item.info.title}** to position **#${to + 1}**.`);
+      return message.reply(`📁 Moved **${item.info.title}** to position **#${to + 1}**.`);
     }
 
     // 12. VOLUME CONTROL (.volume 1-200)
     if (['vol', 'volume'].includes(invoked)) {
       const volNum = parseInt(args[0]);
-      if (isNaN(volNum)) return message.reply(`<a:volumeup_animated:1537177548121968650> Usage: \`.volume <1-200>\` (e.g. \`.volume 120\`).`);
+      if (isNaN(volNum)) return message.reply(`🔊 Usage: \`.volume <1-200>\` (e.g. \`.volume 120\`).`);
       const targetVol = Math.min(Math.max(1, volNum), 200);
       const player = lavalink?.getPlayer(guildId);
       if (player) await player.setVolume(targetVol);
-      return message.reply(`<a:volumeup_animated:1537177548121968650> <a:volumeup_animated:1537177548121968650> Volume set to **${targetVol}%**.`);
+      return message.reply(`🔊 🔊 Volume set to **${targetVol}%**.`);
     }
 
     // 13. SEEK COMMAND (.seek 1:30)
@@ -938,10 +938,10 @@ module.exports = {
       if (!voiceState?.channel) return message.reply(`${emojis.WARNING} Join the target VC to enable 24/7 AFK mode!`);
       if (afkStore.has(guildId)) {
         afkStore.delete(guildId);
-        return message.reply(`<a:wrong_animated:1537179702928875631> **24/7 Mode Disabled**: Bot will auto-disconnect when VC is empty.`);
+        return message.reply(`❌ **24/7 Mode Disabled**: Bot will auto-disconnect when VC is empty.`);
       } else {
         afkStore.set(guildId, { voiceChannelId: voiceState.channel.id, textChannelId: message.channel.id });
-        return message.reply(`<a:accept_animated:1537177319603703969> **24/7 Mode Enabled**: Bot will stay connected to **<#${voiceState.channel.id}>** 24/7!`);
+        return message.reply(`✅ **24/7 Mode Enabled**: Bot will stay connected to **<#${voiceState.channel.id}>** 24/7!`);
       }
     }
 
@@ -977,7 +977,7 @@ module.exports = {
         sendMusicCard(message.channel, player.queue.current, player).catch(() => {});
       }
 
-      const status = player.autoplay ? '<a:accept_animated:1537177319603703969> **ENABLED**' : '<a:wrong_animated:1537179702928875631> **DISABLED**';
+      const status = player.autoplay ? '✅ **ENABLED**' : '❌ **DISABLED**';
       return message.reply(`♾️ **Autoplay Mode:** ${status}! ${player.autoplay ? '(Auto-queuing 15 similar artist tracks continuously)' : ''}`);
     }
 
@@ -1033,7 +1033,7 @@ module.exports = {
         if (!player.playing && !player.paused) {
           await player.play();
         }
-        return message.reply(`<a:rank_animated:1537179656090943538> **Queued ${queuedCount} Favorite Songs** into queue!`);
+        return message.reply(`🏆 **Queued ${queuedCount} Favorite Songs** into queue!`);
       }
 
       const favs = db.getFavorites(author.id);
@@ -1049,11 +1049,11 @@ module.exports = {
     }
 
     const embed = createStyledEmbed({
-      title: `<a:musicplayer_animated:1537177445428633762> Music Player Suite & Control Panel`,
+      title: `🎵 Music Player Suite & Control Panel`,
       subtitle: `High-Fidelity Lavalink Music Control Suite`,
       description:
         `Welcome **${author.username}**! Below are the available **Music Player** commands.\n\n` +
-        `**<a:musicplayer_animated:1537177445428633762> Player Controls**\n` +
+        `**🎵 Player Controls**\n` +
         `\`\`\`\n` +
         `.play <song/URL> - Play song or YouTube/Spotify link\n` +
         `.pause / .resume - Pause or resume playback\n` +
@@ -1061,7 +1061,7 @@ module.exports = {
         `.stop / .clear   - Stop playback or clear queue\n` +
         `.volume <1-150>  - Set playback volume\n` +
         `\`\`\`\n\n` +
-        `**<a:musicplayer_animated:1537177445428633762> Queue & Track Info**\n` +
+        `**🎵 Queue & Track Info**\n` +
         `\`\`\`\n` +
         `.queue           - View server music queue\n` +
         `.nowplaying / .np- View currently playing song\n` +
@@ -1069,7 +1069,7 @@ module.exports = {
         `.shuffle         - Shuffle queue tracks\n` +
         `.seek <seconds>  - Seek to specific timestamp\n` +
         `\`\`\`\n\n` +
-        `**<a:sparkles_animated:1537179684175872171> Advanced Features**\n` +
+        `**✨ Advanced Features**\n` +
         `\`\`\`\n` +
         `.247             - Toggle 24/7 Voice Channel Stay\n` +
         `.autoplay        - Toggle smart autoplay recommendations\n` +

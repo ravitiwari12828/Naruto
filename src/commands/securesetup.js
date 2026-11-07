@@ -61,7 +61,7 @@ module.exports = {
         `*Click any button below to trigger immediate server protection setup!*`;
 
       return createStyledEmbed({
-        title: `${emojis.AN_SHIELD || emojis.SHIELD || '<a:security_animated:1537177499862171741>'} One-Click Server Security & Protection Setup`,
+        title: `${emojis.AN_SHIELD || emojis.SHIELD || '🛡️'} One-Click Server Security & Protection Setup`,
         subtitle: `Shinobi Defense Grid Wizard`,
         description,
         requestedBy: author,
@@ -74,17 +74,17 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId('setup_full_protect')
           .setLabel('Max Protection')
-          .setEmoji('<a:rapid_animated:1537177482006896692>')
+          .setEmoji('⚡')
           .setStyle(ButtonStyle.Success),
         new ButtonBuilder()
           .setCustomId('setup_antinuke')
           .setLabel('AntiNuke Grid')
-          .setEmoji('<a:security_animated:1537177499862171741>')
+          .setEmoji('🛡️')
           .setStyle(ButtonStyle.Primary),
         new ButtonBuilder()
           .setCustomId('setup_automod')
           .setLabel('AutoMod & AntiBot')
-          .setEmoji('<a:robot_animated:1537177494183088199>')
+          .setEmoji('🤖')
           .setStyle(ButtonStyle.Primary)
       );
 
@@ -92,7 +92,7 @@ module.exports = {
         new ButtonBuilder()
           .setCustomId('setup_log_channel')
           .setLabel('Security Logs')
-          .setEmoji('<a:scroll_animated:1537179663791693844>')
+          .setEmoji('📜')
           .setStyle(ButtonStyle.Secondary),
         new ButtonBuilder()
           .setCustomId('setup_panic_toggle')
@@ -121,7 +121,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: `${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Only the administrator who invoked \`.securesetup\` can use these buttons.`, flags: 64 });
+        return interaction.reply({ content: `${emojis.WARNING || '❌'} Only the administrator who invoked \`.securesetup\` can use these buttons.`, flags: 64 });
       }
 
       await interaction.deferUpdate();
@@ -167,7 +167,7 @@ module.exports = {
           } catch (e) {}
         }
 
-        actionStatus = `<a:rapid_animated:1537177482006896692> **Full Maximum Security Deployed!** AntiNuke (21 Filters), AutoMod, AntiBot, and <#${logChan?.id || 'channel'}> enabled!`;
+        actionStatus = `⚡ **Full Maximum Security Deployed!** AntiNuke (21 Filters), AutoMod, AntiBot, and <#${logChan?.id || 'channel'}> enabled!`;
       }
 
       else if (interaction.customId === 'setup_antinuke') {
@@ -205,12 +205,12 @@ module.exports = {
                 { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }
               ]
             });
-            actionStatus = `<a:scroll_animated:1537179663791693844> Security audit channel created: <#${logChan.id}>!`;
+            actionStatus = `📜 Security audit channel created: <#${logChan.id}>!`;
           } catch (e) {
             actionStatus = `${emojis.ERROR} Failed to create channel: ${e.message}`;
           }
         } else {
-          actionStatus = `<a:scroll_animated:1537179663791693844> Security channel already exists: <#${logChan.id}>`;
+          actionStatus = `📜 Security channel already exists: <#${logChan.id}>`;
         }
       }
 
@@ -219,7 +219,7 @@ module.exports = {
           const config = antinukeConfigs.get(guild.id) || { enabled: true, panicmode: false };
           config.panicmode = !config.panicmode;
           antinukeConfigs.set(guild.id, config);
-          actionStatus = config.panicmode ? `🚨 **PANIC LOCKDOWN ACTIVATED!**` : `<a:accept_animated:1537177319603703969> Panic Mode deactivated.`;
+          actionStatus = config.panicmode ? `🚨 **PANIC LOCKDOWN ACTIVATED!**` : `✅ Panic Mode deactivated.`;
         }
       }
 
@@ -232,7 +232,7 @@ module.exports = {
     });
     } catch (err) {
       console.error('[SecureSetup Command Error]', err);
-      return message.channel.send({ content: `<a:wrong_animated:1537179702928875631> Failed to send security setup menu: ${err.message}` }).catch(() => {});
+      return message.channel.send({ content: `❌ Failed to send security setup menu: ${err.message}` }).catch(() => {});
     }
   }
 };

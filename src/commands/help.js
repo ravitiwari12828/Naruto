@@ -9,31 +9,31 @@ const {
 } = require('../utils/panelRenderer');
 
 const EMOJI_MAP = {
-  antidox: '<a:security_animated:1537177499862171741>',
-  analytics: '<a:chart_animated:1537179539514462308>',
-  antinuke: '<a:antinuke_animated:1537447188823805972>',
-  autorole: '<a:settings_animated:1537177506170404905>',
-  automod: '<a:robot_animated:1537177494183088199>',
-  autoresponder: '<a:code_animated:1537177358912725033>',
-  backup: '<a:backup_animated:1537447192325922897>',
-  channel: '<a:hashtag_animated:1537177395537248276>',
-  economy: '<a:money_animated:1537177442672709707>',
-  fun: '<a:fun_animated:1537447200362070126>',
-  giveaway: '<a:gift_animated:1537179583064055931>',
-  info: '<a:infox_animated:1537177409428787251>',
-  level: '<a:rank_animated:1537179656090943538>',
-  mod: '<a:kick_animated:1537177415552602223>',
-  modmail: '<a:modmail_animated:1537447208553811999>',
-  music: '<a:musicplayer_animated:1537177445428633762>',
-  ninja: '<a:naruto_animated:1537179622024814733>',
-  priority: '<a:rocket_animated:1537179661371707402>',
-  profile: '<a:membercard_animated:1537177436146638993>',
-  reactionrole: '<a:add_animated:1537177324435283998>',
-  roles: '<a:crown_animated:1537177361093500968>',
-  stickynote: '<a:sticky_animated:1537447230007550062>',
-  ticket: '<a:tickety_animated:1537177533961732106>',
-  voice: '<a:microphone_animated:1537177439527112755>',
-  welcome: '<a:welcome_animated:1537179700349243402>'
+  antidox: '🛡️',
+  analytics: '📊',
+  antinuke: '🛡️',
+  autorole: '⚙️',
+  automod: '🤖',
+  autoresponder: '💻',
+  backup: '💾',
+  channel: '#️⃣',
+  economy: '💰',
+  fun: '🎭',
+  giveaway: '🎁',
+  info: 'ℹ️',
+  level: '🏆',
+  mod: '👢',
+  modmail: '📬',
+  music: '🎵',
+  ninja: '🍥',
+  priority: '🚀',
+  profile: '👤',
+  reactionrole: '➕',
+  roles: '👑',
+  stickynote: '📌',
+  ticket: '🎫',
+  voice: '🎤',
+  welcome: '👋'
 };
 
 function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanner) {
@@ -123,9 +123,9 @@ module.exports = {
           components: [dropdownRow, navRow]
         });
       } catch (sendErr) {
-        console.log(`<a:wrong_animated:1537179702928875631> [Help Panel Send Warning]: ${sendErr.message} - Retrying with fallback reply...`);
+        console.log(`❌ [Help Panel Send Warning]: ${sendErr.message} - Retrying with fallback reply...`);
         helpMessage = await message.reply({ embeds: [mainEmbed] }).catch(err => {
-          console.log(`<a:wrong_animated:1537179702928875631> [Help Panel Fallback Failed]: ${err.message}`);
+          console.log(`❌ [Help Panel Fallback Failed]: ${err.message}`);
           return null;
         });
       }
@@ -178,7 +178,7 @@ module.exports = {
     });
     } catch (err) {
       console.error('[Help Command Error]', err);
-      return message.channel.send({ content: `<a:wrong_animated:1537179702928875631> Failed to send help menu: ${err.message}` }).catch(() => {});
+      return message.channel.send({ content: `❌ Failed to send help menu: ${err.message}` }).catch(() => {});
     }
   }
 },

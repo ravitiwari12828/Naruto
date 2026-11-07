@@ -56,12 +56,12 @@ module.exports = {
     const eco = db.economy(message.guild.id, message.author.id);
     if (!bet || bet <= 0) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Provide a valid bet amount, e.g. \`.bj 100\`.`)],
+        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`❌ Provide a valid bet amount, e.g. \`.bj 100\`.`)],
       });
     }
     if (bet > eco.balance) {
       return message.reply({
-        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Insufficient wallet balance. Wallet: **${fmt(eco.balance)}** <a:dollar_animated:1537177379666006016>.`)],
+        embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`❌ Insufficient wallet balance. Wallet: **${fmt(eco.balance)}** 💵.`)],
       });
     }
 
@@ -109,7 +109,7 @@ module.exports = {
         new ButtonBuilder().setCustomId('bj_stand').setLabel('STAND').setEmoji('🛑').setStyle(ButtonStyle.Success),
       );
       if (canDouble && eco.balance >= bet * 2) {
-        r.addComponents(new ButtonBuilder().setCustomId('bj_double').setLabel('DOUBLE').setEmoji('<a:dollar_animated:1537177379666006016>').setStyle(ButtonStyle.Secondary));
+        r.addComponents(new ButtonBuilder().setCustomId('bj_double').setLabel('DOUBLE').setEmoji('💵').setStyle(ButtonStyle.Secondary));
       }
       return r;
     };
@@ -118,7 +118,7 @@ module.exports = {
       const winAmount = Math.floor(bet * 1.5);
       eco.balance += winAmount;
       db.setEconomy(message.guild.id, message.author.id, eco);
-      const initPayload = await renderPayload(true, `<a:accept_animated:1537177319603703969> **BLACKJACK!** You won **+${fmt(winAmount)}** Ryo!`, 'BLACKJACK!');
+      const initPayload = await renderPayload(true, `✅ **BLACKJACK!** You won **+${fmt(winAmount)}** Ryo!`, 'BLACKJACK!');
       return message.channel.send(initPayload);
     }
 
@@ -136,23 +136,23 @@ module.exports = {
       let statusStr = 'END GAME';
       if (playerValue > 21) {
         delta = -finalBet;
-        resultText = `<a:wrong_animated:1537179702928875631> **Bust (${playerValue})!** You lost **-${fmt(finalBet)}** Ryo.`;
+        resultText = `❌ **Bust (${playerValue})!** You lost **-${fmt(finalBet)}** Ryo.`;
         statusStr = 'PLAYER BUST';
       } else if (dealerValue > 21) {
         delta = finalBet;
-        resultText = `<a:accept_animated:1537177319603703969> **Dealer Bust (${dealerValue})!** You won **+${fmt(finalBet)}** Ryo!`;
+        resultText = `✅ **Dealer Bust (${dealerValue})!** You won **+${fmt(finalBet)}** Ryo!`;
         statusStr = 'DEALER BUST';
       } else if (playerValue > dealerValue) {
         delta = finalBet;
-        resultText = `<a:accept_animated:1537177319603703969> **You Won!** (${playerValue} vs ${dealerValue}) You won **+${fmt(finalBet)}** Ryo!`;
+        resultText = `✅ **You Won!** (${playerValue} vs ${dealerValue}) You won **+${fmt(finalBet)}** Ryo!`;
         statusStr = 'YOU WON!';
       } else if (playerValue < dealerValue) {
         delta = -finalBet;
-        resultText = `<a:wrong_animated:1537179702928875631> **Dealer Won!** (${dealerValue} vs ${playerValue}) You lost **-${fmt(finalBet)}** Ryo.`;
+        resultText = `❌ **Dealer Won!** (${dealerValue} vs ${playerValue}) You lost **-${fmt(finalBet)}** Ryo.`;
         statusStr = 'DEALER WON';
       } else {
         delta = 0;
-        resultText = `<a:infox_animated:1537177409428787251> **Push!** Both scored ${playerValue}. Bet returned.`;
+        resultText = `ℹ️ **Push!** Both scored ${playerValue}. Bet returned.`;
         statusStr = 'PUSH (TIE)';
       }
 
@@ -169,7 +169,7 @@ module.exports = {
     };
 
     collector.on('collect', async (i) => {
-      if (i.user.id !== message.author.id) return i.reply({ content: `<a:wrong_animated:1537179702928875631> Not your game.`, flags: 64 });
+      if (i.user.id !== message.author.id) return i.reply({ content: `❌ Not your game.`, flags: 64 });
 
       if (i.customId === 'bj_hit') {
         player.push(deck.pop());

@@ -45,17 +45,17 @@ module.exports = {
 
       if (action === 'add' && targetUser) {
         globalBotExtraOwners.add(targetUser.id);
-        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been added as a **Bot Extra Owner**!`);
+        return message.reply(`${emojis.SUCCESS || '✅'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been added as a **Bot Extra Owner**!`);
       }
 
       if ((action === 'remove' || action === 'del') && targetUser) {
         globalBotExtraOwners.delete(targetUser.id);
-        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been removed from **Bot Extra Owners**.`);
+        return message.reply(`${emojis.SUCCESS || '✅'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been removed from **Bot Extra Owners**.`);
       }
 
       const listStr = Array.from(globalBotExtraOwners).map((id, i) => `\`${i + 1}.\` <@${id}> (\`${id}\`)`).join('\n') || 'None assigned';
       const embed = createStyledEmbed({
-        title: `<a:crown_animated:1537177361093500968> Global Bot Extra Owners`,
+        title: `👑 Global Bot Extra Owners`,
         subtitle: `Global Bot Developers & System Owners`,
         description: `**Current Bot Extra Owners:**\n${listStr}\n\n**Usage:**\n\`.botextraowner add @user\`\n\`.botextraowner remove @user\``,
         requestedBy: author,
@@ -69,7 +69,7 @@ module.exports = {
     // ─────────────────────────────────────────
     const isServerOwner = guild.ownerId === author.id;
     if (!isServerOwner) {
-      return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Access Denied**: Only the **Server Owner** (<@${guild.ownerId}>) can manage Server Extra Owners for this guild!`);
+      return message.reply(`${emojis.WARNING || '❌'} **Access Denied**: Only the **Server Owner** (<@${guild.ownerId}>) can manage Server Extra Owners for this guild!`);
     }
 
     const action = sub;
@@ -80,7 +80,7 @@ module.exports = {
         config.extraOwners.add(targetUser.id);
         antinukeCmd.antinukeConfigs.set(guild.id, config);
       }
-      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been appointed as a **Server Extra Owner** for **${guild.name}**!`);
+      return message.reply(`${emojis.SUCCESS || '✅'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been appointed as a **Server Extra Owner** for **${guild.name}**!`);
     }
 
     if ((action === 'remove' || action === 'del') && targetUser) {
@@ -88,12 +88,12 @@ module.exports = {
         config.extraOwners.delete(targetUser.id);
         antinukeCmd.antinukeConfigs.set(guild.id, config);
       }
-      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been removed from **Server Extra Owners**.`);
+      return message.reply(`${emojis.SUCCESS || '✅'} **<@${targetUser.id}> (\`${targetUser.tag}\`)** has been removed from **Server Extra Owners**.`);
     }
 
     const serverList = config && config.extraOwners ? Array.from(config.extraOwners).map((id, i) => `\`${i + 1}.\` <@${id}> (\`${id}\`)`).join('\n') : `<@${guild.ownerId}> (Server Owner)`;
     const embed = createStyledEmbed({
-      title: `<a:crown_animated:1537177361093500968> Server Extra Owners — ${guild.name}`,
+      title: `👑 Server Extra Owners — ${guild.name}`,
       subtitle: `Guild Security Authority`,
       description: `**Server Owner:** <@${guild.ownerId}>\n\n**Appointed Server Extra Owners:**\n${serverList}\n\n**Usage:**\n\`.serverextraowner add @user\`\n\`.serverextraowner remove @user\``,
       requestedBy: author,

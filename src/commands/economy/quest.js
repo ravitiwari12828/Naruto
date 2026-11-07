@@ -32,12 +32,12 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(complete ? config.successColor : config.embedColor)
-      .setTitle(`${emojis.target || '<a:target_animated:1537179692174545037>'} Shinobi Daily Mission Quest`)
+      .setTitle(`${emojis.target || '🎯'} Shinobi Daily Mission Quest`)
       .setDescription(
-        `<a:scroll_animated:1537179663791693844> **Mission Goal:**\n` +
+        `📜 **Mission Goal:**\n` +
         `**${q.label}**\n\n` +
         `\`[${bar}]\` **${Math.min(q.progress, q.target)} / ${q.target}** (${Math.round((Math.min(q.progress, q.target) / q.target) * 100)}%)\n\n` +
-        `<a:money_animated:1537177442672709707> **Mission Reward:** **${fmt(q.reward)}** ${emojis.coin}`
+        `💰 **Mission Reward:** **${fmt(q.reward)}** ${emojis.coin}`
       )
       .setFooter({ text: complete ? (q.claimed ? 'Mission complete & claimed — check back tomorrow!' : 'Mission complete! Type .quest claim to collect your reward.') : 'Missions reset daily.' });
 

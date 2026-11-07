@@ -52,7 +52,7 @@ function getOrCreateTicketConfig(guildId) {
         { id: 'cat_support', name: 'General Support', emoji: emojis.OBJ_TICKETS || '🎫', description: 'Need help or general assistance?' },
         { id: 'cat_promo', name: 'Promotion', emoji: emojis.OBJ_GIVEAWAY || '📢', description: 'Inquire about promotional deals' },
         { id: 'cat_report', name: 'Report', emoji: emojis.OBJ_ANTINUKE || '🚨', description: 'Report a user or server violation' },
-        { id: 'cat_reward', name: 'Reward', emoji: emojis.OBJ_LEVEL || '<a:gift_animated:1537179583064055931>', description: 'Claim your event or activity rewards' },
+        { id: 'cat_reward', name: 'Reward', emoji: emojis.OBJ_LEVEL || '🎁', description: 'Claim your event or activity rewards' },
         { id: 'cat_staff', name: 'Staff Apply', emoji: emojis.OBJ_MOD || '💼', description: 'Apply for staff position' },
         { id: 'cat_server_promo', name: 'Server Promo', emoji: emojis.OBJ_ALL_MODULES || '🌐', description: 'Request server cross-promotions' }
       ]
@@ -193,7 +193,7 @@ function updateTicketStaffReminderTimer(client, channel, priorityText, claimedSt
       const staffUser = await client.users.fetch(claimedStaffId).catch(() => null);
       if (staffUser) {
         const embed = createStyledEmbed({
-          title: `<a:tickety_animated:1537177533961732106> Claimed Ticket Reminder`,
+          title: `🎫 Claimed Ticket Reminder`,
           description:
             `Hello **${staffUser.username}**! You claimed ticket **#${channel.name}** in **${channel.guild.name}**.\n\n` +
             `• **Priority:** \`${priorityText}\`\n` +
@@ -241,10 +241,10 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText = 'Low',
 
   const color = priorityColorMap[priorityText] || 0x57F287;
 
-  const ticketEmoji = emojis.TICKETS || '<a:tickety_animated:1537177533961732106>';
-  const profileEmoji = emojis.PROFILE || '<a:membercard_animated:1537177436146638993>';
-  const zapEmoji = emojis.ANALYTICS_ZAP || emojis.ZAP || '<a:rapid_animated:1537177482006896692>';
-  const crownEmoji = emojis.SPECIAL_ROLES || '<a:crown_animated:1537177361093500968>';
+  const ticketEmoji = emojis.TICKETS || '🎫';
+  const profileEmoji = emojis.PROFILE || '👤';
+  const zapEmoji = emojis.ANALYTICS_ZAP || emojis.ZAP || '⚡';
+  const crownEmoji = emojis.SPECIAL_ROLES || '👑';
   const anonEmoji = emojis.PROFILE || '🎭';
 
   return new EmbedBuilder()
@@ -269,10 +269,10 @@ function buildTicketEmbed(ticketNum, categoryName, opener, priorityText = 'Low',
 
 function buildTicketActionRows() {
   const row1 = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('ticket_claim_btn').setEmoji(emojis.OBJ_OWNER || '<a:crown_animated:1537177361093500968>').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_lock_btn').setEmoji(emojis.OBJ_LOCK || '<a:key_lock_animated:1537179601493561404>').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_claim_btn').setEmoji(emojis.OBJ_OWNER || '👑').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_lock_btn').setEmoji(emojis.OBJ_LOCK || '🔒').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('ticket_callstaff_btn').setEmoji(emojis.OBJ_INVITES || '📞').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('ticket_priority_btn').setEmoji(emojis.OBJ_ZAP || '<a:rapid_animated:1537177482006896692>').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('ticket_priority_btn').setEmoji(emojis.OBJ_ZAP || '⚡').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('ticket_anon_btn').setEmoji(emojis.OBJ_PROFILE || '🎭').setStyle(ButtonStyle.Secondary)
   );
 
@@ -341,9 +341,9 @@ module.exports = {
           c.isTextBased() && c.topic && c.topic.includes('owner:' + message.author.id)
         );
         if (userTicket) {
-          return message.reply(`${emojis.INFO || '<a:infox_animated:1537177409428787251>'} You already have an active ticket in ${userTicket}! Please use \`.claim\` inside that ticket channel.`);
+          return message.reply(`${emojis.INFO || 'ℹ️'} You already have an active ticket in ${userTicket}! Please use \`.claim\` inside that ticket channel.`);
         }
-        return message.reply(`${emojis.INFO || '<a:infox_animated:1537177409428787251>'} If you won a giveaway, please click the **Claim Reward** button on the giveaway message to create your private ticket channel!`);
+        return message.reply(`${emojis.INFO || 'ℹ️'} If you won a giveaway, please click the **Claim Reward** button on the giveaway message to create your private ticket channel!`);
       }
       return message.reply(`${emojis.WARNING} The \`.${sub}\` command can only be used inside active ticket channels!`);
     }
@@ -452,7 +452,7 @@ module.exports = {
       if (elapsed < cooldownMs) {
         const remainingMins = Math.ceil((cooldownMs - elapsed) / 60000);
         return message.reply({
-          content: `<a:hourglass_animated:1537179590982631575> **Staff Call Cooldown**: Staff was called recently. You can call staff again in **${remainingMins} minutes**.`,
+          content: `⏳ **Staff Call Cooldown**: Staff was called recently. You can call staff again in **${remainingMins} minutes**.`,
           flags: 64
         });
       }
@@ -560,7 +560,7 @@ module.exports = {
         await message.channel.permissionOverwrites.edit(ownerId, { SendMessages: false }).catch(() => {});
       }
 
-      return message.reply(`<a:key_lock_animated:1537179601493561404> Ticket locked by <@${author.id}>.`);
+      return message.reply(`🔒 Ticket locked by <@${author.id}>.`);
     }
 
     // 8. TICKET TRANSCRIPT (.ticket transcript / .transcript)
@@ -572,7 +572,7 @@ module.exports = {
       const attachment = new AttachmentBuilder(buffer, { name: `transcript-${message.channel.name}.txt` });
 
       return message.reply({
-        content: `<a:scroll_animated:1537179663791693844> **Ticket Transcript Exported:**`,
+        content: `📜 **Ticket Transcript Exported:**`,
         files: [attachment]
       });
     }
@@ -587,13 +587,13 @@ module.exports = {
 
         if (transcriptChan) {
           await transcriptChan.send({
-            content: `<a:scroll_animated:1537179663791693844> **Ticket Closed & Logged:** \`${message.channel.name}\` closed by <@${author.id}>`,
+            content: `📜 **Ticket Closed & Logged:** \`${message.channel.name}\` closed by <@${author.id}>`,
             files: [attachment]
           }).catch(() => {});
         }
       }
 
-      await message.reply(`<a:key_lock_animated:1537179601493561404> **Ticket Closed**: Channel will be deleted in 3 seconds...`).catch(() => {});
+      await message.reply(`🔒 **Ticket Closed**: Channel will be deleted in 3 seconds...`).catch(() => {});
       setTimeout(() => message.channel.delete().catch(() => {}), 3000);
       return;
     }

@@ -98,14 +98,14 @@ module.exports = {
                     guild.ownerId === author.id;
 
     if (!hasPerm) {
-      return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} You need **Manage Emojis & Stickers** permission to steal emojis.`);
+      return message.reply(`${emojis.WARNING || '❌'} You need **Manage Emojis & Stickers** permission to steal emojis.`);
     }
 
     const media = extractMediaFromMessage(message, args);
 
     if (!media || !media.url) {
       return message.reply(
-        `${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} **Usage:** Reply to a message with an emoji/sticker or type \`.steal <emoji>\` to steal it!`
+        `${emojis.WARNING || '❌'} **Usage:** Reply to a message with an emoji/sticker or type \`.steal <emoji>\` to steal it!`
       );
     }
 
@@ -172,7 +172,7 @@ module.exports = {
 
           const successEmbed = new EmbedBuilder()
             .setColor(0x2ECC71)
-            .setTitle('<a:accept_animated:1537177319603703969> Emoji Added Successfully!')
+            .setTitle('✅ Emoji Added Successfully!')
             .setDescription(`Successfully added ${createdEmoji} as **:${createdEmoji.name}:** to **${guild.name}**!`)
             .setFooter({ text: `Slots: ${currentCount + 1}/${limit}` });
 
@@ -214,7 +214,7 @@ module.exports = {
 
           const successEmbed = new EmbedBuilder()
             .setColor(0x2ECC71)
-            .setTitle('<a:accept_animated:1537177319603703969> Sticker Added Successfully!')
+            .setTitle('✅ Sticker Added Successfully!')
             .setDescription(`Successfully added sticker **"${createdSticker.name}"** to **${guild.name}**!`)
             .setFooter({ text: `Sticker Slots: ${currentStickers.size + 1}/${limit}` });
 

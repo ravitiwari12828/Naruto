@@ -30,19 +30,46 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    const statusMsg = await message.channel.send(`${emojis.LOADING || '<a:hourglass_animated:1537179590982631575>'} Auditing server permissions & stripping MentionEveryone across all roles & channels...`);
+    const statusMsg = await message.channel.send(`${emojis.LOADING || '⏳'} Auditing server permissions & stripping MentionEveryone across all roles & channels...`);
 
     let rolesStrippedCount = 0;
+    let rolesUnmentionableCount = 0;
     let channelsSealedCount = 0;
+    const adminRoleNames = [];
 
     try {
-      // 1. Strip MentionEveryone from ALL Server Roles
+      // 1. Strip MentionEveryone & make roles unmentionable across ALL Server Roles
       for (const role of guild.roles.cache.values()) {
+        if (role.managed || role.id === guild.roles.everyone.id) continue;
+
+        let needsPermUpdate = false;
+        let newPerms = role.permissions;
+
         if (role.permissions.has(PermissionsBitField.Flags.MentionEveryone)) {
-          const newPerms = role.permissions.remove(PermissionsBitField.Flags.MentionEveryone);
-          await role.setPermissions(newPerms, 'Security Audit: Strip MentionEveryone permission').catch(() => {});
+          newPerms = newPerms.remove(PermissionsBitField.Flags.MentionEveryone);
+          needsPermUpdate = true;
           rolesStrippedCount++;
         }
+
+        if (needsPermUpdate) {
+          await role.setPermissions(newPerms, "Security Audit: Strip MentionEveryone permission").catch(() => {});
+        }
+
+        if (role.mentionable) {
+          await role.setMentionable(false, "Security Audit: Disable role mass pings").catch(() => {});
+          rolesUnmentionableCount++;
+        }
+
+        if (role.permissions.has(PermissionsBitField.Flags.Administrator)) {
+          adminRoleNames.push(role.name);
+        }
+      }
+
+      // Also strip MentionEveryone from @everyone role
+      if (guild.roles.everyone.permissions.has(PermissionsBitField.Flags.MentionEveryone)) {
+        const everyonePerms = guild.roles.everyone.permissions.remove(PermissionsBitField.Flags.MentionEveryone);
+        await guild.roles.everyone.setPermissions(everyonePerms, "Security Audit: Strip MentionEveryone from @everyone").catch(() => {});
+        rolesStrippedCount++;
       }
 
       // 2. Set MentionEveryone: false on ALL Channel Permission Overwrites
@@ -51,14 +78,14 @@ module.exports = {
           try {
             await channel.permissionOverwrites.edit(guild.roles.everyone, {
               MentionEveryone: false
-            }, { reason: 'Security Audit: Sealed @everyone pings' }).catch(() => {});
+            }, { reason: "Security Audit: Sealed @everyone pings" }).catch(() => {});
             channelsSealedCount++;
           } catch (e) {}
         }
       }
 
       // 3. Ensure AntiEveryone filter is active in AntiNuke
-      const antinukeCmd = message.client.commands?.get('antinuke');
+      const antinukeCmd = message.client.commands?.get("antinuke");
       if (antinukeCmd && antinukeCmd.getOrCreateAntinuke) {
         const config = antinukeCmd.getOrCreateAntinuke(guild.id);
         config.enabled = true;
@@ -67,15 +94,25 @@ module.exports = {
 
       await statusMsg.delete().catch(() => {});
 
+      const fields = [
+        { name: `${emojis.AN_ROLE} Roles Cleansed`, value: `\`${rolesStrippedCount}\` Roles stripped of \`MentionEveryone\`\n\`${rolesUnmentionableCount}\` Roles set to unmentionable`, inline: true },
+        { name: `${emojis.AN_CHANNEL} Channels Sealed`, value: `\`${channelsSealedCount}\` Channels locked with \`MentionEveryone: false\``, inline: true },
+        { name: `${emojis.AN_SHIELD} Realtime Interception`, value: `\`ACTIVE\` (Auto-deletes @everyone & @here in < 50ms)`, inline: false },
+        { name: `${emojis.AN_PANIC} Punishment Protocol`, value: "Rogue pings get **Message Deleted**, **1-Hour Timeout**, & **Channel Overwrite Lockout**", inline: false }
+      ];
+
+      if (adminRoleNames.length > 0) {
+        fields.push({
+          name: "⚠️ Mobile Push Notification Notice",
+          value: `Roles with native **Administrator** permission: **${adminRoleNames.slice(0, 5).join(", ")}**\n*Discord gives Administrator roles native bypass to trigger mobile push notifications before any bot can delete the message. To completely stop mobile pings, remove Administrator from staff roles and give normal moderation permissions (Manage Messages, Kick, Ban) or use Bot .fakepermissions.*\n*For roles: all roles have now been set to non-mentionable, so users without whitelist cannot ping roles either!*`,
+          inline: false
+        });
+      }
+
       const successEmbed = createStyledEmbed({
-        title: `${emojis.AN_SHIELD} Everyone & Here Pings Neutralized Server-Wide!`,
-        subtitle: `Zero-Tolerance Mention Protection Applied`,
-        fields: [
-          { name: `${emojis.AN_ROLE} Roles Cleansed`, value: `\`${rolesStrippedCount}\` Roles stripped of \`MentionEveryone\``, inline: true },
-          { name: `${emojis.AN_CHANNEL} Channels Sealed`, value: `\`${channelsSealedCount}\` Channels locked with \`MentionEveryone: false\``, inline: true },
-          { name: `${emojis.AN_SHIELD} Realtime Interception`, value: `\`ACTIVE\` (Auto-deletes @everyone & @here in < 50ms)`, inline: false },
-          { name: `${emojis.AN_PANIC} Punishment Protocol`, value: `Rogue pings get **Message Deleted**, **1-Hour Timeout**, & **Channel Overwrite Lockout**`, inline: false }
-        ],
+        title: `${emojis.AN_SHIELD} Everyone & Role Pings Neutralized Server-Wide!`,
+        subtitle: "Zero-Tolerance Mention Protection Applied",
+        fields,
         requestedBy: author,
         clientUser
       });

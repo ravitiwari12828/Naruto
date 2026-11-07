@@ -37,7 +37,7 @@ module.exports = {
 
       const content = args[0]?.toLowerCase() === 'set' || args[0]?.toLowerCase() === 'add' ? args.slice(1).join(' ') : args.join(' ');
       if (!content) {
-        return message.reply(`<a:add_animated:1537177324435283998> Usage: \`.sticky set <your sticky message text>\``);
+        return message.reply(`➕ Usage: \`.sticky set <your sticky message text>\``);
       }
 
       const existing = stickyNotes.get(channelId);
@@ -46,7 +46,7 @@ module.exports = {
       }
 
       const embed = createStyledEmbed({
-        title: `${emojis.STICKY || '<a:add_animated:1537177324435283998>'} Sticky Note`,
+        title: `${emojis.STICKY || '➕'} Sticky Note`,
         description: content,
         requestedBy: author,
         clientUser,
@@ -84,7 +84,7 @@ module.exports = {
       }
 
       const embed = createStyledEmbed({
-        title: `<a:add_animated:1537177324435283998> Sticky Note Removed`,
+        title: `➕ Sticky Note Removed`,
         description: `Sticky note removed from <#${channelId}>.`,
         requestedBy: author,
         clientUser
@@ -105,7 +105,7 @@ module.exports = {
       );
 
       const embed = createStyledEmbed({
-        title: `<a:add_animated:1537177324435283998> Active Sticky Notes`,
+        title: `➕ Active Sticky Notes`,
         description: lines.join('\n'),
         requestedBy: author,
         clientUser
@@ -115,7 +115,7 @@ module.exports = {
 
     // Default Sticky Help
     const embed = createStyledEmbed({
-      title: `<a:add_animated:1537177324435283998> Sticky Note Commands`,
+      title: `➕ Sticky Note Commands`,
       description:
         `\`.sticky set <text>\` — Set a sticky message in current channel\n` +
         `\`.sticky remove\` — Remove sticky note from current channel\n` +

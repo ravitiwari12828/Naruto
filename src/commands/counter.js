@@ -133,7 +133,7 @@ module.exports = {
         ]);
 
         const embed = createStyledEmbed({
-          title: `<a:chart_animated:1537179539514462308> Server Stats Counter Channels Configured`,
+          title: `📊 Server Stats Counter Channels Configured`,
           description: '```\n' + box + '\n```\n*Counter channels auto-update as members join & leave!*',
           requestedBy: author,
           clientUser
@@ -150,12 +150,12 @@ module.exports = {
     if (!sub || sub === 'list' || sub === 'panel' || sub === 'config') {
       const cfg = getCounters(guildId);
       const typeEmojis = {
-        total: '<a:membercard_animated:1537177436146638993>',
-        users: '<a:membercard_animated:1537177436146638993>',
-        bots: '<a:robot_animated:1537177494183088199>',
-        online: '<a:accept_animated:1537177319603703969>',
-        boosters: '<a:rocket_animated:1537179661371707402>',
-        goal: '<a:target_animated:1537179692174545037>'
+        total: '👤',
+        users: '👤',
+        bots: '🤖',
+        online: '✅',
+        boosters: '🚀',
+        goal: '🎯'
       };
       const list = (cfg.counters || []).map(c => {
         const chan = guild.channels.cache.get(c.channelId);
@@ -165,13 +165,13 @@ module.exports = {
 
       const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
       const row = new ActionRowBuilder().addComponents(
-        new ButtonBuilder().setCustomId('btn_counter_setup').setLabel('Setup Default Counters').setEmoji(emojis.SUCCESS || '<a:chart_animated:1537179539514462308>').setStyle(ButtonStyle.Success),
+        new ButtonBuilder().setCustomId('btn_counter_setup').setLabel('Setup Default Counters').setEmoji(emojis.SUCCESS || '📊').setStyle(ButtonStyle.Success),
         new ButtonBuilder().setCustomId('btn_counter_refresh').setLabel('Refresh Now').setEmoji(emojis.OBJ_REFRESH || '🔄').setStyle(ButtonStyle.Primary),
         new ButtonBuilder().setCustomId('btn_counter_reset').setLabel('Reset Counters').setEmoji(emojis.DISABLED || '🗑️').setStyle(ButtonStyle.Danger)
       );
 
       const embed = createStyledEmbed({
-        title: `<a:chart_animated:1537179539514462308> Active Server Counter Channels — ${guild.name}`,
+        title: `📊 Active Server Counter Channels — ${guild.name}`,
         subtitle: `Real-time Voice & Goal Counter Channel Suite`,
         description:
           `${list}\n\n` +
@@ -234,7 +234,7 @@ module.exports = {
               ];
             });
 
-            return interaction.followUp({ content: `<a:chart_animated:1537179539514462308> Server Stats Counter channels successfully created!`, flags: 64 });
+            return interaction.followUp({ content: `📊 Server Stats Counter channels successfully created!`, flags: 64 });
           } catch (err) {
             return interaction.followUp({ content: `Failed to create counters: ${err.message}`, flags: 64 });
           }

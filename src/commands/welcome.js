@@ -29,7 +29,7 @@ const WELCOME_PRESETS = {
     style: 'aesthetic',
     color: '#FFD1DC',
     title: '{script:Welcome to {server_name}}',
-    description: '<a:cherry_blossom_animated:1537179542148620299> Welcome {user} ♡\n\n<a:sparkles_animated:1537179684175872171> We are so happy to have you here!\n🍰 Total Sweethearts: #{membercount}',
+    description: '🌸 Welcome {user} ♡\n\n✨ We are so happy to have you here!\n🍰 Total Sweethearts: #{membercount}',
     font: 'script',
     banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/aesthetic_banner.gif'
   },
@@ -37,7 +37,7 @@ const WELCOME_PRESETS = {
     name: 'Cosmic Galaxy Horizon',
     style: 'galaxy',
     color: '#00FFFF',
-    title: '<a:sparkles_animated:1537179684175872171> {smallcaps:WELCOME TO THE COSMOS}',
+    title: '✨ {smallcaps:WELCOME TO THE COSMOS}',
     description: '🌌 Welcome space traveler {user}!\n\n🛸 Starship: {server_name}\n🪐 Crew Members: #{membercount}',
     font: 'smallcaps',
     banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/galaxy_banner.gif'
@@ -56,7 +56,7 @@ const WELCOME_PRESETS = {
     style: 'shinobi',
     color: '#FF7A00',
     title: '🍥 {gothic:Welcome Shinobi}',
-    description: '<a:leaf_animated:1537179616400375939> Believe it! Welcome {user} to {gothic:{server_name}}!\n\n<a:battle_animated:1537177338427605064> Village Ninja Count: #{membercount}',
+    description: '🍃 Believe it! Welcome {user} to {gothic:{server_name}}!\n\n⚔️ Village Ninja Count: #{membercount}',
     font: 'gothic',
     banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/shinobi_banner.gif'
   },
@@ -64,7 +64,7 @@ const WELCOME_PRESETS = {
     name: 'Cyberpunk Neon Matrix',
     style: 'cyberpunk',
     color: '#00FFBB',
-    title: '<a:rapid_animated:1537177482006896692> {smallcaps:CYBERNETIC ACCESS GRANTED}',
+    title: '⚡ {smallcaps:CYBERNETIC ACCESS GRANTED}',
     description: '👾 User connected: {user}\n\n🌐 Net Grid: {server_name}\n💾 Node Connections: #{membercount}',
     font: 'smallcaps',
     banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/cyberpunk_banner.gif'
@@ -124,11 +124,11 @@ function getOrCreateWelcomeConfig(guildId) {
       title: '{gothic:Welcome to the Castle}',
       description: '🖤 Greetings {user}! You have entered {gothic:{server_name}}.\n\n🕯️ Member Count: #{membercount}\n⚜️ Please read rules and enjoy your stay!',
       footer: 'Welcome to our Server',
-      headerText: `<a:chart_animated:1537179539514462308> MEMBER COUNT: #{membercount}`,
+      headerText: `📊 MEMBER COUNT: #{membercount}`,
       imageUrl: PRESET_BANNERS.gothic,
-      joinDmText: '<a:cherry_blossom_animated:1537179542148620299> Welcome to **{server_name}**, {user}! Enjoy your stay!',
+      joinDmText: '🌸 Welcome to **{server_name}**, {user}! Enjoy your stay!',
       leaveDmText: '📤 Goodbye {user}, we hope to see you back in **{server_name}** soon!',
-      boostText: '<a:rocket_animated:1537179661371707402> **{user}** boosted **{server_name}**!'
+      boostText: '🚀 **{user}** boosted **{server_name}**!'
     });
   }
   return welcomeConfigs.get(guildId);
@@ -312,10 +312,10 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
     { key: 'boostmsg', value: '<#chan> <txt>' }
   ], 20, 22);
 
-  const gearEmoji = '<a:settings_animated:1537177506170404905>';
-  const configEmoji = '<a:code_animated:1537177358912725033>';
-  const boostEmoji = '<a:rocket_animated:1537179661371707402>';
-  const mailEmoji = '<a:openeddooraperture_animated:1537177450411462766>';
+  const gearEmoji = '⚙️';
+  const configEmoji = '💻';
+  const boostEmoji = '🚀';
+  const mailEmoji = '🚪';
 
   const description =
     `${gearEmoji} **System Status**\n` +
@@ -329,7 +329,7 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
     `> *Type \`.welcome <command>\` to configure any option above.*`;
 
   const embed = createStyledEmbed({
-    title: `<a:wave_animated:1537179697421492304> Welcome System Dashboard`,
+    title: `🌊 Welcome System Dashboard`,
     subtitle: `${guild.name} Greetings Configuration`,
     description,
     requestedBy: author,
@@ -432,8 +432,8 @@ module.exports = {
         'boostmsg disable : Disable'
       ]);
 
-      const boostEmoji = '<a:rocket_animated:1537179661371707402>';
-      const gearEmoji = '<a:settings_animated:1537177506170404905>';
+      const boostEmoji = '🚀';
+      const gearEmoji = '⚙️';
 
       const embed = createStyledEmbed({
         title: `${boostEmoji} Server Boost Announcement Manager`,
@@ -481,7 +481,7 @@ module.exports = {
         'joindm <text>  : Set DM text'
       ]);
 
-      const mailEmoji = '<a:openeddooraperture_animated:1537177450411462766>';
+      const mailEmoji = '🚪';
       const embed = createStyledEmbed({
         title: `${mailEmoji} Join DM Welcome Manager`,
         subtitle: `${guild.name} Private Welcome DMs`,
@@ -524,7 +524,7 @@ module.exports = {
         'leavedm <text>  : Set DM text'
       ]);
 
-      const mailEmoji = '<a:openeddooraperture_animated:1537177450411462766>';
+      const mailEmoji = '🚪';
       const embed = createStyledEmbed({
         title: `${mailEmoji} Leave DM Notification Manager`,
         subtitle: `${guild.name} Private Leave DMs`,
@@ -587,7 +587,7 @@ module.exports = {
       ]);
 
       return message.reply(
-        `<a:paint_animated:1537177457403363389> **Available Welcome Theme Presets:**\n` +
+        `🎨 **Available Welcome Theme Presets:**\n` +
         '```\n' + presetBox + '\n```\n' +
         `Usage: \`.welcome preset gothic\` or \`.welcome preset shinobi\``
       );
@@ -606,14 +606,14 @@ module.exports = {
         welcomeConfigs.set(guild.id, config);
         return message.reply(`${emojis.SUCCESS} **Card Render Mode Set to**: \`Rich Embed Banner\`! Type \`.welcometest\` to preview.`);
       }
-      return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome card <canvas / embed>\``);
+      return message.reply(`ℹ️ Usage: \`.welcome card <canvas / embed>\``);
     }
 
     // 4. EDIT BANNER IMAGE (.welcome image <url>)
     if (sub === 'image' || sub === 'banner' || sub === 'img') {
       const url = args[1];
       if (!url || !url.match(/^https?:\/\/.+/i)) {
-        return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome image <https://direct-image-url.jpg>\``);
+        return message.reply(`ℹ️ Usage: \`.welcome image <https://direct-image-url.jpg>\``);
       }
       config.imageUrl = url;
       welcomeConfigs.set(guild.id, config);
@@ -624,7 +624,7 @@ module.exports = {
     if (sub === 'description' || sub === 'desc' || sub === 'body') {
       const text = args.slice(1).join(' ');
       if (!text) {
-        return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome description <your editable markdown text>\`\nPlaceholders: \`{user}\`, \`{username}\`, \`{server_name}\`, \`{membercount}\`, \`{gothic:Text}\`, \`{smallcaps:Text}\`, \`{script:Text}\``);
+        return message.reply(`ℹ️ Usage: \`.welcome description <your editable markdown text>\`\nPlaceholders: \`{user}\`, \`{username}\`, \`{server_name}\`, \`{membercount}\`, \`{gothic:Text}\`, \`{smallcaps:Text}\`, \`{script:Text}\``);
       }
       config.description = text;
       welcomeConfigs.set(guild.id, config);
@@ -635,7 +635,7 @@ module.exports = {
     if (sub === 'title') {
       const text = args.slice(1).join(' ');
       if (!text) {
-        return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome title <your title text>\``);
+        return message.reply(`ℹ️ Usage: \`.welcome title <your title text>\``);
       }
       config.title = text;
       welcomeConfigs.set(guild.id, config);
@@ -646,7 +646,7 @@ module.exports = {
     if (sub === 'color' || sub === 'hex') {
       const hex = args[1];
       if (!hex || !hex.match(/^#?[0-9a-fA-F]{6}$/)) {
-        return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome color #800020\` or \`#FFD1DC\` or \`#00FFFF\``);
+        return message.reply(`ℹ️ Usage: \`.welcome color #800020\` or \`#FFD1DC\` or \`#00FFFF\``);
       }
       config.color = hex.startsWith('#') ? hex : '#' + hex;
       welcomeConfigs.set(guild.id, config);
@@ -657,7 +657,7 @@ module.exports = {
     if (sub === 'footer') {
       const text = args.slice(1).join(' ');
       if (!text) {
-        return message.reply(`<a:infox_animated:1537177409428787251> Usage: \`.welcome footer <your footer text>\``);
+        return message.reply(`ℹ️ Usage: \`.welcome footer <your footer text>\``);
       }
       config.footer = text;
       welcomeConfigs.set(guild.id, config);

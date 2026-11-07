@@ -80,7 +80,7 @@ function renderMiscSettingsEmbed(config, guild, author, clientUser) {
       `Welcome **${author.username}**! Configure global server moderation settings.\n\n` +
       '```\n' + statusBox + '\n```\n' +
       '```\n' + cmdBox + '\n```\n\n' +
-      `**<a:scroll_animated:1537179663791693844> Channel Mappings:**\n` +
+      `**📜 Channel Mappings:**\n` +
       `• Logs Channel: ${logsChan}\n` +
       `• ModLogs Channel: ${modlogsChan}\n` +
       `• Quarantine Role: ${quarRole}`,
@@ -116,7 +116,7 @@ function renderAutomodConfigEmbed(config, guild, author, clientUser) {
   ]);
 
   return createStyledEmbed({
-    title: `${emojis.GEAR || '<a:settings_animated:1537177506170404905>'} Full AutoMod Configuration — ${guild.name}`,
+    title: `${emojis.GEAR || '⚙️'} Full AutoMod Configuration — ${guild.name}`,
     subtitle: `Complete Server Security & Content Protection Summary`,
     description:
       `Welcome **${author.username}**! Below is your server **Full AutoMod Configuration Grid**.\n\n` +
@@ -164,7 +164,7 @@ function renderEmbedForTab(activeTab, config, guild, author, clientUser) {
       '.antibot list'
     ]);
     return createStyledEmbed({
-      title: `<a:robot_animated:1537177494183088199> AntiBot Security Status — ${guild.name}`,
+      title: `🤖 AntiBot Security Status — ${guild.name}`,
       description:
         `**Whitelisted Authorized Bots:**\n${wl}\n\n` +
         '```\n' + cmdBox + '\n```',
@@ -182,27 +182,27 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
 
   const selectMenu = new StringSelectMenuBuilder()
     .setCustomId('automod_select_tab')
-    .setPlaceholder('<a:security_animated:1537177499862171741> Select an AutoMod category...')
+    .setPlaceholder('🛡️ Select an AutoMod category...')
     .addOptions([
       {
         label: 'AutoMod Main Panel',
         value: 'tab_overview',
         description: 'Global overview & active status',
-        emoji: emojis.OBJ_AN_SHIELD || '<a:security_animated:1537177499862171741>',
+        emoji: emojis.OBJ_AN_SHIELD || '🛡️',
         default: activeTab === 'overview'
       },
       {
         label: 'AutoMod Filters',
         value: 'tab_filters',
         description: 'AntiSpam, Invites, Links, NSFW & Words',
-        emoji: emojis.OBJ_AN_SPAM || '<a:code_animated:1537177358912725033>',
+        emoji: emojis.OBJ_AN_SPAM || '💻',
         default: activeTab === 'filters'
       },
       {
         label: 'Miscellaneous Options',
         value: 'tab_misc',
         description: 'AutoPurge, DM Notify & Staff Privacy',
-        emoji: emojis.OBJ_AN_WEBHOOK || '<a:settings_animated:1537177506170404905>',
+        emoji: emojis.OBJ_AN_WEBHOOK || '⚙️',
         default: activeTab === 'misc'
       },
       {
@@ -216,7 +216,7 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
         label: 'AntiBot Security',
         value: 'tab_antibot',
         description: 'Whitelisted bots & join protection',
-        emoji: emojis.OBJ_AN_BOT || '<a:robot_animated:1537177494183088199>',
+        emoji: emojis.OBJ_AN_BOT || '🤖',
         default: activeTab === 'antibot'
       }
     ]);
@@ -264,12 +264,12 @@ module.exports = {
     if (invoked === 'antispam') {
       config.antiSpam = !config.antiSpam;
       db.saveAutomod(guild.id, config);
-      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **AntiSpam Filter**: ${config.antiSpam ? '`ENABLED`' : '`DISABLED`'}`);
+      return message.reply(`${emojis.SUCCESS || '✅'} **AntiSpam Filter**: ${config.antiSpam ? '`ENABLED`' : '`DISABLED`'}`);
     }
     if (invoked === 'antilink' || invoked === 'antiinvite') {
       config.inviteLinks = !config.inviteLinks;
       db.saveAutomod(guild.id, config);
-      return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **AntiLink / Invite Filter**: ${config.inviteLinks ? '`ENABLED`' : '`DISABLED`'}`);
+      return message.reply(`${emojis.SUCCESS || '✅'} **AntiLink / Invite Filter**: ${config.inviteLinks ? '`ENABLED`' : '`DISABLED`'}`);
     }
     if (invoked === 'am') sub = 'filters';
 
@@ -328,7 +328,7 @@ module.exports = {
         ]);
 
         const embed = createStyledEmbed({
-          title: `${emojis.AN_BOT || emojis.BOT || '<a:robot_animated:1537177494183088199>'} AntiBot Whitelist Updated`,
+          title: `${emojis.AN_BOT || emojis.BOT || '🤖'} AntiBot Whitelist Updated`,
           description:
             `Successfully whitelisted **${targetUser.tag}**! It is now authorized to join and exist in **${guild.name}**.\n\n` +
             '```\n' + box + '\n```',
@@ -357,7 +357,7 @@ module.exports = {
         ]);
 
         const embed = createStyledEmbed({
-          title: `${emojis.AN_BOT || emojis.BOT || '<a:robot_animated:1537177494183088199>'} AntiBot Whitelist Removed`,
+          title: `${emojis.AN_BOT || emojis.BOT || '🤖'} AntiBot Whitelist Removed`,
           description:
             `Removed **${targetUser.tag}** from the authorized bot whitelist.\n\n` +
             '```\n' + box + '\n```',
@@ -377,12 +377,12 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.AN_BOT || emojis.BOT || '<a:robot_animated:1537177494183088199>'} AntiBot Security Status — ${guild.name}`,
+        title: `${emojis.AN_BOT || emojis.BOT || '🤖'} AntiBot Security Status — ${guild.name}`,
         description:
           `Welcome **${author.username}**! Below is your server **AntiBot Security Grid**.\n\n` +
           '```\n' + box + '\n```\n\n' +
-          `**${emojis.AN_BOT || '<a:robot_animated:1537177494183088199>'} Whitelisted Authorized Bots:**\n${botList}\n\n` +
-          `**${emojis.ANALYTICS_ZAP || '<a:rapid_animated:1537177482006896692>'} Management Commands:**\n` +
+          `**${emojis.AN_BOT || '🤖'} Whitelisted Authorized Bots:**\n${botList}\n\n` +
+          `**${emojis.ANALYTICS_ZAP || '⚡'} Management Commands:**\n` +
           `\`\`\`\n.antibot wl @bot   - Whitelist bot\n.antibot unwl @bot - Remove bot whitelist\n\`\`\``,
         requestedBy: author,
         clientUser
@@ -539,7 +539,7 @@ module.exports = {
         if (id === 'am_btn_spam') {
           config.antiSpam = !config.antiSpam;
           db.updateAutomod(guild.id, 'antiSpam', config.antiSpam);
-          responseMsg = `${emojis.AN_SPAM || '<a:code_animated:1537177358912725033>'} **AntiSpam Filter** is now **${config.antiSpam ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_SPAM || '💻'} **AntiSpam Filter** is now **${config.antiSpam ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_invites') {
           config.inviteLinks = !config.inviteLinks;
           db.updateAutomod(guild.id, 'inviteLinks', config.inviteLinks);
@@ -547,7 +547,7 @@ module.exports = {
         } else if (id === 'am_btn_malicious') {
           config.maliciousLinks = !config.maliciousLinks;
           db.updateAutomod(guild.id, 'maliciousLinks', config.maliciousLinks);
-          responseMsg = `${emojis.AN_SHIELD || '<a:security_animated:1537177499862171741>'} **Malicious Links Filter** is now **${config.maliciousLinks ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_SHIELD || '🛡️'} **Malicious Links Filter** is now **${config.maliciousLinks ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_nsfw') {
           config.nsfwLinks = !config.nsfwLinks;
           db.updateAutomod(guild.id, 'nsfwLinks', config.nsfwLinks);
@@ -559,11 +559,11 @@ module.exports = {
         } else if (id === 'am_btn_confirm') {
           config.misc.moderatorConfirmation = !config.misc.moderatorConfirmation;
           db.updateAutomod(guild.id, 'misc', config.misc);
-          responseMsg = `${emojis.AN_WHITELIST || '<a:pencil_animated:1537177465829724181>'} **Moderator Confirmation Messages** are now **${config.misc.moderatorConfirmation ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_WHITELIST || '✏️'} **Moderator Confirmation Messages** are now **${config.misc.moderatorConfirmation ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_dm') {
           config.misc.alwaysDmPunished = !config.misc.alwaysDmPunished;
           db.updateAutomod(guild.id, 'misc', config.misc);
-          responseMsg = `${emojis.AN_BOT || '<a:openeddooraperture_animated:1537177450411462766>'} **Always DM Punished Members** is now **${config.misc.alwaysDmPunished ? 'ENABLED' : 'DISABLED'}**.`;
+          responseMsg = `${emojis.AN_BOT || '🚪'} **Always DM Punished Members** is now **${config.misc.alwaysDmPunished ? 'ENABLED' : 'DISABLED'}**.`;
         } else if (id === 'am_btn_anon') {
           config.misc.hideStaffIdentity = !config.misc.hideStaffIdentity;
           db.updateAutomod(guild.id, 'misc', config.misc);

@@ -123,7 +123,7 @@ function downloadFile(url, filepath) {
 }
 
 async function startDownload() {
-  console.log(`<a:rocket_animated:1537179661371707402> Starting download of ${emojiList.length} previous bot animated emojis to Desktop...`);
+  console.log(`🚀 Starting download of ${emojiList.length} previous bot animated emojis to Desktop...`);
   let downloadedCount = 0;
 
   for (const item of emojiList) {
@@ -135,13 +135,13 @@ async function startDownload() {
     const ok = await downloadFile(url, filepath);
     if (ok) {
       downloadedCount++;
-      console.log(`<a:accept_animated:1537177319603703969> Downloaded: ${filename}`);
+      console.log(`✅ Downloaded: ${filename}`);
     } else {
-      console.log(`<a:wrong_animated:1537179702928875631> Skipped/404: ${filename}`);
+      console.log(`❌ Skipped/404: ${filename}`);
     }
   }
 
-  console.log(`<a:tada_party_animated:1537179689381134356> Finished downloading ${downloadedCount} animated GIFs to Desktop: ${desktopFolder}`);
+  console.log(`🎉 Finished downloading ${downloadedCount} animated GIFs to Desktop: ${desktopFolder}`);
 }
 
 startDownload();

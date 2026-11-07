@@ -84,7 +84,7 @@ function buildDeviceProofBox(title, items) {
  * Builds the Custom Voice Channels deployment embed with device-proof 28-char box.
  */
 function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
-  const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`<a:volumeup_animated:1537177548121968650> <a:sparkles_animated:1537179684175872171> 「 Join to Create 」`';
+  const triggerMention = triggerChanId ? `<#${triggerChanId}>` : '`🔊 ✨ 「 Join to Create 」`';
 
   const perkBox = buildDeviceProofBox('PERKS COMPARISON', [
     'Member  : Size Max 5',
@@ -102,7 +102,7 @@ function buildCustomVoiceChannelsEmbed(guild, triggerChanId = null) {
     .setTitle(`Custom Voice Channels`)
     .setDescription(
       `Looking to escape from public calls? Create your own private channel and have control over every aspect of it.\n\n` +
-      `<a:infox_animated:1537177409428787251> **How to Create a Channel:**\n` +
+      `ℹ️ **How to Create a Channel:**\n` +
       `${emojis.PRIZE_1} **Join** ${triggerMention}\n` +
       `${emojis.PRIZE_2} **Wait** *patiently* for channel to be created\n` +
       `${emojis.PRIZE_3} **Type** \`.vc help\` in your channel to edit settings\n\n` +
@@ -128,7 +128,7 @@ function buildCustomVoiceChannelButtons(guildId, triggerChanId = null) {
     new ButtonBuilder()
       .setStyle(ButtonStyle.Link)
       .setLabel('Support Server')
-      .setEmoji('<a:code_animated:1537177358912725033>')
+      .setEmoji('💻')
       .setURL('https://discord.gg/w7Ryr6v4q8')
   );
 
@@ -183,8 +183,8 @@ function buildChannelCreatedEmbed(member) {
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
     .setAuthor({ name: 'Channel Created', iconURL: user.displayAvatarURL({ dynamic: true }) })
-    .setTitle('📕 Welcome to your <a:volumeup_animated:1537177548121968650> Channel')
-    .setDescription('<a:pencil_animated:1537177465829724181> Use **.vc help** to edit your settings <a:settings_animated:1537177506170404905>')
+    .setTitle('📕 Welcome to your 🔊 Channel')
+    .setDescription('✏️ Use **.vc help** to edit your settings ⚙️')
     .setThumbnail(user.displayAvatarURL({ dynamic: true, size: 512 }));
 
   return embed;
@@ -221,7 +221,7 @@ module.exports = {
         return message.reply(`${emojis.DISABLED} Administrator permission required to deploy Custom Voice Channels.`);
       }
 
-      const statusMsg = await message.channel.send(`<a:hourglass_animated:1537179590982631575> Creating **Custom Voice Channels Category & Interface**...`);
+      const statusMsg = await message.channel.send(`⏳ Creating **Custom Voice Channels Category & Interface**...`);
 
       try {
         // Create Category
@@ -265,11 +265,11 @@ module.exports = {
         await statusMsg.delete().catch(() => {});
 
         const confirmEmbed = createStyledEmbed({
-          title: `<a:volumeup_animated:1537177548121968650> Custom Voice Channels Deployed!`,
+          title: `🔊 Custom Voice Channels Deployed!`,
           subtitle: `${guild.name} Temporary Voice Channels Active`,
           fields: [
             { name: `➕ Join Channel`, value: `<#${triggerChan.id}>`, inline: true },
-            { name: `<a:gamecontroller_animated:1537177388725706802> Control Interface`, value: `<#${interfaceChan.id}>`, inline: true }
+            { name: `🎮 Control Interface`, value: `<#${interfaceChan.id}>`, inline: true }
           ],
           requestedBy: author,
           clientUser
@@ -277,7 +277,7 @@ module.exports = {
 
         return message.channel.send({ embeds: [confirmEmbed] });
       } catch (err) {
-        return statusMsg.edit(`<a:wrong_animated:1537179702928875631> Failed to deploy Custom Voice Channels: \`${err.message}\``);
+        return statusMsg.edit(`❌ Failed to deploy Custom Voice Channels: \`${err.message}\``);
       }
     }
 

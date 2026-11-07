@@ -77,7 +77,7 @@ class ResilientDatabase {
     if (mongoUri && mongoose) {
       this.initMongo(mongoUri);
     } else {
-      console.log('<a:wrong_animated:1537179702928875631> [Database Warning] MONGODB_URI is missing in environment variables! Data will reset on Render deploys until MONGODB_URI is added in Render Dashboard.');
+      console.log('❌ [Database Warning] MONGODB_URI is missing in environment variables! Data will reset on Render deploys until MONGODB_URI is added in Render Dashboard.');
       if (sqlite3) {
         try {
           this.sqliteDb = new sqlite3.Database(dbPath, (err) => {
@@ -99,21 +99,21 @@ class ResilientDatabase {
       connectTimeoutMS: 10000
     };
 
-    console.log('<a:leaf_animated:1537179616400375939> [MongoDB Cloud] Connecting to MongoDB Atlas database...');
+    console.log('🍃 [MongoDB Cloud] Connecting to MongoDB Atlas database...');
 
     for (let attempt = 1; attempt <= 3; attempt++) {
       try {
         await mongoose.connect(uri, connectOptions);
         this.useMongo = true;
-        console.log('<a:accept_animated:1537177319603703969> [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
+        console.log('✅ [MongoDB Cloud] Connected successfully! Syncing cloud database state...');
         break;
       } catch (err) {
         await mongoose.disconnect().catch(() => {});
         if (attempt === 3) {
           this.useMongo = false;
           this.mongoReady = false;
-          console.log('<a:wrong_animated:1537179702928875631> [MongoDB Atlas Connection Failure]:', err?.message || 'IP Not Whitelisted / Network Access Blocked');
-          console.log('<a:infox_animated:1537177409428787251> [Local High-Speed Database Active] Running seamlessly on local JSON database.');
+          console.log('❌ [MongoDB Atlas Connection Failure]:', err?.message || 'IP Not Whitelisted / Network Access Blocked');
+          console.log('ℹ️ [Local High-Speed Database Active] Running seamlessly on local JSON database.');
           return;
         }
         await new Promise(r => setTimeout(r, 2000));
@@ -169,7 +169,7 @@ class ResilientDatabase {
             }
           }
         }
-        console.log('<a:cloudcomputing_animated:1537177355766865940> [MongoDB Cloud] Successfully restored all guild data, levels, autoreacts & settings from cloud!');
+        console.log('☁️ [MongoDB Cloud] Successfully restored all guild data, levels, autoreacts & settings from cloud!');
         this.saveJSONFileOnly();
       }
 
@@ -182,10 +182,10 @@ class ResilientDatabase {
         { data: this.data, updatedAt: new Date() },
         { upsert: true }
       );
-      console.log('<a:cloudcomputing_animated:1537177355766865940> [MongoDB Cloud] Master cloud database backup active!');
+      console.log('☁️ [MongoDB Cloud] Master cloud database backup active!');
       this.startPeriodicCloudSync();
     } catch (err) {
-      console.error('<a:wrong_animated:1537179702928875631> [MongoDB Cloud Error] Failed to connect to MongoDB Atlas:', err.message);
+      console.error('❌ [MongoDB Cloud Error] Failed to connect to MongoDB Atlas:', err.message);
     }
   }
 
@@ -221,7 +221,7 @@ class ResilientDatabase {
           { key: 'master_database' },
           { data: this.data, updatedAt: new Date() },
           { upsert: true }
-        ).catch(err => console.error('<a:wrong_animated:1537179702928875631> [MongoDB Sync Error]:', err.message));
+        ).catch(err => console.error('❌ [MongoDB Sync Error]:', err.message));
       }, 500);
     }
   }
@@ -261,10 +261,10 @@ class ResilientDatabase {
           data: this.data,
           updatedAt: new Date()
         });
-        console.log(`<a:cloudcomputing_animated:1537177355766865940> [MongoDB Cloud Daily Sync] Created permanent daily cloud snapshot: ${snapshotKey}`);
+        console.log(`☁️ [MongoDB Cloud Daily Sync] Created permanent daily cloud snapshot: ${snapshotKey}`);
       }
     } catch (e) {
-      console.error('<a:wrong_animated:1537179702928875631> [MongoDB Daily Snapshot Error]:', e.message);
+      console.error('❌ [MongoDB Daily Snapshot Error]:', e.message);
     }
   }
 
@@ -1687,7 +1687,7 @@ const flushOnExit = async () => {
         { data: db.data, updatedAt: new Date() },
         { upsert: true }
       );
-      console.log('<a:cloudcomputing_animated:1537177355766865940> [MongoDB Cloud] Final graceful shutdown sync completed.');
+      console.log('☁️ [MongoDB Cloud] Final graceful shutdown sync completed.');
     } catch (e) {}
   }
 };

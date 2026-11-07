@@ -224,10 +224,10 @@ async function registerSlashCommands(client) {
 
     // 1. Global Registration (Single primary command list)
     await rest.put(Routes.applicationCommands(client.user.id), { body: finalCommands });
-    console.log(`<a:accept_animated:1537177319603703969> [Slash Commands] Successfully registered ${finalCommands.length} Discord Slash Commands globally!`);
+    console.log(`✅ [Slash Commands] Successfully registered ${finalCommands.length} Discord Slash Commands globally!`);
     // Guild commands kept clean globally without unthrottled burst PUT requests
   } catch (err) {
-    console.error('<a:wrong_animated:1537179702928875631> [Slash Commands Registration Error]:', err.message);
+    console.error('❌ [Slash Commands Registration Error]:', err.message);
   }
 }
 

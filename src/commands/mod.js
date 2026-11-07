@@ -254,7 +254,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 5. <a:volumeup_animated:1537177548121968650> UNMUTE
+    // 5. 🔊 UNMUTE
     if (invoked === 'unmute') {
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Timeout Members');
 
@@ -280,7 +280,7 @@ module.exports = {
       });
 
       const embed = createStyledEmbed({
-        title: `<a:volumeup_animated:1537177548121968650> User Unmuted [Case #${cData.caseId}]`,
+        title: `🔊 User Unmuted [Case #${cData.caseId}]`,
         description: `**${target.user.tag}** can speak again in the village!`,
         requestedBy: message.author,
         clientUser
@@ -359,7 +359,7 @@ module.exports = {
         const count = botMessages.size;
 
         const embed = createStyledEmbed({
-          title: `${emojis.AN_BOT || '<a:robot_animated:1537177494183088199>'} Bot Messages Purged`,
+          title: `${emojis.AN_BOT || '🤖'} Bot Messages Purged`,
           description: `**${count}** bot message(s) cleared from ${message.channel}.`,
           requestedBy: message.author,
           clientUser
@@ -369,7 +369,7 @@ module.exports = {
 
         dispatchLog(guild, 'modlogs', {
           color: 0xE67E22,
-          title: `<a:robot_animated:1537177494183088199> Bot Messages Purged`,
+          title: `🤖 Bot Messages Purged`,
           description:
             `• **Channel:** ${message.channel} (\`#${message.channel.name}\`)\n` +
             `• **Bot Messages Deleted:** \`${count}\`\n` +
@@ -476,7 +476,7 @@ module.exports = {
         await target.roles.add(roleMention);
         const embed = createStyledEmbed({
           title: `🎭 Role Added`,
-          description: `<a:accept_animated:1537177319603703969> Added **${roleMention.name}** to ${target}`,
+          description: `✅ Added **${roleMention.name}** to ${target}`,
           requestedBy: message.author, clientUser
         });
         return message.channel.send({ embeds: [embed] });
@@ -566,7 +566,7 @@ module.exports = {
                 title: `⏱️ TempRole Expired`,
                 description:
                   `⏰ **Temp Role Auto-Removed!**\n\n` +
-                  `<a:membercard_animated:1537177436146638993> **Member:** ${target}\n` +
+                  `👤 **Member:** ${target}\n` +
                   `🎭 **Role:** **${roleMention.name}**\n` +
                   `📋 **Reason:** Duration expired after **${durationStr}**`,
                 requestedBy: message.author,
@@ -583,10 +583,10 @@ module.exports = {
       const embed = createStyledEmbed({
         title: `⏱️ Temp Role Added`,
         description:
-          `<a:accept_animated:1537177319603703969> Added **${roleMention.name}** to ${target}\n\n` +
+          `✅ Added **${roleMention.name}** to ${target}\n\n` +
           `**Duration:** ${durationStr}\n` +
           `**Expires:** <t:${expiresTimestamp}:R> (<t:${expiresTimestamp}:f>)\n` +
-          `**Auto-Remove:** <a:accept_animated:1537177319603703969> Bot will automatically remove this role when it expires.`,
+          `**Auto-Remove:** ✅ Bot will automatically remove this role when it expires.`,
         requestedBy: message.author,
         clientUser
       });
@@ -611,7 +611,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 13. <a:scroll_animated:1537179663791693844> LIST (bans, bots, admins, mutes)
+    // 13. 📜 LIST (bans, bots, admins, mutes)
     if (invoked === 'list') {
       const sub = args[0]?.toLowerCase();
 
@@ -619,7 +619,7 @@ module.exports = {
         const bots = guild.members.cache.filter(m => m.user.bot);
         const lines = [...bots.values()].slice(0, 25).map(b => `• <@${b.id}> (\`${b.user.tag}\`)`);
         const embed = createStyledEmbed({
-          title: `<a:robot_animated:1537177494183088199> Server Bots List`,
+          title: `🤖 Server Bots List`,
           description: lines.join('\n') || '*No bots in server.*',
           requestedBy: message.author, clientUser,
           footerText: `Total Bots: ${bots.size}`
@@ -660,7 +660,7 @@ module.exports = {
       );
 
       const embed = createStyledEmbed({
-        title: `<a:scroll_animated:1537179663791693844> Bingo Book — Banned Users`,
+        title: `📜 Bingo Book — Banned Users`,
         description: lines.join('\n'),
         requestedBy: message.author,
         clientUser,
@@ -809,7 +809,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 15. <a:security_animated:1537177499862171741> CASE / CASES / MODLOGS (.case <id> | .cases [@user] | .modlogs [#channel])
+    // 15. 🛡️ CASE / CASES / MODLOGS (.case <id> | .cases [@user] | .modlogs [#channel])
     if (['case', 'cases', 'modlogs', 'modlog', 'caseinfo'].includes(invoked)) {
       const targetChan = message.mentions.channels.first();
       const firstArg = args[0]?.toLowerCase();
@@ -844,7 +844,7 @@ module.exports = {
         ]);
 
         const embed = createStyledEmbed({
-          title: `${emojis.MOD || '<a:security_animated:1537177499862171741>'} Moderation Log Channel Configured`,
+          title: `${emojis.MOD || '🛡️'} Moderation Log Channel Configured`,
           description:
             `Successfully set **${chanToSet}** as the primary Moderation Audit Log channel for **${guild.name}**!\n\n` +
             '```\n' + box + '\n```',

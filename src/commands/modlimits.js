@@ -145,7 +145,7 @@ function dispatchLimitLog(guild, { actionTitle, executor, target, details, remai
 
   const embed = new EmbedBuilder()
     .setColor(0xED4245)
-    .setTitle(`<a:security_animated:1537177499862171741> ${actionTitle}`)
+    .setTitle(`🛡️ ${actionTitle}`)
     .setDescription(descLines.join('\n'))
     .setThumbnail(executor ? executor.displayAvatarURL({ dynamic: true }) : (guild.iconURL({ dynamic: true }) || undefined))
     .setFooter({ text: `Naruto Limit System | ${cleanActionName}` })
@@ -244,7 +244,7 @@ module.exports = {
         if (!isOwner) {
           return message.reply(
             `${emojis.WARNING} Non-owner Administrators can set action limits up to **3 per 24 Hours** max.\n` +
-            `<a:crown_animated:1537177361093500968> Only the **Server Owner** can set limits up to **5 per 24 Hours**!`
+            `👑 Only the **Server Owner** can set limits up to **5 per 24 Hours**!`
           );
         } else {
           return message.reply(`${emojis.WARNING} Server Owner can set action limits up to **5 per 24 Hours** max.`);
@@ -256,7 +256,7 @@ module.exports = {
 
       // Dispatch limit logger embed for edit
       dispatchLimitLog(guild, {
-        actionTitle: '<a:settings_animated:1537177506170404905> Action Limit Configured',
+        actionTitle: '⚙️ Action Limit Configured',
         executor: author,
         details: `Set **${matchedKey}** limit to **\`${newLimit} actions / 24 Hours\`**`,
         remaining: newLimit
@@ -317,7 +317,7 @@ module.exports = {
       `Welcome **${author.username}**! Below is your server **AntiNuke Action Rate Limits Grid**.\n\n` +
       '```\n' + limitsBox + '\n```\n' +
       '```\n' + cmdBox + '\n```\n\n' +
-      `**<a:scroll_animated:1537179663791693844> Configuration Mappings:**\n` +
+      `**📜 Configuration Mappings:**\n` +
       `• **Logging Channel**: ${logChan}\n` +
       `• **Time Window**: \`24 Hours\` *(24-Hour Rolling Reset Window)*\n` +
       `• **Max Configurable**: Admin = \`3 per 24h\` | Server Owner = \`5 per 24h\`\n\n` +

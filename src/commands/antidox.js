@@ -159,7 +159,7 @@ async function checkMessageForDox(message) {
 
     // 3. Send 5-second Chat Warning
     message.channel.send(
-      `<a:wrong_animated:1537179702928875631> <@${message.author.id}>, **Anti-Dox Security Intercepted:** Your message was blocked to protect user privacy (\`Rule: ${violationRule}\`).`
+      `❌ <@${message.author.id}>, **Anti-Dox Security Intercepted:** Your message was blocked to protect user privacy (\`Rule: ${violationRule}\`).`
     ).then(m => setTimeout(() => m.delete().catch(() => {}), 5000)).catch(() => {});
 
     // 4. Dispatch Masked Log Alert
@@ -173,7 +173,7 @@ async function checkMessageForDox(message) {
 
     const logEmbed = new EmbedBuilder()
       .setColor(0xED4245)
-      .setTitle(`<a:security_animated:1537177499862171741> Anti-Dox Protection Alert in #${message.channel.name}`)
+      .setTitle(`🛡️ Anti-Dox Protection Alert in #${message.channel.name}`)
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         `• **Sender:** <@${message.author.id}> (\`${message.author.tag}\`)\n` +
@@ -218,12 +218,12 @@ module.exports = {
 
     if (sub === 'enable' || sub === 'on') {
       updateAntidox(guild.id, c => { c.enabled = true; });
-      return message.reply(`<a:security_animated:1537177499862171741> **Anti-Dox Security** is now **ENABLED** for ${guild.name}!`);
+      return message.reply(`🛡️ **Anti-Dox Security** is now **ENABLED** for ${guild.name}!`);
     }
 
     if (sub === 'disable' || sub === 'off') {
       updateAntidox(guild.id, c => { c.enabled = false; });
-      return message.reply(`<a:wrong_animated:1537179702928875631> **Anti-Dox Security** has been **DISABLED**.`);
+      return message.reply(`❌ **Anti-Dox Security** has been **DISABLED**.`);
     }
 
     if (sub === 'ip') {
@@ -257,7 +257,7 @@ module.exports = {
     ]);
 
     const embed = createStyledEmbed({
-      title: `<a:security_animated:1537177499862171741> Anti-Dox Privacy Guard Panel — ${guild.name}`,
+      title: `🛡️ Anti-Dox Privacy Guard Panel — ${guild.name}`,
       subtitle: `Real-Time PII Leak Protection & IP/Phone Blocker`,
       description:
         '```\n' + box + '\n```\n\n' +

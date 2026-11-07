@@ -67,7 +67,7 @@ function initLavalink(client) {
   });
 
   lavalink.nodeManager.on('connect', (node) => {
-    console.log(`<a:musicplayer_animated:1537177445428633762> [Lavalink] Connected to Lavalink node: ${node.id} (${node.options.host}:${node.options.port})`);
+    console.log(`🎵 [Lavalink] Connected to Lavalink node: ${node.id} (${node.options.host}:${node.options.port})`);
   });
 
   lavalink.nodeManager.on('disconnect', (node, reason) => {
@@ -80,7 +80,7 @@ function initLavalink(client) {
 
   lavalink.nodeManager.on('error', (node, error) => {
     const errCode = error?.code || error?.message || 'Connection glitch';
-    console.log(`<a:wrong_animated:1537179702928875631> [Lavalink Connection] Node ${node.id} network check (${errCode}) - Auto-reconnecting...`);
+    console.log(`❌ [Lavalink Connection] Node ${node.id} network check (${errCode}) - Auto-reconnecting...`);
   });
 
   // Forward raw gateway voice packets to Lavalink
@@ -297,7 +297,7 @@ function initLavalink(client) {
     try {
       const songTitle = track?.info?.title || 'Unknown Song';
       const artistName = track?.info?.author || 'Unknown Artist';
-      let statusText = `<a:musicplayer_animated:1537177445428633762> ${songTitle} - ${artistName}`;
+      let statusText = `🎵 ${songTitle} - ${artistName}`;
       if (statusText.length > 500) statusText = statusText.slice(0, 497) + '...';
 
       const vcId = player.voiceChannelId;
@@ -344,7 +344,7 @@ function initLavalink(client) {
     // Enforce 100% audio output volume
     await player.setVolume(100).catch(() => {});
 
-    // Automatically set Voice Channel Status: <a:musicplayer_animated:1537177445428633762> Song Name - Artist Name
+    // Automatically set Voice Channel Status: 🎵 Song Name - Artist Name
     await updateVoiceChannelStatus(player, track);
 
     if (!player.textChannelId) return;
@@ -415,7 +415,7 @@ function initLavalink(client) {
       const isAfk247 = afkStore ? afkStore.has(player.guildId) : false;
 
       if (channel) {
-        channel.send(`<a:musicplayer_animated:1537177445428633762> **Queue Ended:** All songs have finished playing. ${isAfk247 ? '*(24/7 AFK Mode Active)*' : ''}`).catch(() => {});
+        channel.send(`🎵 **Queue Ended:** All songs have finished playing. ${isAfk247 ? '*(24/7 AFK Mode Active)*' : ''}`).catch(() => {});
       }
 
       // If 24/7 mode is NOT active, auto-disconnect after 2 minutes of idle
@@ -423,7 +423,7 @@ function initLavalink(client) {
         setTimeout(async () => {
           if (player && !player.playing && !player.paused && player.queue.tracks.length === 0) {
             await player.destroy().catch(() => {});
-            if (channel) channel.send(`<a:wave_animated:1537179697421492304> Left voice channel due to inactivity.`).catch(() => {});
+            if (channel) channel.send(`🌊 Left voice channel due to inactivity.`).catch(() => {});
           }
         }, 120000);
       }

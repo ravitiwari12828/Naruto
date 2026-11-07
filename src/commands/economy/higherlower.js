@@ -25,10 +25,10 @@ module.exports = {
     const eco = db.economy(message.guild.id, message.author.id);
 
     if (!bet || bet <= 0) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Provide a valid bet amount, e.g. \`.hl 100\`.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`❌ Provide a valid bet amount, e.g. \`.hl 100\`.`)] });
     }
     if (bet > eco.balance) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Insufficient wallet balance. Wallet: **${fmt(eco.balance)}** <a:dollar_animated:1537177379666006016>.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`❌ Insufficient wallet balance. Wallet: **${fmt(eco.balance)}** 💵.`)] });
     }
 
     eco.balance -= bet;
@@ -54,7 +54,7 @@ module.exports = {
     const collector = sent.createMessageComponentCollector({ time: 30000 });
 
     collector.on('collect', async (i) => {
-      if (i.user.id !== message.author.id) return i.reply({ content: `<a:wrong_animated:1537179702928875631> Not your game.`, flags: 64 });
+      if (i.user.id !== message.author.id) return i.reply({ content: `❌ Not your game.`, flags: 64 });
 
       const guess = i.customId === 'hl_higher' ? 'HIGHER' : 'LOWER';
       const nextCard = getRandomCard();
@@ -79,7 +79,7 @@ module.exports = {
         username: message.author.username
       });
 
-      const resultIcon = isWin ? '<a:accept_animated:1537177319603703969>' : '<a:wrong_animated:1537179702928875631>';
+      const resultIcon = isWin ? '✅' : '❌';
 
       const resultEmbed = new EmbedBuilder()
         .setColor(isWin ? 0x57F287 : 0xED4245)

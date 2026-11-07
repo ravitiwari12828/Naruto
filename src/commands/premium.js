@@ -49,7 +49,7 @@ function buildAppearanceDashboard(guild, draft, author, clientUser) {
   ]);
 
   const embed = createStyledEmbed({
-    title: `<a:paint_animated:1537177457403363389> Bot Appearance Customization Suite`,
+    title: `🎨 Bot Appearance Customization Suite`,
     subtitle: `${guild.name} • Premium Feature`,
     description:
       '```\n' + box + '\n```\n\n' +
@@ -127,7 +127,7 @@ module.exports = {
     if (['appearance', 'avatar', 'banner', 'bio', 'nickname', 'save', 'refresh', 'reset'].includes(sub)) {
       const hasAccess = isOwner || isGuildPremium(guild.id) || isUserPremium(author.id);
       if (!hasAccess) {
-        return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} **Premium Required!** Bot Appearance Customization (Avatar, Banner, Bio & Nickname) requires **Premium Tier**! Type \`.premium status\` to check eligibility.`);
+        return message.reply(`${emojis.WARNING || '❌'} **Premium Required!** Bot Appearance Customization (Avatar, Banner, Bio & Nickname) requires **Premium Tier**! Type \`.premium status\` to check eligibility.`);
       }
 
       const storedApp = db.getGuildAppearance(guild.id);
@@ -146,7 +146,7 @@ module.exports = {
       // 1. SET NICKNAME (.botnickname <name> / .premium nickname <name>)
       if (sub === 'nickname') {
         const newNick = args.slice(invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1).join(' ');
-        if (!newNick) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Please specify a nickname! Usage: \`.botnickname <name>\``);
+        if (!newNick) return message.reply(`${emojis.WARNING || '❌'} Please specify a nickname! Usage: \`.botnickname <name>\``);
 
         draft.nickname = newNick;
         db.setGuildAppearance(guild.id, { nickname: newNick });
@@ -156,18 +156,18 @@ module.exports = {
           }
         } catch (e) {}
 
-        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Server bot nickname updated to **"${newNick}"**! Click **Save Settings** in \`.botappearance\` to confirm.`);
+        return message.reply(`${emojis.SUCCESS || '✅'} Server bot nickname updated to **"${newNick}"**! Click **Save Settings** in \`.botappearance\` to confirm.`);
       }
 
       // 2. SET BIO (.botbio <text> / .premium bio <text>)
       if (sub === 'bio') {
         const newBio = args.slice(invoked.startsWith('set') || invoked.startsWith('bot') ? 0 : 1).join(' ');
-        if (!newBio) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Please specify a status bio! Usage: \`.botbio <text>\``);
+        if (!newBio) return message.reply(`${emojis.WARNING || '❌'} Please specify a status bio! Usage: \`.botbio <text>\``);
 
         draft.bio = newBio;
         db.setGuildAppearance(guild.id, { bio: newBio });
 
-        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} Server bot status bio updated to **"${newBio}"**!`);
+        return message.reply(`${emojis.SUCCESS || '✅'} Server bot status bio updated to **"${newBio}"**!`);
       }
 
       // 3. SET AVATAR (.setavatar <URL/Attachment>)
@@ -188,7 +188,7 @@ module.exports = {
           imgUrl = message.mentions.users.first().displayAvatarURL({ extension: 'png', size: 1024 });
         }
 
-        if (!imgUrl) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Provide an image URL, attach an image, or reply to an image! Usage: \`.setavatar <imageURL/attachment>\``);
+        if (!imgUrl) return message.reply(`${emojis.WARNING || '❌'} Provide an image URL, attach an image, or reply to an image! Usage: \`.setavatar <imageURL/attachment>\``);
 
         draft.avatar = imgUrl;
         db.setGuildAppearance(guild.id, { avatar: imgUrl });
@@ -227,7 +227,7 @@ module.exports = {
 
         let imgUrl = attachment ? attachment.url : (invoked === 'setbanner' || invoked === 'botbanner' ? args[0] : args[1]);
 
-        if (!imgUrl) return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537177373613629542>'} Provide a banner image URL, attach an image, or reply to an image! Usage: \`.setbanner <imageURL/attachment>\``);
+        if (!imgUrl) return message.reply(`${emojis.WARNING || '❌'} Provide a banner image URL, attach an image, or reply to an image! Usage: \`.setbanner <imageURL/attachment>\``);
 
         draft.banner = imgUrl;
         db.setGuildAppearance(guild.id, { banner: imgUrl });
@@ -255,7 +255,7 @@ module.exports = {
           }
         } catch (e) {}
 
-        return message.reply(`${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **SERVER BOT APPEARANCE RESET!** Restored default nickname, avatar, banner, and bio for **${guild.name}**.`);
+        return message.reply(`${emojis.SUCCESS || '✅'} **SERVER BOT APPEARANCE RESET!** Restored default nickname, avatar, banner, and bio for **${guild.name}**.`);
       }
 
       // 6. DASHBOARD MAIN INTERACTIVE PANEL (.botappearance / .appearance)
@@ -281,9 +281,9 @@ module.exports = {
             if (draft.nickname && guild.members.me?.permissions.has('ChangeNickname')) {
               await guild.members.me.setNickname(draft.nickname).catch(() => {});
             }
-            await i.reply({ content: `${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Server bot appearance settings saved and active for ${guild.name}!** *(Original global bot account is untouched)*.`, flags: 64, ephemeral: true });
+            await i.reply({ content: `${emojis.SUCCESS || '✅'} **Server bot appearance settings saved and active for ${guild.name}!** *(Original global bot account is untouched)*.`, flags: 64, ephemeral: true });
           } catch (err) {
-            await i.reply({ content: `<a:wrong_animated:1537179702928875631> Error applying settings: ${err.message}`, flags: 64, ephemeral: true });
+            await i.reply({ content: `❌ Error applying settings: ${err.message}`, flags: 64, ephemeral: true });
           }
         } else if (i.customId === 'app_refresh') {
           // REFRESH BOT PROFILE STATUS
@@ -333,7 +333,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.PREMIUM || '<a:dimond_animated:1537177370719551498>'} Premium Activated for Guild`,
+        title: `${emojis.PREMIUM || '💎'} Premium Activated for Guild`,
         description:
           `Server ID **\`${targetGuildId}\`** is now upgraded to **Premium Tier**!\n\n` +
           '```\n' + box + '\n```',
@@ -386,7 +386,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.PREMIUM || '<a:dimond_animated:1537177370719551498>'} Premium VIP Granted — ${user.username}`,
+        title: `${emojis.PREMIUM || '💎'} Premium VIP Granted — ${user.username}`,
         description: '```\n' + box + '\n```',
         requestedBy: author,
         clientUser
@@ -426,7 +426,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.PREMIUM || '<a:dimond_animated:1537177370719551498>'} Premium Status Dashboard`,
+        title: `${emojis.PREMIUM || '💎'} Premium Status Dashboard`,
         description: '```\n' + box + '\n```',
         requestedBy: author,
         clientUser
@@ -446,7 +446,7 @@ module.exports = {
     ]);
 
     const embed = createStyledEmbed({
-      title: `${emojis.PREMIUM || '<a:dimond_animated:1537177370719551498>'} Premium Management Suite`,
+      title: `${emojis.PREMIUM || '💎'} Premium Management Suite`,
       description: '```\n' + box + '\n```',
       requestedBy: author,
       clientUser

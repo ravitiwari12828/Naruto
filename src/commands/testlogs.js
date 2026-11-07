@@ -23,7 +23,7 @@ module.exports = {
     const guild = message.guild;
 
     if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== author.id) {
-      return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} Only Server Administrators can test log channels.`);
+      return message.reply(`${emojis.WARNING || '❌'} Only Server Administrators can test log channels.`);
     }
 
     let clientUser = message.client.user;
@@ -31,7 +31,7 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const statusMsg = await message.channel.send(`<a:potion_alchemy_animated:1537179643449446581> **Testing all 15 server log channels...**`);
+    const statusMsg = await message.channel.send(`🧪 **Testing all 15 server log channels...**`);
 
     const logTypes = [
       { key: 'narutologs', name: 'naruto-logs', title: 'Naruto Master Audit Log' },
@@ -75,7 +75,7 @@ module.exports = {
             await channel.send({ embeds: [testEmbed] });
             results.push(`✅ **#${item.name}**: Connected & Working (**#${channel.name}**)`);
           } catch (err) {
-            results.push(`<a:wrong_animated:1537179702928875631> **#${item.name}**: Permission Error (\`${err.message}\`)`);
+            results.push(`❌ **#${item.name}**: Permission Error (\`${err.message}\`)`);
           }
         } else {
           results.push(`🟡 **#${item.name}**: Channel Not Found`);
@@ -103,7 +103,7 @@ module.exports = {
     }
 
     const reportEmbed = createStyledEmbed({
-      title: `<a:potion_alchemy_animated:1537179643449446581> Server Audit Log Verification Report`,
+      title: `🧪 Server Audit Log Verification Report`,
       subtitle: `Tested ${logTypes.length} Log Channels`,
       description:
         results.join('\n') +
@@ -116,7 +116,7 @@ module.exports = {
     });
 
     const reportMsg = await statusMsg.edit({
-      content: `<a:accept_animated:1537177319603703969> **Log Verification Test Completed!**`,
+      content: `✅ **Log Verification Test Completed!**`,
       embeds: [reportEmbed],
       components: buildReportComponents(missingList.length)
     });
@@ -129,14 +129,14 @@ module.exports = {
 
       collector.on('collect', async (interaction) => {
         if (interaction.user.id !== author.id) {
-          return interaction.reply({ content: `<a:wrong_animated:1537179702928875631> Only the administrator who ran .testlogs can use this button.`, flags: 64, ephemeral: true });
+          return interaction.reply({ content: `❌ Only the administrator who ran .testlogs can use this button.`, flags: 64, ephemeral: true });
         }
 
         await interaction.deferUpdate();
 
         const categoryStructure = [
           {
-            name: '<a:security_animated:1537177499862171741> · Security Logs ·',
+            name: '🛡️ · Security Logs ·',
             channels: [
               { key: 'narutologs', name: 'naruto-logs' },
               { key: 'automod', name: 'naruto-automod-logs' },
@@ -148,7 +148,7 @@ module.exports = {
             ]
           },
           {
-            name: '<a:openfolder_animated:1537177452936437760> · Server Audit Logs ·',
+            name: '📁 · Server Audit Logs ·',
             channels: [
               { key: 'server', name: 'server-logs' },
               { key: 'messages', name: 'message-logs' },
@@ -160,7 +160,7 @@ module.exports = {
             ]
           },
           {
-            name: '<a:tickety_animated:1537177533961732106> · Ticket & ModMail Logs ·',
+            name: '🎫 · Ticket & ModMail Logs ·',
             channels: [
               { key: 'ticketlogs', name: 'ticket-logs' },
               { key: 'transcripts', name: 'ticket-transcripts' },
@@ -222,7 +222,7 @@ module.exports = {
         const updated = await runTest();
 
         const updatedEmbed = createStyledEmbed({
-          title: `<a:accept_animated:1537177319603703969> Server Audit Log Auto-Creation Complete`,
+          title: `✅ Server Audit Log Auto-Creation Complete`,
           subtitle: `Auto-Created ${createdCount} Missing Log Channels & Configured Settings`,
           description:
             updated.results.join('\n') +
@@ -232,7 +232,7 @@ module.exports = {
         });
 
         await reportMsg.edit({
-          content: `<a:accept_animated:1537177319603703969> **Auto-Created ${createdCount} Missing Log Channels Successfully!**`,
+          content: `✅ **Auto-Created ${createdCount} Missing Log Channels Successfully!**`,
           embeds: [updatedEmbed],
           components: []
         });

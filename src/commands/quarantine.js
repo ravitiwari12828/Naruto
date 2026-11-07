@@ -72,7 +72,7 @@ function isMemberInQuarantine(member) {
 
 module.exports = {
   name: 'quarantine',
-  description: '<a:quarantine_animated:1537447221350633472> 180-Day New Joiner Security Probation Grid for Users & Bots',
+  description: '🚨 180-Day New Joiner Security Probation Grid for Users & Bots',
   aliases: ['probation'],
   quarantineConfigs,
   isMemberInQuarantine,
@@ -163,7 +163,7 @@ module.exports = {
       '```\n' + boxMain + '\n```';
 
     const embed = createStyledEmbed({
-      title: `☣️ <a:quarantine_animated:1537447221350633472> 180-Day New Joiner Security Probation Grid`,
+      title: `☣️ 🚨 180-Day New Joiner Security Probation Grid`,
       subtitle: `Shinobi Anti-Rogue Joiner Protection`,
       description,
       requestedBy: author,

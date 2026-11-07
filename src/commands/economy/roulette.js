@@ -18,10 +18,10 @@ module.exports = {
     const eco = db.economy(message.guild.id, message.author.id);
 
     if (!bet || bet <= 0 || !choice) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Usage: \`.roulette <bet> <red|black|green|0-36>\`.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`❌ Usage: \`.roulette <bet> <red|black|green|0-36>\`.`)] });
     }
     if (bet > eco.balance) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Insufficient wallet balance. Wallet: **${fmt(eco.balance)}** <a:dollar_animated:1537177379666006016>.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`❌ Insufficient wallet balance. Wallet: **${fmt(eco.balance)}** 💵.`)] });
     }
 
     eco.balance -= bet;
@@ -53,7 +53,7 @@ module.exports = {
       username: message.author.username
     });
 
-    const resultIcon = isWin ? '<a:accept_animated:1537177319603703969>' : '<a:wrong_animated:1537179702928875631>';
+    const resultIcon = isWin ? '✅' : '❌';
 
     const embed = new EmbedBuilder()
       .setColor(isWin ? 0x57F287 : 0xED4245)

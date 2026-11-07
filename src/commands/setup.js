@@ -104,7 +104,7 @@ module.exports = {
     const box = createDynamicBox('AVAILABLE SERVER SETUP MODULES', moduleList);
 
     const embed = createStyledEmbed({
-      title: `${emojis.SETTINGS || '<a:settings_animated:1537177506170404905>'} Master Server Setup & Configuration Suite`,
+      title: `${emojis.SETTINGS || '⚙️'} Master Server Setup & Configuration Suite`,
       subtitle: `All-In-One Guild Management Module for ${guild.name}`,
       description:
         `Configure and deploy all Naruto Bot systems for **${guild.name}** in one central location.\n\n` +

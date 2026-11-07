@@ -15,7 +15,7 @@ module.exports = {
   async execute(message) {
     const eco = db.economy(message.guild.id, message.author.id);
     if (eco.balance < PRICE) {
-      return message.reply(`${emojis.WARNING || '<a:wrong_animated:1537179702928875631>'} A scratchcard costs **${PRICE}** coins. You only have **${eco.balance}** coins.`);
+      return message.reply(`${emojis.WARNING || '❌'} A scratchcard costs **${PRICE}** coins. You only have **${eco.balance}** coins.`);
     }
 
     eco.balance -= PRICE;
@@ -28,7 +28,7 @@ module.exports = {
 
     const initialEmbed = new EmbedBuilder()
       .setColor(0xF1C40F)
-      .setTitle('<a:tickety_animated:1537177533961732106> Shinobi Scratchcard')
+      .setTitle('🎫 Shinobi Scratchcard')
       .setDescription(
         `**Scratching card for ${message.author.username}...**\n\n` +
         `❓ ❓ ❓\n` +
@@ -44,7 +44,7 @@ module.exports = {
 
     const stepEmbed = new EmbedBuilder()
       .setColor(0xF1C40F)
-      .setTitle('<a:tickety_animated:1537177533961732106> Shinobi Scratchcard')
+      .setTitle('🎫 Shinobi Scratchcard')
       .setDescription(
         `**Scratching card for ${message.author.username}...**\n\n` +
         `${grid[0]} ❓ ❓\n` +
@@ -71,7 +71,7 @@ module.exports = {
 
     const finalEmbed = new EmbedBuilder()
       .setColor(payout > 0 ? 0x2ECC71 : 0xED4245)
-      .setTitle(payout > 0 ? '<a:tada_party_animated:1537179689381134356> Instant Scratchcard WINNER!' : '<a:wrong_animated:1537179702928875631> No Match — Better Luck Next Time')
+      .setTitle(payout > 0 ? '🎉 Instant Scratchcard WINNER!' : '❌ No Match — Better Luck Next Time')
       .setDescription(
         `**${message.author.username}'s Scratchcard Result:**\n\n` +
         `${fullGridStr}\n\n` +

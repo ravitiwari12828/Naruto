@@ -123,10 +123,10 @@ module.exports = {
       };
 
       return createStyledEmbed({
-        title: `${emojis.SCROLL || '<a:scroll_animated:1537179663791693844>'} Audit Logging System Architecture`,
-        subtitle: `${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Server Event & Moderation Logging Grid`,
+        title: `${emojis.SCROLL || '📜'} Audit Logging System Architecture`,
+        subtitle: `${emojis.SHIELD || '🛡️'} Server Event & Moderation Logging Grid`,
         description:
-          `**${emojis.SHIELD || '<a:security_animated:1537177499862171741>'} Security Logs Category**\n` +
+          `**${emojis.SHIELD || '🛡️'} Security Logs Category**\n` +
           `\`\`\`\n` +
           `naruto-logs         : ${resolve('narutologs', 'unifiedChanId', 'naruto-logs')}\n` +
           `naruto-automod-logs : ${resolve('automod', 'automodLogs', 'naruto-automod-logs')}\n` +
@@ -135,7 +135,7 @@ module.exports = {
           `naruto-security-logs: ${resolve('antinuke', 'securityLogs', 'naruto-security-logs')}\n` +
           `naruto-mod-logs     : ${resolve('modlogs', 'modLogs', 'naruto-mod-logs')}\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TOOLS || '<a:settings_animated:1537177506170404905>'} Full Server Audit Categories (18/18)**\n` +
+          `**${emojis.TOOLS || '⚙️'} Full Server Audit Categories (18/18)**\n` +
           `\`\`\`\n` +
           `application-logs: ${resolve('applications', 'appLogs', 'application-logs')}\n` +
           `channel-logs    : ${resolve('channels', 'channelLogs', 'channel-logs')}\n` +
@@ -156,12 +156,12 @@ module.exports = {
           `webhook-logs    : ${resolve('webhooks', 'webhookLogs', 'webhook-logs')}\n` +
           `mod-logs        : ${resolve('moderation', 'modLogs', 'mod-logs')}\n` +
           `\`\`\`\n\n` +
-          `**${emojis.TICKETS || '<a:tickety_animated:1537177533961732106>'} Ticket & ModMail Logs Category**\n` +
+          `**${emojis.TICKETS || '🎫'} Ticket & ModMail Logs Category**\n` +
           `\`\`\`\n` +
           `ticket-logs        : ${resolve('ticketlogs', 'ticketLogs', 'ticket-logs')}\n` +
           `modmail-logs       : ${resolve('modmaillogs', 'modmailLogs', 'modmail-logs')}\n` +
           `\`\`\`\n\n` +
-          (actionText ? `> ${emojis.SUCCESS || '<a:accept_animated:1537177319603703969>'} **Status:** ${actionText}\n\n` : '') +
+          (actionText ? `> ${emojis.SUCCESS || '✅'} **Status:** ${actionText}\n\n` : '') +
           `**Mode:** \`${config.mode.toUpperCase()}\` | **Choose your setup method below:**\n` +
           `*(Existing server channels will be automatically re-used to prevent duplicate channels!)*`,
         requestedBy: author,
@@ -213,7 +213,7 @@ module.exports = {
 
     collector.on('collect', async (interaction) => {
       if (interaction.user.id !== author.id) {
-        return interaction.reply({ content: `${emojis.ERROR || '<a:wrong_animated:1537179702928875631>'} Only the administrator can use these buttons.`, flags: 64, ephemeral: true });
+        return interaction.reply({ content: `${emojis.ERROR || '❌'} Only the administrator can use these buttons.`, flags: 64, ephemeral: true });
       }
 
       await interaction.deferUpdate();

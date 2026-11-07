@@ -84,7 +84,7 @@ module.exports = {
         .setThumbnail(botAvatar)
         .setTitle('Shard Information')
         .setDescription(
-          `• **Shard #0**  : \`ONLINE\` <a:accept_animated:1537177319603703969>\n` +
+          `• **Shard #0**  : \`ONLINE\` ✅\n` +
           `• **Ping**  : \`${displayPing}ms\`\n` +
           `• **Guilds**  : \`${client.guilds.cache.size}\` servers\n` +
           `• **Connection** : \`Connected to Discord Gateway\``

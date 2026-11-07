@@ -19,11 +19,11 @@ module.exports = {
 
     // 1. .gdrive backup - Trigger instant backup
     if (sub === 'backup' || sub === 'now' || sub === 'create') {
-      const statusMsg = await message.reply('<a:hourglass_animated:1537179590982631575> Creating master database snapshot & sync to Google Drive...');
+      const statusMsg = await message.reply('⏳ Creating master database snapshot & sync to Google Drive...');
       const res = await performDriveBackup();
 
       if (!res.success) {
-        return statusMsg.edit(`<a:wrong_animated:1537179702928875631> **Backup Failed**: ${res.error}`);
+        return statusMsg.edit(`❌ **Backup Failed**: ${res.error}`);
       }
 
       const box = createDynamicBox('5TB DRIVE BACKUP REPORT', [
@@ -35,16 +35,16 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(0x00E5FF)
-        .setTitle('<a:cloudcomputing_animated:1537177355766865940> 5TB Google Drive Backup Completed')
+        .setTitle('☁️ 5TB Google Drive Backup Completed')
         .setDescription('```\n' + box + '\n```\n>>> ' + res.message)
         .setFooter({ text: 'Automated 24h cloud backup active • Naruto Suite' });
 
       if (res.filepath && fs.existsSync(res.filepath)) {
         const attachment = new AttachmentBuilder(res.filepath, { name: res.filename });
-        return statusMsg.edit({ content: '<a:accept_animated:1537177319603703969> **Backup Snapshot Completed!**', embeds: [embed], files: [attachment] });
+        return statusMsg.edit({ content: '✅ **Backup Snapshot Completed!**', embeds: [embed], files: [attachment] });
       }
 
-      return statusMsg.edit({ content: '<a:accept_animated:1537177319603703969> **Backup Completed!**', embeds: [embed] });
+      return statusMsg.edit({ content: '✅ **Backup Completed!**', embeds: [embed] });
     }
 
     // 2. .gdrive setup - Guide on setting up Google Drive Service Account
@@ -59,7 +59,7 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(0x5865F2)
-        .setTitle('<a:utility_animated:1537177542040231937> 5TB Google Drive Integration Guide')
+        .setTitle('🛠️ 5TB Google Drive Integration Guide')
         .setDescription(
           '```\n' + setupBox + '\n```\n\n' +
           '**Need Help?**\n' +
@@ -91,7 +91,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(0x00E5FF)
-      .setTitle('<a:cloudcomputing_animated:1537177355766865940> 5TB Google Drive Automated Backup Dashboard')
+      .setTitle('☁️ 5TB Google Drive Automated Backup Dashboard')
       .setDescription(
         '```\n' + infoBox + '\n```\n\n' +
         '**Available Commands:**\n' +

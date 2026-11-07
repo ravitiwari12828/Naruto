@@ -14,10 +14,10 @@ module.exports = {
     const bet = parseInt(args[0], 10);
     const eco = db.economy(message.guild.id, message.author.id);
     if (!bet || bet <= 0) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Provide a valid bet amount, e.g. \`.crash 100\`.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`❌ Provide a valid bet amount, e.g. \`.crash 100\`.`)] });
     }
     if (bet > eco.balance) {
-      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`<a:wrong_animated:1537179702928875631> Insufficient wallet balance. Current Wallet: **${fmt(eco.balance)}** <a:dollar_animated:1537177379666006016>.`)] });
+      return message.reply({ embeds: [new EmbedBuilder().setColor(config.errorColor).setDescription(`❌ Insufficient wallet balance. Current Wallet: **${fmt(eco.balance)}** 💵.`)] });
     }
 
     eco.balance -= bet;
@@ -32,12 +32,12 @@ module.exports = {
       new ButtonBuilder()
         .setCustomId('crash_cashout')
         .setLabel('CASHOUT ROCKET')
-        .setEmoji('<a:dollar_animated:1537177379666006016>')
+        .setEmoji('💵')
         .setStyle(ButtonStyle.Success)
     );
 
     const buildPayload = async (multiplier, status = 'Rising...', isCrash = false, isWin = false) => {
-      const statusIcon = isCrash ? '<a:kaboom_animated:1537179599228637226>' : isWin ? '<a:accept_animated:1537177319603703969>' : '<a:rocket_animated:1537179661371707402>';
+      const statusIcon = isCrash ? '💥' : isWin ? '✅' : '🚀';
       const color = isCrash ? 0xED4245 : isWin ? 0x57F287 : 0x00F0FF;
 
       const cardAttachment = await renderCrashCard({
@@ -57,8 +57,8 @@ module.exports = {
         .setDescription(
           `**Status:** ${statusIcon} **${status}**\n` +
           `• **Current Multiplier:** **${multiplier.toFixed(2)}x**\n` +
-          `• **Bet Amount:** **${fmt(bet)}** <a:dollar_animated:1537177379666006016>\n` +
-          `• **Potential Payout:** **${fmt(Math.floor(bet * multiplier))}** <a:dollar_animated:1537177379666006016>`
+          `• **Bet Amount:** **${fmt(bet)}** 💵\n` +
+          `• **Potential Payout:** **${fmt(Math.floor(bet * multiplier))}** 💵`
         )
         .setImage('attachment://naruto-crash.png')
         .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Naruto Shinobi Casino Cards` })
@@ -72,7 +72,7 @@ module.exports = {
     const collector = sent.createMessageComponentCollector({ time: 30000 });
 
     collector.on('collect', async (i) => {
-      if (i.user.id !== message.author.id) return i.reply({ content: `<a:wrong_animated:1537179702928875631> Not your game.`, flags: 64 });
+      if (i.user.id !== message.author.id) return i.reply({ content: `❌ Not your game.`, flags: 64 });
       if (i.customId === 'crash_cashout') {
         cashedOut = true;
         finalMultiplier = currentMultiplier;
