@@ -915,8 +915,8 @@ function resolveEmojiForReaction(client, guild, emojiInput) {
   // 3. Emoji name or colons: :name: or name
   const cleanName = trimmed.replace(/^:+|:+$/g, '');
   if (cleanName) {
-    const found = (guild && guild.emojis?.cache.find(e => e.name.toLowerCase() === cleanName.toLowerCase())) ||
-                  (client && client.emojis?.cache.find(e => e.name.toLowerCase() === cleanName.toLowerCase()));
+    const found = (guild && guild.emojis?.cache.find(e => e.name.toLowerCase() === cleanName.toLowerCase() || e.name.toLowerCase().includes(cleanName.toLowerCase()))) ||
+                  (client && client.emojis?.cache.find(e => e.name.toLowerCase() === cleanName.toLowerCase() || e.name.toLowerCase().includes(cleanName.toLowerCase())));
     if (found) return found.id;
   }
 
@@ -926,7 +926,7 @@ function resolveEmojiForReaction(client, guild, emojiInput) {
     return trimmed;
   }
 
-  return trimmed;
+  return null;
 }
 
 function parseEmojisList(input) {

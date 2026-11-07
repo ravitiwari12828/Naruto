@@ -183,6 +183,7 @@ class ResilientDatabase {
         { upsert: true }
       );
       console.log('<a:cloudcomputing_animated:1537177355766865940> [MongoDB Cloud] Master cloud database backup active!');
+      this.startPeriodicCloudSync();
     } catch (err) {
       console.error('<a:wrong_animated:1537179702928875631> [MongoDB Cloud Error] Failed to connect to MongoDB Atlas:', err.message);
     }
@@ -222,6 +223,48 @@ class ResilientDatabase {
           { upsert: true }
         ).catch(err => console.error('<a:wrong_animated:1537179702928875631> [MongoDB Sync Error]:', err.message));
       }, 500);
+    }
+  }
+
+  startPeriodicCloudSync() {
+    if (this._cloudSyncInterval) clearInterval(this._cloudSyncInterval);
+
+    // Sync to MongoDB Atlas master_database every 5 minutes
+    this._cloudSyncInterval = setInterval(async () => {
+      if (this.useMongo && this.mongoReady && BotDataModel) {
+        try {
+          await BotDataModel.findOneAndUpdate(
+            { key: 'master_database' },
+            { data: this.data, updatedAt: new Date() },
+            { upsert: true }
+          );
+          await this.checkAndCreateDailySnapshot();
+        } catch (e) {}
+      }
+    }, 5 * 60 * 1000);
+
+    // Initial check for today's daily snapshot on startup
+    setTimeout(() => {
+      this.checkAndCreateDailySnapshot().catch(() => {});
+    }, 15000);
+  }
+
+  async checkAndCreateDailySnapshot() {
+    if (!this.useMongo || !this.mongoReady || !BotDataModel) return;
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const snapshotKey = `daily_backup_${todayStr}`;
+      const exists = await BotDataModel.findOne({ key: snapshotKey }, { _id: 1 });
+      if (!exists) {
+        await BotDataModel.create({
+          key: snapshotKey,
+          data: this.data,
+          updatedAt: new Date()
+        });
+        console.log(`<a:cloudcomputing_animated:1537177355766865940> [MongoDB Cloud Daily Sync] Created permanent daily cloud snapshot: ${snapshotKey}`);
+      }
+    } catch (e) {
+      console.error('<a:wrong_animated:1537179702928875631> [MongoDB Daily Snapshot Error]:', e.message);
     }
   }
 
@@ -1635,4 +1678,20 @@ class ResilientDatabase {
 
 
 const db = new ResilientDatabase();
+
+const flushOnExit = async () => {
+  if (db.useMongo && db.mongoReady && BotDataModel) {
+    try {
+      await BotDataModel.findOneAndUpdate(
+        { key: 'master_database' },
+        { data: db.data, updatedAt: new Date() },
+        { upsert: true }
+      );
+      console.log('<a:cloudcomputing_animated:1537177355766865940> [MongoDB Cloud] Final graceful shutdown sync completed.');
+    } catch (e) {}
+  }
+};
+process.on('SIGTERM', async () => { await flushOnExit(); process.exit(0); });
+process.on('SIGINT', async () => { await flushOnExit(); process.exit(0); });
+
 module.exports = db;

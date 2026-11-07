@@ -551,7 +551,7 @@ client.rest.on('rateLimited', (info) => {
   flushLog(`⏳ [Discord REST 429 Rate-Limit] Discord has temporarily paused REST requests for ${waitSec}s (Route: ${info.route || 'Global'} | Global: ${info.global})`, true);
 });
 
-client.once('ready', async () => {
+client.once('clientReady', async () => {
 
   try {
 
@@ -4303,22 +4303,7 @@ client.on('messageCreate', async (message) => {
 
 
 
-  // No-Prefix Execution fallback for authorized users
-  const { isBotOwner } = require('./utils/owners');
-  const noPrefixCmd = client.commands.get('noprefix');
-  const isNoPrefixUser = (noPrefixCmd && noPrefixCmd.noPrefixStore ? noPrefixCmd.noPrefixStore.has(message.author.id) : false) || isBotOwner(message.author, client);
-
-  if (isNoPrefixUser) {
-    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
-    const firstWord = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
-    if (firstWord) {
-      const foundCmd = client.commands.get(firstWord) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(firstWord));
-      if (foundCmd) {
-        return handleCommandExecution(message, '');
-      }
-    }
-  }
-
+  // No-Prefix permanently disabled by user request. All commands strictly require the configured prefix.
 });
 
 
@@ -4344,6 +4329,16 @@ client.on('interactionCreate', async (interaction) => {
     }
     if (!command) {
       return interaction.editReply({ content: `${emojis.ERROR} Unknown or unavailable command.` }).catch(() => {});
+    }
+
+    if (['antinuke', 'automod'].includes(rootName)) {
+      const antinukeCmd = client.commands.get('antinuke');
+      const antiConfig = antinukeCmd && antinukeCmd.getOrCreateAntinuke ? antinukeCmd.getOrCreateAntinuke(interaction.guildId) : null;
+      const isOwner = interaction.guild && interaction.guild.ownerId === interaction.user.id;
+      const isExtra = (antiConfig && antiConfig.extraOwners && antiConfig.extraOwners.has(interaction.user.id)) || ['1420687548807905324'].includes(interaction.user.id);
+      if (!isOwner && !isExtra) {
+        return interaction.editReply({ content: `${emojis.WARNING || '⚠️'} **Access Denied**: Only the **Server Owner** and **Extra Owners** can configure ${rootName}.` }).catch(() => {});
+      }
     }
 
 
