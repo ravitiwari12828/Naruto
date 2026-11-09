@@ -211,33 +211,27 @@ class ResilientDatabase {
   }
 
   saveJSON() {
+    this._dataDirty = true;
     this.saveJSONFileOnly();
-
-    // Debounced MongoDB Cloud Sync (Only when mongoReady is true!)
-    if (this.useMongo && this.mongoReady && BotDataModel) {
-      if (this.mongoSaveTimeout) clearTimeout(this.mongoSaveTimeout);
-      this.mongoSaveTimeout = setTimeout(() => {
-        BotDataModel.findOneAndUpdate(
-          { key: 'master_database' },
-          { data: this.data, updatedAt: new Date() },
-          { upsert: true }
-        ).catch(err => console.error('❌ [MongoDB Sync Error]:', err.message));
-      }, 500);
-    }
   }
 
   startPeriodicCloudSync() {
     if (this._cloudSyncInterval) clearInterval(this._cloudSyncInterval);
 
-    // Sync to MongoDB Atlas master_database every 5 minutes
+    // Bandwidth-optimized periodic cloud sync: only uploads if data actually changed!
     this._cloudSyncInterval = setInterval(async () => {
       if (this.useMongo && this.mongoReady && BotDataModel) {
+        if (!this._dataDirty) {
+          // Zero data changed - skip cloud upload to save Render network bandwidth!
+          return;
+        }
         try {
           await BotDataModel.findOneAndUpdate(
             { key: 'master_database' },
             { data: this.data, updatedAt: new Date() },
             { upsert: true }
           );
+          this._dataDirty = false;
           await this.checkAndCreateDailySnapshot();
         } catch (e) {}
       }

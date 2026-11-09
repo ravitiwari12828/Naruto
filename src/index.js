@@ -268,37 +268,27 @@ http.createServer((req, res) => {
 
 
 
-// Render Keepalive Self-Ping Loop (Pings every 4 minutes to keep Render Free Tier 24/7 active)
-
-const keepaliveUrl = process.env.RENDER_EXTERNAL_URL || 'https://naruto-nz08.onrender.com';
-
+// Render Keepalive Self-Ping Loop (Pings every 12 minutes to keep Render Free Tier 24/7 active without burning bandwidth/credits)
+const keepaliveUrl = process.env.RENDER_EXTERNAL_URL || (process.env.RENDER ? `https://${process.env.RENDER_SERVICE_NAME || 'naruto-jd9f'}.onrender.com` : null);
 const httpsModule = require('https');
-
 const httpModule = require('http');
 
-const clientModule = keepaliveUrl.startsWith('https:') ? httpsModule : httpModule;
-
-
-
 function pingServer() {
-
+  if (!keepaliveUrl) return;
+  const clientModule = keepaliveUrl.startsWith('https:') ? httpsModule : httpModule;
   clientModule.get(keepaliveUrl, (res) => {
-
-    flushLog(`📡 Keepalive self-ping sent to ${keepaliveUrl} (Status: ${res.statusCode})`);
-
-  }).on('error', (err) => {
-
-    flushLog(`❌ Keepalive self-ping warning: ${err.message}`, true);
-
-  });
-
+    res.resume(); // Discard body immediately to save memory & bandwidth
+    if (process.env.DEBUG_LOGS === 'true') {
+      flushLog(`📡 Keepalive self-ping sent to ${keepaliveUrl} (Status: ${res.statusCode})`);
+    }
+  }).on('error', () => {});
 }
 
-
-
-setTimeout(pingServer, 10000);
-
-setInterval(pingServer, 4 * 60 * 1000);
+if (keepaliveUrl) {
+  setTimeout(pingServer, 15000);
+  // Pinging every 12 minutes is optimal: keeps Render 15-min idle sleep away while reducing requests by 66%!
+  setInterval(pingServer, 12 * 60 * 1000);
+}
 
 const {
 
@@ -2945,7 +2935,9 @@ client.on('messageCreate', async (message) => {
     return handleCommandExecution(message, match[0]);
   }
 
-  flushLog(`📥 [Message Received] Author: ${message.author.tag} (${message.author.id}) | Content: "${message.content || '[EMPTY CONTENT - CHECK MESSAGE CONTENT INTENT]'}" | Channel: #${message.channel?.name || 'DM'}`);
+  if (process.env.DEBUG_LOGS === 'true') {
+    flushLog(`📥 [Message Received] Author: ${message.author.tag} (${message.author.id}) | Content: "${message.content || '[EMPTY CONTENT]'}" | Channel: #${message.channel?.name || 'DM'}`);
+  }
 
   // 🛡️ STRICT ANTI-EVERYONE / ANTI-HERE MASS PING PROTECTION
 
