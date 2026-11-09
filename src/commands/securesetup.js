@@ -14,7 +14,7 @@ const db = require('../database/db');
 module.exports = {
   name: 'securesetup',
   description: 'Interactive One-Click Server Security Setup Dashboard for Admins & Server Owners',
-  aliases: ['quicksetup', 'securitysetup', 'setupwizard', 'protectsetup'],
+  aliases: ['secure', 'quicksetup', 'securitysetup', 'setupwizard', 'protectsetup'],
 
   async execute(message, args) {
     try {
@@ -33,6 +33,42 @@ module.exports = {
       try {
         clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
       } catch (e) {}
+
+    // Handle .secure channel enable
+    if (args[0]?.toLowerCase() === 'channel' || (args[0]?.toLowerCase() === 'secure' && args[1]?.toLowerCase() === 'channel')) {
+      const statusMsg = await message.channel.send(`${emojis.LOADING || '⏳'} Securing channels against external apps spam...`);
+      let rolesFixed = 0;
+      let channelsFixed = 0;
+
+      for (const role of guild.roles.cache.values()) {
+        if (role.managed) continue;
+        if (PermissionsBitField.Flags.UseExternalApps && role.permissions.has(PermissionsBitField.Flags.UseExternalApps)) {
+          const newPerms = role.permissions.remove(PermissionsBitField.Flags.UseExternalApps);
+          await role.setPermissions(newPerms, 'Security: Disable UseExternalApps').catch(() => {});
+          rolesFixed++;
+        }
+      }
+
+      for (const chan of guild.channels.cache.values()) {
+        if (chan.permissionOverwrites && PermissionsBitField.Flags.UseExternalApps) {
+          try {
+            await chan.permissionOverwrites.edit(guild.roles.everyone, { UseExternalApps: false }, { reason: 'Security: Block external apps' }).catch(() => {});
+            channelsFixed++;
+          } catch (e) {}
+        }
+      }
+
+      await statusMsg.delete().catch(() => {});
+      const secureEmbed = createStyledEmbed({
+        title: '🛠️ | Secure Channel Enabled!',
+        description:
+          `Permission **'Use_External_App'** has been disabled across **${channelsFixed} channels** and **${rolesFixed} roles** to avoid spam from external applications!\n\n` +
+          '✅ Your channels are now protected against third-party external app exploits and spam.',
+        requestedBy: author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [secureEmbed] });
+    }
 
     // Fetch AntiNuke command module store reference
     const antinukeCmd = message.client.commands.get('antinuke');

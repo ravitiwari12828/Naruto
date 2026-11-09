@@ -521,6 +521,39 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
     return embed;
   }
 
+  // SPECIAL FORMATTING FOR MODERATION CATEGORY MATCHING SCREENSHOT 2
+  if (cat.value === 'mod') {
+    const embed = new EmbedBuilder()
+      .setColor(catColor || 0x2B2D31)
+      .setAuthor(botAvatarURL ? { name: 'Naruto Moderation Suite', iconURL: botAvatarURL } : { name: 'Naruto Moderation Suite' })
+      .setTitle('🛠️ | Moderation Commands')
+      .setDescription(
+        '`audit` , `ban` , `clone` , `snipe` , `hide` , `hideall` , `kick` , `lock` , `mute` , `nick` , `nuke` , `role` , `roleicon` , `role all` , `role bots` , `role create` , `role delete` , `role humans` , `role rename` , `role temp` , `slowmode` , `lockall` , `unlockall` , `steal` , `unban` , `unhide` , `unhideall` , `unlock` , `unslowmode` , `removerole all` , `removerole bots` , `removerole humans` , `clear` , `clear all` , `clear bots` , `clear contains` , `clear embeds` , `clear files` , `clear images` , `clear mentions` , `clear reactions` , `clear user` , `deleteemoji` , `deletesticker` , `enlarge`'
+      )
+      .addFields([
+        {
+          name: '🛠️ | Secure Your Channel',
+          value: "`secure channel enable`\n\nAfter Running This Cmd , Permission Like 'Use_External_App' Will Be Disabled Fromm All Channels And Its Roles To Avoid Spam From External Apps"
+        },
+        {
+          name: '🛡️ | Moderation Role & Limits Setup (Anti-Abuse)',
+          value:
+            '• **Setup Mod Role:** `.mod role add @role` | `.mod role remove @role`\n' +
+            '• **View Mod Roles:** `.mod roles`\n' +
+            '• **Daily Action Limit:** `.mod limit <count>` (Default: 5/day)\n' +
+            '• ⚠️ **Anti-Abuse Protocol:** If any non-owner moderator exceeds the daily limit, they are automatically **timed out for 2 Hours** to safeguard the server!'
+        }
+      ])
+      .setFooter(validUserAvatar ? {
+        text: `Requested by ${username}`,
+        iconURL: validUserAvatar
+      } : { text: `Requested by ${username}` });
+
+    if (botAvatarURL) embed.setThumbnail(botAvatarURL);
+    if (devPortalBanner) embed.setImage(devPortalBanner);
+    return embed;
+  }
+
   // SPECIAL FORMATTING FOR FUN CATEGORY SUB-GROUPS
   if (cat.value === 'fun') {
     const gamesBox = createDynamicBox('SHINOBI GAMES & ORACLE', [

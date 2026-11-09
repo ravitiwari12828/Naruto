@@ -2940,8 +2940,6 @@ client.on('messageCreate', async (message) => {
   const mentionRegex = new RegExp(`^<@!?${client.user.id}>\\s*`);
   if (message.content.startsWith(PREFIX)) {
     return handleCommandExecution(message, PREFIX);
-  } else if (message.content.startsWith('&')) {
-    return handleCommandExecution(message, '&');
   } else if (mentionRegex.test(message.content)) {
     const match = message.content.match(mentionRegex);
     return handleCommandExecution(message, match[0]);
@@ -4140,34 +4138,36 @@ client.on('messageCreate', async (message) => {
 
   if (!isCommandMsg) {
 
-    // Autoreact
+    // Autoreact (Skip inside private ticket channels to prevent spamming support tickets)
+    const isTicketChan = message.channel?.name?.startsWith('ticket-') || 
+                         message.channel?.name?.startsWith('ticket') || 
+                         (message.channel?.topic && message.channel.topic.includes('ticket|'));
 
-    const autoreacts = db.getAutoreacts(message.guild.id);
+    if (!isTicketChan) {
+      const autoreacts = db.getAutoreacts(message.guild.id);
 
-    for (const ar of autoreacts) {
+      for (const ar of autoreacts) {
+        if (ar.trigger) {
+          const cleanTrigger = ar.trigger.toLowerCase().trim();
+          const triggerUserId = cleanTrigger.match(/\d{17,21}/)?.[0];
+          // Only trigger if message mentions the target user OR contains the exact trigger text!
+          // NEVER trigger just because the author of the message is the trigger!
+          const isMatched = contentLower.includes(cleanTrigger) || (triggerUserId && message.mentions.users.has(triggerUserId));
 
-      if (ar.trigger) {
-
-        const cleanTrigger = ar.trigger.toLowerCase().trim();
-
-        const triggerUserId = cleanTrigger.match(/\d{17,21}/)?.[0];
-        const isMatched = contentLower.includes(cleanTrigger) || (triggerUserId && (message.author.id === triggerUserId || message.mentions.users.has(triggerUserId)));
-
-        if (isMatched) {
-          const emojiTokens = emojis.parseEmojisList ? emojis.parseEmojisList(ar.emoji) : [ar.emoji];
-          for (const rawToken of emojiTokens) {
-            const reactionTarget = emojis.resolveEmojiForReaction ? emojis.resolveEmojiForReaction(client, message.guild, rawToken) : rawToken;
-            const targetToReact = reactionTarget || rawToken;
-            if (targetToReact) {
-              message.react(targetToReact).catch(err => {
-                console.warn(`[Autoreact] Failed to react with "${targetToReact}":`, err.message);
-              });
+          if (isMatched) {
+            const emojiTokens = emojis.parseEmojisList ? emojis.parseEmojisList(ar.emoji) : [ar.emoji];
+            for (const rawToken of emojiTokens) {
+              const reactionTarget = emojis.resolveEmojiForReaction ? emojis.resolveEmojiForReaction(client, message.guild, rawToken) : rawToken;
+              const targetToReact = reactionTarget || rawToken;
+              if (targetToReact) {
+                message.react(targetToReact).catch(err => {
+                  console.warn(`[Autoreact] Failed to react with "${targetToReact}":`, err.message);
+                });
+              }
             }
           }
         }
-
       }
-
     }
 
 

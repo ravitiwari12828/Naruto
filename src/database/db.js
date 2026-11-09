@@ -1674,6 +1674,40 @@ class ResilientDatabase {
     return gData;
   }
 
+  getModConfig(guildId) {
+    if (!this.data.modConfig) this.data.modConfig = {};
+    if (!this.data.modConfig[guildId]) {
+      this.data.modConfig[guildId] = {
+        roles: [],
+        dailyLimit: 5
+      };
+    }
+    return this.data.modConfig[guildId];
+  }
+
+  addModRole(guildId, roleId) {
+    const config = this.getModConfig(guildId);
+    if (!config.roles.includes(roleId)) {
+      config.roles.push(roleId);
+      this.saveJSON();
+    }
+    return config.roles;
+  }
+
+  removeModRole(guildId, roleId) {
+    const config = this.getModConfig(guildId);
+    config.roles = config.roles.filter(id => id !== roleId);
+    this.saveJSON();
+    return config.roles;
+  }
+
+  setModDailyLimit(guildId, limit) {
+    const config = this.getModConfig(guildId);
+    config.dailyLimit = Math.max(1, parseInt(limit) || 5);
+    this.saveJSON();
+    return config.dailyLimit;
+  }
+
 }
 
 

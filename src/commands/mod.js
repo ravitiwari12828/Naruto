@@ -1,9 +1,162 @@
+const {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  PermissionsBitField
+} = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const db = require('../database/db');
-const { PermissionsBitField } = require('discord.js');
-
 const { dispatchLog } = require('../utils/logger');
+
+async function checkModeratorPermissionAndQuota(message, actionName = 'action') {
+  const guild = message.guild;
+  const author = message.author;
+  const member = message.member;
+
+  const { isExtraOwner } = require('../utils/owners');
+  const isServerOwner = guild.ownerId === author.id;
+  const isExtra = isExtraOwner ? isExtraOwner(guild.id, author.id) : false;
+
+  // 1. Server Owner & Extra Owner always bypass
+  if (isServerOwner || isExtra) {
+    return { allowed: true, isOwner: true };
+  }
+
+  const modConfig = db.getModConfig(guild.id);
+  const isAdmin = member.permissions.has(PermissionsBitField.Flags.Administrator);
+  const hasModRole = modConfig.roles && modConfig.roles.length > 0
+    ? modConfig.roles.some(rId => member.roles.cache.has(rId))
+    : false;
+
+  // 2. Role Check: If mod roles are set, user MUST have one (or Admin)
+  // If no mod roles are set, user MUST have Administrator permission!
+  if (modConfig.roles && modConfig.roles.length > 0) {
+    if (!hasModRole && !isAdmin) {
+      await message.reply(`${emojis.WARNING || '⚠️'} **Access Denied!** You do not have the configured **Moderator Role** to use moderation commands. Ask the Server Owner to configure your role using \`.mod role add @role\`.`);
+      return { allowed: false };
+    }
+  } else if (!isAdmin) {
+    await message.reply(`${emojis.WARNING || '⚠️'} **Admin Required!** Moderation commands require **Administrator** permission or an authorized **Moderator Role**. (Use \`.mod role add @role\` to configure).`);
+    return { allowed: false };
+  }
+
+  // 3. Daily Limit Quota Check (Default 5 max per day)
+  const modLimitsCmd = message.client.commands.get('modlimits');
+  const limits = modLimitsCmd ? modLimitsCmd.getOrCreateModLimits(guild.id) : null;
+  const dailyLimit = modConfig.dailyLimit || 5;
+  const now = Date.now();
+
+  if (limits) {
+    let userUsage = limits.usage.get(author.id);
+    if (!userUsage || now > userUsage.resetAt) {
+      userUsage = { count: 0, resetAt: now + (24 * 60 * 60 * 1000) };
+    }
+
+    if (userUsage.count >= dailyLimit) {
+      // Automatic 2-hour timeout!
+      try {
+        if (member && member.moderatable) {
+          await member.timeout(2 * 60 * 60 * 1000, `Security: Exceeded daily moderation limit of ${dailyLimit} actions/day (Anti-Abuse Triggered)`);
+        }
+      } catch (err) {
+        console.warn('[ModLimit Timeout Error]', err.message);
+      }
+
+      const alertEmbed = createStyledEmbed({
+        title: `🚨 Anti-Abuse Protection Triggered!`,
+        description:
+          `**Moderator:** <@${author.id}> (\`${author.tag}\`)\n` +
+          `• **Daily Limit:** \`${dailyLimit}\` actions/day\n` +
+          `• **Current Actions Used:** \`${userUsage.count}/${dailyLimit}\`\n\n` +
+          `⛔ **Action Blocked!** You have exceeded your daily moderation action quota.\n` +
+          `⏳ **Punishment:** You have been automatically **timed out for 2 Hours** to protect the server!`,
+        requestedBy: author
+      });
+      await message.channel.send({ embeds: [alertEmbed] });
+      return { allowed: false };
+    }
+
+    userUsage.count = (userUsage.count || 0) + 1;
+    limits.usage.set(author.id, userUsage);
+  }
+
+  return { allowed: true };
+}
+
+async function renderModerationPanel(message, clientUser) {
+  const guild = message.guild;
+  const modConfig = db.getModConfig(guild.id);
+  const modRolesStr = modConfig.roles && modConfig.roles.length > 0
+    ? modConfig.roles.map(rId => `<@&${rId}>`).join(', ')
+    : '*None configured (Locked to Administrators & Server Owner)*';
+
+  const embed = new EmbedBuilder()
+    .setColor(0x2B2D31)
+    .setTitle('🛠️ | Moderation Commands')
+    .setDescription(
+      '`audit` , `ban` , `clone` , `snipe` , `hide` , `hideall` , `kick` , `lock` , `mute` , `nick` , `nuke` , `role` , `roleicon` , `role all` , `role bots` , `role create` , `role delete` , `role humans` , `role rename` , `role temp` , `slowmode` , `lockall` , `unlockall` , `steal` , `unban` , `unhide` , `unhideall` , `unlock` , `unslowmode` , `removerole all` , `removerole bots` , `removerole humans` , `clear` , `clear all` , `clear bots` , `clear contains` , `clear embeds` , `clear files` , `clear images` , `clear mentions` , `clear reactions` , `clear user` , `deleteemoji` , `deletesticker` , `enlarge`'
+    )
+    .addFields([
+      {
+        name: '🛠️ | Secure Your Channel',
+        value: "`secure channel enable`\n\nAfter Running This Cmd , Permission Like 'Use_External_App' Will Be Disabled Fromm All Channels And Its Roles To Avoid Spam From External Apps"
+      },
+      {
+        name: '🛡️ | Moderation Role & Limits Setup (Anti-Abuse)',
+        value:
+          `• **Authorized Mod Roles:** ${modRolesStr}\n` +
+          `• **Daily Limit:** \`${modConfig.dailyLimit || 5}\` actions/day per moderator\n` +
+          `• ⚠️ **Anti-Abuse Protocol:** If any non-owner moderator exceeds the daily limit, they are automatically **timed out for 2 Hours**!\n\n` +
+          '**Setup Commands:**\n' +
+          '• `.mod role add @role` — Grant role access to moderation commands\n' +
+          '• `.mod role remove @role` — Remove role from moderation access\n' +
+          '• `.mod limit <count>` — Set daily action limit (Default: 5)\n' +
+          '• `.mod roles` — View all authorized moderation roles'
+      }
+    ])
+    .setFooter({ text: `Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) });
+
+  const btnRow = new ActionRowBuilder().addComponents(
+    new ButtonBuilder().setCustomId('btn_mod_roles').setLabel('Mod Roles').setEmoji('🛡️').setStyle(ButtonStyle.Primary),
+    new ButtonBuilder().setCustomId('btn_mod_limits').setLabel('Daily Limits').setEmoji('📊').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('btn_mod_secure').setLabel('Secure Channels').setEmoji('🔒').setStyle(ButtonStyle.Success)
+  );
+
+  const panelMsg = await message.channel.send({ embeds: [embed], components: [btnRow] });
+
+  // Interactive Button Collector for the Panel
+  const collector = panelMsg.createMessageComponentCollector({
+    filter: i => i.user.id === message.author.id,
+    time: 120000
+  });
+
+  collector.on('collect', async i => {
+    if (i.customId === 'btn_mod_roles') {
+      const currentCfg = db.getModConfig(guild.id);
+      const rolesInfo = currentCfg.roles.length > 0 ? currentCfg.roles.map(rId => `<@&${rId}>`).join(', ') : 'None configured yet. Use \`.mod role add @role\`';
+      await i.reply({ content: `🛡️ **Authorized Moderator Roles:** ${rolesInfo}`, ephemeral: true }).catch(() => {});
+    } else if (i.customId === 'btn_mod_limits') {
+      const currentCfg = db.getModConfig(guild.id);
+      await i.reply({ content: `📊 **Daily Moderation Limit:** \`${currentCfg.dailyLimit || 5}\` actions per 24 hours.\n⚠️ Exceeding this limit will trigger a 2-Hour Server Timeout.`, ephemeral: true }).catch(() => {});
+    } else if (i.customId === 'btn_mod_secure') {
+      await i.deferUpdate().catch(() => {});
+      const securesetupCmd = message.client.commands.get('securesetup');
+      if (securesetupCmd) {
+        securesetupCmd.execute(message, ['channel', 'enable']);
+      }
+    }
+  });
+
+  collector.on('end', () => {
+    panelMsg.edit({ components: [] }).catch(() => {});
+  });
+
+  return panelMsg;
+}
+
+
 
 function missingPerms(message, perm) {
   return message.reply(`${emojis.WARNING} You need the **${perm}** permission to use this command.`);
@@ -54,7 +207,7 @@ module.exports = {
   description: 'Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs',
   aliases: [
     'ban', 'hackban', 'kick', 'mute', 'unmute',
-    'nuke', 'purge', 'purgebots',
+    'nuke', 'purge', 'purgebots', 'clear',
     'unban', 'unbanall',
     'role', 'rolemenu', 'list',
     'warn', 'unwarn', 'rmwarn', 'warnremove', 'warnings', 'clearwarns',
@@ -87,8 +240,75 @@ module.exports = {
       }
     }
 
+    // 0. Dedicated Moderation Hub Panel & Subcommands (.mod, .moderation, .mod role, .mod limit)
+    if (['mod', 'moderation', 'moderator'].includes(invoked)) {
+      const sub = args[0]?.toLowerCase();
+      const { isExtraOwner } = require('../utils/owners');
+      const isOwner = guild.ownerId === message.author.id || (isExtraOwner && isExtraOwner(guild.id, message.author.id));
+      const isAdmin = author.permissions.has(PermissionsBitField.Flags.Administrator);
+
+      if (['role', 'roles', 'setrole', 'addrole', 'remrole'].includes(sub)) {
+        if (!isOwner && !isAdmin) {
+          return message.reply(`${emojis.WARNING || '⚠️'} Only the Server Owner or Administrators can configure Moderator Roles.`);
+        }
+
+        if (sub === 'role' && args[1] && ['add', 'set'].includes(args[1].toLowerCase())) {
+          const role = message.mentions.roles.first() || guild.roles.cache.get(args[2]);
+          if (!role) return message.reply(`${emojis.WARNING || '⚠️'} Please mention a role!\nUsage: \`.mod role add @role\``);
+          db.addModRole(guild.id, role.id);
+          return message.reply(`${emojis.SUCCESS || '✅'} Role **${role.name}** is now an authorized **Moderator Role**! Members with this role can use moderation commands.`);
+        }
+
+        if (sub === 'role' && args[1] && ['remove', 'rem', 'del', 'delete'].includes(args[1].toLowerCase())) {
+          const role = message.mentions.roles.first() || guild.roles.cache.get(args[2]);
+          if (!role) return message.reply(`${emojis.WARNING || '⚠️'} Please mention a role!\nUsage: \`.mod role remove @role\``);
+          db.removeModRole(guild.id, role.id);
+          return message.reply(`${emojis.SUCCESS || '✅'} Role **${role.name}** removed from authorized Moderator Roles.`);
+        }
+
+        if (sub === 'setrole' || sub === 'addrole') {
+          const role = message.mentions.roles.first() || guild.roles.cache.get(args[1]);
+          if (!role) return message.reply(`${emojis.WARNING || '⚠️'} Please mention a role!\nUsage: \`.mod setrole @role\``);
+          db.addModRole(guild.id, role.id);
+          return message.reply(`${emojis.SUCCESS || '✅'} Role **${role.name}** is now an authorized **Moderator Role**!`);
+        }
+
+        if (sub === 'remrole') {
+          const role = message.mentions.roles.first() || guild.roles.cache.get(args[1]);
+          if (!role) return message.reply(`${emojis.WARNING || '⚠️'} Please mention a role!\nUsage: \`.mod remrole @role\``);
+          db.removeModRole(guild.id, role.id);
+          return message.reply(`${emojis.SUCCESS || '✅'} Role **${role.name}** removed from authorized Moderator Roles.`);
+        }
+
+        const cfg = db.getModConfig(guild.id);
+        const rolesText = cfg.roles.length > 0 ? cfg.roles.map(rId => `<@&${rId}>`).join(', ') : '*None set (Locked to Administrators)*';
+        return message.reply(`🛡️ **Authorized Moderator Roles:** ${rolesText}\nDaily Action Limit: **${cfg.dailyLimit} actions/day**`);
+      }
+
+      if (['limit', 'limits', 'setlimit'].includes(sub)) {
+        if (!isOwner && !isAdmin) {
+          return message.reply(`${emojis.WARNING || '⚠️'} Only the Server Owner or Administrators can configure daily moderation limits.`);
+        }
+        const newLim = parseInt(args[1]);
+        if (isNaN(newLim) || newLim < 1 || newLim > 50) {
+          return message.reply(`${emojis.WARNING || '⚠️'} Please provide a valid daily limit between 1 and 50.\nUsage: \`.mod limit 5\``);
+        }
+        db.setModDailyLimit(guild.id, newLim);
+        return message.reply(`${emojis.SUCCESS || '✅'} Daily moderation limit set to **${newLim} actions/day** per moderator! If exceeded, the moderator will be automatically timed out for 2 Hours.`);
+      }
+
+      if (['secure', 'securechannel'].includes(sub)) {
+        const securesetupCmd = message.client.commands.get('securesetup');
+        if (securesetupCmd) return securesetupCmd.execute(message, ['channel', 'enable']);
+      }
+
+      return renderModerationPanel(message, clientUser);
+    }
+
     // 1. ${emojis.MOD} BAN
     if (invoked === 'ban') {
+      const modCheck = await checkModeratorPermissionAndQuota(message, 'ban');
+      if (!modCheck.allowed) return;
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return botMissingPerms(message, 'Ban Members');
 
@@ -135,6 +355,8 @@ module.exports = {
 
     // 2. 🌐 HACKBAN (ban by ID)
     if (invoked === 'hackban') {
+      const modCheck = await checkModeratorPermissionAndQuota(message, 'hackban');
+      if (!modCheck.allowed) return;
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return botMissingPerms(message, 'Ban Members');
 
@@ -176,6 +398,8 @@ module.exports = {
 
     // 3. 👢 KICK
     if (invoked === 'kick') {
+      const modCheck = await checkModeratorPermissionAndQuota(message, 'kick');
+      if (!modCheck.allowed) return;
       if (!author.permissions.has(PermissionsBitField.Flags.KickMembers)) {
         return message.reply(`${emojis.WARNING} You need **Kick Members** permission to kick members from the server. *(Tip: Use \`.pkick @user\` for playful fun kick!)*`);
       }
@@ -215,6 +439,8 @@ module.exports = {
 
     // 4. 🔇 MUTE (timeout 10 min default)
     if (invoked === 'mute') {
+      const modCheck = await checkModeratorPermissionAndQuota(message, 'mute');
+      if (!modCheck.allowed) return;
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Timeout Members');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return botMissingPerms(message, 'Timeout Members');
 
@@ -256,6 +482,8 @@ module.exports = {
 
     // 5. 🔊 UNMUTE
     if (invoked === 'unmute') {
+      const modCheck = await checkModeratorPermissionAndQuota(message, 'unmute');
+      if (!modCheck.allowed) return;
       if (!author.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return missingPerms(message, 'Timeout Members');
 
       const targetId = message.mentions.users.first()?.id || (args[0] && args[0].replace(/[<@!>]/g, '').match(/^\d{17,20}$/) ? args[0].replace(/[<@!>]/g, '') : null);
@@ -290,6 +518,8 @@ module.exports = {
 
     // 6. ${emojis.SUCCESS} UNBAN
     if (invoked === 'unban') {
+      const modCheck = await checkModeratorPermissionAndQuota(message, 'unban');
+      if (!modCheck.allowed) return;
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
 
       const userId = args[0]?.replace(/[<@!>]/g, '');
@@ -317,6 +547,8 @@ module.exports = {
 
     // 7. ${emojis.SUCCESS} UNBAN ALL
     if (invoked === 'unbanall') {
+      const modCheck = await checkModeratorPermissionAndQuota(message, 'unbanall');
+      if (!modCheck.allowed) return;
       if (!author.permissions.has(PermissionsBitField.Flags.BanMembers)) return missingPerms(message, 'Ban Members');
       if (!author.permissions.has(PermissionsBitField.Flags.Administrator)) return missingPerms(message, 'Administrator');
 
@@ -337,7 +569,9 @@ module.exports = {
     }
 
     // 8. 🗑️ PURGE
-    if (invoked === 'purge' || invoked === 'purgebots') {
+    if (invoked === 'purge' || invoked === 'purgebots' || invoked === 'clear') {
+      const modCheck = await checkModeratorPermissionAndQuota(message, 'clear');
+      if (!modCheck.allowed) return;
       if (!author.permissions.has(PermissionsBitField.Flags.ManageMessages)) return missingPerms(message, 'Manage Messages');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageMessages)) return botMissingPerms(message, 'Manage Messages');
 
@@ -414,6 +648,8 @@ module.exports = {
 
     // 10. 💣 NUKE
     if (invoked === 'nuke') {
+      const modCheck = await checkModeratorPermissionAndQuota(message, 'nuke');
+      if (!modCheck.allowed) return;
       if (!author.permissions.has(PermissionsBitField.Flags.ManageChannels)) return missingPerms(message, 'Manage Channels');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) return botMissingPerms(message, 'Manage Channels');
 
@@ -455,6 +691,8 @@ module.exports = {
 
     // 11. 🎭 ROLE (add/remove)
     if (invoked === 'role' || invoked === 'addrole' || invoked === 'giverole') {
+      const modCheck = await checkModeratorPermissionAndQuota(message, 'role');
+      if (!modCheck.allowed) return;
       if (!author.permissions.has(PermissionsBitField.Flags.ManageRoles)) return missingPerms(message, 'Manage Roles');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) return botMissingPerms(message, 'Manage Roles');
 
