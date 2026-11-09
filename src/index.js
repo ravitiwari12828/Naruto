@@ -2808,7 +2808,16 @@ async function handleCommandExecution(message, usedPrefix) {
   if (!commandName) return;
 
   const command = client.commands.get(commandName) || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
-  if (!command) return;
+  if (!command) {
+    if (commandName.startsWith('a') || commandName.startsWith('r')) {
+      const isAdd = commandName.startsWith('a');
+      const roleKey = commandName.slice(1);
+      const { handleQuickRole } = require('./utils/modHierarchy');
+      const handled = await handleQuickRole(message, isAdd, roleKey, args);
+      if (handled) return;
+    }
+    return;
+  }
 
   // PROBATION SECURITY GRID INTERCEPTION (Applies to ALL new joiners including Admins < 15 Days)
   const ADMIN_MOD_COMMANDS = [

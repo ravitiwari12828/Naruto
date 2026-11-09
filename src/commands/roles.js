@@ -26,7 +26,7 @@ module.exports = {
   name: 'roles',
   description: 'Role Commands: autonick, cleanuproles, friend, girl, guest, staff, invcrole, official, rolesetup, vip',
   aliases: [
-    'rolesetup', 'friend', 'girl', 'guest', 'staff',
+    'customroles', 'rolepanel', 'customrole', 'rolesetup', 'friend', 'girl', 'guest', 'staff',
     'official', 'autonick', 'cleanuproles'
   ],
 
@@ -41,6 +41,14 @@ module.exports = {
     try {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
+
+    // .customroles / .rolepanel
+    if (invoked === 'customroles' || invoked === 'rolepanel' || (invoked === 'roles' && args[0] === 'panel')) {
+      const { renderCustomRolesPanel } = require('../utils/modHierarchy');
+      const embed = renderCustomRolesPanel(message, clientUser);
+      return message.channel.send({ embeds: [embed] });
+    }
+
 
     // .role icon
     if (invoked === 'role' && args[0] === 'icon') {
