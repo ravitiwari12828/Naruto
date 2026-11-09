@@ -182,7 +182,7 @@ module.exports = {
     'ninjaprofile', 'ninjatrain', 'ninjajutsu',
     'ninjabattle', 'ninjamission', 'ninjaclan', 'ninjarankup',
     'ninjainventory', 'ninjainv', 'ninjashop', 'ninjabuy', 'ninjasell',
-    'ninjalb', 'ninjaleaderboard', 'ninjatop', 'jutsu', 'quest'
+    'ninjalb', 'ninjaleaderboard', 'ninjatop', 'jutsu'
   ],
 
   async execute(message, args) {

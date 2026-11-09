@@ -239,11 +239,10 @@ module.exports = {
   buildAfkButtons,
 
   aliases: [
-    'ping', 'about', 'invite', 'node',
-    'profile', 'serverinfo', 'si',
-    'userinfo', 'user', 'membercount', 'members', 'mc',
-    'botinfo', 'uptime', 'vote',
-    'afk', 'mentions', 'avatar', 'av', 'roleinfo', 'serverbanner', 'servericon', 'snipe'
+    'about', 'node',
+    'serverinfo', 'si',
+    'userinfo', 'membercount', 'members', 'mc',
+    'botinfo', 'uptime', 'afk', 'mentions', 'avatar', 'av', 'roleinfo', 'serverbanner', 'servericon', 'snipe'
   ],
   snipeStore,
   afkStore,
@@ -715,7 +714,7 @@ module.exports = {
     }
 
     // 👤 USERINFO / USER / UI [@user]
-    if (['userinfo', 'user', 'ui'].includes(invoked)) {
+    if (['userinfo', 'ui'].includes(invoked)) {
       const member = message.mentions.members?.first() || message.guild.members.cache.get(args[0]) || message.member;
       const user = member.user;
 
@@ -783,7 +782,7 @@ module.exports = {
     }
 
     // ✉️ INVITE / INVITEBOT / BOTINVITE
-    if (['invite', 'invitebot', 'botinvite'].includes(invoked)) {
+    if (['invitebot', 'botinvite'].includes(invoked)) {
       const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${message.client.user.id}&permissions=8&scope=bot%20applications.commands`;
       const supportUrl = 'https://discord.gg/ZPKcPreUMT';
 

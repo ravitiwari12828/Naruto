@@ -400,9 +400,9 @@ module.exports = {
     'm', 'play', 'p', 'stop', 'pause', 'resume',
     'skip', 's', 'previous', 'replay',
     'queue', 'q', 'np', 'nowplaying', 'loop', 'repeat',
-    'shuffle', 'volume', 'vol', 'clear', 'remove', 'move',
+    'shuffle', 'volume', 'vol', 'remove', 'move',
     'skipto', 'jump', 'join', 'connect', 'dc', 'leave',
-    'afk247', '247', 'seek', 'equalizer', 'eq', 'filter',
+    'afk247', '247', 'seek', 'equalizer', 'eq', 'audiofilter',
     'autoplay', 'ap', 'fav', 'favorite', 'favorites'
   ],
   afkStore,
@@ -887,8 +887,8 @@ module.exports = {
       }
     }
 
-    // 14. EQUALIZER / AUDIO FILTERS (.filter / .eq)
-    if (['equalizer', 'eq', 'filter', 'filters'].includes(invoked)) {
+    // 14. EQUALIZER / AUDIO FILTERS (.audiofilter / .eq / .equalizer)
+    if (['equalizer', 'eq', 'filters', 'audiofilter'].includes(invoked)) {
       const inputFilters = args.map(a => a.toLowerCase());
       if (!inputFilters.length || inputFilters.includes('list')) {
         const clientUser = message.client.user;

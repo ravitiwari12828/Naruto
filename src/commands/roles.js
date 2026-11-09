@@ -27,7 +27,7 @@ module.exports = {
   description: 'Role Commands: autonick, cleanuproles, friend, girl, guest, staff, invcrole, official, rolesetup, vip',
   aliases: [
     'rolesetup', 'friend', 'girl', 'guest', 'staff',
-    'invcrole', 'official', 'vip', 'autonick', 'cleanuproles'
+    'official', 'autonick', 'cleanuproles'
   ],
 
   async execute(message, args) {
@@ -124,7 +124,7 @@ module.exports = {
       const type = (invoked === 'rolesetup' ? args[0] : args[1])?.toLowerCase();
       const role = message.mentions.roles.first() || message.guild.roles.cache.get(args[1] || args[2]);
 
-      const validTypes = ['friend', 'girl', 'guest', 'staff', 'official', 'vip', 'invcrole'];
+      const validTypes = ['friend', 'girl', 'guest', 'staff', 'official', 'invcrole'];
       if (!type || !validTypes.includes(type) || !role) {
         return message.reply(`${emojis.WARNING} Usage: \`.rolesetup <friend|girl|guest|staff|official|vip|invcrole> <@role>\``);
       }

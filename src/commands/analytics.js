@@ -212,7 +212,7 @@ function renderServerStatsOverviewPanel(guild, timeframeKey = 'lifetime', active
   }
 
   if (activeCategory === 'voice') {
-    const voiceLb = db.getTopLeaderboard(guild.id, 'voice', windowMs, 5);
+    const voiceLb = db.getTopLeaderboard(guild.id, windowMs, 5);
     const topSpeaker = voiceLb.length > 0 ? getUsernameCached(guild, voiceLb[0].userId) : 'None';
     const topVcTime = voiceLb.length > 0 ? formatDuration(voiceLb[0].total) : '0m';
 
@@ -433,7 +433,7 @@ async function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page 
 async function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1, author, clientUser) {
   const windowMs = WINDOWS[timeframeKey] || null;
   const label = TIMEFRAME_NAMES[timeframeKey] || 'All Time';
-  const allLeaderboard = db.getTopLeaderboard(guild.id, 'voice', windowMs, 100);
+  const allLeaderboard = db.getTopLeaderboard(guild.id, windowMs, 100);
 
   const perPage = 10;
   const totalPages = Math.max(1, Math.ceil(allLeaderboard.length / perPage));
@@ -633,14 +633,12 @@ module.exports = {
   name: 'analytics',
   description: 'Analytics, Leaderboards, User & Server Metrics Suite',
   aliases: [
-    'lb', 'lbm', 'lbvc', 'lbi', 'st', 'ss', 'stats', 'tracker',
-    'userstats', 'useranalytics', 'u', 'usr', 'user', 'profile',
-    'topmessages', 'msgstats', 'messages', 'chat', 'topmsg', 'msgs', 'topm',
-    'topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct',
-    'topinvites', 'invitestats', 'invites', 'topinv', 'invs', 'inv',
-    'joinsleaves', 'memberflow', 'joinleavestats', 'flow', 'jl', 'joins', 'leaves',
+    'lbm', 'lbvc', 'lbi', 'st', 'ss', 'tracker',
+    'userstats', 'useranalytics', 'u', 'usr', 'topmessages', 'msgstats', 'chat', 'topmsg', 'msgs', 'topm',
+    'topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voicetime', 'topvc', 'vctimes', 'vct',
+    'topinvites', 'invitestats', 'invites', 'topinv', 'invs', 'joinsleaves', 'memberflow', 'joinleavestats', 'flow', 'jl', 'joins', 'leaves',
     'topcommands', 'commandstats', 'cmd', 'cmds',
-    'ticketstats', 'ticketanalytics', 'tickets', 'tstats', 'tks'
+    'ticketstats', 'ticketanalytics', 'tstats', 'tks'
   ],
 
   async execute(message, args) {
@@ -653,13 +651,13 @@ module.exports = {
 
     if (invoked === 'lb' || invoked === 'leaderboard' || invoked === 'top') {
       if (['m', 'msg', 'msgs', 'chat', 'messages'].includes(arg0)) sub = 'messages';
-      else if (['v', 'vc', 'voice', 'vct'].includes(arg0)) sub = 'voice';
-      else if (['i', 'inv', 'invs', 'invites', 'dm', 'dms'].includes(arg0)) sub = 'invites';
-      else if (['u', 'user', 'usr'].includes(arg0)) sub = 'user';
+      else if (['v', 'vc', 'vct'].includes(arg0)) sub = 'voice';
+      else if (['i', 'invs', 'invites', 'dm', 'dms'].includes(arg0)) sub = 'invites';
+      else if (['u', 'usr'].includes(arg0)) sub = 'user';
       else sub = 'messages';
-    } else if (['lbm', 'topmessages', 'msgstats', 'messages', 'chat', 'topmsg', 'msgs', 'msg', 'topm'].includes(invoked)) {
+    } else if (['lbm', 'topmessages', 'msgstats', 'chat', 'topmsg', 'msgs', 'msg', 'topm'].includes(invoked)) {
       sub = 'messages';
-    } else if (['lbvc', 'topvoice', 'topvoices', 'voicestats', 'vctiming', 'vctimimng', 'voice', 'vc', 'voicetime', 'vctime', 'topvc', 'vctimes', 'vct'].includes(invoked)) {
+    } else if (['lbvc', 'topvoice', 'topvoices', 'voicestats', 'vctiming', 'vctimimng', 'vc', 'voicetime', 'topvc', 'vctimes', 'vct'].includes(invoked)) {
       sub = 'voice';
     } else if (['lbi', 'topinvites', 'invitestats', 'invites', 'topinv', 'invs', 'inv'].includes(invoked)) {
       sub = 'invites';
@@ -667,9 +665,9 @@ module.exports = {
       sub = 'joins';
     } else if (['topcommands', 'commandstats', 'commands', 'cmd', 'cmds'].includes(invoked)) {
       sub = 'commands';
-    } else if (['ticketstats', 'ticketanalytics', 'tickets', 'tstats', 'tks'].includes(invoked)) {
+    } else if (['ticketstats', 'ticketanalytics', 'tstats', 'tks'].includes(invoked)) {
       sub = 'tickets';
-    } else if (['userstats', 'useranalytics', 'user', 'u', 'usr', 'profile'].includes(invoked)) {
+    } else if (['userstats', 'useranalytics', 'u', 'usr', 'profile'].includes(invoked)) {
       sub = 'user';
     } else if (['serverstats', 'serveranalytics', 'server', 'analytics', 'tracker', 'ss', 'st', 'stats'].includes(invoked)) {
       sub = 'server';
@@ -737,7 +735,7 @@ module.exports = {
           }
         } else if (i.customId.startsWith('scat_')) {
           const newCat = i.customId.slice(5); // strip 'scat_'
-          if (['overview', 'chat', 'voice', 'invites'].includes(newCat)) {
+          if (['overview', 'chat', 'invites'].includes(newCat)) {
             activeCat = newCat;
           }
         }

@@ -6,7 +6,7 @@ const items = require('../../config/items');
 const { fmt } = require('../../utils/economyCore');
 
 module.exports = {
-  name: 'profile',
+  name: 'ecoprofile',
   description: "View a member's full economy profile card.",
   usage: '!profile [@user]',
   cooldown: 3000,

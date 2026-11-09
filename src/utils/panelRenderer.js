@@ -521,29 +521,46 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
     return embed;
   }
 
-  // SPECIAL FORMATTING FOR MODERATION CATEGORY MATCHING SCREENSHOT 2
+  // SPECIAL FORMATTING FOR MODERATION CATEGORY WITH DYNAMIC ASCII BOX
   if (cat.value === 'mod') {
+    const modBox = createDynamicBox('MODERATION COMMANDS', [
+      '.ban <@user> [reason]',
+      '.hackban <id> [reason]',
+      '.kick <@user> [reason]',
+      '.mute <@user> [duration]',
+      '.unmute <@user>',
+      '.unban <id> / .unbanall',
+      '.nuke (clone & reset)',
+      '.clear [count] (1-100)',
+      '.lock / .unlock [#chan]',
+      '.lockall / .unlockall',
+      '.hide / .unhide [#chan]',
+      '.hideall / .unhideall',
+      '.slowmode <seconds>',
+      '.role <@user> <@role>',
+      '.temprole <@user> <@r> <t>',
+      '.warn / .warnings / .clearwarns'
+    ]);
+
+    const configBox = createDynamicBox('ROLE & LIMITS CONFIG', [
+      '.mod role add @role',
+      '.mod role remove @role',
+      '.mod roles',
+      '.mod limit <count>',
+      '.secure channel enable'
+    ]);
+
     const embed = new EmbedBuilder()
       .setColor(catColor || 0x2B2D31)
       .setAuthor(botAvatarURL ? { name: 'Naruto Moderation Suite', iconURL: botAvatarURL } : { name: 'Naruto Moderation Suite' })
-      .setTitle('🛠️ | Moderation Commands')
+      .setTitle('🛠️ | Moderation Control Hub')
       .setDescription(
-        '`audit` , `ban` , `clone` , `snipe` , `hide` , `hideall` , `kick` , `lock` , `mute` , `nick` , `nuke` , `role` , `roleicon` , `role all` , `role bots` , `role create` , `role delete` , `role humans` , `role rename` , `role temp` , `slowmode` , `lockall` , `unlockall` , `steal` , `unban` , `unhide` , `unhideall` , `unlock` , `unslowmode` , `removerole all` , `removerole bots` , `removerole humans` , `clear` , `clear all` , `clear bots` , `clear contains` , `clear embeds` , `clear files` , `clear images` , `clear mentions` , `clear reactions` , `clear user` , `deleteemoji` , `deletesticker` , `enlarge`'
+        `# 🛠️ Moderation Executive Hub\n` +
+        `Welcome **${username}**! Below is the executive moderation suite.\n\n` +
+        '```\n' + modBox + '\n```\n' +
+        '```\n' + configBox + '\n```\n\n' +
+        '• ⚠️ **Anti-Abuse Protocol:** If any non-owner moderator exceeds their daily limit, they are automatically **timed out for 2 Hours**!'
       )
-      .addFields([
-        {
-          name: '🛠️ | Secure Your Channel',
-          value: "`secure channel enable`\n\nAfter Running This Cmd , Permission Like 'Use_External_App' Will Be Disabled Fromm All Channels And Its Roles To Avoid Spam From External Apps"
-        },
-        {
-          name: '🛡️ | Moderation Role & Limits Setup (Anti-Abuse)',
-          value:
-            '• **Setup Mod Role:** `.mod role add @role` | `.mod role remove @role`\n' +
-            '• **View Mod Roles:** `.mod roles`\n' +
-            '• **Daily Action Limit:** `.mod limit <count>` (Default: 5/day)\n' +
-            '• ⚠️ **Anti-Abuse Protocol:** If any non-owner moderator exceeds the daily limit, they are automatically **timed out for 2 Hours** to safeguard the server!'
-        }
-      ])
       .setFooter(validUserAvatar ? {
         text: `Requested by ${username}`,
         iconURL: validUserAvatar

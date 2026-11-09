@@ -15,7 +15,7 @@ const db = require('../database/db');
 module.exports = {
   name: 'advlogsetup',
   description: 'Deploy multi-category server audit logging channels (automatically reuses existing server channels)',
-  aliases: ['advlogs', 'advlog', 'logs', 'logsetup', 'logssetup', 'auditlogs'],
+  aliases: ['advlogs', 'advlog', 'logssetup', 'auditlogs'],
 
   async execute(message, args) {
     const author = message.author;

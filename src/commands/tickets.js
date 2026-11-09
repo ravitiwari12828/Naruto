@@ -289,7 +289,7 @@ module.exports = {
   description: 'Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers',
   aliases: [
     'panel_deploy', 'add_member', 'remove_member',
-    'claim', 'reopen', 'callstaff', 'ticketinfo', 'anonymous'
+    'reopen', 'callstaff', 'ticketinfo', 'anonymous'
   ],
   ticketConfigs,
   priorityTimers,

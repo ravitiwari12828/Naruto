@@ -10,7 +10,7 @@ const emojis = require('../utils/emojis');
 module.exports = {
   name: 'enlarge',
   description: 'Enlarge any custom Discord emoji or sticker with a high-resolution download link button',
-  aliases: ['e', 'bigemoji', 'jumbo', 'steal', 'emojiicon', 'emojienlarge'],
+  aliases: ['e', 'bigemoji', 'jumbo', 'emojiicon', 'emojienlarge'],
 
   async execute(message, args) {
     let targetEmojiStr = args[0];

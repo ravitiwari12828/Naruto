@@ -92,38 +92,52 @@ async function renderModerationPanel(message, clientUser) {
     ? modConfig.roles.map(rId => `<@&${rId}>`).join(', ')
     : '*None configured (Locked to Administrators & Server Owner)*';
 
-  const embed = new EmbedBuilder()
-    .setColor(0x2B2D31)
-    .setTitle('🛠️ | Moderation Commands')
-    .setDescription(
-      '`audit` , `ban` , `clone` , `snipe` , `hide` , `hideall` , `kick` , `lock` , `mute` , `nick` , `nuke` , `role` , `roleicon` , `role all` , `role bots` , `role create` , `role delete` , `role humans` , `role rename` , `role temp` , `slowmode` , `lockall` , `unlockall` , `steal` , `unban` , `unhide` , `unhideall` , `unlock` , `unslowmode` , `removerole all` , `removerole bots` , `removerole humans` , `clear` , `clear all` , `clear bots` , `clear contains` , `clear embeds` , `clear files` , `clear images` , `clear mentions` , `clear reactions` , `clear user` , `deleteemoji` , `deletesticker` , `enlarge`'
-    )
-    .addFields([
-      {
-        name: '🛠️ | Secure Your Channel',
-        value: "`secure channel enable`\n\nAfter Running This Cmd , Permission Like 'Use_External_App' Will Be Disabled Fromm All Channels And Its Roles To Avoid Spam From External Apps"
-      },
-      {
-        name: '🛡️ | Moderation Role & Limits Setup (Anti-Abuse)',
-        value:
-          `• **Authorized Mod Roles:** ${modRolesStr}\n` +
-          `• **Daily Limit:** \`${modConfig.dailyLimit || 5}\` actions/day per moderator\n` +
-          `• ⚠️ **Anti-Abuse Protocol:** If any non-owner moderator exceeds the daily limit, they are automatically **timed out for 2 Hours**!\n\n` +
-          '**Setup Commands:**\n' +
-          '• `.mod role add @role` — Grant role access to moderation commands\n' +
-          '• `.mod role remove @role` — Remove role from moderation access\n' +
-          '• `.mod limit <count>` — Set daily action limit (Default: 5)\n' +
-          '• `.mod roles` — View all authorized moderation roles'
-      }
-    ])
-    .setFooter({ text: `Requested by ${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) });
+  const modBox = createDynamicBox('MODERATION COMMANDS', [
+    '.ban <@user> [reason]',
+    '.hackban <id> [reason]',
+    '.kick <@user> [reason]',
+    '.mute <@user> [duration]',
+    '.unmute <@user>',
+    '.unban <id> / .unbanall',
+    '.nuke (clone & reset)',
+    '.clear [count] (1-100)',
+    '.lock / .unlock [#chan]',
+    '.lockall / .unlockall',
+    '.hide / .unhide [#chan]',
+    '.hideall / .unhideall',
+    '.slowmode <seconds>',
+    '.role <@user> <@role>',
+    '.temprole <@user> <@r> <t>',
+    '.warn / .warnings / .clearwarns'
+  ]);
+
+  const configBox = createDynamicBox('ROLE & LIMITS CONFIG', [
+    '.mod role add @role',
+    '.mod role remove @role',
+    '.mod roles',
+    '.mod limit <count>',
+    '.secure channel enable'
+  ]);
+
+  const embed = createStyledEmbed({
+    title: `${emojis.SHIELD || '🛡️'} Moderation Suite Control Hub`,
+    subtitle: 'Executive Server Moderation & Anti-Abuse Dashboard',
+    description:
+      `Welcome **${message.author.username}**! Below is the executive moderation suite.\n\n` +
+      '```\n' + modBox + '\n```\n' +
+      '```\n' + configBox + '\n```\n\n' +
+      `• **Authorized Mod Roles:** ${modRolesStr}\n` +
+      `• **Daily Limit:** \`${modConfig.dailyLimit || 5}\` actions/day per moderator\n` +
+      '• ⚠️ **Anti-Abuse Rule:** If any non-owner moderator exceeds daily limit, they are automatically **timed out for 2 Hours**!',
+    requestedBy: message.author,
+    clientUser
+  });
 
   const btnRow = new ActionRowBuilder().addComponents(
     new ButtonBuilder().setCustomId('btn_mod_roles').setLabel('Mod Roles').setEmoji('🛡️').setStyle(ButtonStyle.Primary),
     new ButtonBuilder().setCustomId('btn_mod_limits').setLabel('Daily Limits').setEmoji('📊').setStyle(ButtonStyle.Secondary),
     new ButtonBuilder().setCustomId('btn_mod_secure').setLabel('Secure Channels').setEmoji('🔒').setStyle(ButtonStyle.Success)
   );
-
   const panelMsg = await message.channel.send({ embeds: [embed], components: [btnRow] });
 
   // Interactive Button Collector for the Panel
