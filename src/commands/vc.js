@@ -34,6 +34,15 @@ module.exports = {
       }
     }
 
+    // Forward Voice Connection Request & Invite (.vc request, .vc invite, .vcrequest, .vcinvite)
+    if (sub === 'request' || sub === 'vcrequest' || sub === 'invite' || sub === 'vcinvite') {
+      const vcreqCmd = message.client.commands.get('vcrequest');
+      if (vcreqCmd) {
+        message.content = `.${sub === 'invite' || sub === 'vcinvite' ? 'vcinvite' : 'vcrequest'} ${args.slice(1).join(' ')}`;
+        return vcreqCmd.execute(message, args.slice(1));
+      }
+    }
+
     // Forward VoiceMaster temp channel subcommands (.vc transfer, .vc claim, .vc name, .vc lock, etc.)
     const vmSubcommands = [
       'transfer', 'claim', 'name', 'rename', 'size', 'limit', 'lock', 'unlock',

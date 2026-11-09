@@ -144,6 +144,8 @@ function buildVoiceHelpEmbed(member) {
   const user = member.user;
 
   const helpBox = createDynamicBox('VOICE COMMANDS', [
+    'vcrequest: Request to join member VC',
+    'vcinvite : Invite member to your VC',
     'info    : VC settings',
     'name    : Rename channel',
     'size    : Set VC limit',
