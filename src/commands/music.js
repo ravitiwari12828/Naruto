@@ -177,7 +177,13 @@ async function sendMusicCard(channel, track, player) {
     }
   }
 
-  if (musicCardRenderer) {
+  const artworkUrl = track?.info?.artworkUrl || track?.pluginInfo?.artworkUrl || null;
+  if (artworkUrl) {
+    embed.setThumbnail(artworkUrl);
+  }
+
+  const isLowBandwidth = process.env.LOW_BANDWIDTH === 'true';
+  if (musicCardRenderer && !isLowBandwidth) {
     try {
       const buf = await musicCardRenderer.createMusicCard({
         title: track?.info?.title || 'Unknown Title',

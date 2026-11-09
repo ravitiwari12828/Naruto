@@ -237,6 +237,11 @@ http.createServer((req, res) => {
 
   }
 
+  if (req.url === '/ping' || req.url === '/health' || req.method === 'HEAD') {
+    res.writeHead(200, { 'Content-Type': 'text/plain', 'Content-Length': 2 });
+    return res.end('OK');
+  }
+
   if (req.url === '/api/logs') {
     res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
     return res.end(recentLogBuffer.join(''));
@@ -275,13 +280,16 @@ const httpModule = require('http');
 
 function pingServer() {
   if (!keepaliveUrl) return;
-  const clientModule = keepaliveUrl.startsWith('https:') ? httpsModule : httpModule;
-  clientModule.get(keepaliveUrl, (res) => {
+  const pingEndpoint = keepaliveUrl.replace(/\/+$/, '') + '/ping';
+  const clientModule = pingEndpoint.startsWith('https:') ? httpsModule : httpModule;
+  const req = clientModule.request(pingEndpoint, { method: 'HEAD', timeout: 5000 }, (res) => {
     res.resume(); // Discard body immediately to save memory & bandwidth
     if (process.env.DEBUG_LOGS === 'true') {
-      flushLog(`📡 Keepalive self-ping sent to ${keepaliveUrl} (Status: ${res.statusCode})`);
+      flushLog(`📡 Keepalive self-ping sent to ${pingEndpoint} (Status: ${res.statusCode})`);
     }
-  }).on('error', () => {});
+  });
+  req.on('error', () => {});
+  req.end();
 }
 
 if (keepaliveUrl) {

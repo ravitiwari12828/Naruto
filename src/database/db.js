@@ -235,7 +235,7 @@ class ResilientDatabase {
           await this.checkAndCreateDailySnapshot();
         } catch (e) {}
       }
-    }, 5 * 60 * 1000);
+    }, 10 * 60 * 1000);
 
     // Initial check for today's daily snapshot on startup
     setTimeout(() => {
