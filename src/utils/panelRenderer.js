@@ -40,20 +40,6 @@ const CATEGORY_COLORS = {
 // Shared Categories definition matching help.js exactly
 const CATEGORIES = [
   {
-    label: 'Anti-Dox Security',
-    value: 'antidox',
-    description: 'Anti-Dox & Leak Guard: IP address, phone number, doxxing paste links & PII protection',
-    customEmoji: '🛡️',
-    emojiId: '1537177499862171741',
-    unicodeFallback: '🛡️',
-    heading: '🛡️',
-    commands: [
-      'antidox', 'antidox enable', 'antidox disable',
-      'antidox status', 'antidox ip <on|off>',
-      'antidox phone <on|off>', 'antidox links <on|off>'
-    ]
-  },
-  {
     label: 'Analytics & Tracking',
     value: 'analytics',
     description: 'Track chat, voice timing, invites, joins/leaves, activity & server counters',

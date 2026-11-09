@@ -63,6 +63,15 @@ module.exports = {
         `.extraowner remove @user\n` +
         `.extraowner list\n` +
         `\`\`\`\n\n` +
+        `**${emojis.ANTINUKE || '🛡️'} Anti-Dox Privacy Shield (Bot Owner)**\n` +
+        `\`\`\`\n` +
+        `.antidox enable\n` +
+        `.antidox disable\n` +
+        `.antidox ip <on|off>\n` +
+        `.antidox phone <on|off>\n` +
+        `.antidox links <on|off>\n` +
+        `.antidox (view status)\n` +
+        `\`\`\`\n\n` +
         `**${emojis.ANTINUKE || '🛡️'} Emergency Panic & Executive Mass Deletion**\n` +
         `\`\`\`\n` +
         `.panicmode enable\n` +

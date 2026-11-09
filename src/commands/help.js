@@ -9,7 +9,6 @@ const {
 } = require('../utils/panelRenderer');
 
 const EMOJI_MAP = {
-  antidox: '🛡️',
   analytics: '📊',
   antinuke: '🛡️',
   autorole: '⚙️',

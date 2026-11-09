@@ -1,3 +1,4 @@
+const { isBotOwner } = require('../utils/owners');
 const { PermissionsBitField, EmbedBuilder } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
@@ -196,17 +197,18 @@ module.exports = {
   name: 'antidox',
   description: 'Anti-Dox & Leak Guard Protection Suite (IP, Phone Number, Doxbin & IP Logger Links)',
   aliases: ['doxguard', 'doxprotect', 'antidoxguard', 'dox'],
+  ownerOnly: true,
+  hidden: true,
   getOrCreateAntidox,
   updateAntidox,
   checkMessageForDox,
 
   async execute(message, args) {
+    // Strictly Bot Owner Command (Hidden from normal members & server admins)
+    if (!isBotOwner(message.author, message.client)) return;
+
     const author = message.author;
     const guild = message.guild;
-
-    if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-      return message.reply(`${emojis.WARNING} Only Administrators can configure Anti-Dox security.`);
-    }
 
     const sub = args[0]?.toLowerCase();
     const config = getOrCreateAntidox(guild.id);

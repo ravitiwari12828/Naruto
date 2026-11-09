@@ -89,7 +89,6 @@ module.exports = {
     const moduleList = [
       `1. Audit & Event Logs  : .setup logs     (Deploy 15+ Audit Channels)`,
       `2. Security & AntiNuke  : .setup antinuke (Protect Guild & Whitelists)`,
-      `3. Anti-Dox Privacy     : .setup antidox  (PII Masking & Privacy Shield)`,
       `4. AutoMod System       : .setup automod  (Anti-Spam, Links, Invites)`,
       `5. Welcome Greetings    : .setup welcome  (Join Cards & Greetings)`,
       `6. Support Tickets      : .setup ticket   (Deploy Ticket System)`,
@@ -120,7 +119,6 @@ module.exports = {
       .addOptions([
         { label: 'Audit & Event Logging', value: 'setup_logs', description: 'Deploy 15+ dedicated event audit log channels', emoji: '📜' },
         { label: 'Security & AntiNuke', value: 'setup_antinuke', description: 'Protect server from unauthorized mass bans, kicks & deletions', emoji: '🛡️' },
-        { label: 'Anti-Dox Privacy Shield', value: 'setup_antidox', description: 'Mask phone numbers, IPs, and PII in chat', emoji: '👁️' },
         { label: 'AutoMod Filters', value: 'setup_automod', description: 'Configure Anti-Spam, Anti-Link, Anti-Invite & Bad Words', emoji: '⚙️' },
         { label: 'Welcome & Greetings', value: 'setup_welcome', description: 'Set up welcome greetings, join cards & auto-roles', emoji: '👋' },
         { label: 'Support Ticket System', value: 'setup_ticket', description: 'Deploy ticket category, embed panel & transcript logs', emoji: '🎟️' },
