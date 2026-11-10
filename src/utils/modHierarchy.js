@@ -391,25 +391,9 @@ const QUICK_ROLES = {
   // --- SPECIAL & PERK ROLES (Management to Higher - Tier 8+) ---
   girl: { key: 'girl', name: 'Girl', minTier: 8, aliases: ['dgirl', 'girls'] },
   artist: { key: 'artist', name: 'Artist', minTier: 8, aliases: ['dartist'] },
-  regular: { key: 'regular', name: 'Radha Regulars .', minTier: 8, aliases: ['dregular', 'radharegulars'] },
-  sovereign: { key: 'sovereign', name: 'Sovereigns .', minTier: 8, aliases: ['dsovereign', 'sovereigns'] },
-  crew: { key: 'crew', name: 'Crew Leader .', minTier: 8, aliases: ['dcrew', 'crewleader'] },
-  empress: { key: 'empress', name: 'Empresses .', minTier: 8, aliases: ['dempress', 'empresses'] },
-  crownprincess: { key: 'crownprincess', name: 'Crown Princess .', minTier: 8, aliases: ['dcrownprincess'] },
-  overseer: { key: 'overseer', name: 'Overseer .', minTier: 8, aliases: ['doverseer'] },
-  angel: { key: 'angel', name: 'Fallen Angel .', minTier: 8, aliases: ['dangel', 'fallenangel'] },
-  enough: { key: 'enough', name: 'Name Is Enough .', minTier: 8, aliases: ['denough'] },
-  hot: { key: 'hot', name: 'Too Hot to Handle .', minTier: 8, aliases: ['dhot'] },
-  mystics: { key: 'mystics', name: 'Mystics .', minTier: 8, aliases: ['dmystics'] },
-  apsara: { key: 'apsara', name: 'Apsara .', minTier: 8, aliases: ['dapsara'] },
-  vchelp: { key: 'vchelp', name: 'Vc Help .', minTier: 8, aliases: ['dvchelp'] },
-  pfp: { key: 'pfp', name: 'pfp mod .', minTier: 8, aliases: ['dpfp', 'pfpmod'] },
-  fm: { key: 'fm', name: 'FM', minTier: 8, aliases: ['dfm'] },
-  vouch: { key: 'vouch', name: 'Vouched <3', minTier: 8, aliases: ['dvouch'] },
-  vip: { key: 'vip', name: 'VIPs .', minTier: 8, aliases: ['dvip', 'vips'] },
-  vvip: { key: 'vvip', name: 'VVIP .', minTier: 8, aliases: ['dvvip'] },
-  guest: { key: 'guest', name: 'Distinguished Guest .', minTier: 8, aliases: ['dguest'] },
-  star: { key: 'star', name: 'Star Of The Week .', minTier: 8, aliases: ['dstar', 'dstarofweek', 'starofweek'] }
+  vip: { key: 'vip', name: 'VIPs .', minTier: 8, aliases: ['dvip', 'vips', 'vip'] },
+  guest: { key: 'guest', name: 'Distinguished Guest .', minTier: 8, aliases: ['dguest', 'guest'] },
+  vouch: { key: 'vouch', name: 'Vouched <3', minTier: 8, aliases: ['dvouch', 'vouch'] }
 };
 
 /**
@@ -568,15 +552,8 @@ function renderCustomRolesPanel(message, clientUser) {
     '.agirl / .rgirl              -> @Girl',
     '.aartist / .rartist          -> @Artist',
     '.avip / .rvip                -> @VIPs',
-    '.avvip / .rvvip              -> @VVIP',
     '.aguest / .rguest            -> @Distinguished Guest',
-    '.astar / .rstar              -> @Star Of The Week',
-    '.avouch / .rvouch            -> @Vouched <3',
-    '.aregular / .rregular        -> @Radha Regulars',
-    '.acrew / .rcrew              -> @Crew Leader',
-    '.aempress / .rempress        -> @Empresses',
-    '.aoverseer / .roverseer      -> @Overseer',
-    '.aangel / .rangel            -> @Fallen Angel'
+    '.avouch / .rvouch            -> @Vouched <3'
   ]);
 
   return createStyledEmbed({
