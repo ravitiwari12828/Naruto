@@ -3,6 +3,7 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 const db = require('../database/db');
 const emojis = require('../utils/emojis');
 const { PermissionsBitField } = require('discord.js');
+const { isTicketChannel } = require('./tickets');
 
 module.exports = {
   name: 'singlereaction',
@@ -59,6 +60,10 @@ module.exports = {
 
       if (!targetChannel) {
         return message.reply(`${emojis.WARNING} Please mention a channel!\nUsage: \`.sr enable #channel <emoji> [#log-channel]\``);
+      }
+
+      if (isTicketChannel(targetChannel)) {
+        return message.reply(`${emojis.WARNING} Single Reaction Mode cannot be enabled inside private ticket channels!`);
       }
 
       if (!rawEmoji) {

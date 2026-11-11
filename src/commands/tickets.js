@@ -284,6 +284,14 @@ function buildTicketActionRows() {
   return [row1, row2];
 }
 
+function isTicketChannel(channel) {
+  if (!channel) return false;
+  return Boolean(
+    channel.name?.startsWith('ticket') ||
+    (channel.topic && channel.topic.includes('ticket|'))
+  );
+}
+
 module.exports = {
   name: 'ticket',
   description: 'Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers',
@@ -300,6 +308,7 @@ module.exports = {
   generateTranscriptBuffer,
   buildTicketEmbed,
   buildTicketActionRows,
+  isTicketChannel,
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -325,9 +334,7 @@ module.exports = {
     } catch (e) {}
 
     // Strict Ticket Channel Scope Restriction
-    const isTicketChannel = message.channel.name.startsWith('ticket-') || 
-                            message.channel.name.startsWith('ticket') || 
-                            (message.channel.topic && message.channel.topic.includes('ticket|'));
+    const inTicketChannel = isTicketChannel(message.channel);
 
     const ticketOnlySubcommands = [
       'claim', 'close', 'reopen', 'add', 'remove',
@@ -335,7 +342,7 @@ module.exports = {
       'anon', 'lock', 'transcript'
     ];
 
-    if (ticketOnlySubcommands.includes(sub) && !isTicketChannel) {
+    if (ticketOnlySubcommands.includes(sub) && !inTicketChannel) {
       if (sub === 'claim') {
         const userTicket = message.guild.channels.cache.find(c =>
           c.isTextBased() && c.topic && c.topic.includes('owner:' + message.author.id)

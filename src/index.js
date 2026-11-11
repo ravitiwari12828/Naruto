@@ -340,6 +340,8 @@ const { dispatchLog } = require('./utils/logger');
 
 const { initLavalink } = require('./utils/lavalink');
 
+const { isTicketChannel } = require('./commands/tickets');
+
 
 
 const PREFIX = process.env.PREFIX || '.';
@@ -3370,15 +3372,9 @@ client.on('messageCreate', async (message) => {
 
 
 
-  // 🎫 TICKET MESSAGE RECEIPT REACTION & ANONYMOUS STAFF MODE
+  // 🎫 TICKET ANONYMOUS STAFF MODE
 
   if (message.guild && message.channel.topic && message.channel.topic.includes('ticket|')) {
-
-    // React to confirm message receipt for both user & staff
-
-    await message.react(emojis.SUCCESS).catch(() => {});
-
-
 
     // Anonymous Staff Mode masking
 
@@ -4148,17 +4144,15 @@ client.on('messageCreate', async (message) => {
   if (!isCommandMsg) {
 
     // Autoreact (Skip inside private ticket channels to prevent spamming support tickets)
-    const isTicketChan = message.channel?.name?.startsWith('ticket-') || 
-                         message.channel?.name?.startsWith('ticket') || 
-                         (message.channel?.topic && message.channel.topic.includes('ticket|'));
+    const inTicketChan = isTicketChannel(message.channel);
 
-    if (!isTicketChan) {
+    if (!inTicketChan) {
       const autoreacts = db.getAutoreacts(message.guild.id);
 
       for (const ar of autoreacts) {
         if (ar.trigger) {
           const cleanTrigger = ar.trigger.toLowerCase().trim();
-          const triggerUserId = cleanTrigger.match(/\d{17,21}/)?.[0];
+          const triggerUserId = cleanTrigger.match(/^(?:<@!?)?(\d{17,21})>?$/)?.[1];
           // Only trigger if message mentions the target user OR contains the exact trigger text!
           // NEVER trigger just because the author of the message is the trigger!
           const isMatched = contentLower.includes(cleanTrigger) || (triggerUserId && message.mentions.users.has(triggerUserId));
@@ -4223,9 +4217,9 @@ client.on('messageCreate', async (message) => {
 
 
 
-    // 🗳️ SINGLE REACTION CHANNEL AUTO-REACT (Only for non-command chat messages)
+    // 🗳️ SINGLE REACTION CHANNEL AUTO-REACT (Only for non-command, non-ticket chat messages)
 
-    const rxConfig = db.getReactionChannel(message.guild.id, message.channel.id);
+    const rxConfig = inTicketChan ? null : db.getReactionChannel(message.guild.id, message.channel.id);
 
     if (rxConfig && rxConfig.enabled && rxConfig.emoji && !message.content.startsWith('.')) {
 
@@ -7087,6 +7081,8 @@ client.on('messageReactionAdd', async (reaction, user) => {
     if (!guild) return;
 
 
+
+    if (isTicketChannel(reaction.message.channel)) return;
 
     const channelId = reaction.message.channel.id;
 
