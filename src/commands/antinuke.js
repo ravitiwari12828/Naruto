@@ -418,7 +418,8 @@ module.exports = {
   description: 'Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite',
   aliases: [
     'panicmode', 'bypassrole',
-    'joingate', 'ratelimits', ],
+    'joingate', 'ratelimits'
+  ],
   antinukeConfigs,
   getOrCreateAntinuke,
   isUserWhitelistedForFeature,
@@ -435,7 +436,7 @@ module.exports = {
     if (invoked === 'extraowner') sub = 'extraowner';
     if (invoked === 'joingate') sub = 'joingate';
     if (invoked === 'quarantine') sub = 'quarantine';
-    if (invoked === || invoked === 'ratelimits') sub = ;
+    if (invoked === 'ratelimits') sub = 'limits';
 
     const author = message.author;
     const guild = message.guild;
