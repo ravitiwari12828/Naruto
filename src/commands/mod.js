@@ -1,89 +1,90 @@
-const { verifyTierPermission, getMemberTier, TIERS } = require('../utils/modHierarchy');
+const {
+  verifyPermit,
+  checkTargetHierarchy,
+  validateRoleSafety,
+  isPermitBypass,
+  getMemberPermitState,
+  formatPermitLabels
+} = require('../utils/modPermits');
 const {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  PermissionsBitField
+  PermissionsBitField,
+  AuditLogEvent
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
+const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 const db = require('../database/db');
 const { dispatchLog } = require('../utils/logger');
 
-async function checkModeratorPermissionAndQuota(message, actionName = 'action', options = {}) {
-  return await verifyTierPermission(message, actionName, options);
-}
-
 async function renderModerationPanel(message, clientUser) {
   const guild = message.guild;
-  const modConfig = db.getModConfig(guild.id);
-  const modRolesStr = modConfig.roles && modConfig.roles.length > 0
-    ? modConfig.roles.map(rId => `<@&${rId}>`).join(', ')
-    : '*None configured (Locked to Administrators & Server Owner)*';
+  const guildPerms = db.getGuildPermits ? db.getGuildPermits(guild.id) : { users: {}, roles: {} };
+  const roleCount = Object.values(guildPerms.roles || {}).filter(a => Array.isArray(a) && a.length > 0).length;
+  const userCount = Object.values(guildPerms.users || {}).filter(a => Array.isArray(a) && a.length > 0).length;
 
   const modBox = createDynamicBox('MODERATION COMMANDS', [
-    '.ban <@user> [reason]',
-    '.hackban <id> [reason]',
+    '.ban / .hackban / .unban / .unbanall',
     '.kick <@user> [reason]',
-    '.mute <@user> [duration]',
-    '.unmute <@user>',
-    '.unban <id> / .unbanall',
-    '.nuke (clone & reset)',
-    '.clear [count] (1-100)',
-    '.lock / .unlock [#chan]',
-    '.lockall / .unlockall',
-    '.hide / .unhide [#chan]',
-    '.hideall / .unhideall',
-    '.slowmode <seconds>',
-    '.role <@user> <@role>',
-    '.temprole <@user> <@r> <t>',
-    '.warn / .warnings / .clearwarns'
+    '.mute / .unmute <@user> [time]',
+    '.nick <@user> <newNick | reset>',
+    '.clear / .purge [sub] [count]',
+    '.slowmode <time> / .unslowmode',
+    '.lock / .unlock / .lockall',
+    '.hide / .unhide / .hideall',
+    '.clone [#channel] / .nuke (Owner)',
+    '.role / .temprole @user @role',
+    '.warn / .unwarn / .warnings',
+    '.case <id|edit|delete> / .audit'
   ]);
 
-  const configBox = createDynamicBox('ROLE & LIMITS CONFIG', [
-    '.mod role add @role',
-    '.mod role remove @role',
-    '.mod roles',
-    '.mod limit <count>',
+  const configBox = createDynamicBox('PERMITS & SECURITY CONFIG', [
+    '.permit mod add @user / @role',
+    '.permit mod remove @user / @role',
+    '.permit mod list [@user | @role]',
+    '.permit mod reset @user / @role',
+    '.modlogs #channel',
     '.secure channel enable'
   ]);
 
   const embed = createStyledEmbed({
     title: `${emojis.SHIELD || '🛡️'} Moderation Suite Control Hub`,
-    subtitle: 'Executive Server Moderation & Anti-Abuse Dashboard',
+    subtitle: 'Modular Tiered Mod Permits & Hierarchy Enforcement',
     description:
-      `Welcome **${message.author.username}**! Below is the executive moderation suite.\n\n` +
+      `Welcome **${message.author.username}**! Below is the executive moderation suite powered by **Modular Mod Permits**.\n\n` +
       '```\n' + modBox + '\n```\n' +
       '```\n' + configBox + '\n```\n\n' +
-      `• **Authorized Mod Roles:** ${modRolesStr}\n` +
-      `• **Daily Limit:** \`${modConfig.dailyLimit || 5}\` actions/day per moderator\n` +
-      '• ⚠️ **Anti-Abuse Rule:** If any non-owner moderator exceeds daily limit, they are automatically **timed out for 2 Hours**!',
+      `• **Active Permit Targets:** \`${roleCount}\` Role(s) • \`${userCount}\` User(s)\n` +
+      `• **Admin / Owner Bypass:** Automatic (\`.nuke\` & \`.permit\` locked to Admin/Owner)\n` +
+      `• 🔒 **Safety Enforcement:** Non-admin permitted staff remain bound by Discord role hierarchy.`,
     requestedBy: message.author,
     clientUser
   });
 
   const btnRow = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('btn_mod_roles').setLabel('Mod Roles').setEmoji('🛡️').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('btn_mod_limits').setLabel('Daily Limits').setEmoji('📊').setStyle(ButtonStyle.Secondary),
+    new ButtonBuilder().setCustomId('btn_mod_permits').setLabel('Permit Registry').setEmoji('🎫').setStyle(ButtonStyle.Primary),
     new ButtonBuilder().setCustomId('btn_mod_secure').setLabel('Secure Channels').setEmoji('🔒').setStyle(ButtonStyle.Success)
   );
   const panelMsg = await message.channel.send({ embeds: [embed], components: [btnRow] });
 
-  // Interactive Button Collector for the Panel
   const collector = panelMsg.createMessageComponentCollector({
     filter: i => i.user.id === message.author.id,
     time: 120000
   });
 
   collector.on('collect', async i => {
-    if (i.customId === 'btn_mod_roles') {
-      const currentCfg = db.getModConfig(guild.id);
-      const rolesInfo = currentCfg.roles.length > 0 ? currentCfg.roles.map(rId => `<@&${rId}>`).join(', ') : 'None configured yet. Use \`.mod role add @role\`';
-      await i.reply({ content: `🛡️ **Authorized Moderator Roles:** ${rolesInfo}`, ephemeral: true }).catch(() => {});
-    } else if (i.customId === 'btn_mod_limits') {
-      const currentCfg = db.getModConfig(guild.id);
-      await i.reply({ content: `📊 **Daily Moderation Limit:** \`${currentCfg.dailyLimit || 5}\` actions per 24 hours.\n⚠️ Exceeding this limit will trigger a 2-Hour Server Timeout.`, ephemeral: true }).catch(() => {});
+    if (i.customId === 'btn_mod_permits') {
+      const gp = db.getGuildPermits ? db.getGuildPermits(guild.id) : { users: {}, roles: {} };
+      const rLines = Object.entries(gp.roles || {}).filter(([, k]) => k.length > 0).map(([id, k]) => `• <@&${id}>: ${formatPermitLabels(k)}`);
+      const uLines = Object.entries(gp.users || {}).filter(([, k]) => k.length > 0).map(([id, k]) => `• <@${id}>: ${formatPermitLabels(k)}`);
+      const infoText =
+        `🎫 **Moderation Permits Summary**\n` +
+        `**Roles:**\n${rLines.length ? rLines.slice(0, 10).join('\n') : '`None`'}\n\n` +
+        `**Users:**\n${uLines.length ? uLines.slice(0, 10).join('\n') : '`None`'}`;
+      await i.reply({ content: infoText.slice(0, 1950), ephemeral: true }).catch(() => {});
     } else if (i.customId === 'btn_mod_secure') {
       await i.deferUpdate().catch(() => {});
       const securesetupCmd = message.client.commands.get('securesetup');
@@ -148,14 +149,15 @@ function recordAndLogCase(guild, { action, targetId, targetTag, executorId, exec
 
 module.exports = {
   name: 'mod',
-  description: 'Moderation Suite: ban, hackban, kick, mute, unmute, unban, unbanall, purge, purgebots, nuke, role, rolemenu, list, warn, case, cases, modlogs',
+  description: 'Moderation Suite: ban, hackban, kick, mute, unmute, nick, unban, unbanall, purge, slowmode, nuke, clone, role, temprole, rolemenu, list, warn, warnings, case, cases, audit, modlogs',
   aliases: [
-    'clone',     'ban', 'hackban', 'kick', 'mute', 'unmute',
-    'nuke', 'purge', 'purgebots', 'clear',
+    'clone', 'ban', 'hackban', 'kick', 'mute', 'unmute', 'timeout', 'untimeout',
+    'nick', 'nickname', 'setnick',
+    'nuke', 'purge', 'purgebots', 'clear', 'slowmode', 'unslowmode',
     'unban', 'unbanall',
     'role', 'rolemenu', 'list',
     'warn', 'unwarn', 'rmwarn', 'warnremove', 'warnings', 'clearwarns',
-    'case', 'cases', 'modlogs', 'caseinfo',
+    'case', 'cases', 'modlogs', 'modlog', 'caseinfo', 'audit', 'auditlog', 'auditlogs',
     'temprole', 'trole', 'addrole', 'giverole'
   ],
 
@@ -184,15 +186,18 @@ module.exports = {
       }
     }
 
-    // 0. Dedicated Moderation Hub Panel & Subcommands (.mod, .moderation, .mod role, .mod limit)
+    // 0. Dedicated Moderation Hub Panel & Subcommands (.mod, .mod permit, .mod role, .mod limit)
     if (['mod', 'moderation', 'moderator'].includes(invoked)) {
       const sub = args[0]?.toLowerCase();
-      const { isExtraOwner } = require('../utils/owners');
-      const isOwner = guild.ownerId === message.author.id || (isExtraOwner && isExtraOwner(guild.id, message.author.id));
-      const isAdmin = author.permissions.has(PermissionsBitField.Flags.Administrator);
+      const canConfigure = isPermitBypass(author);
+
+      if (['permit', 'permits'].includes(sub)) {
+        const permitCmd = message.client.commands.get('permit');
+        if (permitCmd) return permitCmd.execute(message, args.slice(1));
+      }
 
       if (['role', 'roles', 'setrole', 'addrole', 'remrole'].includes(sub)) {
-        if (!isOwner && !isAdmin) {
+        if (!canConfigure) {
           return message.reply(`${emojis.WARNING || '⚠️'} Only the Server Owner or Administrators can configure Moderator Roles.`);
         }
 
@@ -230,7 +235,7 @@ module.exports = {
       }
 
       if (['limit', 'limits', 'setlimit'].includes(sub)) {
-        if (!isOwner && !isAdmin) {
+        if (!canConfigure) {
           return message.reply(`${emojis.WARNING || '⚠️'} Only the Server Owner or Administrators can configure daily moderation limits.`);
         }
         const newLim = parseInt(args[1]);
@@ -249,18 +254,21 @@ module.exports = {
       return renderModerationPanel(message, clientUser);
     }
 
-    // 1. ${emojis.MOD} BAN
+    // 1. BAN
     if (invoked === 'ban') {
-      const modCheck = await checkModeratorPermissionAndQuota(message, 'ban');
+      const modCheck = await verifyPermit(message, 'punish_ban', 'ban');
       if (!modCheck.allowed) return;
-      // Verified via modHierarchy
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return botMissingPerms(message, 'Ban Members');
 
       const targetId = message.mentions.users.first()?.id || (args[0] && args[0].replace(/[<@!>]/g, '').match(/^\d{17,20}$/) ? args[0].replace(/[<@!>]/g, '') : null);
       if (!targetId) return message.reply(`${emojis.WARNING} Please mention a user or provide a valid User ID.\nUsage: \`.ban @user [reason]\` or \`.ban <userID> [reason]\``);
 
       const targetMember = await guild.members.fetch(targetId).catch(() => null);
-      if (targetMember && !targetMember.bannable) return message.reply(`${emojis.WARNING} I cannot ban that user — they may have higher permissions.`);
+      if (targetMember) {
+        const hierarchyOk = await checkTargetHierarchy(message, targetMember, 'ban');
+        if (!hierarchyOk) return;
+        if (!targetMember.bannable) return message.reply(`${emojis.WARNING} I cannot ban that user — they may have higher permissions.`);
+      }
 
       const modLimitsCmd = message.client.commands.get('modlimits');
       if (modLimitsCmd && modLimitsCmd.checkAndIncrementModAction) {
@@ -297,15 +305,21 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 2. 🌐 HACKBAN (ban by ID)
+    // 2. HACKBAN (ban by ID)
     if (invoked === 'hackban') {
-      const modCheck = await checkModeratorPermissionAndQuota(message, 'hackban');
+      const modCheck = await verifyPermit(message, 'punish_ban', 'hackban');
       if (!modCheck.allowed) return;
-      // Verified via modHierarchy
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return botMissingPerms(message, 'Ban Members');
 
       const userId = args[0]?.replace(/[<@!>]/g, '');
-      if (!userId || isNaN(userId)) return message.reply(`${emojis.WARNING} Please provide a valid User ID.\nUsage: \`.hackban <ID> [reason]\``);
+      if (!userId || !/^\d{17,21}$/.test(userId)) return message.reply(`${emojis.WARNING} Please provide a valid User ID.\nUsage: \`.hackban <ID> [reason]\``);
+      if (userId === guild.ownerId) return message.reply(`${emojis.WARNING} You cannot hackban the **Server Owner**!`);
+
+      const existingMember = await guild.members.fetch(userId).catch(() => null);
+      if (existingMember) {
+        const hierarchyOk = await checkTargetHierarchy(message, existingMember, 'hackban');
+        if (!hierarchyOk) return;
+      }
 
       const modLimitsCmd = message.client.commands.get('modlimits');
       if (modLimitsCmd && modLimitsCmd.checkAndIncrementModAction) {
@@ -340,9 +354,9 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 3. 👢 KICK
+    // 3. KICK
     if (invoked === 'kick') {
-      const modCheck = await checkModeratorPermissionAndQuota(message, 'kick');
+      const modCheck = await verifyPermit(message, 'punish_kick', 'kick');
       if (!modCheck.allowed) return;
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.KickMembers)) return botMissingPerms(message, 'Kick Members');
 
@@ -351,6 +365,7 @@ module.exports = {
 
       const target = await guild.members.fetch(targetId).catch(() => null);
       if (!target) return message.reply(`${emojis.WARNING} Member not found in this server.`);
+      if (!(await checkTargetHierarchy(message, target, 'kick'))) return;
       if (!target.kickable) return message.reply(`${emojis.WARNING} I cannot kick that user — they may have higher permissions.`);
 
       const reason = args.slice(1).join(' ') || 'No reason provided.';
@@ -378,25 +393,24 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 4. 🔇 MUTE
-    if (invoked === 'mute') {
-      const timeArg = args[1];
-      const timeMap = { s: 1000, m: 60000, h: 3600000, d: 86400000, w: 7 * 86400000 };
-      const match = timeArg?.match(/^(\d+)(s|m|h|d|w)$/i);
-      const duration = match ? parseInt(match[1]) * timeMap[match[2].toLowerCase()] : 900000;
-      const reason = (match ? args.slice(2) : args.slice(1)).join(' ') || 'No reason provided.';
-
-      const modCheck = await checkModeratorPermissionAndQuota(message, 'mute', { durationMs: duration });
+    // 4. MUTE / TIMEOUT
+    if (invoked === 'mute' || invoked === 'timeout') {
+      const modCheck = await verifyPermit(message, 'chat_mute', invoked);
       if (!modCheck.allowed) return;
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return botMissingPerms(message, 'Timeout Members');
 
+      const timeArg = args[1];
+      const timeMap = { s: 1000, m: 60000, h: 3600000, d: 86400000, w: 7 * 86400000 };
+      const match = timeArg?.match(/^(\d+)(s|m|h|d|w)$/i);
+      const duration = Math.min(match ? parseInt(match[1]) * timeMap[match[2].toLowerCase()] : 900000, 28 * 86400000);
+      const reason = (match ? args.slice(2) : args.slice(1)).join(' ') || 'No reason provided.';
+
       const targetId = message.mentions.users.first()?.id || (args[0] && args[0].replace(/[<@!>]/g, '').match(/^\d{17,20}$/) ? args[0].replace(/[<@!>]/g, '') : null);
-      if (!targetId) return message.reply(`${emojis.WARNING} Usage: \`.mute @user [duration: 1m/1h/1d] [reason]\``);
+      if (!targetId) return message.reply(`${emojis.WARNING} Usage: \`.${invoked} @user [duration: 1m/1h/1d] [reason]\``);
 
       const target = await guild.members.fetch(targetId).catch(() => null);
       if (!target) return message.reply(`${emojis.WARNING} Member not found in this server.`);
-
-
+      if (!(await checkTargetHierarchy(message, target, 'mute'))) return;
 
       try {
         await target.timeout(duration, reason);
@@ -404,35 +418,37 @@ module.exports = {
         return message.reply(`${emojis.WARNING} Failed to mute member: ${err.message}`);
       }
 
+      const durDisplay = match ? timeArg : '15m';
       const cData = recordAndLogCase(guild, {
         action: 'MUTE',
         targetId: target.id,
         targetTag: target.user.tag,
         executorId: message.author.id,
         executorTag: message.author.tag,
-        reason: `[${timeArg || '10m'}] ${reason}`
+        reason: `[${durDisplay}] ${reason}`
       });
 
       const embed = createStyledEmbed({
         title: `🔇 User Muted [Case #${cData.caseId}]`,
-        description: `**${target.user.tag}** has been silenced!\n\n**Case ID:** \`#${cData.caseId}\`\n**Duration:** \`${timeArg || '10m'}\`\n**Reason:** ${reason}`,
+        description: `**${target.user.tag}** has been silenced!\n\n**Case ID:** \`#${cData.caseId}\`\n**Duration:** \`${durDisplay}\`\n**Reason:** ${reason}`,
         requestedBy: message.author,
         clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 5. 🔊 UNMUTE
-    if (invoked === 'unmute') {
-      const modCheck = await checkModeratorPermissionAndQuota(message, 'unmute');
+    // 5. UNMUTE / UNTIMEOUT
+    if (invoked === 'unmute' || invoked === 'untimeout') {
+      const modCheck = await verifyPermit(message, 'chat_mute', invoked);
       if (!modCheck.allowed) return;
-      // Verified via modHierarchy
+      if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ModerateMembers)) return botMissingPerms(message, 'Timeout Members');
 
       const targetId = message.mentions.users.first()?.id || (args[0] && args[0].replace(/[<@!>]/g, '').match(/^\d{17,20}$/) ? args[0].replace(/[<@!>]/g, '') : null);
-      if (!targetId) return message.reply(`${emojis.WARNING} Usage: \`.unmute @user\``);
+      if (!targetId) return message.reply(`${emojis.WARNING} Usage: \`.${invoked} @user\``);
 
       const target = await guild.members.fetch(targetId).catch(() => null);
       if (!target) return message.reply(`${emojis.WARNING} Member not found in this server.`);
+      if (!(await checkTargetHierarchy(message, target, 'unmute'))) return;
 
       try {
         await target.timeout(null);
@@ -458,16 +474,57 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 6. ${emojis.SUCCESS} UNBAN
-    if (invoked === 'unban') {
-      const modCheck = await checkModeratorPermissionAndQuota(message, 'unban');
+    // 5b. NICKNAME (.nick @user <newNick | reset>)
+    if (['nick', 'nickname', 'setnick'].includes(invoked)) {
+      const modCheck = await verifyPermit(message, 'chat_mute', 'nick');
       if (!modCheck.allowed) return;
-      // Verified via modHierarchy
+      if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageNicknames)) return botMissingPerms(message, 'Manage Nicknames');
+
+      const targetId = message.mentions.users.first()?.id || (args[0] && args[0].replace(/[<@!>]/g, '').match(/^\d{17,20}$/) ? args[0].replace(/[<@!>]/g, '') : null);
+      if (!targetId) {
+        return message.reply(`${emojis.WARNING} Usage: \`.nick @user <new nickname | reset>\``);
+      }
+
+      const target = await guild.members.fetch(targetId).catch(() => null);
+      if (!target) return message.reply(`${emojis.WARNING} Member not found in this server.`);
+      if (!(await checkTargetHierarchy(message, target, 'change nickname for'))) return;
+      if (!target.manageable) return message.reply(`${emojis.WARNING} I cannot change this member's nickname — their highest role may be above mine.`);
+
+      const rawNick = args.slice(1).join(' ').trim();
+      const isReset = !rawNick || ['reset', 'clear', 'none', 'off'].includes(rawNick.toLowerCase());
+      const newNick = isReset ? null : rawNick.slice(0, 32);
+
+      try {
+        await target.setNickname(newNick, `Changed by ${message.author.tag}`);
+      } catch (err) {
+        return message.reply(`${emojis.WARNING} Failed to update nickname: ${err.message}`);
+      }
+
+      const embed = createStyledEmbed({
+        title: `🏷️ Nickname ${isReset ? 'Reset' : 'Updated'}`,
+        description: isReset
+          ? `Reset nickname for <@${target.id}> (\`${target.user.tag}\`).`
+          : `Changed <@${target.id}>'s nickname to **${newNick}**.`,
+        requestedBy: message.author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 6. UNBAN
+    if (invoked === 'unban') {
+      const modCheck = await verifyPermit(message, 'punish_ban', 'unban');
+      if (!modCheck.allowed) return;
+      if (!guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return botMissingPerms(message, 'Ban Members');
 
       const userId = args[0]?.replace(/[<@!>]/g, '');
-      if (!userId) return message.reply(`${emojis.WARNING} Usage: \`.unban <userID>\``);
+      if (!userId || !/^\d{17,21}$/.test(userId)) return message.reply(`${emojis.WARNING} Usage: \`.unban <userID>\``);
 
-      await guild.bans.remove(userId).catch(() => null);
+      try {
+        await guild.bans.remove(userId, `Unbanned by ${message.author.tag}`);
+      } catch (err) {
+        return message.reply(`${emojis.WARNING} Could not unban \`${userId}\`: ${err.message}`);
+      }
 
       const cData = recordAndLogCase(guild, {
         action: 'UNBAN',
@@ -487,17 +544,16 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 7. ${emojis.SUCCESS} UNBAN ALL
+    // 7. UNBAN ALL
     if (invoked === 'unbanall') {
-      const modCheck = await checkModeratorPermissionAndQuota(message, 'unbanall');
+      const modCheck = await verifyPermit(message, 'punish_mass_unban', 'unbanall');
       if (!modCheck.allowed) return;
-      // Verified via modHierarchy
-      if (!author.permissions.has(PermissionsBitField.Flags.Administrator)) return missingPerms(message, 'Administrator');
+      if (!guild.members.me.permissions.has(PermissionsBitField.Flags.BanMembers)) return botMissingPerms(message, 'Ban Members');
 
       const bans = await guild.bans.fetch();
       let count = 0;
       for (const [, ban] of bans) {
-        await guild.bans.remove(ban.user.id).catch(() => {});
+        await guild.bans.remove(ban.user.id, `Mass Unban by ${message.author.tag}`).catch(() => {});
         count++;
       }
 
@@ -510,16 +566,17 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 8. 🗑️ PURGE & ADVANCED CLEAR
+    // 8. PURGE & ADVANCED CLEAR
     if (invoked === 'purge' || invoked === 'purgebots' || invoked === 'clear') {
       let sub = args[0]?.toLowerCase();
+      let isAdvSub = ['contains', 'user', 'reactions'].includes(sub);
       let isSub = ['all', 'bots', 'bot', 'b', 'contains', 'user', 'reactions', 'embeds', 'files', 'images'].includes(sub);
-      
+
       let amountArg = isSub ? (['contains', 'user'].includes(sub) ? args[2] : args[1]) : args[0];
       let amount = parseInt(amountArg) || (sub === 'reactions' ? 25 : 50);
 
-      const actionKey = sub === 'contains' ? 'clear contains' : 'clear';
-      const modCheck = await checkModeratorPermissionAndQuota(message, actionKey, { clearCount: amount });
+      const requiredPurgePermit = isAdvSub ? 'chat_purge_adv' : 'chat_purge_basic';
+      const modCheck = await verifyPermit(message, requiredPurgePermit, invoked);
       if (!modCheck.allowed) return;
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageMessages)) return botMissingPerms(message, 'Manage Messages');
 
@@ -533,7 +590,7 @@ module.exports = {
         const msgs = await message.channel.messages.fetch({ limit: fetchLimit });
         const filtered = msgs.filter(m => m.content && m.content.toLowerCase().includes(textToFind));
         await message.channel.bulkDelete(filtered, true).catch(() => null);
-        const reply = await message.channel.send(`🧹 Purged **${filtered.size}** messages containing "\${textToFind}\"!`);
+        const reply = await message.channel.send(`🧹 Purged **${filtered.size}** messages containing "${textToFind}"!`);
         setTimeout(() => reply.delete().catch(() => {}), 4000);
         return;
       }
@@ -616,10 +673,58 @@ module.exports = {
       return;
     }
 
-    // 10. 💣 NUKE (Strictly Server Owner & Discord Administrators ONLY)
+    // 9. SLOWMODE / UNSLOWMODE
+    if (invoked === 'slowmode' || invoked === 'unslowmode') {
+      const modCheck = await verifyPermit(message, 'chat_purge_basic', invoked);
+      if (!modCheck.allowed) return;
+      if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) return botMissingPerms(message, 'Manage Channels');
+
+      const targetChan = message.mentions.channels.first() || message.channel;
+      let seconds = 0;
+
+      if (invoked === 'unslowmode') {
+        seconds = 0;
+      } else {
+        const durArg = args.find(a => !a.startsWith('<#'));
+        if (!durArg) {
+          return message.reply(`${emojis.WARNING} Usage: \`.slowmode <seconds | 5s | 2m | off> [#channel]\` (Max 6h)`);
+        }
+        if (['0', 'off', 'disable', 'none', 'reset'].includes(durArg.toLowerCase())) {
+          seconds = 0;
+        } else {
+          const m = durArg.match(/^(\d+)(s|m|h)?$/i);
+          if (!m) {
+            return message.reply(`${emojis.WARNING} Invalid duration! Examples: \`.slowmode 5\`, \`.slowmode 30s\`, \`.slowmode 2m\`, \`.slowmode off\``);
+          }
+          const mult = { s: 1, m: 60, h: 3600 };
+          seconds = parseInt(m[1], 10) * (m[2] ? mult[m[2].toLowerCase()] : 1);
+          if (seconds < 0 || seconds > 21600) {
+            return message.reply(`${emojis.WARNING} Discord slowmode must be between **0s** and **6h** (21,600 seconds).`);
+          }
+        }
+      }
+
+      try {
+        await targetChan.setRateLimitPerUser(seconds, `Slowmode updated by ${message.author.tag}`);
+      } catch (err) {
+        return message.reply(`${emojis.WARNING} Failed to set slowmode: ${err.message}`);
+      }
+
+      const embed = createStyledEmbed({
+        title: `⏱️ Slowmode ${seconds === 0 ? 'Disabled' : 'Updated'}`,
+        description: seconds === 0
+          ? `Slowmode disabled in ${targetChan}.`
+          : `Slowmode set to **${seconds} second(s)** in ${targetChan}.`,
+        requestedBy: message.author,
+        clientUser
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 10. NUKE (Strictly Server Owner, Extra Owner, Bot Owner & Discord Administrators ONLY)
     if (invoked === 'nuke') {
-      if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator) && guild.ownerId !== message.author.id) {
-        return message.reply(`${emojis.WARNING || '⚠️'} **Admin Reserved!** The \`.nuke\` command is strictly reserved for **Server Owner & Discord Administrators** only.`);
+      if (!isPermitBypass(message.member)) {
+        return message.reply(`${emojis.WARNING || '⚠️'} **Admin Reserved!** The \`.nuke\` command is strictly reserved for **Server Owner, Extra Owners & Discord Administrators** only.`);
       }
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) return botMissingPerms(message, 'Manage Channels');
 
@@ -650,9 +755,9 @@ module.exports = {
       return;
     }
 
-    // 10b. 📋 CLONE CHANNEL
+    // 10b. CLONE CHANNEL
     if (invoked === 'clone') {
-      const modCheck = await checkModeratorPermissionAndQuota(message, 'clone');
+      const modCheck = await verifyPermit(message, 'chan_mass_clone', 'clone');
       if (!modCheck.allowed) return;
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels)) return botMissingPerms(message, 'Manage Channels');
 
@@ -669,21 +774,30 @@ module.exports = {
       return message.channel.send(`${emojis.SUCCESS || '✅'} Channel cloned successfully: ${newChannel}`);
     }
 
-    // 11. 🎭 ROLE (add/remove)
+    // 11. ROLE (add/remove)
     if (invoked === 'role' || invoked === 'addrole' || invoked === 'giverole') {
-      const modCheck = await checkModeratorPermissionAndQuota(message, 'role');
+      const modCheck = await verifyPermit(message, 'role_assign', invoked);
       if (!modCheck.allowed) return;
-      if (!author.permissions.has(PermissionsBitField.Flags.ManageRoles)) return missingPerms(message, 'Manage Roles');
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) return botMissingPerms(message, 'Manage Roles');
 
-      const target = message.mentions.members?.first();
-      const roleMention = message.mentions.roles?.first();
+      const target = message.mentions.members?.first() ||
+                     (args[0] ? await guild.members.fetch(args[0].replace(/[<@!>]/g, '')).catch(() => null) : null);
+      const roleMention = message.mentions.roles?.first() ||
+                          (args[1] ? (guild.roles.cache.get(args[1].replace(/[<@&>]/g, '')) ||
+                          guild.roles.cache.find(r => r.name.toLowerCase() === args.slice(1).join(' ').toLowerCase())) : null);
       if (!target || !roleMention) {
         return message.reply(`${emojis.WARNING} Usage: \`.role @user @role\` — adds or removes the role.`);
       }
 
+      if (target.id === message.author.id && !isPermitBypass(author)) {
+        return message.reply(`${emojis.WARNING || '⚠️'} **Security Violation:** You cannot assign or remove roles from **yourself**!`);
+      }
+
+      const isSafe = await validateRoleSafety(message, roleMention, 'modify');
+      if (!isSafe) return;
+
       if (target.roles.cache.has(roleMention.id)) {
-        await target.roles.remove(roleMention);
+        await target.roles.remove(roleMention, `Role removed by ${message.author.tag}`);
         const embed = createStyledEmbed({
           title: `🎭 Role Removed`,
           description: `Removed **${roleMention.name}** from **${target.user.tag}**.`,
@@ -691,7 +805,7 @@ module.exports = {
         });
         return message.channel.send({ embeds: [embed] });
       } else {
-        await target.roles.add(roleMention);
+        await target.roles.add(roleMention, `Role added by ${message.author.tag}`);
         const embed = createStyledEmbed({
           title: `🎭 Role Added`,
           description: `✅ Added **${roleMention.name}** to ${target}`,
@@ -701,16 +815,16 @@ module.exports = {
       }
     }
 
-    // 11b. ⏱️ TEMPROLE (add role for a duration, auto-remove after)
-    // Usage: .temprole @user 7d @role
-    //        .temprole @user 30m @role
-    //        .temprole @user 2h @role
+    // 11b. TEMPROLE (add role for a duration, auto-remove after)
     if (['temprole', 'trole'].includes(invoked)) {
-      if (!author.permissions.has(PermissionsBitField.Flags.ManageRoles)) return missingPerms(message, 'Manage Roles');
+      const modCheck = await verifyPermit(message, 'role_assign', invoked);
+      if (!modCheck.allowed) return;
       if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) return botMissingPerms(message, 'Manage Roles');
 
-      const target = message.mentions.members?.first();
-      const roleMention = message.mentions.roles?.first();
+      const target = message.mentions.members?.first() ||
+                     (args[0] ? await guild.members.fetch(args[0].replace(/[<@!>]/g, '')).catch(() => null) : null);
+      const roleMention = message.mentions.roles?.first() ||
+                          guild.roles.cache.find(r => args.some(a => a.replace(/[<@&>]/g, '') === r.id));
 
       if (!target || !roleMention) {
         return message.reply(
@@ -718,6 +832,13 @@ module.exports = {
           `Examples: \`.temprole @user 7d @Management\`, \`.temprole @user 2h @VIP\`, \`.temprole @user 30m @Muted\``
         );
       }
+
+      if (target.id === message.author.id && !isPermitBypass(author)) {
+        return message.reply(`${emojis.WARNING || '⚠️'} **Security Violation:** You cannot assign temporary roles to **yourself**!`);
+      }
+
+      const isSafe = await validateRoleSafety(message, roleMention, 'temporarily assign');
+      if (!isSafe) return;
 
       // Parse duration from args (find first arg matching duration pattern)
       const durationMap = {
@@ -737,7 +858,6 @@ module.exports = {
           const amount = parseInt(match[1]);
           const unit   = match[2].toLowerCase();
           durationMs  = amount * durationMap[unit];
-          // Pretty format
           const unitNames = { s: 'Second', m: 'Minute', h: 'Hour', d: 'Day', w: 'Week' };
           durationStr = `${amount} ${unitNames[unit]}${amount !== 1 ? 's' : ''}`;
           break;
@@ -751,18 +871,16 @@ module.exports = {
         );
       }
 
-      const MAX_DURATION = 30 * 24 * 60 * 60 * 1000; // 30 days max
+      const MAX_DURATION = 30 * 24 * 60 * 60 * 1000;
       if (durationMs > MAX_DURATION) {
         return message.reply(`${emojis.WARNING} Maximum temp role duration is **30 days**.`);
       }
 
-      // Add the role
       await target.roles.add(roleMention, `TempRole by ${message.author.tag} for ${durationStr}`);
 
       const expiresAt = new Date(Date.now() + durationMs);
       const expiresTimestamp = Math.floor(expiresAt.getTime() / 1000);
 
-      // Store in _tempRoles map and schedule auto-removal
       const key = `${guild.id}:${target.id}:${roleMention.id}`;
       const existingTimer = module.exports._tempRoles.get(key);
       if (existingTimer) clearTimeout(existingTimer.timer);
@@ -777,7 +895,6 @@ module.exports = {
           }
           module.exports._tempRoles.delete(key);
 
-          // Try to notify in the same channel
           message.channel.send({
             embeds: [
               createStyledEmbed({
@@ -797,7 +914,6 @@ module.exports = {
 
       module.exports._tempRoles.set(key, { timer, expiresAt, durationStr, roleId: roleMention.id, userId: target.id });
 
-      // Confirmation embed with Duration field
       const embed = createStyledEmbed({
         title: `⏱️ Temp Role Added`,
         description:
@@ -811,8 +927,11 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 12. 📋 ROLEMENU (list all roles)
+    // 12. ROLEMENU (list all roles)
     if (invoked === 'rolemenu') {
+      const modCheck = await verifyPermit(message, ['cases_view', 'role_assign'], 'rolemenu');
+      if (!modCheck.allowed) return;
+
       const roles = guild.roles.cache
         .filter(r => r.name !== '@everyone')
         .sort((a, b) => b.position - a.position)
@@ -829,8 +948,11 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 13. 📜 LIST (bans, bots, admins, mutes)
+    // 13. LIST (bans, bots, admins, mutes)
     if (invoked === 'list') {
+      const modCheck = await verifyPermit(message, 'cases_view', 'list');
+      if (!modCheck.allowed) return;
+
       const sub = args[0]?.toLowerCase();
 
       if (sub === 'bots') {
@@ -887,11 +1009,34 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 14. ${emojis.WARNING} WARN / UNWARN / CLEARWARNS
-    if (['warn', 'unwarn', 'rmwarn', 'warnremove', 'clearwarns'].includes(invoked)) {
-      const isWarnRemove = invoked === 'unwarn' || invoked === 'rmwarn' || invoked === 'warnremove' || (invoked === 'warn' && args[0] === 'remove');
-      const modCheck = await checkModeratorPermissionAndQuota(message, isWarnRemove ? 'unwarn' : (invoked === 'clearwarns' ? 'unwarn' : 'warn'));
+    // 14. WARN / WARNINGS / UNWARN / CLEARWARNS
+    if (['warn', 'unwarn', 'rmwarn', 'warnremove', 'clearwarns', 'warnings'].includes(invoked)) {
+      const modCheck = await verifyPermit(message, 'chat_warn', invoked);
       if (!modCheck.allowed) return;
+
+      if (invoked === 'warnings') {
+        const targetUser = message.mentions.users.first() ||
+                           (args[0] && /^\d{17,21}$/.test(args[0]) ? await message.client.users.fetch(args[0]).catch(() => null) : message.author);
+        if (!targetUser) return message.reply(`${emojis.WARNING} Usage: \`.warnings [@user | userID]\``);
+
+        const userObj = db.getUser(targetUser.id);
+        const warnCount = userObj.warns || 0;
+        const warnCases = db.getUserCases(guild.id, targetUser.id).filter(c => c.action === 'WARN').slice(-10).reverse();
+        const caseLines = warnCases.length > 0
+          ? warnCases.map(c => `• \`Case #${c.caseId}\` — ${c.reason.slice(0, 60)} (*By <@${c.executorId}>*)`).join('\n')
+          : '*No recorded warning cases.*';
+
+        const embed = createStyledEmbed({
+          title: `⚠️ Warnings — ${targetUser.username}`,
+          description:
+            `• **Member:** <@${targetUser.id}> (\`${targetUser.tag}\`)\n` +
+            `• **Active Warnings:** \`${warnCount}\`\n\n` +
+            `**Recent Warning Cases:**\n${caseLines}`,
+          requestedBy: message.author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
 
       const isRemove = invoked === 'unwarn' || invoked === 'rmwarn' || invoked === 'warnremove' || (invoked === 'warn' && args[0] === 'remove');
       const isClear = invoked === 'clearwarns' || (invoked === 'warn' && args[0] === 'clear');
@@ -949,10 +1094,16 @@ module.exports = {
         return message.reply(
           `${emojis.WARNING} Usage:\n` +
           `• \`.warn @user [reason]\` — Add warning\n` +
+          `• \`.warnings [@user]\` — View active warnings\n` +
           `• \`.unwarn <caseID>\` — Remove warning by Case ID (e.g. \`.unwarn 5\`)\n` +
           `• \`.unwarn @user\` — Remove latest warning for member\n` +
           `• \`.clearwarns @user\` — Clear all warnings`
         );
+      }
+
+      const targetMember = await guild.members.fetch(targetUser.id).catch(() => null);
+      if (!isRemove && !isClear && targetMember) {
+        if (!(await checkTargetHierarchy(message, targetMember, 'warn'))) return;
       }
 
       const userObj = db.getUser(targetUser.id);
@@ -1029,15 +1180,15 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 15. 🛡️ CASE / CASES / MODLOGS (.case <id> | .cases [@user] | .modlogs [#channel])
+    // 15. CASE / CASES / MODLOGS (.case <id> | .case edit/delete | .cases [@user] | .modlogs [#channel])
     if (['case', 'cases', 'modlogs', 'modlog', 'caseinfo'].includes(invoked)) {
       const targetChan = message.mentions.channels.first();
       const firstArg = args[0]?.toLowerCase();
 
-      // IF USER MENTIONS A CHANNEL OR TYPES .modlogs #channel / .modlog set #channel -> CONFIGURE LOG CHANNEL
-      if (targetChan || firstArg === 'set' || firstArg === 'channel') {
-        if (!message.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
-          return message.reply(`${emojis.WARNING} Only Administrators can configure moderation log channels.`);
+      // IF USER MENTIONS A CHANNEL OR TYPES .modlogs #channel / .modlog set #channel -> CONFIGURE LOG CHANNEL (Admin/Owner Only)
+      if ((invoked === 'modlogs' || invoked === 'modlog') && (targetChan || firstArg === 'set' || firstArg === 'channel')) {
+        if (!isPermitBypass(message.member)) {
+          return message.reply(`${emojis.WARNING} Only **Administrators / Owners** can configure moderation log channels.`);
         }
 
         const chanToSet = targetChan || message.guild.channels.cache.get(args[1] || args[0]);
@@ -1056,7 +1207,6 @@ module.exports = {
         automod.modlogsChannelId = chanToSet.id;
         db.updateAutomod(guild.id, 'misc', automod.misc || {});
 
-        const { createDynamicBox } = require('../utils/boxBuilder');
         const box = createDynamicBox('MODLOGS CHANNEL SET', [
           { key: 'Channel', value: '#' + chanToSet.name.slice(0, 14) },
           { key: 'Status ', value: 'Active [OK]' },
@@ -1075,10 +1225,81 @@ module.exports = {
         return message.channel.send({ embeds: [embed] });
       }
 
-      const targetUser = message.mentions.users.first();
-      const caseIdInput = args[0] && !isNaN(args[0]) ? parseInt(args[0]) : null;
+      // Case Edit / Close / Delete Subcommands
+      if (['edit', 'reason', 'update', 'close'].includes(firstArg)) {
+        const manageCheck = await verifyPermit(message, 'cases_manage', `case ${firstArg}`);
+        if (!manageCheck.allowed) return;
 
-      if (caseIdInput) {
+        const cid = parseInt((args[1] || '').replace('#', ''), 10);
+        if (isNaN(cid)) {
+          return message.reply(`${emojis.WARNING} Usage: \`.case ${firstArg} <caseID> <new reason>\``);
+        }
+
+        const existing = db.getCase(guild.id, cid);
+        if (!existing) {
+          return message.reply(`${emojis.WARNING} Case **#${cid}** not found in this server.`);
+        }
+
+        const note = args.slice(2).join(' ').trim();
+        let nextReason;
+        if (firstArg === 'close') {
+          nextReason = note ? `[CLOSED] ${note}` : `[CLOSED by ${message.author.tag}] ${existing.reason}`;
+        } else {
+          if (!note) return message.reply(`${emojis.WARNING} Please provide the updated reason. Example: \`.case edit ${cid} Updated reason here\``);
+          nextReason = note;
+        }
+
+        const updated = db.updateCase(guild.id, cid, {
+          reason: nextReason,
+          closed: firstArg === 'close' ? true : existing.closed,
+          editedBy: message.author.tag,
+          editedAt: Date.now()
+        });
+
+        const embed = createStyledEmbed({
+          title: `${emojis.SUCCESS} Case #${cid} ${firstArg === 'close' ? 'Closed' : 'Updated'}`,
+          description:
+            `• **Action:** \`${updated.action}\`\n` +
+            `• **Target:** <@${updated.targetId}> (\`${updated.targetTag}\`)\n` +
+            `• **New Reason:** ${updated.reason}\n` +
+            `• **Edited By:** <@${message.author.id}>`,
+          requestedBy: message.author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      if (['delete', 'del', 'rm', 'remove'].includes(firstArg)) {
+        const manageCheck = await verifyPermit(message, 'cases_manage', `case ${firstArg}`);
+        if (!manageCheck.allowed) return;
+
+        const cid = parseInt((args[1] || '').replace('#', ''), 10);
+        if (isNaN(cid)) {
+          return message.reply(`${emojis.WARNING} Usage: \`.case delete <caseID>\``);
+        }
+
+        const deleted = db.deleteCase(guild.id, cid);
+        if (!deleted) {
+          return message.reply(`${emojis.WARNING} Case **#${cid}** not found in this server.`);
+        }
+
+        const embed = createStyledEmbed({
+          title: `🧹 Case #${cid} Deleted`,
+          description: `Case **#${cid}** has been permanently deleted from the server registry by <@${message.author.id}>.`,
+          requestedBy: message.author,
+          clientUser
+        });
+        return message.channel.send({ embeds: [embed] });
+      }
+
+      // View Cases requires cases_view
+      const viewCheck = await verifyPermit(message, 'cases_view', invoked);
+      if (!viewCheck.allowed) return;
+
+      const targetUser = message.mentions.users.first();
+      const caseIdInput = args[0] && !isNaN(args[0].replace('#', '')) ? parseInt(args[0].replace('#', ''), 10) : null;
+
+      if (caseIdInput && !targetUser && String(caseIdInput).length < 10) {
         const c = db.getCase(guild.id, caseIdInput);
         if (!c) return message.reply(`${emojis.WARNING} Case **#${caseIdInput}** not found in this server.`);
 
@@ -1101,7 +1322,7 @@ module.exports = {
         const userCases = db.getUserCases(guild.id, userId);
         if (userCases.length === 0) return message.reply(`${emojis.INFO} No moderation cases found for <@${userId}>.`);
 
-        const lines = userCases.map(c => `\`Case #${c.caseId}\` | **${c.action}** — ${c.reason.length > 40 ? c.reason.slice(0, 40) + '...' : c.reason} (By <@${c.executorId}>)`);
+        const lines = userCases.slice(-20).reverse().map(c => `\`Case #${c.caseId}\` | **${c.action}** — ${c.reason.length > 40 ? c.reason.slice(0, 40) + '...' : c.reason} (By <@${c.executorId}>)`);
         const embed = createStyledEmbed({
           title: `${emojis.SHIELD} Cases for User`,
           description: lines.join('\n'),
@@ -1124,6 +1345,50 @@ module.exports = {
         requestedBy: message.author,
         clientUser,
         footerText: `Total Guild Cases: ${allCases.length}`
+      });
+      return message.channel.send({ embeds: [embed] });
+    }
+
+    // 16. AUDIT (.audit [@user])
+    if (['audit', 'auditlog', 'auditlogs'].includes(invoked)) {
+      const modCheck = await verifyPermit(message, 'cases_view', 'audit');
+      if (!modCheck.allowed) return;
+
+      const targetUser = message.mentions.users.first() ||
+                         (args[0] && /^\d{17,21}$/.test(args[0]) ? await message.client.users.fetch(args[0]).catch(() => null) : null);
+
+      let auditLines = [];
+      if (guild.members.me.permissions.has(PermissionsBitField.Flags.ViewAuditLog)) {
+        try {
+          const logs = await guild.fetchAuditLogs({ limit: 8, user: targetUser?.id });
+          for (const entry of logs.entries.values()) {
+            const actName = AuditLogEvent[entry.action] || `Action#${entry.action}`;
+            const execStr = entry.executorId ? `<@${entry.executorId}>` : 'Unknown';
+            const targStr = entry.targetId ? `\`${entry.targetId}\`` : 'Guild';
+            const ts = Math.floor(entry.createdTimestamp / 1000);
+            auditLines.push(`• **${actName}** by ${execStr} → Target ${targStr} (<t:${ts}:R>)`);
+          }
+        } catch (e) {
+          auditLines.push('*Failed to fetch Discord Audit Logs.*');
+        }
+      } else {
+        auditLines.push('*Bot missing `View Audit Log` permission.*');
+      }
+
+      const modCases = targetUser
+        ? db.getUserCases(guild.id, targetUser.id).slice(-5).reverse()
+        : db.getCases(guild.id).slice(-5).reverse();
+      const caseLines = modCases.length > 0
+        ? modCases.map(c => `• \`Case #${c.caseId}\` **${c.action}** on <@${c.targetId}> by <@${c.executorId}> — *${c.reason.slice(0, 35)}*`).join('\n')
+        : '*No recent bot cases.*';
+
+      const embed = createStyledEmbed({
+        title: `📜 Server Audit & Mod Activity${targetUser ? ` (${targetUser.username})` : ''}`,
+        description:
+          `**Discord Audit Log Entries:**\n${auditLines.length ? auditLines.join('\n') : '*No entries found.*'}\n\n` +
+          `**Recent Bot Mod Cases:**\n${caseLines}`,
+        requestedBy: message.author,
+        clientUser
       });
       return message.channel.send({ embeds: [embed] });
     }

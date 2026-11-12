@@ -206,16 +206,18 @@ const CATEGORIES = [
   {
     label: 'Moderation',
     value: 'mod',
-    description: 'Kick, ban, unban, timeout, purge, warn, fakepermissions & limits',
+    description: 'Tiered mod permits, kick, ban, mute, nick, slowmode, purge, warn & cases',
     customEmoji: '👢',
     emojiId: '1536260606846435398',
     unicodeFallback: '👢',
     heading: '👢',
     commands: [
-      'ban', 'unban', 'kick', 'timeout', 'untimeout',
-      'mute', 'unmute', 'purge', 'warn', 'warnings',
-      'clearwarns', 'nuke', 'modlimits',
-      'fakepermissions add/remove/list',
+      'permit mod add/remove/list/reset',
+      'ban', 'hackban', 'unban', 'unbanall', 'kick',
+      'mute', 'unmute', 'nick', 'slowmode', 'unslowmode',
+      'purge', 'warn', 'warnings', 'clearwarns',
+      'case edit/delete', 'audit', 'clone', 'nuke',
+      'modlimits', 'fakepermissions add/remove/list',
       'msg add', 'msg clear', 'msg count'
     ]
   },

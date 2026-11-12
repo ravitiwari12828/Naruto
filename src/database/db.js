@@ -66,7 +66,8 @@ class ResilientDatabase {
       analytics: [],
       reactionChannels: {},
       reactionVotes: {},
-      voicemaster: {}
+      voicemaster: {},
+      modPermits: {}
     };
 
     // 1. Initial Load from Local JSON
@@ -1139,7 +1140,7 @@ class ResilientDatabase {
     if (!this.data.cases) this.data.cases = {};
     if (!this.data.cases[guildId]) this.data.cases[guildId] = [];
 
-    const caseId = this.data.cases[guildId].length + 1;
+    const caseId = Math.max(0, ...this.data.cases[guildId].map(c => Number(c.caseId) || 0)) + 1;
     const caseData = {
       caseId,
       guildId,
@@ -1700,6 +1701,99 @@ class ResilientDatabase {
     config.dailyLimit = Math.max(1, parseInt(limit) || 5);
     this.saveJSON();
     return config.dailyLimit;
+  }
+
+  updateCase(guildId, caseId, patchOrReason) {
+    const cases = this.getCases(guildId);
+    const target = cases.find(c => Number(c.caseId) === parseInt(caseId));
+    if (!target) return null;
+    if (typeof patchOrReason === 'object' && patchOrReason !== null) {
+      Object.assign(target, patchOrReason);
+    } else {
+      target.reason = String(patchOrReason);
+    }
+    target.updatedAt = Date.now();
+    if (this.useSqlite && this.sqliteDb) {
+      this.sqliteDb.run(
+        `UPDATE cases SET reason = ? WHERE guildId = ? AND caseId = ?`,
+        [String(target.reason || ''), guildId, target.caseId]
+      );
+    }
+    this.saveJSON();
+    return target;
+  }
+
+  deleteCase(guildId, caseId) {
+    if (!this.data.cases || !this.data.cases[guildId]) return false;
+    const idNum = parseInt(caseId);
+    const initialLen = this.data.cases[guildId].length;
+    this.data.cases[guildId] = this.data.cases[guildId].filter(c => Number(c.caseId) !== idNum);
+    if (this.data.cases[guildId].length < initialLen) {
+      if (this.useSqlite && this.sqliteDb) {
+        this.sqliteDb.run(`DELETE FROM cases WHERE guildId = ? AND caseId = ?`, [guildId, idNum]);
+      }
+      this.saveJSON();
+      return true;
+    }
+    return false;
+  }
+
+  // --- MODULAR PERMIT SYSTEM (USER & ROLE BASED) ---
+  getGuildPermits(guildId) {
+    if (!this.data.modPermits) this.data.modPermits = {};
+    if (!this.data.modPermits[guildId]) {
+      this.data.modPermits[guildId] = { users: {}, roles: {} };
+    }
+    if (!this.data.modPermits[guildId].users) this.data.modPermits[guildId].users = {};
+    if (!this.data.modPermits[guildId].roles) this.data.modPermits[guildId].roles = {};
+    return this.data.modPermits[guildId];
+  }
+
+  getPermitsForTarget(guildId, targetType, targetId) {
+    const guildPerms = this.getGuildPermits(guildId);
+    const bucket = targetType === 'role' ? guildPerms.roles : guildPerms.users;
+    return Array.isArray(bucket[targetId]) ? bucket[targetId] : [];
+  }
+
+  addPermitsToTarget(guildId, targetType, targetId, permitKeys = []) {
+    const guildPerms = this.getGuildPermits(guildId);
+    const bucket = targetType === 'role' ? guildPerms.roles : guildPerms.users;
+    const existing = new Set(Array.isArray(bucket[targetId]) ? bucket[targetId] : []);
+    const added = [];
+    for (const key of permitKeys) {
+      if (!existing.has(key)) {
+        existing.add(key);
+        added.push(key);
+      }
+    }
+    bucket[targetId] = Array.from(existing);
+    this.saveJSON();
+    return { updated: bucket[targetId], added };
+  }
+
+  removePermitsFromTarget(guildId, targetType, targetId, permitKeys = []) {
+    const guildPerms = this.getGuildPermits(guildId);
+    const bucket = targetType === 'role' ? guildPerms.roles : guildPerms.users;
+    const existing = Array.isArray(bucket[targetId]) ? bucket[targetId] : [];
+    const removeSet = new Set(permitKeys);
+    const removed = existing.filter(k => removeSet.has(k));
+    const remaining = existing.filter(k => !removeSet.has(k));
+    if (remaining.length > 0) {
+      bucket[targetId] = remaining;
+    } else {
+      delete bucket[targetId];
+    }
+    this.saveJSON();
+    return { updated: remaining, removed };
+  }
+
+  resetTargetPermits(guildId, targetType, targetId) {
+    const guildPerms = this.getGuildPermits(guildId);
+    const bucket = targetType === 'role' ? guildPerms.roles : guildPerms.users;
+    const hadAny = Array.isArray(bucket[targetId]) && bucket[targetId].length > 0;
+    delete bucket[targetId];
+    this.saveJSON();
+    return hadAny;
   }
 
 }

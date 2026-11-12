@@ -6,6 +6,7 @@ const {
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const { verifyPermit } = require('../utils/modPermits');
 
 module.exports = {
   name: 'enlarge',
@@ -13,6 +14,8 @@ module.exports = {
   aliases: ['e', 'bigemoji', 'jumbo', 'emojiicon', 'emojienlarge'],
 
   async execute(message, args) {
+    const permCheck = await verifyPermit(message, 'chat_trial', 'enlarge');
+    if (!permCheck.allowed) return;
     let targetEmojiStr = args[0];
 
     // Check if user replied to a message containing emojis/stickers

@@ -2,6 +2,7 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 const { ChannelType, PermissionsBitField } = require('discord.js');
+const { verifyPermit } = require('../utils/modPermits');
 
 function isGuildTextChannel(ch) {
   return ch && (ch.type === ChannelType.GuildText || ch.type === ChannelType.GuildAnnouncement || ch.type === 0 || ch.type === 5) && ch.permissionOverwrites;
@@ -97,8 +98,12 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    if (!message.member.permissions.has(PermissionsBitField.Flags.ManageChannels)) {
-      return message.reply(`${emojis.DISABLED} You need **Manage Channels** permission to run channel moderation commands.`);
+    const isMassChan = ['lockall', 'unlockall', 'hideall', 'unhideall'].includes(sub);
+    const isSingleChan = ['lock', 'unlock', 'hide', 'unhide', 'disable', 'enable'].includes(sub);
+
+    if (isMassChan || isSingleChan) {
+      const permCheck = await verifyPermit(message, isMassChan ? 'chan_mass_clone' : 'chan_lock_hide', sub);
+      if (!permCheck.allowed) return;
     }
 
     if (!message.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageChannels) && !message.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {

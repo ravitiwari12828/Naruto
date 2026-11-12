@@ -6,6 +6,7 @@ const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle, version: djs
 
 const os = require('os');
 const db = require('../database/db');
+const { verifyPermit } = require('../utils/modPermits');
 
 // Global AFK store (userId -> { reason, timestamp })
 const afkStore = new Map();
@@ -668,8 +669,10 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // 🎯 SNIPE (Shows last 10 sniped messages in channel)
+    // SNIPE (Shows last 10 sniped messages in channel)
     if (invoked === 'snipe') {
+      const permCheck = await verifyPermit(message, 'chat_trial', 'snipe');
+      if (!permCheck.allowed) return;
       const rawStore = snipeStore.get(message.channel.id);
       const history = Array.isArray(rawStore) ? rawStore : (rawStore ? [rawStore] : []);
 

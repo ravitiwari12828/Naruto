@@ -4,6 +4,7 @@ const {
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const { verifyPermit, validateRoleSafety } = require('../utils/modPermits');
 
 module.exports = {
   name: 'roleicon',
@@ -11,9 +12,8 @@ module.exports = {
   aliases: ['setroleicon', 'seticon', 'ricon'],
 
   async execute(message, args) {
-    if (!message.member.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
-      return message.reply(`${emojis.WARNING || '⚠️'} Only staff with **Manage Roles** permission can set role icons.`);
-    }
+    const permCheck = await verifyPermit(message, 'role_assign', 'roleicon');
+    if (!permCheck.allowed) return;
 
     if (!message.guild.members.me.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
       return message.reply(`${emojis.WARNING || '⚠️'} I need **Manage Roles** permission to update role icons.`);
@@ -24,6 +24,9 @@ module.exports = {
     if (!targetRole) {
       return message.reply(`${emojis.WARNING || '⚠️'} Please mention a valid role or provide a Role ID!\n> Example: \`.roleicon @Role <emoji / image_attachment / URL>\``);
     }
+
+    const isSafe = await validateRoleSafety(message, targetRole, 'edit icon for');
+    if (!isSafe) return;
 
     let iconUrl = null;
 

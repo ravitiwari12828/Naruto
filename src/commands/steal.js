@@ -8,6 +8,7 @@ const {
   parseEmoji
 } = require('discord.js');
 const emojis = require('../utils/emojis');
+const { verifyPermit } = require('../utils/modPermits');
 
 // Max Emoji / Sticker Limits per Guild Boost Tier
 const EMOJI_LIMITS = { 0: 50, 1: 100, 2: 150, 3: 250 };
@@ -83,22 +84,77 @@ function extractMediaFromMessage(message, args) {
 
 module.exports = {
   name: 'steal',
-  description: 'Steal emojis or stickers from messages/replies and add them to your server',
-  aliases: ['stealemoji', 'stealsticker', 'addemoji', 'addsticker'],
-  usage: '.steal [reply to message OR paste emoji/image URL]',
+  description: 'Steal or delete server emojis and stickers',
+  aliases: [
+    'stealemoji', 'stealsticker', 'addemoji', 'addsticker',
+    'deleteemoji', 'delemoji', 'removeemoji',
+    'deletesticker', 'delsticker', 'removesticker'
+  ],
+  usage: '.steal [reply to message OR paste emoji/image URL] | .deleteemoji <emoji> | .deletesticker <name/id>',
 
   async execute(message, args) {
+    const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
+    const invoked = rawFirstWord.replace(/^[^a-zA-Z0-9]+/, '').toLowerCase();
     const author = message.author;
     const guild = message.guild;
 
-    // Permissions Guard: Manage Guild Expressions / Manage Emojis / Admin / Server Owner
-    const hasPerm = message.member.permissions.has(PermissionsBitField.Flags.ManageGuildExpressions) ||
-                    message.member.permissions.has(PermissionsBitField.Flags.ManageEmojisAndStickers) ||
-                    message.member.permissions.has(PermissionsBitField.Flags.Administrator) ||
-                    guild.ownerId === author.id;
+    const permCheck = await verifyPermit(message, 'expr_manage', invoked);
+    if (!permCheck.allowed) return;
 
-    if (!hasPerm) {
-      return message.reply(`${emojis.WARNING || '❌'} You need **Manage Emojis & Stickers** permission to steal emojis.`);
+    // Delete Custom Emoji Subcommands
+    if (['deleteemoji', 'delemoji', 'removeemoji'].includes(invoked)) {
+      if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageGuildExpressions) &&
+          !guild.members.me.permissions.has(PermissionsBitField.Flags.ManageEmojisAndStickers)) {
+        return message.reply(`${emojis.WARNING || '⚠️'} I need **Manage Expressions** permission to delete emojis.`);
+      }
+
+      const raw = args[0];
+      if (!raw) return message.reply(`${emojis.WARNING || '⚠️'} Usage: \`.deleteemoji <:emoji: | emojiId | name>\``);
+
+      const parsed = parseEmoji(raw);
+      const targetEmoji = (parsed?.id && guild.emojis.cache.get(parsed.id)) ||
+                          guild.emojis.cache.get(raw) ||
+                          guild.emojis.cache.find(e => e.name.toLowerCase() === raw.toLowerCase());
+
+      if (!targetEmoji) {
+        return message.reply(`${emojis.WARNING || '⚠️'} Could not find server emoji matching \`${raw}\`.`);
+      }
+
+      const name = targetEmoji.name;
+      await targetEmoji.delete(`Deleted by ${author.tag}`);
+      return message.reply(`${emojis.SUCCESS || '✅'} Deleted custom emoji **:${name}:** from **${guild.name}**.`);
+    }
+
+    // Delete Custom Sticker Subcommands
+    if (['deletesticker', 'delsticker', 'removesticker'].includes(invoked)) {
+      if (!guild.members.me.permissions.has(PermissionsBitField.Flags.ManageGuildExpressions) &&
+          !guild.members.me.permissions.has(PermissionsBitField.Flags.ManageEmojisAndStickers)) {
+        return message.reply(`${emojis.WARNING || '⚠️'} I need **Manage Expressions** permission to delete stickers.`);
+      }
+
+      let stickerTarget = null;
+      if (message.reference?.messageId) {
+        const refMsg = await message.channel.messages.fetch(message.reference.messageId).catch(() => null);
+        const refSticker = refMsg?.stickers?.first();
+        if (refSticker) {
+          stickerTarget = guild.stickers.cache.get(refSticker.id) || await guild.stickers.fetch(refSticker.id).catch(() => null);
+        }
+      }
+
+      if (!stickerTarget && args.length > 0) {
+        const query = args.join(' ').trim();
+        await guild.stickers.fetch().catch(() => {});
+        stickerTarget = guild.stickers.cache.get(query) ||
+                        guild.stickers.cache.find(s => s.name.toLowerCase() === query.toLowerCase());
+      }
+
+      if (!stickerTarget) {
+        return message.reply(`${emojis.WARNING || '⚠️'} Could not find that guild sticker. Reply to a sticker message or type \`.deletesticker <name | id>\`.`);
+      }
+
+      const sName = stickerTarget.name;
+      await stickerTarget.delete(`Deleted by ${author.tag}`);
+      return message.reply(`${emojis.SUCCESS || '✅'} Deleted sticker **"${sName}"** from **${guild.name}**.`);
     }
 
     const media = extractMediaFromMessage(message, args);
