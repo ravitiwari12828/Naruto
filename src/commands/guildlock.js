@@ -1,13 +1,43 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { isBotOwner } = require('../utils/owners');
+const db = require('../database/db');
 
-// Global Bot Owner Guild Whitelist & Private Lockdown Store
+const DEFAULT_ALLOWED_OWNERS = ['1420687548807905324', '1535910699535171664'];
+
+// Global Bot Owner Guild Whitelist & Private Lockdown Store (Backed by DB)
 const botLockStore = {
-  lockdownEnabled: false, // Default: Public Access Mode (Bot stays in all joined servers)
+  lockdownEnabled: false,
   whitelistedGuilds: new Set(),
-  allowedOwners: new Set(['1420687548807905324',  , '1535910699535171664'])
+  allowedOwners: new Set(DEFAULT_ALLOWED_OWNERS)
 };
+
+function saveBotLockStore() {
+  db.setSection('botLock', {
+    lockdownEnabled: Boolean(botLockStore.lockdownEnabled),
+    whitelistedGuilds: Array.from(botLockStore.whitelistedGuilds).filter(Boolean),
+    allowedOwners: Array.from(botLockStore.allowedOwners).filter(Boolean)
+  });
+}
+
+function hydrateBotLockStore() {
+  const saved = db.getSection('botLock', null);
+  if (saved && typeof saved === 'object') {
+    botLockStore.lockdownEnabled = Boolean(saved.lockdownEnabled);
+    botLockStore.whitelistedGuilds.clear();
+    for (const gId of (saved.whitelistedGuilds || [])) {
+      if (gId) botLockStore.whitelistedGuilds.add(gId);
+    }
+    botLockStore.allowedOwners.clear();
+    for (const oId of DEFAULT_ALLOWED_OWNERS) botLockStore.allowedOwners.add(oId);
+    for (const oId of (saved.allowedOwners || [])) {
+      if (oId) botLockStore.allowedOwners.add(oId);
+    }
+  }
+}
+
+hydrateBotLockStore();
+db.onCloudRestore(hydrateBotLockStore);
 
 /**
  * Checks if a guild is authorized to host the bot.

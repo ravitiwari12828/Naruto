@@ -10,9 +10,37 @@ const {
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { createDynamicBox } = require('../utils/boxBuilder');
+const db = require('../database/db');
 
-// Global Stores
+// Global Stores (Backed by DB)
 const welcomeConfigs = new Map();
+const _origWelcomeSet = welcomeConfigs.set.bind(welcomeConfigs);
+const _origWelcomeDelete = welcomeConfigs.delete.bind(welcomeConfigs);
+
+welcomeConfigs.set = (guildId, val) => {
+  _origWelcomeSet(guildId, val);
+  db.setGuildEntry('welcome', guildId, val);
+  return welcomeConfigs;
+};
+
+welcomeConfigs.delete = (guildId) => {
+  const res = _origWelcomeDelete(guildId);
+  db.deleteGuildEntry('welcome', guildId);
+  return res;
+};
+
+function hydrateWelcomeConfigs() {
+  const saved = db.getSection('welcome', {});
+  welcomeConfigs.clear();
+  for (const [gId, cfg] of Object.entries(saved)) {
+    if (cfg && typeof cfg === 'object') {
+      _origWelcomeSet(gId, cfg);
+    }
+  }
+}
+
+hydrateWelcomeConfigs();
+db.onCloudRestore(hydrateWelcomeConfigs);
 
 const WELCOME_PRESETS = {
   gothic: {
@@ -111,7 +139,11 @@ const FANCY_FONTS = {
 
 function getOrCreateWelcomeConfig(guildId) {
   if (!welcomeConfigs.has(guildId)) {
-    welcomeConfigs.set(guildId, {
+    const saved = db.getGuildEntry('welcome', guildId, null);
+    if (saved && typeof saved === 'object') {
+      _origWelcomeSet(guildId, saved);
+    } else {
+      _origWelcomeSet(guildId, {
       enabled: false,
       channelId: null,
       boostChannelId: null,
@@ -129,7 +161,8 @@ function getOrCreateWelcomeConfig(guildId) {
       joinDmText: '🌸 Welcome to **{server_name}**, {user}! Enjoy your stay!',
       leaveDmText: '📤 Goodbye {user}, we hope to see you back in **{server_name}** soon!',
       boostText: '🚀 **{user}** boosted **{server_name}**!'
-    });
+      });
+    }
   }
   return welcomeConfigs.get(guildId);
 }

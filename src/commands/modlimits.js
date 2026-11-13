@@ -9,36 +9,111 @@ const {
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { createDynamicBox } = require('../utils/boxBuilder');
+const db = require('../database/db');
 
-// Global Daily / 24-Hour Mod Limits Store
+// Global Daily / 24-Hour Mod Limits Store (Backed by DB)
 const modLimitsStore = new Map();
+const _origModLimitsSet = modLimitsStore.set.bind(modLimitsStore);
+const _origModLimitsDelete = modLimitsStore.delete.bind(modLimitsStore);
+
+function serializeModLimits(cfg) {
+  const usageObj = {};
+  if (cfg.usage instanceof Map) {
+    for (const [mId, uData] of cfg.usage.entries()) {
+      usageObj[mId] = uData;
+    }
+  } else if (cfg.usage && typeof cfg.usage === 'object') {
+    Object.assign(usageObj, cfg.usage);
+  }
+  return {
+    enabled: Boolean(cfg.enabled),
+    logChannelId: cfg.logChannelId || null,
+    timeWindowMin: Number(cfg.timeWindowMin) || 1440,
+    limits: cfg.limits || {},
+    bypasses: Array.from(cfg.bypasses || []),
+    usage: usageObj
+  };
+}
+
+function deserializeModLimits(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const usageMap = new Map();
+  if (raw.usage && typeof raw.usage === 'object') {
+    for (const [mId, uData] of Object.entries(raw.usage)) {
+      usageMap.set(mId, uData);
+    }
+  }
+  return {
+    enabled: raw.enabled !== undefined ? Boolean(raw.enabled) : true,
+    logChannelId: raw.logChannelId || null,
+    timeWindowMin: Number(raw.timeWindowMin) || 1440,
+    limits: raw.limits || {
+      memberUpdate: 3, channelCreate: 3, channelDelete: 3, channelUpdate: 3,
+      roleCreate: 3, roleDelete: 3, roleUpdate: 3, ban: 3, kick: 3,
+      guildUpdate: 1, timeout: 3, mention: 3, webhookCreate: 3,
+      webhookDelete: 3, webhookUpdate: 2
+    },
+    bypasses: new Set(Array.isArray(raw.bypasses) ? raw.bypasses : []),
+    usage: usageMap
+  };
+}
+
+modLimitsStore.set = (guildId, val) => {
+  _origModLimitsSet(guildId, val);
+  db.setGuildEntry('modLimits', guildId, serializeModLimits(val));
+  return modLimitsStore;
+};
+
+modLimitsStore.delete = (guildId) => {
+  const res = _origModLimitsDelete(guildId);
+  db.deleteGuildEntry('modLimits', guildId);
+  return res;
+};
+
+function hydrateModLimits() {
+  const saved = db.getSection('modLimits', {});
+  modLimitsStore.clear();
+  for (const [gId, raw] of Object.entries(saved)) {
+    const cfg = deserializeModLimits(raw);
+    if (cfg) _origModLimitsSet(gId, cfg);
+  }
+}
+
+hydrateModLimits();
+db.onCloudRestore(hydrateModLimits);
 
 function getOrCreateModLimits(guildId) {
   if (!modLimitsStore.has(guildId)) {
-    modLimitsStore.set(guildId, {
-      enabled: true,
-      logChannelId: null,
-      timeWindowMin: 1440, // 24 Hours
-      limits: {
-        memberUpdate: 3,
-        channelCreate: 3,
-        channelDelete: 3,
-        channelUpdate: 3,
-        roleCreate: 3,
-        roleDelete: 3,
-        roleUpdate: 3,
-        ban: 3,
-        kick: 3,
-        guildUpdate: 1,
-        timeout: 3,
-        mention: 3,
-        webhookCreate: 3,
-        webhookDelete: 3,
-        webhookUpdate: 2
-      },
-      bypasses: new Set(),
-      usage: new Map()
-    });
+    const saved = db.getGuildEntry('modLimits', guildId, null);
+    const hydrated = deserializeModLimits(saved);
+    if (hydrated) {
+      _origModLimitsSet(guildId, hydrated);
+    } else {
+      _origModLimitsSet(guildId, {
+        enabled: true,
+        logChannelId: null,
+        timeWindowMin: 1440, // 24 Hours
+        limits: {
+          memberUpdate: 3,
+          channelCreate: 3,
+          channelDelete: 3,
+          channelUpdate: 3,
+          roleCreate: 3,
+          roleDelete: 3,
+          roleUpdate: 3,
+          ban: 3,
+          kick: 3,
+          guildUpdate: 1,
+          timeout: 3,
+          mention: 3,
+          webhookCreate: 3,
+          webhookDelete: 3,
+          webhookUpdate: 2
+        },
+        bypasses: new Set(),
+        usage: new Map()
+      });
+    }
   }
   return modLimitsStore.get(guildId);
 }
@@ -161,6 +236,7 @@ module.exports = {
   description: 'AntiNuke Action Rate Limits & Audit Protection System (24-Hour Reset Window)',
   aliases: ['limit', 'limits', 'limitlog', 'limitlogs', 'actionlimits', 'modquota', 'limitmod', 'rate-limit'],
   modLimitsStore,
+  getOrCreateModLimits,
   checkAndIncrementModAction,
   dispatchLimitLog,
 

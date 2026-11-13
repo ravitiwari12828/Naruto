@@ -18,6 +18,87 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 const db = require('../database/db');
+
+const MAX_TIMEOUT_MS = 2147483000;
+
+async function removeExpiredTempRole(client, key, data) {
+  if (!client || !data) return;
+  try {
+    const guildObj = client.guilds.cache.get(data.guildId) || await client.guilds.fetch(data.guildId).catch(() => null);
+    if (guildObj) {
+      const member = await guildObj.members.fetch(data.userId).catch(() => null);
+      if (member && member.roles.cache.has(data.roleId)) {
+        await member.roles.remove(data.roleId, 'TempRole expired — auto-removed by Naruto Bot').catch(() => {});
+      }
+      if (data.channelId) {
+        const channel = client.channels.cache.get(data.channelId) || await client.channels.fetch(data.channelId).catch(() => null);
+        if (channel) {
+          channel.send({
+            embeds: [
+              createStyledEmbed({
+                title: `⏱️ TempRole Expired`,
+                description:
+                  `⏰ **Temp Role Auto-Removed!**\n\n` +
+                  `👤 **Member:** <@${data.userId}>\n` +
+                  `🎭 **Role:** **${data.roleName || data.roleId}**\n` +
+                  `📋 **Reason:** Duration expired after **${data.durationStr || 'specified duration'}**`,
+                clientUser: client.user
+              })
+            ]
+          }).catch(() => {});
+        }
+      }
+    }
+  } catch (e) {
+  } finally {
+    module.exports._tempRoles?.delete(key);
+    db.deleteGuildEntry('tempRoles', key);
+  }
+}
+
+function scheduleTempRoleExpiry(client, key, data) {
+  if (!client || !data) return;
+  if (module.exports._tempRoles?.has(key)) {
+    const existing = module.exports._tempRoles.get(key);
+    if (existing?.timer) clearTimeout(existing.timer);
+  }
+
+  const remaining = Math.max(0, new Date(data.expiresAt).getTime() - Date.now());
+  if (remaining === 0) {
+    removeExpiredTempRole(client, key, data);
+    return;
+  }
+
+  const timerMs = Math.min(remaining, MAX_TIMEOUT_MS);
+  const timer = setTimeout(() => {
+    const current = db.getGuildEntry('tempRoles', key, null);
+    if (!current) {
+      module.exports._tempRoles?.delete(key);
+      return;
+    }
+    const rem = new Date(current.expiresAt).getTime() - Date.now();
+    if (rem > 500) {
+      scheduleTempRoleExpiry(client, key, current);
+      return;
+    }
+    removeExpiredTempRole(client, key, current);
+  }, timerMs);
+
+  module.exports._tempRoles?.set(key, { timer, ...data });
+}
+
+function rehydrateTempRoles(client) {
+  if (!client || !client.isReady?.()) return 0;
+  const saved = db.getSection('tempRoles', {});
+  let scheduled = 0;
+  for (const [key, data] of Object.entries(saved)) {
+    if (data && data.guildId && data.userId && data.roleId) {
+      scheduleTempRoleExpiry(client, key, data);
+      scheduled++;
+    }
+  }
+  return scheduled;
+}
 const { dispatchLog } = require('../utils/logger');
 
 async function renderModerationPanel(message, clientUser) {
@@ -161,9 +242,10 @@ module.exports = {
     'temprole', 'trole', 'addrole', 'giverole'
   ],
 
-  // In-memory store for active temp roles (survives within process lifetime)
-  // Format: Map<`${guildId}:${userId}:${roleId}`, { timer, expiresAt }>
+  // Store for active temp roles (Backed by DB)
+  // Format: Map<`${guildId}:${userId}:${roleId}`, { timer, expiresAt, ... }>
   _tempRoles: new Map(),
+  rehydrateTempRoles,
 
 
   async execute(message, args) {
@@ -882,37 +964,20 @@ module.exports = {
       const expiresTimestamp = Math.floor(expiresAt.getTime() / 1000);
 
       const key = `${guild.id}:${target.id}:${roleMention.id}`;
-      const existingTimer = module.exports._tempRoles.get(key);
-      if (existingTimer) clearTimeout(existingTimer.timer);
+      const rolePayload = {
+        key,
+        guildId: guild.id,
+        userId: target.id,
+        roleId: roleMention.id,
+        roleName: roleMention.name,
+        channelId: message.channel.id,
+        authorId: message.author.id,
+        durationStr,
+        expiresAt: expiresAt.toISOString()
+      };
 
-      const timer = setTimeout(async () => {
-        try {
-          const guildObj = message.client.guilds.cache.get(guild.id);
-          if (!guildObj) return;
-          const member = await guildObj.members.fetch(target.id).catch(() => null);
-          if (member && member.roles.cache.has(roleMention.id)) {
-            await member.roles.remove(roleMention.id, 'TempRole expired — auto-removed by Naruto Bot');
-          }
-          module.exports._tempRoles.delete(key);
-
-          message.channel.send({
-            embeds: [
-              createStyledEmbed({
-                title: `⏱️ TempRole Expired`,
-                description:
-                  `⏰ **Temp Role Auto-Removed!**\n\n` +
-                  `👤 **Member:** ${target}\n` +
-                  `🎭 **Role:** **${roleMention.name}**\n` +
-                  `📋 **Reason:** Duration expired after **${durationStr}**`,
-                requestedBy: message.author,
-                clientUser
-              })
-            ]
-          }).catch(() => {});
-        } catch (e) {}
-      }, durationMs);
-
-      module.exports._tempRoles.set(key, { timer, expiresAt, durationStr, roleId: roleMention.id, userId: target.id });
+      db.setGuildEntry('tempRoles', key, rolePayload);
+      scheduleTempRoleExpiry(message.client, key, rolePayload);
 
       const embed = createStyledEmbed({
         title: `⏱️ Temp Role Added`,

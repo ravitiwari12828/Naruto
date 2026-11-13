@@ -2,17 +2,50 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { PermissionsBitField } = require('discord.js');
 const { createDynamicBox } = require('../utils/boxBuilder');
+const db = require('../database/db');
 
-// Global VanityGuard Config Store (guildId -> { enabled: true, protectedVanity: 'radha' })
+// Global VanityGuard Config Store (Backed by DB)
 const vanityConfigs = new Map();
+const _origVanitySet = vanityConfigs.set.bind(vanityConfigs);
+const _origVanityDelete = vanityConfigs.delete.bind(vanityConfigs);
+
+vanityConfigs.set = (guildId, val) => {
+  _origVanitySet(guildId, val);
+  db.setGuildEntry('vanityGuard', guildId, val);
+  return vanityConfigs;
+};
+
+vanityConfigs.delete = (guildId) => {
+  const res = _origVanityDelete(guildId);
+  db.deleteGuildEntry('vanityGuard', guildId);
+  return res;
+};
+
+function hydrateVanityConfigs() {
+  const saved = db.getSection('vanityGuard', {});
+  vanityConfigs.clear();
+  for (const [gId, cfg] of Object.entries(saved)) {
+    if (cfg && typeof cfg === 'object') {
+      _origVanitySet(gId, cfg);
+    }
+  }
+}
+
+hydrateVanityConfigs();
+db.onCloudRestore(hydrateVanityConfigs);
 
 function getOrCreateVanityConfig(guildId) {
   if (!vanityConfigs.has(guildId)) {
-    vanityConfigs.set(guildId, {
-      enabled: true,
-      protectedVanity: null,
-      autoStealProtection: true
-    });
+    const saved = db.getGuildEntry('vanityGuard', guildId, null);
+    if (saved && typeof saved === 'object') {
+      _origVanitySet(guildId, saved);
+    } else {
+      _origVanitySet(guildId, {
+        enabled: true,
+        protectedVanity: null,
+        autoStealProtection: true
+      });
+    }
   }
   return vanityConfigs.get(guildId);
 }

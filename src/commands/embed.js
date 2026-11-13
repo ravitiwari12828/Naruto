@@ -16,8 +16,40 @@ const emojis = require('../utils/emojis');
 // ─────────────────────────────────────────
 const draftSessions = new Map();
 
-// Saved embeds per guild: guildId → Map(name → embedData)
+const db = require('../database/db');
+
+// Saved embeds per guild (Backed by DB): guildId → Map(name → embedData)
 const savedEmbeds = new Map();
+
+function hydrateSavedEmbeds() {
+  const saved = db.getSection('savedEmbeds', {});
+  savedEmbeds.clear();
+  for (const [gId, guildTemplates] of Object.entries(saved)) {
+    if (guildTemplates && typeof guildTemplates === 'object') {
+      const m = new Map();
+      for (const [name, data] of Object.entries(guildTemplates)) {
+        if (data && typeof data === 'object') m.set(name, data);
+      }
+      savedEmbeds.set(gId, m);
+    }
+  }
+}
+
+function saveGuildEmbeds(guildId) {
+  const m = savedEmbeds.get(guildId);
+  if (!m || m.size === 0) {
+    db.deleteGuildEntry('savedEmbeds', guildId);
+    return;
+  }
+  const obj = {};
+  for (const [k, v] of m.entries()) {
+    obj[k] = v;
+  }
+  db.setGuildEntry('savedEmbeds', guildId, obj);
+}
+
+hydrateSavedEmbeds();
+db.onCloudRestore(hydrateSavedEmbeds);
 
 function getDraft(guildId, userId) {
   const key = `${guildId}:${userId}`;
@@ -415,6 +447,7 @@ module.exports = {
 
       if (!savedEmbeds.has(guild.id)) savedEmbeds.set(guild.id, new Map());
       savedEmbeds.get(guild.id).set(saveName, JSON.parse(JSON.stringify(draft)));
+      saveGuildEmbeds(guild.id);
 
       return message.reply(`${emojis.SUCCESS || '✅'} **Embed saved as:** \`${saveName}\`\n> Use \`.embed post ${saveName} <#channel>\` to send it anytime!`);
     }
@@ -492,6 +525,7 @@ module.exports = {
       }
 
       guildSaved.delete(saveName);
+      saveGuildEmbeds(guild.id);
       return message.reply(`${emojis.SUCCESS || '✅'} **Saved embed \`${saveName}\` deleted.**`);
     }
 

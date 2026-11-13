@@ -553,17 +553,64 @@ client.rest.on('rateLimited', (info) => {
   flushLog(`⏳ [Discord REST 429 Rate-Limit] Discord has temporarily paused REST requests for ${waitSec}s (Route: ${info.route || 'Global'} | Global: ${info.global})`, true);
 });
 
+async function hydrateAllStoresFromDb(client) {
+  if (!client || !client.isReady?.()) return;
+
+  // 1. Music 24/7 Voice & Autoplay
+  try {
+    const musicCmd = client.commands.get('music');
+    if (musicCmd) {
+      if (typeof musicCmd.hydrateMusicStores === 'function') musicCmd.hydrateMusicStores();
+      if (typeof musicCmd.reconnect247VoiceChannels === 'function') {
+        musicCmd.reconnect247VoiceChannels(client).catch(() => {});
+      }
+    }
+  } catch (e) {}
+
+  // 2. Info / AFK Store
+  try {
+    const allAfk = db.getAllAfk ? db.getAllAfk() : {};
+    const infoCmd = client.commands.get('info');
+    if (infoCmd && infoCmd.afkStore && allAfk) {
+      infoCmd.afkStore.clear();
+      Object.entries(allAfk).forEach(([uId, data]) => {
+        infoCmd.afkStore.set(uId, data);
+      });
+    }
+  } catch (e) {}
+
+  // 3. Active Giveaway Timers
+  try {
+    const giveawayCmd = client.commands.get('giveaway');
+    if (giveawayCmd && typeof giveawayCmd.rehydrateGiveawayTimers === 'function') {
+      giveawayCmd.rehydrateGiveawayTimers(client);
+    }
+  } catch (e) {}
+
+  // 4. Active TempRole Timers
+  try {
+    const modCmd = client.commands.get('mod');
+    if (modCmd && typeof modCmd.rehydrateTempRoles === 'function') {
+      modCmd.rehydrateTempRoles(client);
+    }
+  } catch (e) {}
+}
+
 client.once('clientReady', async () => {
+  // Await resilient database initialization (MongoDB cloud restore or local fallback)
+  try {
+    await db.waitUntilReady(15000);
+  } catch (e) {}
 
   try {
-
     initLavalink(client);
-
   } catch (e) {
-
     console.error('Lavalink init warning:', e.message);
-
   }
+
+  // Hydrate all database-backed stores & timers
+  hydrateAllStoresFromDb(client).catch(() => {});
+  db.onCloudRestore(() => hydrateAllStoresFromDb(client).catch(() => {}));
 
 
 

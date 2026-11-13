@@ -3,22 +3,62 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const { PermissionsBitField } = require('discord.js');
 const { isBotOwner } = require('../utils/owners');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 
-// Global Quarantine Config Store (guildId -> { enabled, days: 15, bypassUsers: Set, bypassRoles: Set })
+// Global Quarantine Config Store (Backed by DB)
 const quarantineConfigs = new Map();
+
+function saveQuarantineConfig(guildId, cfg) {
+  if (!cfg) return;
+  quarantineConfigs.set(guildId, cfg);
+  db.setGuildEntry('quarantine', guildId, {
+    enabled: Boolean(cfg.enabled),
+    days: Number(cfg.days) || 180,
+    bypassUsers: Array.from(cfg.bypassUsers || []),
+    bypassRoles: Array.from(cfg.bypassRoles || [])
+  });
+}
+
+function hydrateQuarantineConfigs() {
+  const saved = db.getSection('quarantine', {});
+  quarantineConfigs.clear();
+  for (const [gId, raw] of Object.entries(saved)) {
+    if (raw && typeof raw === 'object') {
+      quarantineConfigs.set(gId, {
+        enabled: raw.enabled !== undefined ? Boolean(raw.enabled) : true,
+        days: Number(raw.days) || 180,
+        bypassUsers: new Set((raw.bypassUsers || []).filter(Boolean)),
+        bypassRoles: new Set((raw.bypassRoles || []).filter(Boolean))
+      });
+    }
+  }
+}
+
+hydrateQuarantineConfigs();
+db.onCloudRestore(hydrateQuarantineConfigs);
 
 function getOrCreateQuarantineConfig(guildId) {
   if (!quarantineConfigs.has(guildId)) {
-    quarantineConfigs.set(guildId, {
-      enabled: true,
-      days: 180,
-      bypassUsers: new Set(['1420687548807905324',  ]),
-      bypassRoles: new Set()
-    });
+    const saved = db.getGuildEntry('quarantine', guildId, null);
+    if (saved && typeof saved === 'object') {
+      quarantineConfigs.set(guildId, {
+        enabled: saved.enabled !== undefined ? Boolean(saved.enabled) : true,
+        days: Number(saved.days) || 180,
+        bypassUsers: new Set((saved.bypassUsers || []).filter(Boolean)),
+        bypassRoles: new Set((saved.bypassRoles || []).filter(Boolean))
+      });
+    } else {
+      quarantineConfigs.set(guildId, {
+        enabled: true,
+        days: 180,
+        bypassUsers: new Set(['1420687548807905324']),
+        bypassRoles: new Set()
+      });
+    }
   }
   const cfg = quarantineConfigs.get(guildId);
   if (!cfg.days) cfg.days = 15;
-  if (!cfg.bypassUsers) cfg.bypassUsers = new Set(['1420687548807905324',  ]);
+  if (!cfg.bypassUsers) cfg.bypassUsers = new Set(['1420687548807905324']);
   if (!cfg.bypassRoles) cfg.bypassRoles = new Set();
   return cfg;
 }
@@ -76,6 +116,8 @@ module.exports = {
   aliases: ['probation'],
   quarantineConfigs,
   isMemberInQuarantine,
+  getOrCreateQuarantineConfig,
+  saveQuarantineConfig,
 
   async execute(message, args) {
     const sub = args[0]?.toLowerCase();
@@ -96,13 +138,13 @@ module.exports = {
     // .quarantine enable / disable
     if (sub === 'enable') {
       config.enabled = true;
-      quarantineConfigs.set(guild.id, config);
+      saveQuarantineConfig(guild.id, config);
       return message.reply(`${emojis.SHIELD} 180-Day New Joiner Security Grid is now **ENABLED**!`);
     }
 
     if (sub === 'disable') {
       config.enabled = false;
-      quarantineConfigs.set(guild.id, config);
+      saveQuarantineConfig(guild.id, config);
       return message.reply(`${emojis.WARNING} 180-Day New Joiner Security Grid is now **DISABLED**.`);
     }
 
@@ -114,7 +156,7 @@ module.exports = {
       }
 
       config.days = num;
-      quarantineConfigs.set(guild.id, config);
+      saveQuarantineConfig(guild.id, config);
 
       const embed = createStyledEmbed({
         title: `${emojis.GEAR} Probation Window Updated`,
@@ -133,17 +175,21 @@ module.exports = {
       if (target.username) {
         if (config.bypassUsers.has(target.id)) {
           config.bypassUsers.delete(target.id);
+          saveQuarantineConfig(guild.id, config);
           return message.reply(`${emojis.SUCCESS} Removed **${target.tag}** from quarantine bypass list.`);
         } else {
           config.bypassUsers.add(target.id);
+          saveQuarantineConfig(guild.id, config);
           return message.reply(`${emojis.SHIELD} Added **${target.tag}** to quarantine bypass list!`);
         }
       } else {
         if (config.bypassRoles.has(target.id)) {
           config.bypassRoles.delete(target.id);
+          saveQuarantineConfig(guild.id, config);
           return message.reply({ content: `${emojis.SUCCESS} Removed <@&${target.id}> from quarantine bypass list.`, allowedMentions: { parse: [], repliedUser: false } });
         } else {
           config.bypassRoles.add(target.id);
+          saveQuarantineConfig(guild.id, config);
           return message.reply({ content: `${emojis.SHIELD} Added <@&${target.id}> to quarantine bypass list!`, allowedMentions: { parse: [], repliedUser: false } });
         }
       }

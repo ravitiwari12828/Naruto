@@ -2,9 +2,39 @@ const { EmbedBuilder, PermissionsBitField } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 
-// In-memory Reaction Role storage (persisted per guild/message)
+// Reaction Role storage (Backed by DB)
 const reactionRoles = new Map();
+const _origRRSet = reactionRoles.set.bind(reactionRoles);
+const _origRRDelete = reactionRoles.delete.bind(reactionRoles);
+
+reactionRoles.set = (guildId, val) => {
+  _origRRSet(guildId, val);
+  db.setGuildEntry('reactionRoles', guildId, val);
+  return reactionRoles;
+};
+
+reactionRoles.delete = (guildId) => {
+  const res = _origRRDelete(guildId);
+  db.deleteGuildEntry('reactionRoles', guildId);
+  return res;
+};
+
+function hydrateReactionRoles() {
+  const saved = db.getSection('reactionRoles', {});
+  reactionRoles.clear();
+  for (const [gId, list] of Object.entries(saved)) {
+    if (Array.isArray(list)) {
+      _origRRSet(gId, list);
+    }
+  }
+}
+
+hydrateReactionRoles();
+db.onCloudRestore(hydrateReactionRoles);
+
+
 
 function resolveEmoji(rawEmoji, client) {
   if (!rawEmoji) return rawEmoji;

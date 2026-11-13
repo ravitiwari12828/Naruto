@@ -5,17 +5,41 @@ const {
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 
 // ─────────────────────────────────────────
-// FAKE PERMISSIONS STORE
-// Stored in-memory (persists during session)
+// FAKE PERMISSIONS STORE (Backed by DB)
 // Structure: guildId → { roles: { roleId: [perms...] }, users: { userId: [perms...] } }
 // ─────────────────────────────────────────
 const fakePermsStore = new Map();
 
+function hydrateFakePerms() {
+  const saved = db.getSection('fakePerms', {});
+  fakePermsStore.clear();
+  for (const [gId, entry] of Object.entries(saved)) {
+    if (entry && typeof entry === 'object') {
+      fakePermsStore.set(gId, {
+        roles: entry.roles && typeof entry.roles === 'object' ? entry.roles : {},
+        users: entry.users && typeof entry.users === 'object' ? entry.users : {}
+      });
+    }
+  }
+}
+
+hydrateFakePerms();
+db.onCloudRestore(hydrateFakePerms);
+
 function getGuildData(guildId) {
   if (!fakePermsStore.has(guildId)) {
-    fakePermsStore.set(guildId, { roles: {}, users: {} });
+    const saved = db.getGuildEntry('fakePerms', guildId, null);
+    if (saved && typeof saved === 'object') {
+      fakePermsStore.set(guildId, {
+        roles: saved.roles && typeof saved.roles === 'object' ? saved.roles : {},
+        users: saved.users && typeof saved.users === 'object' ? saved.users : {}
+      });
+    } else {
+      fakePermsStore.set(guildId, { roles: {}, users: {} });
+    }
   }
   return fakePermsStore.get(guildId);
 }
@@ -102,6 +126,7 @@ module.exports = {
 
       if (!data.roles[role.id]) data.roles[role.id] = [];
       if (!data.roles[role.id].includes(perm)) data.roles[role.id].push(perm);
+      db.setGuildEntry('fakePerms', guild.id, data);
 
       return message.reply(
         `${emojis.SUCCESS || '✅'} Added fake permission \`${perm}\` to role **${role.name}**!\n` +
@@ -118,6 +143,7 @@ module.exports = {
 
       if (data.roles[role.id]) {
         data.roles[role.id] = data.roles[role.id].filter(p => p !== perm);
+        db.setGuildEntry('fakePerms', guild.id, data);
       }
 
       return message.reply(`${emojis.SUCCESS || '✅'} Removed fake permission \`${perm}\` from role **${role.name}**.`);
@@ -129,6 +155,7 @@ module.exports = {
       if (!role) return message.reply(`❌ Usage: \`.fakepermissions reset <@role>\``);
 
       delete data.roles[role.id];
+      db.setGuildEntry('fakePerms', guild.id, data);
       return message.reply(`${emojis.SUCCESS || '✅'} Reset all fake permissions for role **${role.name}**.`);
     }
 
@@ -205,6 +232,7 @@ module.exports = {
 
         if (!data.users[user.id]) data.users[user.id] = [];
         if (!data.users[user.id].includes(perm)) data.users[user.id].push(perm);
+        db.setGuildEntry('fakePerms', guild.id, data);
 
         return message.reply(
           `${emojis.SUCCESS || '✅'} Added fake permission \`${perm}\` to user **${user.username}**!\n` +
@@ -246,6 +274,7 @@ module.exports = {
 
         if (data.users[user.id]) {
           data.users[user.id] = data.users[user.id].filter(p => p !== perm);
+          db.setGuildEntry('fakePerms', guild.id, data);
         }
 
         return message.reply(`${emojis.SUCCESS || '✅'} Removed fake permission \`${perm}\` from user **${user.username}**.`);
@@ -257,6 +286,7 @@ module.exports = {
         if (!user) return message.reply(`❌ Usage: \`.fakepermissions user reset <@user>\``);
 
         delete data.users[user.id];
+        db.setGuildEntry('fakePerms', guild.id, data);
         return message.reply(`${emojis.SUCCESS || '✅'} Reset all fake permissions for user **${user.username}**.`);
       }
 

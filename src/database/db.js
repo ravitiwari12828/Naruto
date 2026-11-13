@@ -54,9 +54,22 @@ class ResilientDatabase {
     this.useMongo = false;
     this.mongoReady = false;
     this.mongoSaveTimeout = null;
+    this._dataDirty = false;
+    this._writeVersion = 0;
+    this._cloudSyncTimeout = null;
+    this._cloudSyncMaxTimeout = null;
+    this._cloudSyncInFlight = null;
+    this._readyResolved = false;
+    this._hadLocalFile = false;
+    this._restoreCallbacks = [];
+    this._readyPromise = new Promise(resolve => {
+      this._resolveReady = resolve;
+    });
 
     this.data = {
       users: {},
+      guildLevels: {},
+      levelConfigs: {},
       autoroles: {},
       autoresponses: {},
       autoreacts: {},
@@ -67,7 +80,36 @@ class ResilientDatabase {
       reactionChannels: {},
       reactionVotes: {},
       voicemaster: {},
-      modPermits: {}
+      modPermits: {},
+      antinuke: {},
+      invites: {},
+      afk: {},
+      favorites: {},
+      logChannels: {},
+      economy: {},
+      appearance: {},
+      backups: {},
+      modConfig: {},
+      music247: {},
+      musicAutoplay: {},
+      welcome: {},
+      reactionRoles: {},
+      stickyNotes: {},
+      modmail: {},
+      vanityGuard: {},
+      quarantine: {},
+      fakePerms: {},
+      giveaways: {},
+      savedEmbeds: {},
+      botExtraOwners: [],
+      botLock: null,
+      imageLimits: {},
+      advLogs: {},
+      logging: {},
+      tickets: {},
+      modLimits: {},
+      tempRoles: {},
+      customRoles: {}
     };
 
     // 1. Initial Load from Local JSON
@@ -89,11 +131,83 @@ class ResilientDatabase {
           });
         } catch (e) {}
       }
+      this._markReady();
     }
   }
 
+  _markReady() {
+    if (!this._readyResolved) {
+      this._readyResolved = true;
+      if (typeof this._resolveReady === 'function') {
+        this._resolveReady(this.mongoReady);
+      }
+    }
+  }
+
+  async waitUntilReady(timeoutMs = 15000) {
+    if (this._readyResolved) return this.mongoReady;
+    await Promise.race([
+      this._readyPromise,
+      new Promise(resolve => setTimeout(resolve, timeoutMs))
+    ]);
+    return this.mongoReady;
+  }
+
+  onCloudRestore(callback) {
+    if (typeof callback !== 'function') return;
+    this._restoreCallbacks.push(callback);
+    if (this.mongoReady) {
+      Promise.resolve().then(() => {
+        try { callback(this.data); } catch (e) {}
+      });
+    }
+  }
+
+  _emitCloudRestore() {
+    for (const cb of this._restoreCallbacks) {
+      try {
+        cb(this.data);
+      } catch (err) {
+        console.error('[DB Cloud Restore Callback Error]:', err);
+      }
+    }
+  }
+
+  _mergeUserRecord(local = {}, cloud = {}) {
+    const merged = Object.assign({}, cloud || {}, local || {});
+    merged.messages = Math.max(local?.messages || 0, cloud?.messages || 0);
+    merged.xp = Math.max(local?.xp || 0, cloud?.xp || 0);
+    merged.level = Math.max(local?.level || 1, cloud?.level || 1);
+    merged.voiceSeconds = Math.max(local?.voiceSeconds || 0, cloud?.voiceSeconds || 0);
+    merged.invites = Math.max(local?.invites || 0, cloud?.invites || 0);
+    if (local?.weeklyXp !== undefined || cloud?.weeklyXp !== undefined) {
+      merged.weeklyXp = Math.max(local?.weeklyXp || 0, cloud?.weeklyXp || 0);
+    }
+    if (local?.monthlyXp !== undefined || cloud?.monthlyXp !== undefined) {
+      merged.monthlyXp = Math.max(local?.monthlyXp || 0, cloud?.monthlyXp || 0);
+    }
+    if (Array.isArray(cloud?.warns) || Array.isArray(local?.warns)) {
+      const seen = new Set();
+      const combined = [];
+      for (const w of [...(cloud?.warns || []), ...(local?.warns || [])]) {
+        const sig = w?.id || `${w?.timestamp || w?.date || ''}:${w?.reason || ''}:${w?.moderator || ''}`;
+        if (!seen.has(sig)) {
+          seen.add(sig);
+          combined.push(w);
+        }
+      }
+      merged.warns = combined;
+    }
+    if (!merged.cardBg && cloud?.cardBg) merged.cardBg = cloud.cardBg;
+    if (!merged.cardTheme && cloud?.cardTheme) merged.cardTheme = cloud.cardTheme;
+    return merged;
+  }
+
   async initMongo(uri) {
-    if (!mongoose) return;
+    if (!mongoose) {
+      this._markReady();
+      return;
+    }
 
     const connectOptions = {
       serverSelectionTimeoutMS: 10000,
@@ -115,6 +229,7 @@ class ResilientDatabase {
           this.mongoReady = false;
           console.log('❌ [MongoDB Atlas Connection Failure]:', err?.message || 'IP Not Whitelisted / Network Access Blocked');
           console.log('ℹ️ [Local High-Speed Database Active] Running seamlessly on local JSON database.');
+          this._markReady();
           return;
         }
         await new Promise(r => setTimeout(r, 2000));
@@ -124,6 +239,7 @@ class ResilientDatabase {
     if (!this.useMongo || !mongoose.connection || mongoose.connection.readyState !== 1) {
       this.useMongo = false;
       this.mongoReady = false;
+      this._markReady();
       return;
     }
 
@@ -134,86 +250,153 @@ class ResilientDatabase {
         // Smart merge: Merge cloud keys into memory, taking highest user message/XP stats
         for (const key of Object.keys(doc.data)) {
           const cloudVal = doc.data[key];
-          if (cloudVal) {
-            if (key === 'users' && typeof cloudVal === 'object') {
-              for (const uid of Object.keys(cloudVal)) {
-                if (!this.data.users[uid]) {
-                  this.data.users[uid] = cloudVal[uid];
+          if (cloudVal === undefined || cloudVal === null) continue;
+
+          if (key === 'users' && typeof cloudVal === 'object' && !Array.isArray(cloudVal)) {
+            if (!this.data.users) this.data.users = {};
+            for (const uid of Object.keys(cloudVal)) {
+              if (!this.data.users[uid]) {
+                this.data.users[uid] = cloudVal[uid];
+              } else {
+                this.data.users[uid] = this._mergeUserRecord(this.data.users[uid], cloudVal[uid]);
+              }
+            }
+          } else if (key === 'guildLevels' && typeof cloudVal === 'object' && !Array.isArray(cloudVal)) {
+            if (!this.data.guildLevels) this.data.guildLevels = {};
+            for (const gId of Object.keys(cloudVal)) {
+              if (!this.data.guildLevels[gId]) this.data.guildLevels[gId] = {};
+              const guildCloud = cloudVal[gId] || {};
+              for (const uid of Object.keys(guildCloud)) {
+                if (!this.data.guildLevels[gId][uid]) {
+                  this.data.guildLevels[gId][uid] = guildCloud[uid];
                 } else {
-                  this.data.users[uid].messages = Math.max(this.data.users[uid].messages || 0, cloudVal[uid].messages || 0);
-                  this.data.users[uid].xp = Math.max(this.data.users[uid].xp || 0, cloudVal[uid].xp || 0);
-                  this.data.users[uid].level = Math.max(this.data.users[uid].level || 1, cloudVal[uid].level || 1);
-                  this.data.users[uid].voiceSeconds = Math.max(this.data.users[uid].voiceSeconds || 0, cloudVal[uid].voiceSeconds || 0);
-                  this.data.users[uid].invites = Math.max(this.data.users[uid].invites || 0, cloudVal[uid].invites || 0);
+                  this.data.guildLevels[gId][uid] = this._mergeUserRecord(this.data.guildLevels[gId][uid], guildCloud[uid]);
                 }
               }
-            } else if (key === 'guildLevels' && typeof cloudVal === 'object') {
-              if (!this.data.guildLevels) this.data.guildLevels = {};
-              for (const gId of Object.keys(cloudVal)) {
-                if (!this.data.guildLevels[gId]) this.data.guildLevels[gId] = {};
-                for (const uid of Object.keys(cloudVal[gId])) {
-                  if (!this.data.guildLevels[gId][uid]) {
-                    this.data.guildLevels[gId][uid] = cloudVal[gId][uid];
-                  } else {
-                    const local = this.data.guildLevels[gId][uid];
-                    const cloud = cloudVal[gId][uid];
-                    local.messages = Math.max(local.messages || 0, cloud.messages || 0);
-                    local.xp = Math.max(local.xp || 0, cloud.xp || 0);
-                    local.level = Math.max(local.level || 1, cloud.level || 1);
-                    local.voiceSeconds = Math.max(local.voiceSeconds || 0, cloud.voiceSeconds || 0);
-                    local.invites = Math.max(local.invites || 0, cloud.invites || 0);
-                  }
-                }
-              }
-            } else if (Array.isArray(cloudVal) ? cloudVal.length > 0 : Object.keys(cloudVal).length > 0) {
+            }
+          } else if (!this._hadLocalFile) {
+            this.data[key] = cloudVal;
+          } else if (Array.isArray(cloudVal)) {
+            if (cloudVal.length > 0 || !Array.isArray(this.data[key]) || this.data[key].length === 0) {
               this.data[key] = cloudVal;
             }
+          } else if (typeof cloudVal === 'object') {
+            if (Object.keys(cloudVal).length > 0) {
+              const localObj = (this.data[key] && typeof this.data[key] === 'object' && !Array.isArray(this.data[key])) ? this.data[key] : {};
+              this.data[key] = Object.assign({}, localObj, cloudVal);
+            }
+          } else {
+            this.data[key] = cloudVal;
           }
         }
         console.log('☁️ [MongoDB Cloud] Successfully restored all guild data, levels, autoreacts & settings from cloud!');
-        this.saveJSONFileOnly();
+        this._writeJSONSync();
       }
 
       // Mark MongoDB Cloud sync as READY after restoring cloud state
       this.mongoReady = true;
+      this._markReady();
+      this._emitCloudRestore();
 
       // Backup merged active memory data back to cloud
-      await BotDataModel.findOneAndUpdate(
-        { key: 'master_database' },
-        { data: this.data, updatedAt: new Date() },
-        { upsert: true }
-      );
+      await this.syncToCloudNow(true);
       console.log('☁️ [MongoDB Cloud] Master cloud database backup active!');
       this.startPeriodicCloudSync();
     } catch (err) {
       console.error('❌ [MongoDB Cloud Error] Failed to connect to MongoDB Atlas:', err.message);
+      this._markReady();
     }
   }
 
   loadJSON() {
     try {
       if (fs.existsSync(jsonDbPath)) {
+        this._hadLocalFile = true;
         const raw = fs.readFileSync(jsonDbPath, 'utf8');
         this.data = Object.assign(this.data, JSON.parse(raw));
-        if (!this.data.analytics) this.data.analytics = [];
+        if (!Array.isArray(this.data.analytics)) this.data.analytics = [];
+        if (!Array.isArray(this.data.botExtraOwners)) this.data.botExtraOwners = [];
       } else {
-        this.saveJSONFileOnly();
+        this._hadLocalFile = false;
+        this._writeJSONSync();
       }
+    } catch (e) {}
+  }
+
+  _writeJSONSync() {
+    try {
+      fs.writeFileSync(jsonDbPath, JSON.stringify(this.data, null, 2), 'utf8');
     } catch (e) {}
   }
 
   saveJSONFileOnly() {
     if (this.fileSaveTimeout) clearTimeout(this.fileSaveTimeout);
     this.fileSaveTimeout = setTimeout(() => {
-      try {
-        fs.writeFileSync(jsonDbPath, JSON.stringify(this.data, null, 2), 'utf8');
-      } catch (e) {}
-    }, 1000);
+      this.fileSaveTimeout = null;
+      this._writeJSONSync();
+    }, 800);
   }
 
   saveJSON() {
+    this._writeVersion += 1;
     this._dataDirty = true;
     this.saveJSONFileOnly();
+    this.scheduleCloudSync();
+  }
+
+  scheduleCloudSync(delayMs = 15000) {
+    if (!this.useMongo || !this.mongoReady || !BotDataModel) return;
+    if (this._cloudSyncTimeout) clearTimeout(this._cloudSyncTimeout);
+    this._cloudSyncTimeout = setTimeout(() => {
+      this._cloudSyncTimeout = null;
+      if (this._cloudSyncMaxTimeout) {
+        clearTimeout(this._cloudSyncMaxTimeout);
+        this._cloudSyncMaxTimeout = null;
+      }
+      this.syncToCloudNow().catch(() => {});
+    }, delayMs);
+
+    if (!this._cloudSyncMaxTimeout) {
+      this._cloudSyncMaxTimeout = setTimeout(() => {
+        this._cloudSyncMaxTimeout = null;
+        if (this._cloudSyncTimeout) {
+          clearTimeout(this._cloudSyncTimeout);
+          this._cloudSyncTimeout = null;
+        }
+        this.syncToCloudNow().catch(() => {});
+      }, 60000);
+    }
+  }
+
+  async syncToCloudNow(force = false) {
+    if (!this.useMongo || !this.mongoReady || !BotDataModel) return false;
+    if (!force && !this._dataDirty) return false;
+    if (this._cloudSyncInFlight) {
+      try { await this._cloudSyncInFlight; } catch (e) {}
+      if (!force && !this._dataDirty) return false;
+    }
+
+    const versionAtStart = this._writeVersion;
+    const uploadPromise = (async () => {
+      try {
+        await BotDataModel.findOneAndUpdate(
+          { key: 'master_database' },
+          { data: this.data, updatedAt: new Date() },
+          { upsert: true }
+        );
+        if (this._writeVersion === versionAtStart) {
+          this._dataDirty = false;
+        }
+        return true;
+      } catch (e) {
+        return false;
+      } finally {
+        this._cloudSyncInFlight = null;
+      }
+    })();
+
+    this._cloudSyncInFlight = uploadPromise;
+    return uploadPromise;
   }
 
   startPeriodicCloudSync() {
@@ -226,15 +409,10 @@ class ResilientDatabase {
           // Zero data changed - skip cloud upload to save Render network bandwidth!
           return;
         }
-        try {
-          await BotDataModel.findOneAndUpdate(
-            { key: 'master_database' },
-            { data: this.data, updatedAt: new Date() },
-            { upsert: true }
-          );
-          this._dataDirty = false;
-          await this.checkAndCreateDailySnapshot();
-        } catch (e) {}
+        const ok = await this.syncToCloudNow();
+        if (ok) {
+          await this.checkAndCreateDailySnapshot().catch(() => {});
+        }
       }
     }, 10 * 60 * 1000);
 
@@ -1796,19 +1974,67 @@ class ResilientDatabase {
     return hadAny;
   }
 
+  getSection(section, fallback = {}) {
+    if (this.data[section] === undefined || this.data[section] === null) {
+      this.data[section] = Array.isArray(fallback) ? [...fallback] : (typeof fallback === 'object' ? { ...fallback } : fallback);
+    }
+    return this.data[section];
+  }
+
+  setSection(section, value) {
+    this.data[section] = value;
+    this.saveJSON();
+    return this.data[section];
+  }
+
+  getGuildEntry(section, guildId, fallback = null) {
+    const sec = this.getSection(section, {});
+    return sec[guildId] !== undefined ? sec[guildId] : fallback;
+  }
+
+  setGuildEntry(section, guildId, value) {
+    const sec = this.getSection(section, {});
+    sec[guildId] = value;
+    this.saveJSON();
+    return sec[guildId];
+  }
+
+  deleteGuildEntry(section, guildId) {
+    const sec = this.getSection(section, {});
+    if (sec && Object.prototype.hasOwnProperty.call(sec, guildId)) {
+      delete sec[guildId];
+      this.saveJSON();
+      return true;
+    }
+    return false;
+  }
+
+  touch() {
+    this.saveJSON();
+  }
+
 }
 
 
 const db = new ResilientDatabase();
 
 const flushOnExit = async () => {
+  if (db.fileSaveTimeout) {
+    clearTimeout(db.fileSaveTimeout);
+    db.fileSaveTimeout = null;
+  }
+  if (db._cloudSyncTimeout) {
+    clearTimeout(db._cloudSyncTimeout);
+    db._cloudSyncTimeout = null;
+  }
+  if (db._cloudSyncMaxTimeout) {
+    clearTimeout(db._cloudSyncMaxTimeout);
+    db._cloudSyncMaxTimeout = null;
+  }
+  db._writeJSONSync();
   if (db.useMongo && db.mongoReady && BotDataModel) {
     try {
-      await BotDataModel.findOneAndUpdate(
-        { key: 'master_database' },
-        { data: db.data, updatedAt: new Date() },
-        { upsert: true }
-      );
+      await db.syncToCloudNow(true);
       console.log('☁️ [MongoDB Cloud] Final graceful shutdown sync completed.');
     } catch (e) {}
   }

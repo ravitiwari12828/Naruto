@@ -12,6 +12,7 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 const { getLavalink } = require('../utils/lavalink');
 const { isGuildPremium, isUserPremium } = require('./premium');
+const db = require('../database/db');
 
 // MusicCard canvas renderer (optional fallback)
 let MusicCard = null;
@@ -21,10 +22,120 @@ try {
   console.warn('[Music] Canvas renderer not available — using styled embed player.');
 }
 
-// 24/7 AFK Voice & Autoplay Guild Stores
+// 24/7 AFK Voice & Autoplay Guild Stores (Backed by DB)
 const afkStore = new Map();
 const autoplayStore = new Map();
 const musicCardRenderer = MusicCard ? new MusicCard() : null;
+let _reconnecting247Promise = null;
+
+function hydrateMusicStores() {
+  const saved247 = db.getSection('music247', {});
+  afkStore.clear();
+  for (const [gId, info] of Object.entries(saved247)) {
+    if (info && info.voiceChannelId) {
+      afkStore.set(gId, info);
+    }
+  }
+  const savedAutoplay = db.getSection('musicAutoplay', {});
+  autoplayStore.clear();
+  for (const [gId, enabled] of Object.entries(savedAutoplay)) {
+    autoplayStore.set(gId, Boolean(enabled));
+  }
+}
+
+hydrateMusicStores();
+
+async function connect247Guild(client, guildId, entry) {
+  if (!client || !entry?.voiceChannelId) return false;
+  try {
+    const guild = client.guilds.cache.get(guildId) || await client.guilds.fetch(guildId).catch(() => null);
+    if (!guild) return false;
+
+    let channel = guild.channels.cache.get(entry.voiceChannelId);
+    if (!channel) {
+      try {
+        channel = await guild.channels.fetch(entry.voiceChannelId);
+      } catch (err) {
+        if (err?.code === 10003) {
+          afkStore.delete(guildId);
+          db.deleteGuildEntry('music247', guildId);
+        }
+        return false;
+      }
+    }
+    if (!channel || !channel.isVoiceBased?.()) return false;
+
+    const lavalink = getLavalink();
+    const hasConnectedNode = lavalink && Array.from(lavalink.nodeManager.nodes.values()).some(n => n.connected);
+    const currentVcId = guild.members.me?.voice?.channelId;
+
+    if (hasConnectedNode) {
+      let player = lavalink.getPlayer(guildId);
+      if (player && currentVcId === entry.voiceChannelId && player.connected) {
+        if (autoplayStore.has(guildId)) player.autoplay = autoplayStore.get(guildId);
+        return true;
+      }
+      if (!player) {
+        player = await lavalink.createPlayer({
+          guildId,
+          voiceChannelId: entry.voiceChannelId,
+          textChannelId: entry.textChannelId || null,
+          selfDeaf: true,
+          volume: 100
+        });
+      } else {
+        player.voiceChannelId = entry.voiceChannelId;
+        if (entry.textChannelId) player.textChannelId = entry.textChannelId;
+      }
+      if (autoplayStore.has(guildId)) {
+        player.autoplay = autoplayStore.get(guildId);
+      }
+      await player.connect();
+      return true;
+    }
+
+    if (currentVcId === entry.voiceChannelId) return true;
+    const { joinVoiceChannel } = require('@discordjs/voice');
+    joinVoiceChannel({
+      channelId: entry.voiceChannelId,
+      guildId,
+      adapterCreator: guild.voiceAdapterCreator,
+      selfDeaf: true
+    });
+    return true;
+  } catch (err) {
+    console.warn(`[24/7 Reconnect Warning] Guild ${guildId}: ${err?.message || err}`);
+    return false;
+  }
+}
+
+async function reconnect247VoiceChannels(client) {
+  if (!client || !client.isReady?.()) return 0;
+  if (_reconnecting247Promise) return _reconnecting247Promise;
+
+  _reconnecting247Promise = (async () => {
+    try {
+      await db.waitUntilReady(15000);
+      hydrateMusicStores();
+      if (afkStore.size === 0) return 0;
+
+      let reconnectedCount = 0;
+      for (const [guildId, entry] of Array.from(afkStore.entries())) {
+        const ok = await connect247Guild(client, guildId, entry);
+        if (ok) reconnectedCount++;
+        await new Promise(r => setTimeout(r, 400));
+      }
+      if (reconnectedCount > 0) {
+        console.log(`🎧 [24/7 Voice] Connected ${reconnectedCount} 24/7 voice channel(s) cleanly!`);
+      }
+      return reconnectedCount;
+    } finally {
+      _reconnecting247Promise = null;
+    }
+  })();
+
+  return _reconnecting247Promise;
+}
 
 const https = require('https');
 
@@ -407,6 +518,8 @@ module.exports = {
   ],
   afkStore,
   autoplayStore,
+  hydrateMusicStores,
+  reconnect247VoiceChannels,
   buildMusicPlayerEmbed,
   buildMusicActionRows,
   sendMusicCard,
@@ -941,33 +1054,46 @@ module.exports = {
 
     // 15. 24/7 AFK MODE (.247)
     if (['247', 'afk247', '24/7'].includes(invoked)) {
-      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} Join the target VC to enable 24/7 AFK mode!`);
       if (afkStore.has(guildId)) {
         afkStore.delete(guildId);
+        db.deleteGuildEntry('music247', guildId);
         return message.reply(`❌ **24/7 Mode Disabled**: Bot will auto-disconnect when VC is empty.`);
-      } else {
-        afkStore.set(guildId, { voiceChannelId: voiceState.channel.id, textChannelId: message.channel.id });
-        return message.reply(`✅ **24/7 Mode Enabled**: Bot will stay connected to **<#${voiceState.channel.id}>** 24/7!`);
       }
+      if (!voiceState?.channel) return message.reply(`${emojis.WARNING} Join the target VC to enable 24/7 AFK mode!`);
+      const cfg247 = {
+        voiceChannelId: voiceState.channel.id,
+        textChannelId: message.channel.id,
+        enabledAt: Date.now(),
+        enabledBy: author.id
+      };
+      afkStore.set(guildId, cfg247);
+      db.setGuildEntry('music247', guildId, cfg247);
+      if (message.guild.members.me?.voice?.channelId !== voiceState.channel.id) {
+        connect247Guild(message.client, guildId, cfg247).catch(() => {});
+      }
+      return message.reply(`✅ **24/7 Mode Enabled**: Bot will stay connected to **<#${voiceState.channel.id}>** 24/7!`);
     }
 
     // 16. AUTOPLAY (.autoplay, .ap)
     if (['autoplay', 'ap'].includes(invoked)) {
       const player = lavalink?.getPlayer(guildId);
-      if (!player) return message.reply(`${emojis.WARNING} No active music player!`);
-
       const argStr = args.join(' ').toLowerCase();
+      let newAutoplayState;
       if (argStr.includes('enable') || argStr.includes('on') || argStr.includes('true')) {
-        player.autoplay = true;
+        newAutoplayState = true;
       } else if (argStr.includes('disable') || argStr.includes('off') || argStr.includes('false')) {
-        player.autoplay = false;
+        newAutoplayState = false;
+      } else if (player) {
+        newAutoplayState = !player.autoplay;
       } else {
-        player.autoplay = !player.autoplay;
+        newAutoplayState = !(autoplayStore.get(guildId) || false);
       }
 
-      autoplayStore.set(guildId, player.autoplay);
+      if (player) player.autoplay = newAutoplayState;
+      autoplayStore.set(guildId, newAutoplayState);
+      db.setGuildEntry('musicAutoplay', guildId, Boolean(newAutoplayState));
 
-      if (player.autoplay && player.queue.tracks.length <= 1) {
+      if (player && player.autoplay && player.queue.tracks.length <= 1) {
         const lastTrk = player.queue.current || player.lastPlayedTrack;
         if (lastTrk) {
           if (lavalink?.handleAutoplay) {
@@ -979,12 +1105,12 @@ module.exports = {
         }
       }
 
-      if (player.queue.current) {
+      if (player?.queue?.current) {
         sendMusicCard(message.channel, player.queue.current, player).catch(() => {});
       }
 
-      const status = player.autoplay ? '✅ **ENABLED**' : '❌ **DISABLED**';
-      return message.reply(`♾️ **Autoplay Mode:** ${status}! ${player.autoplay ? '(Auto-queuing 15 similar artist tracks continuously)' : ''}`);
+      const status = newAutoplayState ? '✅ **ENABLED**' : '❌ **DISABLED**';
+      return message.reply(`♾️ **Autoplay Mode:** ${status}! ${newAutoplayState ? '(Auto-queuing similar artist tracks continuously)' : ''}`);
     }
 
     // 17. FAVORITES (.fav add/list/remove/play)

@@ -10,11 +10,54 @@ const {
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 
-// Global Stores
+// Global Stores (Backed by DB)
 const ticketConfigs = new Map();
 const priorityTimers = new Map(); // ticketChannelId -> Interval ID
 const staffCallCooldowns = new Map(); // ticketChannelId -> Timestamp
+const _origTicketSet = ticketConfigs.set.bind(ticketConfigs);
+const _origTicketDelete = ticketConfigs.delete.bind(ticketConfigs);
+
+function serializeTicketConfig(cfg) {
+  return {
+    ...cfg,
+    staffRoles: Array.from(cfg.staffRoles || [])
+  };
+}
+
+function deserializeTicketConfig(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  return {
+    ...raw,
+    ticketCounter: raw.ticketCounter ?? 0,
+    staffRoles: new Set(Array.isArray(raw.staffRoles) ? raw.staffRoles : [])
+  };
+}
+
+ticketConfigs.set = (guildId, val) => {
+  _origTicketSet(guildId, val);
+  db.setGuildEntry('tickets', guildId, serializeTicketConfig(val));
+  return ticketConfigs;
+};
+
+ticketConfigs.delete = (guildId) => {
+  const res = _origTicketDelete(guildId);
+  db.deleteGuildEntry('tickets', guildId);
+  return res;
+};
+
+function hydrateTicketConfigs() {
+  const saved = db.getSection('tickets', {});
+  ticketConfigs.clear();
+  for (const [gId, raw] of Object.entries(saved)) {
+    const cfg = deserializeTicketConfig(raw);
+    if (cfg) _origTicketSet(gId, cfg);
+  }
+}
+
+hydrateTicketConfigs();
+db.onCloudRestore(hydrateTicketConfigs);
 
 function resolveEmojiDisplay(emoji) {
   if (!emoji) return '🎫';
@@ -42,21 +85,27 @@ function resolveSelectMenuEmoji(emoji) {
 
 function getOrCreateTicketConfig(guildId) {
   if (!ticketConfigs.has(guildId)) {
-    ticketConfigs.set(guildId, {
-      ticketCounter: 0,
-      panelChanId: null,
-      logChanId: null,
-      transcriptChanId: null,
-      staffRoles: new Set(),
-      categories: [
-        { id: 'cat_support', name: 'General Support', emoji: emojis.OBJ_TICKETS || '🎫', description: 'Need help or general assistance?' },
-        { id: 'cat_promo', name: 'Promotion', emoji: emojis.OBJ_GIVEAWAY || '📢', description: 'Inquire about promotional deals' },
-        { id: 'cat_report', name: 'Report', emoji: emojis.OBJ_ANTINUKE || '🚨', description: 'Report a user or server violation' },
-        { id: 'cat_reward', name: 'Reward', emoji: emojis.OBJ_LEVEL || '🎁', description: 'Claim your event or activity rewards' },
-        { id: 'cat_staff', name: 'Staff Apply', emoji: emojis.OBJ_MOD || '💼', description: 'Apply for staff position' },
-        { id: 'cat_server_promo', name: 'Server Promo', emoji: emojis.OBJ_ALL_MODULES || '🌐', description: 'Request server cross-promotions' }
-      ]
-    });
+    const saved = db.getGuildEntry('tickets', guildId, null);
+    const hydrated = deserializeTicketConfig(saved);
+    if (hydrated) {
+      _origTicketSet(guildId, hydrated);
+    } else {
+      _origTicketSet(guildId, {
+        ticketCounter: 0,
+        panelChanId: null,
+        logChanId: null,
+        transcriptChanId: null,
+        staffRoles: new Set(),
+        categories: [
+          { id: 'cat_support', name: 'General Support', emoji: emojis.OBJ_TICKETS || '🎫', description: 'Need help or general assistance?' },
+          { id: 'cat_promo', name: 'Promotion', emoji: emojis.OBJ_GIVEAWAY || '📢', description: 'Inquire about promotional deals' },
+          { id: 'cat_report', name: 'Report', emoji: emojis.OBJ_ANTINUKE || '🚨', description: 'Report a user or server violation' },
+          { id: 'cat_reward', name: 'Reward', emoji: emojis.OBJ_LEVEL || '🎁', description: 'Claim your event or activity rewards' },
+          { id: 'cat_staff', name: 'Staff Apply', emoji: emojis.OBJ_MOD || '💼', description: 'Apply for staff position' },
+          { id: 'cat_server_promo', name: 'Server Promo', emoji: emojis.OBJ_ALL_MODULES || '🌐', description: 'Request server cross-promotions' }
+        ]
+      });
+    }
   }
   const cfg = ticketConfigs.get(guildId);
   if (cfg.ticketCounter === undefined) cfg.ticketCounter = 0;

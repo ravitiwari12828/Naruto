@@ -1,9 +1,58 @@
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 
-// In-memory giveaway store (persists during session)
+// Giveaway store (Backed by DB)
 const giveaways = new Map();
+const giveawayTimers = new Map(); // id -> Timeout
+const _origGwSet = giveaways.set.bind(giveaways);
+const _origGwDelete = giveaways.delete.bind(giveaways);
+
+function serializeGiveaway(gw) {
+  return {
+    ...gw,
+    entries: Array.from(gw.entries || [])
+  };
+}
+
+function deserializeGiveaway(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  return {
+    ...raw,
+    entries: new Set(Array.isArray(raw.entries) ? raw.entries : [])
+  };
+}
+
+giveaways.set = (id, val) => {
+  _origGwSet(id, val);
+  db.setGuildEntry('giveaways', id, serializeGiveaway(val));
+  return giveaways;
+};
+
+giveaways.delete = (id) => {
+  if (giveawayTimers.has(id)) {
+    clearTimeout(giveawayTimers.get(id));
+    giveawayTimers.delete(id);
+  }
+  const res = _origGwDelete(id);
+  db.deleteGuildEntry('giveaways', id);
+  return res;
+};
+
+function hydrateGiveaways() {
+  const saved = db.getSection('giveaways', {});
+  giveaways.clear();
+  for (const [id, raw] of Object.entries(saved)) {
+    const gw = deserializeGiveaway(raw);
+    if (gw) _origGwSet(id, gw);
+  }
+}
+
+hydrateGiveaways();
+db.onCloudRestore(hydrateGiveaways);
+
+
 
 function generateId() {
   return Math.random().toString(36).slice(2, 8).toUpperCase();
@@ -121,12 +170,86 @@ function buildRerolledEmbed(gw, winnerMentions, clientUser) {
   return embed;
 }
 
+const MAX_TIMEOUT_MS = 2147483000;
+
+async function finalizeGiveaway(client, id) {
+  if (!client) return;
+  const gw = giveaways.get(id);
+  if (!gw || gw.ended) return;
+
+  gw.ended = true;
+  giveaways.set(id, gw);
+
+  try {
+    const eligible = await collectEligibleUsers(client, gw);
+    const chan = client.channels.cache.get(gw.channelId) || await client.channels.fetch(gw.channelId).catch(() => null);
+    if (!chan) return;
+
+    if (eligible.length === 0) {
+      await chan.send(`${emojis.WARNING} Giveaway **${id}** ended with no valid entries. No winners selected.`).catch(() => {});
+      return;
+    }
+
+    const winners = pickWinners(eligible, gw.winnerCount);
+    const winnerMentions = winners.map(w => `<@${w.id}>`).join('\n');
+
+    const { embed: endEmbed, claimBtn } = buildEndedEmbed(gw, winnerMentions, client.user);
+    await chan.send({
+      content: `${emojis.GIVEAWAY_PING || '🎉'} **Giveaway ended!** ${winners.map(w => `<@${w.id}>`).join(', ')} won **${gw.prize}**!`,
+      embeds: [endEmbed],
+      components: [claimBtn]
+    }).catch(() => {});
+  } catch (err) {
+    console.error(`[Giveaway Finalize Error] ${id}:`, err?.message || err);
+  }
+}
+
+function scheduleGiveawayEnd(client, gw) {
+  if (!client || !gw || gw.ended) return;
+  if (giveawayTimers.has(gw.id)) {
+    clearTimeout(giveawayTimers.get(gw.id));
+    giveawayTimers.delete(gw.id);
+  }
+  const remaining = Math.max(0, (gw.endTime || 0) - Date.now());
+  if (remaining === 0) {
+    finalizeGiveaway(client, gw.id).catch(() => {});
+    return;
+  }
+  if (remaining > MAX_TIMEOUT_MS) {
+    const timer = setTimeout(() => {
+      giveawayTimers.delete(gw.id);
+      const latest = giveaways.get(gw.id);
+      if (latest && !latest.ended) scheduleGiveawayEnd(client, latest);
+    }, MAX_TIMEOUT_MS);
+    giveawayTimers.set(gw.id, timer);
+    return;
+  }
+  const timer = setTimeout(() => {
+    giveawayTimers.delete(gw.id);
+    finalizeGiveaway(client, gw.id).catch(() => {});
+  }, remaining);
+  giveawayTimers.set(gw.id, timer);
+}
+
+function rehydrateGiveawayTimers(client) {
+  if (!client || !client.isReady?.()) return 0;
+  let scheduled = 0;
+  for (const gw of giveaways.values()) {
+    if (gw && !gw.ended) {
+      scheduleGiveawayEnd(client, gw);
+      scheduled++;
+    }
+  }
+  return scheduled;
+}
+
 module.exports = {
   name: 'giveaway',
   description: 'Host and manage giveaways. Short syntax: .gstart, .gend, .greroll, .gdelete, .gedit',
   aliases: ['gstart', 'gcreate', 'gend', 'greroll', 'reroll', 'gdelete', 'gedit'],
   giveaways,
   buildActiveEmbed,
+  rehydrateGiveawayTimers,
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -216,33 +339,7 @@ module.exports = {
       };
 
       giveaways.set(id, gwData);
-
-      // Auto-end after duration
-      setTimeout(async () => {
-        const gw = giveaways.get(id);
-        if (!gw || gw.ended) return;
-
-        gw.ended = true;
-        giveaways.set(id, gw);
-
-        const eligible = await collectEligibleUsers(message.client, gw);
-        const chan = message.client.channels.cache.get(gw.channelId);
-        if (!chan) return;
-
-        if (eligible.length === 0) {
-          return chan.send(`${emojis.WARNING} Giveaway **${id}** ended with no valid entries. No winners selected.`);
-        }
-
-        const winners = pickWinners(eligible, gw.winnerCount);
-        const winnerMentions = winners.map(w => `<@${w.id}>`).join('\n');
-
-        const { embed: endEmbed, claimBtn } = buildEndedEmbed(gw, winnerMentions, clientUser);
-        chan.send({
-          content: `${emojis.GIVEAWAY_PING || '🎉'} **Giveaway ended!** ${winners.map(w => `<@${w.id}>`).join(', ')} won **${gw.prize}**!`,
-          embeds: [endEmbed],
-          components: [claimBtn]
-        });
-      }, duration);
+      scheduleGiveawayEnd(message.client, gwData);
 
       const confirmMsg = await message.channel.send(
         `${emojis.GIVEAWAY_PING || '🎉'} Giveaway **\`${id}\`** created! Ends in **${timeRaw}**!`
@@ -400,6 +497,7 @@ module.exports = {
         if (!newDuration) return message.reply(`${emojis.WARNING} Invalid time format. Use: \`10m\`, \`2h\`, \`1d\``);
         gw.endTime = Date.now() + newDuration;
         giveaways.set(id, gw);
+        scheduleGiveawayEnd(message.client, gw);
         successMsg = `⏱️ **Duration updated!** New end time: <t:${Math.floor(gw.endTime / 1000)}:R>`;
 
       } else if (field === 'host') {

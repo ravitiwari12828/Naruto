@@ -2,14 +2,46 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
 const { isBotOwner } = require('../utils/owners');
+const db = require('../database/db');
 
-// Bot-level Extra Owners Store (global across bot)
-const globalBotExtraOwners = new Set([
-  '1420687548807905324',
-  
-  ,
-  
-]);
+const DEFAULT_BOT_OWNERS = ['1420687548807905324'];
+
+// Bot-level Extra Owners Store (Backed by DB)
+const globalBotExtraOwners = new Set(DEFAULT_BOT_OWNERS);
+const _origAddOwner = globalBotExtraOwners.add.bind(globalBotExtraOwners);
+const _origDelOwner = globalBotExtraOwners.delete.bind(globalBotExtraOwners);
+
+function saveBotExtraOwners() {
+  const list = Array.from(globalBotExtraOwners).filter(id => typeof id === 'string' && id.trim().length > 0);
+  db.setSection('botExtraOwners', list);
+}
+
+globalBotExtraOwners.add = (id) => {
+  if (!id || typeof id !== 'string') return globalBotExtraOwners;
+  const res = _origAddOwner(id);
+  saveBotExtraOwners();
+  return res;
+};
+
+globalBotExtraOwners.delete = (id) => {
+  const res = _origDelOwner(id);
+  saveBotExtraOwners();
+  return res;
+};
+
+function hydrateBotExtraOwners() {
+  const saved = db.getSection('botExtraOwners', []);
+  globalBotExtraOwners.clear();
+  for (const id of DEFAULT_BOT_OWNERS) _origAddOwner(id);
+  if (Array.isArray(saved)) {
+    for (const id of saved) {
+      if (id && typeof id === 'string' && id.trim().length > 0) _origAddOwner(id.trim());
+    }
+  }
+}
+
+hydrateBotExtraOwners();
+db.onCloudRestore(hydrateBotExtraOwners);
 
 module.exports = {
   name: 'extraowner',

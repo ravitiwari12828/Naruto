@@ -4,8 +4,65 @@ const db = require('../database/db');
 const { PermissionsBitField } = require('discord.js');
 const { createDynamicBox } = require('../utils/boxBuilder');
 
-// Global Leveling Config per guild
+// Global Leveling Config per guild (Backed by DB)
 const levelConfigs = new Map();
+const _origLevelSet = levelConfigs.set.bind(levelConfigs);
+const _origLevelDelete = levelConfigs.delete.bind(levelConfigs);
+
+function serializeLevelConfig(cfg) {
+  const roleObj = {};
+  if (cfg.levelRoles instanceof Map) {
+    for (const [k, v] of cfg.levelRoles.entries()) roleObj[k] = v;
+  } else if (cfg.levelRoles && typeof cfg.levelRoles === 'object') {
+    Object.assign(roleObj, cfg.levelRoles);
+  }
+  return {
+    enabled: cfg.enabled !== undefined ? Boolean(cfg.enabled) : true,
+    channelId: cfg.channelId || null,
+    leaderboardMsgId: cfg.leaderboardMsgId || null,
+    levelRoles: roleObj
+  };
+}
+
+function deserializeLevelConfig(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const roleMap = new Map();
+  if (raw.levelRoles && typeof raw.levelRoles === 'object') {
+    for (const [k, v] of Object.entries(raw.levelRoles)) {
+      roleMap.set(k, v);
+    }
+  }
+  return {
+    enabled: raw.enabled !== undefined ? Boolean(raw.enabled) : true,
+    channelId: raw.channelId || null,
+    leaderboardMsgId: raw.leaderboardMsgId || null,
+    levelRoles: roleMap
+  };
+}
+
+levelConfigs.set = (guildId, val) => {
+  _origLevelSet(guildId, val);
+  db.setGuildEntry('levelConfigs', guildId, serializeLevelConfig(val));
+  return levelConfigs;
+};
+
+levelConfigs.delete = (guildId) => {
+  const res = _origLevelDelete(guildId);
+  db.deleteGuildEntry('levelConfigs', guildId);
+  return res;
+};
+
+function hydrateLevelConfigs() {
+  const saved = db.getSection('levelConfigs', {});
+  levelConfigs.clear();
+  for (const [gId, raw] of Object.entries(saved)) {
+    const cfg = deserializeLevelConfig(raw);
+    if (cfg) _origLevelSet(gId, cfg);
+  }
+}
+
+hydrateLevelConfigs();
+db.onCloudRestore(hydrateLevelConfigs);
 
 // Compact number formatter: 3400 → 3.4K
 function fmtNum(n) {
@@ -17,12 +74,18 @@ function fmtNum(n) {
 
 function getOrCreateLevelConfig(guildId) {
   if (!levelConfigs.has(guildId)) {
-    levelConfigs.set(guildId, {
-      enabled: true,
-      channelId: null,
-      leaderboardMsgId: null,
-      levelRoles: new Map()
-    });
+    const saved = db.getGuildEntry('levelConfigs', guildId, null);
+    const hydrated = deserializeLevelConfig(saved);
+    if (hydrated) {
+      _origLevelSet(guildId, hydrated);
+    } else {
+      _origLevelSet(guildId, {
+        enabled: true,
+        channelId: null,
+        leaderboardMsgId: null,
+        levelRoles: new Map()
+      });
+    }
   }
   const cfg = levelConfigs.get(guildId);
   if (!cfg.levelRoles) cfg.levelRoles = new Map();

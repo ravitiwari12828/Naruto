@@ -2,22 +2,55 @@ const { createDynamicBox } = require('../utils/panelRenderer');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { PermissionsBitField } = require('discord.js');
+const db = require('../database/db');
 
-// Global Server Special Roles Config Map (guildId -> { friend, girl, guest, staff, official, vip, invcrole, autonick })
+// Global Server Special Roles Config Map (Backed by DB)
 const serverRoleConfigs = new Map();
+const _origRoleSet = serverRoleConfigs.set.bind(serverRoleConfigs);
+const _origRoleDelete = serverRoleConfigs.delete.bind(serverRoleConfigs);
+
+serverRoleConfigs.set = (guildId, val) => {
+  _origRoleSet(guildId, val);
+  db.setGuildEntry('customRoles', guildId, val);
+  return serverRoleConfigs;
+};
+
+serverRoleConfigs.delete = (guildId) => {
+  const res = _origRoleDelete(guildId);
+  db.deleteGuildEntry('customRoles', guildId);
+  return res;
+};
+
+function hydrateRoleConfigs() {
+  const saved = db.getSection('customRoles', {});
+  serverRoleConfigs.clear();
+  for (const [gId, cfg] of Object.entries(saved)) {
+    if (cfg && typeof cfg === 'object') {
+      _origRoleSet(gId, cfg);
+    }
+  }
+}
+
+hydrateRoleConfigs();
+db.onCloudRestore(hydrateRoleConfigs);
 
 function getOrCreateRoleConfig(guildId) {
   if (!serverRoleConfigs.has(guildId)) {
-    serverRoleConfigs.set(guildId, {
-      friend: null,
-      girl: null,
-      guest: null,
-      staff: null,
-      official: null,
-      vip: null,
-      invcrole: null,
-      autonick: null
-    });
+    const saved = db.getGuildEntry('customRoles', guildId, null);
+    if (saved && typeof saved === 'object') {
+      _origRoleSet(guildId, saved);
+    } else {
+      _origRoleSet(guildId, {
+        friend: null,
+        girl: null,
+        guest: null,
+        staff: null,
+        official: null,
+        vip: null,
+        invcrole: null,
+        autonick: null
+      });
+    }
   }
   return serverRoleConfigs.get(guildId);
 }

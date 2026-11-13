@@ -1,15 +1,76 @@
 const { EmbedBuilder } = require('discord.js');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 
-// Global Advanced Logging Store (guildId -> { channels: Map<type, channelId>, enabled: boolean })
+// Global Advanced Logging Store (Backed by DB)
 const advLogStore = new Map();
+
+function saveAdvLogGuild(guildId) {
+  const store = advLogStore.get(guildId);
+  if (!store) return;
+  const channelsObj = {};
+  for (const [k, v] of store.channels.entries()) {
+    channelsObj[k] = v;
+  }
+  db.setGuildEntry('advLogs', guildId, {
+    enabled: Boolean(store.enabled),
+    channels: channelsObj
+  });
+}
+
+function makeTrackedChannelsMap(guildId, entries = []) {
+  const m = new Map(entries);
+  const origSet = m.set.bind(m);
+  const origDel = m.delete.bind(m);
+  m.set = (k, v) => {
+    const res = origSet(k, v);
+    saveAdvLogGuild(guildId);
+    return res;
+  };
+  m.delete = (k) => {
+    const res = origDel(k);
+    saveAdvLogGuild(guildId);
+    return res;
+  };
+  return m;
+}
+
+function buildAdvStoreFromSaved(guildId, savedAdv, legacyLogChannels) {
+  const entries = [];
+  if (legacyLogChannels && typeof legacyLogChannels === 'object') {
+    for (const [k, v] of Object.entries(legacyLogChannels)) {
+      if (v) entries.push([k, v]);
+    }
+  }
+  if (savedAdv?.channels && typeof savedAdv.channels === 'object') {
+    for (const [k, v] of Object.entries(savedAdv.channels)) {
+      if (v) entries.push([k, v]);
+    }
+  }
+  return {
+    enabled: savedAdv?.enabled !== undefined ? Boolean(savedAdv.enabled) : true,
+    channels: makeTrackedChannelsMap(guildId, entries)
+  };
+}
+
+function hydrateAdvLogStores() {
+  const savedAll = db.getSection('advLogs', {});
+  const legacyAll = db.getSection('logChannels', {});
+  const guildIds = new Set([...Object.keys(savedAll), ...Object.keys(legacyAll)]);
+  advLogStore.clear();
+  for (const gId of guildIds) {
+    advLogStore.set(gId, buildAdvStoreFromSaved(gId, savedAll[gId], legacyAll[gId]));
+  }
+}
+
+hydrateAdvLogStores();
+db.onCloudRestore(hydrateAdvLogStores);
 
 function getOrCreateAdvLogStore(guildId) {
   if (!advLogStore.has(guildId)) {
-    advLogStore.set(guildId, {
-      enabled: true,
-      channels: new Map()
-    });
+    const saved = db.getGuildEntry('advLogs', guildId, null);
+    const legacy = db.getLogChannels ? db.getLogChannels(guildId) : null;
+    advLogStore.set(guildId, buildAdvStoreFromSaved(guildId, saved, legacy));
   }
   return advLogStore.get(guildId);
 }

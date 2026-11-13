@@ -9,20 +9,81 @@ const {
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 
-// Global ModMail Store (guildId -> { categoryId, transcriptChanId, staffRoleId })
-// activeTickets: userId -> { threadId, channelId, guildId, messages: [] }
+// Global ModMail Store (Backed by DB)
 const modmailConfigs = new Map();
 const activeModmailTickets = new Map();
+const _origModmailCfgSet = modmailConfigs.set.bind(modmailConfigs);
+const _origModmailCfgDelete = modmailConfigs.delete.bind(modmailConfigs);
+const _origModmailTicketSet = activeModmailTickets.set.bind(activeModmailTickets);
+const _origModmailTicketDelete = activeModmailTickets.delete.bind(activeModmailTickets);
+
+function getModmailBucket() {
+  const sec = db.getSection('modmail', { configs: {}, activeTickets: {} });
+  if (!sec.configs || typeof sec.configs !== 'object') sec.configs = {};
+  if (!sec.activeTickets || typeof sec.activeTickets !== 'object') sec.activeTickets = {};
+  return sec;
+}
+
+modmailConfigs.set = (guildId, val) => {
+  _origModmailCfgSet(guildId, val);
+  getModmailBucket().configs[guildId] = val;
+  db.saveJSON();
+  return modmailConfigs;
+};
+
+modmailConfigs.delete = (guildId) => {
+  const res = _origModmailCfgDelete(guildId);
+  delete getModmailBucket().configs[guildId];
+  db.saveJSON();
+  return res;
+};
+
+activeModmailTickets.set = (userId, val) => {
+  _origModmailTicketSet(userId, val);
+  getModmailBucket().activeTickets[userId] = val;
+  db.saveJSON();
+  return activeModmailTickets;
+};
+
+activeModmailTickets.delete = (userId) => {
+  const res = _origModmailTicketDelete(userId);
+  delete getModmailBucket().activeTickets[userId];
+  db.saveJSON();
+  return res;
+};
+
+function hydrateModmailStores() {
+  const sec = getModmailBucket();
+  modmailConfigs.clear();
+  for (const [gId, cfg] of Object.entries(sec.configs)) {
+    if (cfg && typeof cfg === 'object') _origModmailCfgSet(gId, cfg);
+  }
+  activeModmailTickets.clear();
+  for (const [uId, t] of Object.entries(sec.activeTickets)) {
+    if (t && typeof t === 'object') _origModmailTicketSet(uId, t);
+  }
+}
+
+hydrateModmailStores();
+db.onCloudRestore(hydrateModmailStores);
+
+
 
 function getOrCreateModmailConfig(guildId) {
   if (!modmailConfigs.has(guildId)) {
-    modmailConfigs.set(guildId, {
-      enabled: true,
-      categoryId: null,
-      transcriptChanId: null,
-      staffRoleId: null
-    });
+    const saved = getModmailBucket().configs[guildId];
+    if (saved && typeof saved === 'object') {
+      _origModmailCfgSet(guildId, saved);
+    } else {
+      _origModmailCfgSet(guildId, {
+        enabled: true,
+        categoryId: null,
+        transcriptChanId: null,
+        staffRoleId: null
+      });
+    }
   }
   return modmailConfigs.get(guildId);
 }

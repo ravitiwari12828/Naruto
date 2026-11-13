@@ -3,9 +3,26 @@ const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { isUserPremium, isGuildPremium } = require('./premium');
 const { isBotOwner } = require('../utils/owners');
+const db = require('../database/db');
 
-// Global 24-Hour Rolling Timestamps Store: userId -> Array of timestamps (in ms)
+// Global 24-Hour Rolling Timestamps Store (Backed by DB): userId -> Array of timestamps (in ms)
 const imageLimitsStore = new Map();
+
+function hydrateImageLimits() {
+  const saved = db.getSection('imageLimits', {});
+  const now = Date.now();
+  const windowMs = 24 * 60 * 60 * 1000;
+  imageLimitsStore.clear();
+  for (const [uId, arr] of Object.entries(saved)) {
+    if (Array.isArray(arr)) {
+      const valid = arr.filter(ts => typeof ts === 'number' && now - ts < windowMs);
+      if (valid.length > 0) imageLimitsStore.set(uId, valid);
+    }
+  }
+}
+
+hydrateImageLimits();
+db.onCloudRestore(hydrateImageLimits);
 
 function checkImageLimit(userId, guildId, client, user) {
   const isOwner = (user && client ? isBotOwner(user, client) : false) || (userId ? isBotOwner({ id: userId }, client) : false);
@@ -58,6 +75,7 @@ function recordImageUse(userId) {
   timestamps = timestamps.filter(ts => now - ts < windowMs);
   timestamps.push(now);
   imageLimitsStore.set(userId, timestamps);
+  db.setGuildEntry('imageLimits', userId, timestamps);
 }
 
 // 1. ChatGPT DALL-E 3 (High-Definition OpenAI API)

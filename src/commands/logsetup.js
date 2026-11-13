@@ -8,25 +8,56 @@ const {
 } = require('discord.js');
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
+const db = require('../database/db');
 
-// Global Logging Stores (guildId -> { unifiedChanId, modLogs, securityLogs, automodLogs, messageLogs, voiceLogs, ticketLogs })
+// Global Logging Stores (Backed by DB)
 const loggingConfigs = new Map();
+const _origLogSet = loggingConfigs.set.bind(loggingConfigs);
+const _origLogDelete = loggingConfigs.delete.bind(loggingConfigs);
+
+loggingConfigs.set = (guildId, val) => {
+  _origLogSet(guildId, val);
+  db.setGuildEntry('logging', guildId, val);
+  return loggingConfigs;
+};
+
+loggingConfigs.delete = (guildId) => {
+  const res = _origLogDelete(guildId);
+  db.deleteGuildEntry('logging', guildId);
+  return res;
+};
+
+function hydrateLoggingConfigs() {
+  const saved = db.getSection('logging', {});
+  loggingConfigs.clear();
+  for (const [gId, cfg] of Object.entries(saved)) {
+    if (cfg && typeof cfg === 'object') _origLogSet(gId, cfg);
+  }
+}
+
+hydrateLoggingConfigs();
+db.onCloudRestore(hydrateLoggingConfigs);
 
 function getOrCreateLoggingConfig(guildId) {
   if (!loggingConfigs.has(guildId)) {
-    loggingConfigs.set(guildId, {
-      enabled: true,
-      mode: 'unified',
-      unifiedChanId: null,
-      modLogs: null,
-      securityLogs: null,
-      automodLogs: null,
-      messageLogs: null,
-      voiceLogs: null,
-      ticketLogs: null,
-      emojiLogs: null,
-      modCaseLogs: null
-    });
+    const saved = db.getGuildEntry('logging', guildId, null);
+    if (saved && typeof saved === 'object') {
+      _origLogSet(guildId, saved);
+    } else {
+      _origLogSet(guildId, {
+        enabled: true,
+        mode: 'unified',
+        unifiedChanId: null,
+        modLogs: null,
+        securityLogs: null,
+        automodLogs: null,
+        messageLogs: null,
+        voiceLogs: null,
+        ticketLogs: null,
+        emojiLogs: null,
+        modCaseLogs: null
+      });
+    }
   }
   return loggingConfigs.get(guildId);
 }

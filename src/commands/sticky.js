@@ -1,9 +1,37 @@
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const emojis = require('../utils/emojis');
 const { PermissionsBitField } = require('discord.js');
+const db = require('../database/db');
 
-// Global In-Memory Sticky Notes Map (channelId -> { guildId, channelId, text, lastMsgId, authorId })
+// Global Sticky Notes Map (Backed by DB)
 const stickyNotes = new Map();
+const _origStickySet = stickyNotes.set.bind(stickyNotes);
+const _origStickyDelete = stickyNotes.delete.bind(stickyNotes);
+
+stickyNotes.set = (channelId, val) => {
+  _origStickySet(channelId, val);
+  db.setGuildEntry('stickyNotes', channelId, val);
+  return stickyNotes;
+};
+
+stickyNotes.delete = (channelId) => {
+  const res = _origStickyDelete(channelId);
+  db.deleteGuildEntry('stickyNotes', channelId);
+  return res;
+};
+
+function hydrateStickyNotes() {
+  const saved = db.getSection('stickyNotes', {});
+  stickyNotes.clear();
+  for (const [chId, entry] of Object.entries(saved)) {
+    if (entry && entry.text) {
+      _origStickySet(chId, entry);
+    }
+  }
+}
+
+hydrateStickyNotes();
+db.onCloudRestore(hydrateStickyNotes);
 
 module.exports = {
   name: 'stickynote',

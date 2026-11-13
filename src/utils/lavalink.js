@@ -68,6 +68,14 @@ function initLavalink(client) {
 
   lavalink.nodeManager.on('connect', (node) => {
     console.log(`🎵 [Lavalink] Connected to Lavalink node: ${node.id} (${node.options.host}:${node.options.port})`);
+    setTimeout(() => {
+      try {
+        const musicCmd = client.commands?.get('music') || require('../commands/music');
+        if (musicCmd && typeof musicCmd.reconnect247VoiceChannels === 'function') {
+          musicCmd.reconnect247VoiceChannels(client).catch(() => {});
+        }
+      } catch (e) {}
+    }, 1500);
   });
 
   lavalink.nodeManager.on('disconnect', (node, reason) => {
