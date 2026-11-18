@@ -9,7 +9,7 @@ const { verifyPermit, validateRoleSafety } = require('../utils/modPermits');
 module.exports = {
   name: 'roleicon',
   description: 'Set or update a custom icon image/emoji for a server role',
-  aliases: ['setroleicon', 'seticon', 'ricon'],
+  aliases: ['setroleicon', 'ricon'],
 
   async execute(message, args) {
     const permCheck = await verifyPermit(message, 'role_assign', 'roleicon');

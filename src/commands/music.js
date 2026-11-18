@@ -307,7 +307,7 @@ async function sendMusicCard(channel, track, player) {
         requester: reqName
       });
 
-      const attachment = new AttachmentBuilder(buf, { name: 'nowplaying.png' });
+      const attachment = new AttachmentBuilder(buf, { name: 'music' });
       embed.setImage('attachment://nowplaying.png');
       sentMsg = await channel.send({ embeds: [embed], files: [attachment], components: rows });
       if (player && sentMsg) {
@@ -507,15 +507,7 @@ function formatDuration(ms) {
 module.exports = {
   name: 'music',
   description: 'Synn Lavalink Complete Music Suite',
-  aliases: [
-    'm', 'play', 'p', 'stop', 'pause', 'resume',
-    'skip', 's', 'previous', 'replay',
-    'queue', 'q', 'np', 'nowplaying', 'loop', 'repeat',
-    'shuffle', 'volume', 'vol', 'remove', 'move',
-    'skipto', 'jump', 'join', 'connect', 'dc', 'leave',
-    'afk247', '247', 'seek', 'equalizer', 'eq', 'audiofilter',
-    'autoplay', 'ap', 'fav', 'favorite', 'favorites'
-  ],
+  aliases: ['p', 'play', 'stop', 'pause', 'resume', 's', 'skip', 'prev', 'previous', 'q', 'queue', 'np', 'nowplaying', 'loop', 'shuffle', 'vol', 'volume', 'join', 'dc', 'leave', '247', 'afk247', 'seek', 'filter', 'ap', 'autoplay', 'fav', 'favorites'],
   afkStore,
   autoplayStore,
   hydrateMusicStores,
@@ -868,7 +860,7 @@ module.exports = {
 ` +
             `*Use a play command to start music!*`
           )
-          .setFooter({ text: 'Naruto Shinobi Music Suite' });
+          .setFooter({ text: 'Naruto Music Suite' });
 
         return message.reply({ embeds: [joinEmbed] });
       } catch (err) {

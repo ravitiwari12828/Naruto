@@ -44,7 +44,7 @@ db.onCloudRestore(hydrateWelcomeConfigs);
 
 const WELCOME_PRESETS = {
   gothic: {
-    name: 'Gothic Dark Sanctuary',
+    name: 'welcome',
     style: 'gothic',
     color: '#800020',
     title: '{gothic:Welcome to the Castle}',
@@ -79,14 +79,14 @@ const WELCOME_PRESETS = {
     font: 'script',
     banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/cafe_banner.gif'
   },
-  shinobi: {
-    name: 'Naruto Hidden Leaf Village',
-    style: 'shinobi',
+  anime: {
+    name: 'Anime Theme',
+    style: 'anime',
     color: '#FF7A00',
-    title: '🍥 {gothic:Welcome Shinobi}',
-    description: '🍃 Believe it! Welcome {user} to {gothic:{server_name}}!\n\n⚔️ Village Ninja Count: #{membercount}',
+    title: '🍥 {gothic:Welcome to the Server}',
+    description: '🍃 Welcome {user} to {gothic:{server_name}}!\n\n👥 Member Count: #{membercount}',
     font: 'gothic',
-    banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/shinobi_banner.gif'
+    banner: 'https://cdn.discordapp.com/attachments/1111111111111111111/1234567890/anime_banner.gif'
   },
   cyberpunk: {
     name: 'Cyberpunk Neon Matrix',
@@ -113,7 +113,7 @@ const PRESET_BANNERS = {
   aesthetic: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=1000&auto=format&fit=crop',
   galaxy: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1000&auto=format&fit=crop',
   cafe: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?q=80&w=1000&auto=format&fit=crop',
-  shinobi: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1000&auto=format&fit=crop',
+  anime: 'https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=1000&auto=format&fit=crop',
   cyberpunk: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1000&auto=format&fit=crop',
   minimal: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1000&auto=format&fit=crop'
 };
@@ -375,10 +375,7 @@ function buildWelcomeConfigPanel(config, guild, author, clientUser) {
 module.exports = {
   name: 'welcome',
   description: 'Customizable Mimu-Style Welcome Embeds with Gothic Fonts, Stylish Bullets & Canvas Cards',
-  aliases: [
-    'welcomesetup', 'welcomereset', 'welcometest',
-    'joindm', 'leavedm', 'boostmsg', 'welcomeconfig', 'welcomepreset', 'welcomecard', 'welcomefont'
-  ],
+  aliases: ['welcomesetup', 'welcomereset', 'welcometest'],
   welcomeConfigs,
   WELCOME_PRESETS,
   PRESET_BANNERS,
@@ -614,7 +611,7 @@ module.exports = {
         'aesthetic: Soft Pink Pastel',
         'galaxy   : Cosmic Starry',
         'cafe     : Cozy Boba Matcha',
-        'shinobi  : Leaf Village',
+        'anime    : Anime Theme',
         'cyberpunk: Neon Matrix',
         'minimal  : Clean Monochrome'
       ]);
@@ -622,7 +619,7 @@ module.exports = {
       return message.reply(
         `🎨 **Available Welcome Theme Presets:**\n` +
         '```\n' + presetBox + '\n```\n' +
-        `Usage: \`.welcome preset gothic\` or \`.welcome preset shinobi\``
+        `Usage: \`.welcome preset gothic\` or \`.welcome preset anime\``
       );
     }
 

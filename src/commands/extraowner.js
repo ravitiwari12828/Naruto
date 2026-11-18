@@ -46,7 +46,7 @@ db.onCloudRestore(hydrateBotExtraOwners);
 module.exports = {
   name: 'extraowner',
   description: 'Dedicated Extra Owner Suite: .serverextraowner (Server Extra Owners) and .botextraowner (Bot Extra Owners)',
-  aliases: ['serverextraowner', 'botextraowner', 'botowner', 'serverowner'],
+  aliases: ['serverextraowner', 'botextraowner'],
 
   globalBotExtraOwners,
 

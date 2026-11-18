@@ -62,7 +62,7 @@ module.exports = {
 
       const helpEmbed = new EmbedBuilder()
         .setColor(0x7E0808)
-        .setAuthor({ name: 'Executive Shinobi Inventory Suite', iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+        .setAuthor({ name: 'Server Inventory Suite', iconURL: message.author.displayAvatarURL({ dynamic: true }) })
         .setTitle('🎒 Executive Item Commands & Catalogue')
         .setDescription(
           `**Usage:**\n` +
@@ -116,7 +116,7 @@ module.exports = {
         .setTitle(isTake ? `🗑️ Master Item Removal` : `🎁 Master Item Delivery (${fmt(itemsList.length)} Items)`)
         .setDescription(
           `${isTake ? 'Removed' : 'Delivered'} **x${fmt(qty)}** of **EVERY item** in the game to **<@>**!\n` +
-          `Included: Tools, Shinobi Lucky Charms, 2x Ryo Boosters, Mystery Boxes, Ramen, Gems & Ores.`
+          `Included: Tools, Lucky Charms, 2x Ryo Boosters, Mystery Boxes, Ramen, Gems & Ores.`
         )
         .setFooter({ text: `Total Items in Inventory: ${Object.keys(eco.inventory).length} unique items` })
         .setTimestamp();
@@ -173,7 +173,7 @@ module.exports = {
 
     const giveEmbed = new EmbedBuilder()
       .setColor(0x57F287)
-      .setAuthor({ name: 'Executive Shinobi Inventory Delivery', iconURL: target.displayAvatarURL({ dynamic: true }) })
+      .setAuthor({ name: 'Server Inventory Delivery', iconURL: target.displayAvatarURL({ dynamic: true }) })
       .setTitle(`✨ Item Granted to ${target.username}`)
       .setDescription(
         `Bot Owner **${message.author.username}** granted item(s) to **<@>**:\n\n` +

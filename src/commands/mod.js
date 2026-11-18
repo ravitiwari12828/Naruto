@@ -231,16 +231,7 @@ function recordAndLogCase(guild, { action, targetId, targetTag, executorId, exec
 module.exports = {
   name: 'mod',
   description: 'Moderation Suite: ban, hackban, kick, mute, unmute, nick, unban, unbanall, purge, slowmode, nuke, clone, role, temprole, rolemenu, list, warn, warnings, case, cases, audit, modlogs',
-  aliases: [
-    'clone', 'ban', 'hackban', 'kick', 'mute', 'unmute', 'timeout', 'untimeout',
-    'nick', 'nickname', 'setnick',
-    'nuke', 'purge', 'purgebots', 'clear', 'slowmode', 'unslowmode',
-    'unban', 'unbanall',
-    'role', 'rolemenu', 'list',
-    'warn', 'unwarn', 'rmwarn', 'warnremove', 'warnings', 'clearwarns',
-    'case', 'cases', 'modlogs', 'modlog', 'caseinfo', 'audit', 'auditlog', 'auditlogs',
-    'temprole', 'trole', 'addrole', 'giverole'
-  ],
+  aliases: ['ban', 'unban', 'kick', 'mute', 'unmute', 'timeout', 'untimeout', 'warn', 'unwarn', 'warnings', 'clearwarns', 'purge', 'clear', 'slowmode', 'nick', 'case', 'cases', 'temprole', 'audit', 'nuke'],
 
   // Store for active temp roles (Backed by DB)
   // Format: Map<`${guildId}:${userId}:${roleId}`, { timer, expiresAt, ... }>

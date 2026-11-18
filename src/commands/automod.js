@@ -245,12 +245,7 @@ function buildAutomodInteractiveComponents(config, activeTab = 'filters') {
 module.exports = {
   name: 'automod',
   description: 'Interactive AutoMod Filters & Miscellaneous Suite with addword, delword, addlink, dellink, addcategory & delcategory',
-  aliases: [
-    'am', 'antispam', 'antilink', 'antiinvite',
-    'antibot', 'filter', 'misc', 'miscellaneous',
-    'addword', 'removeword', 'addlink', 'removelink',
-    'addcategory', 'removecategory', 'blacklist', 'badwords'
-  ],
+  aliases: ['am', 'antispam', 'antilink', 'antiinvite', 'antibot', 'badwords'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';

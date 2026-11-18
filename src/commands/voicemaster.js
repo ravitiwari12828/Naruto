@@ -165,7 +165,7 @@ function buildVoiceHelpEmbed(member) {
 
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
-    .setAuthor({ name: 'Voice Help', iconURL: user.displayAvatarURL({ dynamic: true }) })
+    .setAuthor({ name: 'voicemaster', iconURL: user.displayAvatarURL({ dynamic: true }) })
     .setTitle('Commands Directory')
     .setDescription(
       '```\n' + helpBox + '\n```\n' +
@@ -195,7 +195,7 @@ function buildChannelCreatedEmbed(member) {
 module.exports = {
   name: 'voicemaster',
   description: 'VoiceMaster Setup & Interface: setupvc, vcsetup, vctemp setup, tempvc',
-  aliases: ['vctemp', 'tempvc', 'vm', 'setupvc', 'vcsetup', 'invcrole'],
+  aliases: ['vm', 'tempvc', 'vcsetup'],
   voicemasterConfigs,
   getOrCreateVMConfig,
   buildCustomVoiceChannelsEmbed,

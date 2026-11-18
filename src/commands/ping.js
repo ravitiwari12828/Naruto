@@ -16,7 +16,7 @@ function formatUptime(ms) {
 module.exports = {
   name: 'ping',
   description: 'Real-time Latency & Live System Monitor',
-  aliases: ['latency', 'test', 'status'],
+  aliases: ['latency', 'status'],
 
   async execute(message, args) {
     const start = Date.now();

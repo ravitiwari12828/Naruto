@@ -50,9 +50,9 @@ function isGuildAuthorized(guildId, ownerId) {
 }
 
 module.exports = {
-  name: 'botlock',
+  name: 'guildlock',
   description: 'Bot Owner Private Server Whitelist & Invite Lockdown System',
-  aliases: ['guildlock', 'botlockdown', 'whitelistguild', 'privatebot'],
+  aliases: ['botlock', 'botlockdown'],
   botLockStore,
   isGuildAuthorized,
 

@@ -53,7 +53,7 @@ function getOrCreateVanityConfig(guildId) {
 module.exports = {
   name: 'vanityguard',
   description: 'High-Speed Server Vanity URL Protection & Theft Recovery System',
-  aliases: ['vanityguard', 'vanityprotect', 'vanityshield', 'antivanity', 'vanity'],
+  aliases: ['vanity', 'antivanity'],
   vanityConfigs,
   getOrCreateVanityConfig,
 

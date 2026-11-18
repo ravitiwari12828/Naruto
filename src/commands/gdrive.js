@@ -7,7 +7,7 @@ const path = require('path');
 
 module.exports = {
   name: 'gdrive',
-  aliases: ['drivebackup', 'cloudbackup', 'gdrivebackup'],
+  aliases: ['drivebackup', 'cloudbackup'],
   description: 'Manage 5TB Google Drive automated database backups & snapshots',
   category: 'owner',
   usage: '.gdrive [backup/list/download/setup]',

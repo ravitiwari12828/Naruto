@@ -28,7 +28,7 @@ module.exports = {
 
     const initialEmbed = new EmbedBuilder()
       .setColor(0xF1C40F)
-      .setTitle('🎫 Shinobi Scratchcard')
+      .setTitle('🎫 Scratchcard')
       .setDescription(
         `**Scratching card for ${message.author.username}...**\n\n` +
         `❓ ❓ ❓\n` +
@@ -44,7 +44,7 @@ module.exports = {
 
     const stepEmbed = new EmbedBuilder()
       .setColor(0xF1C40F)
-      .setTitle('🎫 Shinobi Scratchcard')
+      .setTitle('🎫 Scratchcard')
       .setDescription(
         `**Scratching card for ${message.author.username}...**\n\n` +
         `${grid[0]} ❓ ❓\n` +

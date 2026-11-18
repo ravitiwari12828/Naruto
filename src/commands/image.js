@@ -173,7 +173,7 @@ async function fetchPollinationsImage(prompt, timeoutMs = 15000) {
   const encoded = encodeURIComponent(prompt);
   const seed = Math.floor(Math.random() * 9999999);
   const models = [
-    { name: 'flux', label: 'Pollinations (FLUX Engine)' },
+    { name: 'image', label: 'Pollinations (FLUX Engine)' },
     { name: 'turbo', label: 'Pollinations (Turbo HD)' },
     { name: 'flux-realism', label: 'Pollinations (Photorealism)' },
     { name: 'sana', label: 'Pollinations (Sana HD)' }
@@ -263,7 +263,7 @@ async function fetchHordeImage(prompt, timeoutMs = 30000) {
 module.exports = {
   name: 'imagine',
   description: 'Generate high-definition AI art & realistic scenes (Free: 1 image/24h, Premium: 3 images/24h)',
-  aliases: ['image', 'draw', 'aiimage', 'generate', 'art'],
+  aliases: ['draw', 'generate', 'art'],
   imageLimitsStore,
   checkImageLimit,
   recordImageUse,

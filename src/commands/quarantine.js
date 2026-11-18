@@ -210,7 +210,7 @@ module.exports = {
 
     const embed = createStyledEmbed({
       title: `☣️ 🚨 180-Day New Joiner Security Probation Grid`,
-      subtitle: `Shinobi Anti-Rogue Joiner Protection`,
+      subtitle: `Anti-Rogue Joiner Protection`,
       description,
       requestedBy: author,
       clientUser

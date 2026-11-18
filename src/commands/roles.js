@@ -58,10 +58,7 @@ function getOrCreateRoleConfig(guildId) {
 module.exports = {
   name: 'roles',
   description: 'Role Commands: autonick, cleanuproles, friend, girl, guest, staff, invcrole, official, rolesetup, vip',
-  aliases: [
-    'customroles', 'rolepanel', 'customrole', 'rolesetup', 'friend', 'girl', 'guest', 'staff',
-    'official', 'autonick', 'cleanuproles'
-  ],
+  aliases: ['rolepanel', 'rolesetup', 'autonick'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';

@@ -52,7 +52,7 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor(color)
-        .setAuthor({ name: `${message.author.username}'s Shinobi Rocket`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+        .setAuthor({ name: `${message.author.username}'s Rocket`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
         .setTitle(`${statusIcon} Naruto Konoha Rasengan Rocket`)
         .setDescription(
           `**Status:** ${statusIcon} **${status}**\n` +
@@ -61,7 +61,7 @@ module.exports = {
           `• **Potential Payout:** **${fmt(Math.floor(bet * multiplier))}** 💵`
         )
         .setImage('attachment://naruto-crash.png')
-        .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Naruto Shinobi Casino Cards` })
+        .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Naruto Casino Cards` })
         .setTimestamp();
 
       return { embeds: [embed], files: [cardAttachment] };

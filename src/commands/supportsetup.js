@@ -13,7 +13,7 @@ const SUPPORT_SERVER_INVITE = 'https://discord.gg/ZPKcPreUMT';
 
 module.exports = {
   name: 'supportsetup',
-  description: 'Automated 1-Click Support Server Architecture Builder with Konoha Shinobi Theme',
+  description: 'Automated 1-Click Support Server Architecture Builder with Naruto Theme',
   aliases: [],
 
   async execute(message, args) {
@@ -30,7 +30,7 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const statusMsg = await message.channel.send(`⏳ **Building Konoha Shinobi Support Server Architecture...**`);
+    const statusMsg = await message.channel.send(`⏳ **Building Naruto Support Server Architecture...**`);
 
     try {
       // ─────────────────────────────────────────
@@ -107,7 +107,7 @@ module.exports = {
       const infoCat = await guild.channels.create({ name: '「 🍥 · HOKAGE MANDATE 」', type: ChannelType.GuildCategory });
 
       const aboutChan = await guild.channels.create({
-        name: '📜・shinobi-rules',
+        name: '📜・server-rules',
         type: ChannelType.GuildText,
         parent: infoCat.id,
         permissionOverwrites: readOnlyOverwrites
@@ -161,7 +161,7 @@ module.exports = {
       await guild.channels.create({ name: '🖼️・scroll-art-media', type: ChannelType.GuildText, parent: generalCat.id });
       await guild.channels.create({ name: '🤖・jutsu-commands', type: ChannelType.GuildText, parent: generalCat.id });
       await guild.channels.create({ name: '🎵・bijuu-music-playground', type: ChannelType.GuildText, parent: generalCat.id });
-      await guild.channels.create({ name: '🎮・shinobi-rpg-games', type: ChannelType.GuildText, parent: generalCat.id });
+      await guild.channels.create({ name: '🎮・community-games', type: ChannelType.GuildText, parent: generalCat.id });
 
       // ─────────────────────────────────────────
       // 5. CATEGORY 4: ANBU SUPPORT DESK (TICKETS)
@@ -182,7 +182,7 @@ module.exports = {
       // ─────────────────────────────────────────
       // 6. CATEGORY 5: TECHNICIANS DACT LABS
       // ─────────────────────────────────────────
-      const techCat = await guild.channels.create({ name: '「 ⚡ · SHINOBI DACT LABS 」', type: ChannelType.GuildCategory });
+      const techCat = await guild.channels.create({ name: '「 ⚡ · NARUTO LABS 」', type: ChannelType.GuildCategory });
 
       await guild.channels.create({ name: '🐍・python-jutsu', type: ChannelType.GuildText, parent: techCat.id });
       await guild.channels.create({ name: '🛡️・cyber-defense', type: ChannelType.GuildText, parent: techCat.id });
@@ -251,10 +251,10 @@ module.exports = {
       // POPULATE EMBEDS & TICKET PANEL
       // ─────────────────────────────────────────
       const rulesEmbed = createStyledEmbed({
-        title: `📜 Konoha Shinobi Support Headquarters Rules`,
+        title: `📜 Naruto Support Headquarters Rules`,
         subtitle: `Official Village Directives & Community Guidelines`,
         description:
-          `1. **Respect Fellow Shinobi**: Courtesy is mandatory across all channels.\n` +
+          `1. **Respect All Members**: Courtesy is mandatory across all channels.\n` +
           `2. **No Command Spam**: Keep bot commands in designated command channels.\n` +
           `3. **No Unsolicited DMs**: Use <#${ticketChan.id}> or ModMail for support.\n` +
           `4. **No Advertising**: External invite links are blocked automatically by AutoMod.\n\n` +
@@ -314,7 +314,7 @@ module.exports = {
 
       // Final Success Message
       const completeEmbed = createStyledEmbed({
-        title: `🎉 Konoha Shinobi Support Server Built Successfully!`,
+        title: `🎉 Naruto Support Server Built Successfully!`,
         subtitle: `9 Categories, 25+ Styled Channels & 6 Custom Roles Deployed`,
         description:
           `**Custom Created Roles:**\n` +
@@ -329,7 +329,7 @@ module.exports = {
         clientUser
       });
 
-      return statusMsg.edit({ content: `${emojis.SUCCESS} Konoha Shinobi Support Server Setup Complete!`, embeds: [completeEmbed] });
+      return statusMsg.edit({ content: `${emojis.SUCCESS} Naruto Support Server Setup Complete!`, embeds: [completeEmbed] });
     } catch (e) {
       return statusMsg.edit(`${emojis.ERROR} Support server setup failed: ${e.message}`);
     }

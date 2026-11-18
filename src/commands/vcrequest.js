@@ -11,7 +11,7 @@ const emojis = require('../utils/emojis');
 module.exports = {
   name: 'vcrequest',
   description: 'Voice Connection Request & Voice Invite System: .vcrequest @member, .vcinvite @member',
-  aliases: ['vcinvite', 'voicerequest', 'voiceinvite'],
+  aliases: ['vcinvite', 'voiceinvite'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';

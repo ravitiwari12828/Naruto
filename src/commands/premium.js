@@ -36,7 +36,7 @@ function isUserPremium(userId) {
 
 function buildAppearanceDashboard(guild, draft, author, clientUser) {
   const nickname = draft.nickname || guild.members.me?.nickname || clientUser.username;
-  const bio = draft.bio || 'Naruto Shinobi Bot Active';
+  const bio = draft.bio || 'Naruto Bot Active';
   const avatarStatus = draft.avatar ? 'Custom Image [Pending Save]' : (clientUser.avatar ? 'Custom Avatar' : 'Default Avatar');
   const bannerStatus = draft.banner ? 'Custom Banner [Pending Save]' : 'Default Banner';
 
@@ -86,12 +86,7 @@ function buildAppearanceDashboard(guild, draft, author, clientUser) {
 module.exports = {
   name: 'premium',
   description: 'Premium Suite: Activate Guild, Add VIP User, Bot Appearance (Bio, Avatar, Banner, Nickname, Save/Refresh/Reset)',
-  aliases: [
-    'vip', 'donator', 'premiumguild', 'premiumuser',
-    'botappearance', 'appearance', 'setavatar', 'botavatar',
-    'setbanner', 'botbanner', 'setbio', 'botbio',
-    'setnickname', 'botnickname', 'resetappearance'
-  ],
+  aliases: ['vip', 'donator', 'botappearance', 'appearance'],
   premiumGuilds,
   premiumUsers,
   isGuildPremium,

@@ -343,7 +343,7 @@ class MusicCard {
     const DYNAMIC_PALETTES = [
       { name: 'Sunset Chakra', main: '#ff7800', sec: '#ec4899', accent: '#8b5cf6' },
       { name: 'Neon Cyberpunk', main: '#06b6d4', sec: '#a855f7', accent: '#3b82f6' },
-      { name: 'Emerald Shinobi', main: '#10b981', sec: '#14b8a6', accent: '#06b6d4' },
+      { name: 'Emerald Legend', main: '#10b981', sec: '#14b8a6', accent: '#06b6d4' },
       { name: 'Crimson Kyuubi', main: '#ef4444', sec: '#f59e0b', accent: '#9333ea' },
       { name: 'Cosmic Lavender', main: '#6366f1', sec: '#a855f7', accent: '#f43f5e' },
       { name: 'Golden Sage', main: '#f59e0b', sec: '#eab308', accent: '#ea580c' },

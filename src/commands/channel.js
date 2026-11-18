@@ -63,7 +63,7 @@ async function unhideChannelCompletely(ch, everyoneRole) {
 module.exports = {
   name: 'channel',
   description: 'Manage channel permissions: disable, enable, hide, unhide, hideall, unhideall, lock, lockall, unlockall',
-  aliases: ['disable', 'enable', 'hide', 'unhide', 'hideall', 'unhideall', 'lock', 'unlock', 'lockall', 'unlockall', 'chan'],
+  aliases: ['lock', 'unlock', 'hide', 'unhide', 'lockall', 'unlockall'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';

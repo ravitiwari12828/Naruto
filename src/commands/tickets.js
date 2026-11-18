@@ -97,7 +97,7 @@ function getOrCreateTicketConfig(guildId) {
         transcriptChanId: null,
         staffRoles: new Set(),
         categories: [
-          { id: 'cat_support', name: 'General Support', emoji: emojis.OBJ_TICKETS || '🎫', description: 'Need help or general assistance?' },
+          { id: 'cat_support', name: 'ticket', emoji: emojis.OBJ_TICKETS || '🎫', description: 'Need help or general assistance?' },
           { id: 'cat_promo', name: 'Promotion', emoji: emojis.OBJ_GIVEAWAY || '📢', description: 'Inquire about promotional deals' },
           { id: 'cat_report', name: 'Report', emoji: emojis.OBJ_ANTINUKE || '🚨', description: 'Report a user or server violation' },
           { id: 'cat_reward', name: 'Reward', emoji: emojis.OBJ_LEVEL || '🎁', description: 'Claim your event or activity rewards' },
@@ -344,10 +344,7 @@ function isTicketChannel(channel) {
 module.exports = {
   name: 'ticket',
   description: 'Complete Ticket System: setup, claim, close, reopen, callstaff, anonymous & priority timers',
-  aliases: [
-    'panel_deploy', 'add_member', 'remove_member',
-    'reopen', 'callstaff', 'ticketinfo', 'anonymous'
-  ],
+  aliases: ['tickets', 'callstaff'],
   ticketConfigs,
   priorityTimers,
   staffCallCooldowns,

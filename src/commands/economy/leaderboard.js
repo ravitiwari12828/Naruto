@@ -50,7 +50,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(config.embedColor)
-      .setTitle(`${emojis.money || '🪙'} Richest Shinobi Leaderboard — ${message.guild.name}`)
+      .setTitle(`${emojis.money || '🪙'} Richest Members Leaderboard — ${message.guild.name}`)
       .setDescription(desc)
       .setThumbnail(message.guild.iconURL({ dynamic: true }) || message.client.user.displayAvatarURL())
       .setFooter({ text: `Showing top ${top10.length} members • Use .balance to view your wallet` })

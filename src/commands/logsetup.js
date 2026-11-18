@@ -126,7 +126,7 @@ function findExistingLogChannel(guild, chKey, defaultName, assignedSet = new Set
 module.exports = {
   name: 'logsetup',
   description: 'Setup and deploy audit logging channels (Unified single channel or Pro channels - reuses existing channels automatically)',
-  aliases: ['logs', 'log', 'setuplogs', 'setuplog', 'auditlog'],
+  aliases: ['logs', 'setuplogs', 'setuplog'],
   loggingConfigs,
   findExistingLogChannel,
 

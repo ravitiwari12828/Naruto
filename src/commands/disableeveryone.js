@@ -5,7 +5,7 @@ const { PermissionsBitField } = require('discord.js');
 module.exports = {
   name: 'disableeveryone',
   description: 'Strips MentionEveryone permission across all server roles & channel overwrites to stop all @everyone/@here pings',
-  aliases: ['disableeveryone', 'stripmentions', 'noeveryone', 'fixpings', 'suppresseveryone'],
+  aliases: ['noeveryone', 'stripmentions'],
 
   async execute(message, args) {
     const guild = message.guild;

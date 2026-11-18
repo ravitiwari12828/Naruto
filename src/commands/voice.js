@@ -42,12 +42,7 @@ function resolveVoiceChannel(guild, rawArg, message) {
 module.exports = {
   name: 'voice',
   description: 'Voice Channels & VC Moderation Suite: .vc help/lock/kick/ban, .vcmute, .vcdeafen, .vckick, .vcmove, .vcpull, .vclist, mass VC commands',
-  aliases: [
-    'voicechannel',
-    'vcdeafen', 'vcundeafen', 'vckick', 'vckickall',
-    'vclist', 'vcmove', 'vcmoveall', 'vcmute', 'vcmuteall',
-    'vcpull', 'vcpullall', 'vcunmute', 'vcunmuteall'
-  ],
+  aliases: ['vcmute', 'vcunmute', 'vcdeafen', 'vcundeafen', 'vckick', 'vcmove', 'vcpull'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';

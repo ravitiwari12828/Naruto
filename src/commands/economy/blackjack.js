@@ -48,7 +48,7 @@ function fmtHandArray(hand, hideSecond = false) {
 module.exports = {
   name: 'blackjack',
   aliases: ['bj'],
-  description: 'Naruto Shinobi Ninja Blackjack 21 vs Konoha Dealer',
+  description: 'Naruto Blackjack 21 vs Dealer',
   usage: '.blackjack <bet>',
   cooldown: 3000,
   async execute(message, args) {

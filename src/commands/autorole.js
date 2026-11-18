@@ -7,7 +7,7 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 module.exports = {
   name: 'autorole',
   description: 'Automate role assignment for joining humans/bots and mass role management.',
-  aliases: ['massrole', 'automation', 'autoroles'],
+  aliases: ['massrole', 'autoroles'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';

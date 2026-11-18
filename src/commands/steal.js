@@ -85,11 +85,7 @@ function extractMediaFromMessage(message, args) {
 module.exports = {
   name: 'steal',
   description: 'Steal or delete server emojis and stickers',
-  aliases: [
-    'stealemoji', 'stealsticker', 'addemoji', 'addsticker',
-    'deleteemoji', 'delemoji', 'removeemoji',
-    'deletesticker', 'delsticker', 'removesticker'
-  ],
+  aliases: ['steal', 'addemoji', 'delemoji', 'stealsticker'],
   usage: '.steal [reply to message OR paste emoji/image URL] | .deleteemoji <emoji> | .deletesticker <name/id>',
 
   async execute(message, args) {

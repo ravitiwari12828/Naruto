@@ -5,7 +5,7 @@ const emojis = require('../utils/emojis');
 module.exports = {
   name: 'autoresponder',
   description: 'Manage automated message responses and emoji reactions with placeholders',
-  aliases: ['ar', 'react', 'autoreact', 'autoresponse'],
+  aliases: ['ar', 'autoreact', 'autoresponse'],
 
   async execute(message, args) {
     const rawCmd = message.content.trim().split(/ +/)[0];

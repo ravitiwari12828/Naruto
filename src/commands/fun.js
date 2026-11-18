@@ -5,7 +5,7 @@ const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const GAUGE_TITLES = {
   smartrate: { title: '🧠 Intelligence Scan', emoji: '🧠' },
   rizzmeter: { title: '💅 Rizz Meter', emoji: '💅' },
-  shipname: { title: '🚢 Shinobi Ship Name', emoji: '🚢' },
+  shipname: { title: '🚢 Ship Name', emoji: '🚢' },
   wanted: { title: '🤠 Bingo Book Wanted Level', emoji: '🤠' },
   wasted: { title: '💀 Battle Wasted Level', emoji: '💀' },
   powerlevel: { title: '⚡ Power Level Scan', emoji: '⚡' },
@@ -17,7 +17,7 @@ function renderGaugeBox(cmdName, score = null) {
   const titles = {
     smartrate: 'INTELLIGENCE SCAN',
     rizzmeter: 'RIZZ METER SCAN',
-    shipname: 'SHIP NAME SCAN',
+    shipname: 'fun',
     wanted: 'WANTED BOUNTY LEVEL',
     wasted: 'BATTLE WASTED LEVEL',
     powerlevel: 'POWER LEVEL SCAN',
@@ -64,13 +64,13 @@ function getAssessmentText(cmdName, score, targetUser, author, user2) {
     return score > 80 ? '💀 **CRITICAL WASTED** — Defeated by a forbidden jutsu!' : score > 50 ? '⚔️ **Severe Battle Damage** — Needs Medical Ninja!' : '🍃 **Minor Scratches** — Ready for next mission!';
   }
   if (cmdName === 'powerlevel') {
-    return score > 80 ? '🔥 **BEYOND HOKAGE LEVEL** — Divine Chakra Unlocked!' : score > 50 ? '🏯 **Jonin / Kage-Class Shinobi** ⚔️' : '🌿 **Genin Level** — Keep training!';
+    return score > 80 ? '🔥 **MAXIMUM LOVE LEVEL** — Perfect Match!' : score > 50 ? '💖 **Great Chemistry** ✨' : '🌿 **Friendzone Level** — Needs more bonding!';
   }
   if (cmdName === 'coolrate') {
     return score > 80 ? '😤 **Sasuke-level Coolness** & Cold Aura 🔥' : score > 50 ? '📖 **Kakashi Mysterious Reading Vibes** ⚡' : '💪 **Rock Lee without eyebrows energy!**';
   }
   if (cmdName === 'bonk') {
-    return score > 80 ? '👢 **MAXIMUM BONK LEVEL** — Sent to Shinobi Jail!' : score > 50 ? '❌ **High Energy Detected** — Caution advised!' : '😇 **Pure Soul** — Pure Konoha Shinobi!';
+    return score > 80 ? '👢 **MAXIMUM BONK LEVEL** — Sent to Horny Jail!' : score > 50 ? '❌ **High Energy Detected** — Caution advised!' : '😇 **Pure Soul** — Wholesome Entity!';
   }
   return '✨ Scan completed!';
 }
@@ -171,13 +171,13 @@ const EIGHT_BALL = [
 const TRUTH_Q = [
   'What\'s your most embarrassing Naruto-related memory?',
   'Have you ever cried at an anime death? Which one?',
-  'What jutsu would you use if you were a shinobi?',
+  'What superpower would you choose if you could have one?',
   'Who is your least favourite Naruto character and why?',
   'What\'s the weirdest thing you\'ve done alone?',
   'Have you ever rage-quit an anime mid-episode?',
   'What\'s a secret talent only your closest friends know?',
   'If you had to join a Hidden Village, which one and why?',
-  'What is your biggest weakness as a shinobi?',
+  'What is your biggest secret weakness?',
   'Confess something you\'ve never told anyone here.'
 ];
 
@@ -222,7 +222,7 @@ const PICKUP_LINES = [
 
 const FORTUNES = [
   'A great mission awaits you — your chakra is aligned with destiny. ✨',
-  'Beware of a false ally. Not every shinobi wears their face with honour. 🎭',
+  'Beware of a false ally. Not everyone wears their true face. 🎭',
   'A quiet day will bring unexpected power. Meditate and trust the process. 🧘',
   'Your strength will be tested soon, but Konoha stands with you. 🍃',
   'Romance may bloom from an unexpected direction — open your eyes like a Byakugan. 👁️',
@@ -233,7 +233,7 @@ const FORTUNES = [
   'Danger lurks in comfort zones. Break free and discover your true rank. 🔥'
 ];
 
-const VIBES = ['🔥 Chaotic Shinobi', '😤 Revenge Arc Energy', '✨ Main Character Aura', '🌸 Sakura Useless Energy', '🦊 Nine-Tails Unleashed', '😴 Shikamaru Mode (Too Troublesome)', '😤 Sasuke Uchiha Cold Energy', '🌀 Rasengan Gyaat', '🍜 Ramen-Powered', '🥹 Emotional Backstory Incoming'];
+const VIBES = ['🔥 Chaotic Energy', '😤 Revenge Arc Energy', '✨ Main Character Aura', '🌸 Sakura Useless Energy', '🦊 Nine-Tails Unleashed', '😴 Shikamaru Mode (Too Troublesome)', '😤 Sasuke Uchiha Cold Energy', '🌀 Rasengan Gyaat', '🍜 Ramen-Powered', '🥹 Emotional Backstory Incoming'];
 const MOODS   = ['⚡ Ready to take on the Akatsuki', '😴 Shikamaru-level lazy today', '🔥 Full Might Guy Eight Gates mode', '🍜 Just hungry for Ichiraku ramen', '😤 Full Sasuke brooding mode', '🌸 Cherry blossom chill vibes', '🦊 Nine-Tails chakra leaking slightly', '🧘 Sage mode meditation energy', '😂 Naruto laughing at his own jokes', '💀 Rock Lee without his eyebrows energy'];
 const SMART   = ['Super Genius — Shikamaru IQ: 200+', 'Above Average — Kakashi-level reading speed', 'Street Smart — Naruto\'s pure instinct', 'You\'d pass the Chunin Exams on charm alone', 'Barely Passing — but you make it look good', 'Galaxy Brain — Minato-level tactical thinking', 'Book Smart — could rival Sakura\'s medical knowledge', 'Dense as a Rock — Might Guy doesn\'t need brains!'];
 const RIZO    = ['0% — Naruto before Hinata noticed him', '20% — You tried. Lee acknowledges the effort.', '40% — Solid Chunin-level rizz', '60% — Kakashi-tier mysterious appeal', '80% — Sasuke dark aura rizz activated', '99% — Full Minato Yellow Flash charm unlocked', '100% — Even the Nine-Tails would blush'];
@@ -306,23 +306,7 @@ const ACTIONS_MAP = {
 module.exports = {
   name: 'fun',
   description: 'Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore',
-  aliases: [
-    'fun', 'meme', 'ship', 'coinflip', 'roll', 'gauge', 'bonk',
-    '8ball', 'eightball', 'truth', 'dare', 'wouldyourather', 'wyr',
-    'pickup', 'fortune', 'vibecheck', 'mood', 'smartrate', 'rizzmeter',
-    'shipname', 'wanted', 'wasted', 'powerlevel', 'coolrate',
-    // Memes
-    'spongebobchicken', 'slapcar', 'isthisa', 'drake', 'distractedbf',
-    'communismcat', 'eject', 'emergencymeeting', 'headpat', 'tradeoffer', 'waddle',
-    // Emotes
-    'blush', 'cry', 'dance', 'pout', 'shrug', 'sleepy', 'smile',
-    'smug', 'thumbsup', 'wag', 'thinking', 'triggered', 'teehee', 'deredere',
-    'thonking', 'scoff', 'happy', 'thumbs', 'grin',
-    // Actions
-    'cuddle', 'hug', 'kiss', 'lick', 'nom', 'pat', 'poke', 'slap', 'stare',
-    'highfive', 'bite', 'greet', 'punch', 'handholding', 'tickle', 'kill',
-    'hold', 'pats', 'wave', 'boop', 'snuggle', 'bully', 'pkick'
-  ],
+  aliases: ['meme', 'ship', 'coinflip', 'roll', 'gauge', 'bonk', '8ball', 'truth', 'dare', 'wyr', 'pickup', 'fortune', 'vibecheck', 'mood', 'hug', 'kiss', 'slap', 'pat', 'cuddle'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -537,14 +521,14 @@ async function fetchActionAnimeGif(action) {
     // 💻 Truth
     if (invoked === 'truth') {
       const q = pick(TRUTH_Q);
-      const boxPanel = createDynamicBox('SHINOBI TRUTH CHALLENGE', [
+      const boxPanel = createDynamicBox('TRUTH CHALLENGE', [
         `User     : ${author.username}`,
         `Status   : Answer Honestly`,
         `Penalty  : Face Village Dishonour`
       ]);
 
       const embed = createStyledEmbed({
-        title: `📜 Shinobi Truth Challenge`,
+        title: `📜 Truth Challenge`,
         description: '```\n' + boxPanel + '\n```\n\n' +
           `**Question:**\n> **${q}**`,
         requestedBy: author,
@@ -556,14 +540,14 @@ async function fetchActionAnimeGif(action) {
     // 🎯 Dare
     if (invoked === 'dare') {
       const d = pick(DARE_D);
-      const boxPanel = createDynamicBox('SHINOBI DARE CHALLENGE', [
+      const boxPanel = createDynamicBox('DARE CHALLENGE', [
         `User     : ${author.username}`,
         `Status   : Challenge Accepted`,
         `Rule     : Complete or Lose Face`
       ]);
 
       const embed = createStyledEmbed({
-        title: `⚡ Shinobi Dare Challenge`,
+        title: `⚡ Dare Challenge`,
         description: '```\n' + boxPanel + '\n```\n\n' +
           `**Your Dare:**\n> **${d}**`,
         requestedBy: author,
@@ -575,14 +559,14 @@ async function fetchActionAnimeGif(action) {
     // 🤔 Would You Rather
     if (['wouldyourather', 'wyr'].includes(invoked)) {
       const wyr = pick(WOULD_YOU_RATHER);
-      const boxPanel = createDynamicBox('SHINOBI DILEMMA (WYR)', [
+      const boxPanel = createDynamicBox('DILEMMA (WYR)', [
         `User     : ${author.username}`,
         `Type     : Would You Rather`,
         `Status   : Choose One Option`
       ]);
 
       const embed = createStyledEmbed({
-        title: `⚔️ Shinobi Dilemma — Would You Rather?`,
+        title: `⚔️ Would You Rather Dilemma`,
         description: '```\n' + boxPanel + '\n```\n\n' +
           `**Dilemma:**\n> **${wyr}**`,
         requestedBy: author,
@@ -594,14 +578,14 @@ async function fetchActionAnimeGif(action) {
     // 💘 Pickup Lines
     if (invoked === 'pickup') {
       const pickup = pick(PICKUP_LINES);
-      const boxPanel = createDynamicBox('SHINOBI CHARM SCROLL', [
+      const boxPanel = createDynamicBox('PICKUP LINES', [
         `Caster   : ${author.username}`,
         `Item     : Scroll of Charm`,
         `Effect   : Heart Fluttering`
       ]);
 
       const embed = createStyledEmbed({
-        title: `💘 Shinobi Pickup Line`,
+        title: `💘 Pickup Line`,
         description: '```\n' + boxPanel + '\n```\n\n' +
           `> **${pickup}**`,
         requestedBy: author,
@@ -615,7 +599,7 @@ async function fetchActionAnimeGif(action) {
       const fortune = pick(FORTUNES);
       const boxPanel = createDynamicBox('KONOHA FORTUNE TELLER', [
         `User     : ${author.username}`,
-        `Reading  : Today's Shinobi Fate`,
+        `Reading  : Today's Fortune`,
         `Align    : Divine Chakra`
       ]);
 
@@ -651,13 +635,13 @@ async function fetchActionAnimeGif(action) {
     // 😤 Mood
     if (invoked === 'mood') {
       const mood = pick(MOODS);
-      const boxPanel = createDynamicBox('DAILY SHINOBI MOOD SCAN', [
+      const boxPanel = createDynamicBox('DAILY MOOD SCAN', [
         `Target   : ${targetUser.username}`,
         `Energy   : Calculated 100%`
       ]);
 
       const embed = createStyledEmbed({
-        title: `😤 Daily Shinobi Mood`,
+        title: `😤 Daily Mood`,
         description: '```\n' + boxPanel + '\n```\n\n' +
           `• **Energy Today:** **${mood}**`,
         requestedBy: author,
@@ -735,7 +719,7 @@ async function fetchActionAnimeGif(action) {
       const memeInfo = MEMES_MAP[randomMemeKey];
       const fullArgs = args.join(' ');
       let text1 = fullArgs || 'When you run Naruto Bot commands!';
-      let text2 = fullArgs ? 'Believe it!' : 'Instant Shinobi Power!';
+      let text2 = fullArgs ? 'Believe it!' : 'Instant Power!';
 
       const encodedText1 = encodeURIComponent(text1);
       const encodedText2 = encodeURIComponent(text2);

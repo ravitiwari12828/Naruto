@@ -62,7 +62,7 @@ module.exports = {
         `• **Payout Won:** **${fmt(payout)}** 💵 (Net: **${isWin ? '+' : ''}${fmt(payout - bet)}**)`
       )
       .setImage('attachment://naruto-plinko.png')
-      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Shinobi Visuals` })
+      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Visuals` })
       .setTimestamp();
 
     return message.channel.send({ embeds: [resultEmbed], files: [cardAttachment] });

@@ -18,7 +18,7 @@ function isNoPrefixUser() {
 module.exports = {
   name: 'noprefix',
   description: 'No-Prefix feature has been permanently removed. All commands require prefix.',
-  aliases: ['npuser', 'noprefixadd', 'noprefixremove'],
+  aliases: ['npuser'],
   noPrefixStore,
   isNoPrefixUser,
   parseDurationMs,

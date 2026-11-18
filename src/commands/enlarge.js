@@ -11,7 +11,7 @@ const { verifyPermit } = require('../utils/modPermits');
 module.exports = {
   name: 'enlarge',
   description: 'Enlarge any custom Discord emoji or sticker with a high-resolution download link button',
-  aliases: ['e', 'bigemoji', 'jumbo', 'emojiicon', 'emojienlarge'],
+  aliases: ['e', 'bigemoji', 'jumbo'],
 
   async execute(message, args) {
     const permCheck = await verifyPermit(message, 'chat_trial', 'enlarge');

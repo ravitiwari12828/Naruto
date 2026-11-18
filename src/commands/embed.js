@@ -167,10 +167,7 @@ function isValidHex(str) {
 module.exports = {
   name: 'embed',
   description: 'ProBot-style Embed Builder: Create, customize and send rich embeds to any channel',
-  aliases: [
-    'embedsend', 'embedbuild', 'embedcreate', 'embedpreview',
-    'embedreset', 'embeds', 'sendembed', 'embedlist', 'embeddelete', 'embededit'
-  ],
+  aliases: ['embeds', 'embedcreate', 'embedsend'],
 
   async execute(message, args) {
     // Permission: Manage Messages minimum

@@ -24,7 +24,7 @@ module.exports = {
 
     if (invoked === 'guildactivity' || sub === 'server' || sub === 'guild') {
       const totalMsgs = Object.values(db.data.users).reduce((acc, u) => acc + (u.messages || 0), 0);
-      const totalShinobi = Object.keys(db.data.users).length;
+      const totalUsers = Object.keys(db.data.users).length;
 
       const boxText =
         '```\n' +
@@ -32,7 +32,7 @@ module.exports = {
           'Guild    : ' + String(message.guild.name).slice(0, 12),
           'Members  : ' + String(message.guild.memberCount),
           'Messages : ' + String(totalMsgs),
-          'Shinobi  : ' + String(totalShinobi)
+          'Users    : ' + String(totalUsers)
         ]) +
         '\n```';
 
@@ -49,7 +49,7 @@ module.exports = {
 
     const boxText =
       '```\n' +
-      createDynamicBox('SHINOBI PROFILE', [
+      createDynamicBox('USER PROFILE', [
         'Username : ' + String(targetUser.username).slice(0, 12),
         'Rank     : ' + String(userData.rank).slice(0, 12),
         'Messages : ' + String(userData.messages),

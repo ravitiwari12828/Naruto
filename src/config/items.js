@@ -13,7 +13,7 @@ const TOOLS = {
 const CONSUMABLES = {
   ramen: { id: 'ramen', name: 'Ichiraku Special Ramen', emoji: '🍜', price: 300, description: 'Restores stamina & energy' },
   potion: { id: 'potion', name: 'Chakra Potion', emoji: '🧪', price: 500, description: 'Boosts jutsu power by 25%' },
-  charm: { id: 'charm', name: 'Shinobi Lucky Charm', emoji: '🧿', price: 2000, description: 'Increases casino win rate' },
+  charm: { id: 'charm', name: 'Lucky Charm', emoji: '🧿', price: 2000, description: 'Increases casino win rate' },
   booster: { id: 'booster', name: '2x Ryo Booster', emoji: '⚡', price: 3500, description: 'Doubles rewards for 1 hour' },
   mysterybox: { id: 'mysterybox', name: 'Forbidden Scroll Box', emoji: '📁', price: 5000, description: 'Contains random epic loot & ryo' }
 };
@@ -32,7 +32,7 @@ const JOBS = {
   chunin: { id: 'chunin', name: 'Chunin Squad Leader', emoji: '🛡️', salary: 850, description: 'Lead tactical C-rank missions' },
   jonin: { id: 'jonin', name: 'Elite Jonin Commander', emoji: '⚔️', salary: 1800, description: 'Execute S-rank secret missions' },
   ramen_chef: { id: 'ramen_chef', name: 'Ichiraku Master Chef', emoji: '🍜', salary: 1200, description: 'Cook world-famous ramen' },
-  medical_ninja: { id: 'medical_ninja', name: 'Medical Shinobi', emoji: '🩺', salary: 1500, description: 'Heal injured shinobi' },
+  medical_ninja: { id: 'medical_ninja', name: 'Medical Specialist', emoji: '🩺', salary: 1500, description: 'Heal injured members' },
   anbu: { id: 'anbu', name: 'Anbu Black Ops', emoji: '👺', salary: 2500, description: 'Top secret black ops missions' }
 };
 

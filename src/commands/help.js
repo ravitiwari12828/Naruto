@@ -64,10 +64,10 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
 
   const embed = new EmbedBuilder()
     .setColor(0x5865F2)
-    .setAuthor({ name: 'Naruto Help Panel', iconURL: botAvatar })
+    .setAuthor({ name: 'help', iconURL: botAvatar })
     .setThumbnail(botAvatar)
     .setDescription(
-      `A feature-packed All-In-One Discord bot built with a **Naruto Shinobi** theme!\n\n` +
+      `A feature-packed All-In-One Discord bot built with a sleek **Naruto** theme!\n\n` +
       '```\n' + metricsBox + '\n```\n\n' +
       `### All Active Server Modules\n` +
       `${moduleLines}\n\n` +
@@ -89,7 +89,7 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
 module.exports = {
   name: 'help',
   description: 'Interactive Multi-Module Help Panel with Dropdown Menu & Category Navigator',
-  aliases: [],
+  aliases: ['h'],
 
   async execute(message, args) {
     try {

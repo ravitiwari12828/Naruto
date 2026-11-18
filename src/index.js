@@ -363,7 +363,7 @@ const client = new Client({
 
     status: 'online',
 
-    activities: [{ name: '💻 .help | Naruto Shinobi Bot', type: 3 }]
+    activities: [{ name: '💻 .help | Naruto Bot', type: 3 }]
 
   },
 
@@ -2054,7 +2054,7 @@ client.on('channelDelete', async (channel) => {
 
               if (restoredChan && restoredChan.isTextBased()) {
 
-                restoredChan.send(`🛡️ **SHINOBI ANTINUKE EMERGENCY RECOVERY** 🛡️\n\nChannel \`#${channel.name}\` was nuked/deleted by rogue entity <@${executor.id}> (\`${executor.tag || executor.username}\`) and has been **RECOVERED & RESTORED INSTANTLY**!\n• **Rogue Entity:** <@${executor.id}>\n• **Action Taken:** Admin Locked Out!`).catch(() => {});
+                restoredChan.send(`🛡️ **ANTINUKE EMERGENCY RECOVERY** 🛡️\n\nChannel \`#${channel.name}\` was nuked/deleted by rogue entity <@${executor.id}> (\`${executor.tag || executor.username}\`) and has been **RECOVERED & RESTORED INSTANTLY**!\n• **Rogue Entity:** <@${executor.id}>\n• **Action Taken:** Admin Locked Out!`).catch(() => {});
 
               }
 
@@ -4022,7 +4022,7 @@ client.on('messageCreate', async (message) => {
 
               const levelUpEmbed = createStyledEmbed({
 
-                title: `${emojis.CELEBRATION || '🎉'} LEVEL UP! — Shinobi Rank Advancement`,
+                title: `${emojis.CELEBRATION || '🎉'} LEVEL UP! — Rank Advancement`,
 
                 description: `Congratulations <@${message.author.id}>! Your activity elevated your Ninja Rank!`,
 
@@ -4030,7 +4030,7 @@ client.on('messageCreate', async (message) => {
 
                   { name: `${emojis.STAR || '🏆'} New Level`, value: `\`Level ${userAfter.level}\``, inline: true },
 
-                  { name: `${emojis.NINJA_RANK || '🍥'} Shinobi Rank`, value: `\`${userAfter.rank}\``, inline: true },
+                  { name: `${emojis.NINJA_RANK || '🍥'} Rank`, value: `\`${userAfter.rank}\``, inline: true },
 
                   { name: `${emojis.ZAP || '✨'} Total XP`, value: `\`${userAfter.xp} XP\``, inline: true }
 

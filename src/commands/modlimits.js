@@ -234,7 +234,7 @@ function dispatchLimitLog(guild, { actionTitle, executor, target, details, remai
 module.exports = {
   name: 'modlimits',
   description: 'AntiNuke Action Rate Limits & Audit Protection System (24-Hour Reset Window)',
-  aliases: ['limit', 'limits', 'limitlog', 'limitlogs', 'actionlimits', 'modquota', 'limitmod', 'rate-limit'],
+  aliases: ['limits', 'limit', 'modlimits'],
   modLimitsStore,
   getOrCreateModLimits,
   checkAndIncrementModAction,

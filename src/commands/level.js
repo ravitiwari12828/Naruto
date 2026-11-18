@@ -92,9 +92,9 @@ function getOrCreateLevelConfig(guildId) {
   return cfg;
 }
 
-async function ensureShinobiRolesAndPerks(guild) {
+async function ensureLevelRolesAndPerks(guild) {
   const rankRolesDef = [
-    { name: 'Student', color: 0x95A5A6, rankKey: 'Academy Student' },
+    { name: 'level', color: 0x95A5A6, rankKey: 'Academy Student' },
     { name: 'Genin', color: 0x2ECC71, rankKey: 'Genin' },
     { name: 'Chunin', color: 0x3498DB, rankKey: 'Chunin' },
     { name: 'Special Jounin', color: 0x9B59B6, rankKey: 'Special Jounin' },
@@ -124,7 +124,7 @@ async function ensureShinobiRolesAndPerks(guild) {
         role = await guild.roles.create({
           name: def.name,
           color: def.color,
-          reason: 'Naruto Shinobi Rank Auto-Setup'
+          reason: 'Naruto Level Rank Auto-Setup'
         });
         createdRoles.push(def.name);
       } catch (e) {
@@ -194,7 +194,7 @@ async function ensureShinobiRolesAndPerks(guild) {
 const RANK_GRADIENT_PALETTES = [
   { id: 1,  name: 'Kurama Flame',       colors: ['#FF0000', '#FF7300', '#FFEA00'], accent: '#FF7300' },
   { id: 2,  name: 'Neon Cyberpunk',     colors: ['#FF007F', '#7F00FF', '#00F0FF'], accent: '#FF007F' },
-  { id: 3,  name: 'Emerald Shinobi',     colors: ['#00F260', '#0575E6'],           accent: '#00F260' },
+  { id: 3,  name: 'Emerald Legend',     colors: ['#00F260', '#0575E6'],           accent: '#00F260' },
   { id: 4,  name: 'Vaporwave Aura',      colors: ['#8A2387', '#E94057', '#F27121'], accent: '#E94057' },
   { id: 5,  name: 'Solar Eclipse',      colors: ['#F12711', '#F5AF19'],           accent: '#F5AF19' },
   { id: 6,  name: 'Chidori Electric',   colors: ['#00c6ff', '#0072ff'],           accent: '#00c6ff' },
@@ -212,15 +212,11 @@ const RANK_GRADIENT_PALETTES = [
 
 module.exports = {
   name: 'level',
-  description: 'Level System & Shinobi Chakra Perks: level rank, level leaderboard, level setup, level perks, level cardtheme',
-  aliases: [
-    'levels', 'lvl', 'xp',
-    'rank', 'perks', 'rewards',
-    'ranktheme', 'cardtheme', 'leveltheme'
-  ],
+  description: 'Level System & Rank Rewards: level rank, level leaderboard, level setup, level perks, level cardtheme',
+  aliases: ['levels', 'lvl', 'xp', 'rank', 'perks', 'rewards', 'cardtheme'],
   levelConfigs,
   getOrCreateLevelConfig,
-  ensureShinobiRolesAndPerks,
+  ensureLevelRolesAndPerks,
   RANK_GRADIENT_PALETTES,
 
   async execute(message, args) {
@@ -277,13 +273,13 @@ module.exports = {
       config.channelId = chan.id;
       config.enabled = true;
 
-      const { roleMap, createdRoles } = await ensureShinobiRolesAndPerks(guild);
+      const { roleMap, createdRoles } = await ensureLevelRolesAndPerks(guild);
       config.levelRoles = roleMap;
       levelConfigs.set(guildId, config);
 
       const createdSummary = createdRoles.length > 0
         ? `Created Roles (${createdRoles.length}): ${createdRoles.map(r => r).join(', ')}`
-        : 'All Shinobi Rank & Perk roles organized!';
+        : 'All Level Rank & Perk roles organized!';
 
       const box = createDynamicBox('LEVEL SETUP COMPLETE', [
         { key: 'Announce', value: '#' + chan.name },
@@ -292,7 +288,7 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL || '📊'} Shinobi Leveling & Role Hierarchy Configured`,
+        title: `${emojis.LEVEL || '📊'} Leveling & Role Hierarchy Configured`,
         description:
           `Successfully configured Naruto Leveling Engine & Role Hierarchy for **${guild.name}**!\n\n` +
           '```\n' + box + '\n```\n' +
@@ -325,10 +321,10 @@ module.exports = {
       ]);
 
       const embed = createStyledEmbed({
-        title: `${emojis.LEVEL || '📊'} Shinobi Level Perks & Unlockable Rewards`,
+        title: `${emojis.LEVEL || '📊'} Level Perks & Unlockable Rewards`,
         subtitle: `Your Current Level: Level ${userLvl} (${userData.rank || 'Student'})`,
         description:
-          `Chat in text channels and hang out in VC to earn XP, level up, and unlock exclusive Shinobi Clan perks!\n\n` +
+          `Chat in text channels and hang out in VC to earn XP, level up, and unlock exclusive server rank perks!\n\n` +
           '```\n' + box1 + '\n```\n' +
           '```\n' + box2 + '\n```\n' +
           '```\n' + box3 + '\n```',
@@ -363,7 +359,7 @@ module.exports = {
       const ignoredRoleCount = cfg.ignoredRoles ? cfg.ignoredRoles.length : 0;
       const multCount = cfg.multipliers ? Object.keys(cfg.multipliers).length : 0;
 
-      const box = createDynamicBox('SHINOBI LEVELING CONFIG', [
+      const box = createDynamicBox('LEVELING CONFIG', [
         { key: 'Status   ', value: cfg.enabled ? 'ENABLED' : 'DISABLED' },
         { key: 'Announce ', value: channelDisplay.slice(0, 16) },
         { key: 'XP Rate  ', value: `${cfg.minXp}-${cfg.maxXp} XP (${cfg.cooldown}s)` },
@@ -375,7 +371,7 @@ module.exports = {
 
       const embed = createStyledEmbed({
         title: `${emojis.LEVEL || '⚙️'} Server Leveling System Configuration`,
-        subtitle: `Shinobi Advanced Server Leveling Engine`,
+        subtitle: `Advanced Server Leveling Engine`,
         description:
           '```\n' + box + '\n```\n\n' +
           `**⚡ Configuration Commands:**\n` +
@@ -393,7 +389,7 @@ module.exports = {
       return message.channel.send({ embeds: [embed] });
     }
 
-    // ── SHINOBI LEVELING CONFIGURATION SUBCOMMANDS ─────────────────────────────
+    // ── LEVELING CONFIGURATION SUBCOMMANDS ─────────────────────────────
 
     // .level channel <#channel | dm | default | none>
     if (sub === 'channel' || sub === 'announcements') {
@@ -512,7 +508,7 @@ module.exports = {
         subtitle: `Mode: ${(cfg.roleRewardsMode || 'stack').toUpperCase()} (Stack or Replace)`,
         description:
           `**📜 Configured Custom Role Rewards:**\n${customList}\n\n` +
-          `**Default Shinobi Rank Rewards:**\n` +
+          `**Default Level Rank Rewards:**\n` +
           `• Lvl 5: Genin • Lvl 15: Chunin • Lvl 25: Special Jounin • Lvl 40: Jounin • Lvl 60: ANBU • Lvl 75: Sannin • Lvl 100: Hokage\n\n` +
           `*To add: \`.level rewards add <level> <@role>\`*\n` +
           `*To change mode: \`.level rewards mode <stack|replace>\`*`,
@@ -769,7 +765,7 @@ module.exports = {
     if (sub === 'leaderboard' || sub === 'lb' || sub === 'top') {
       const mode = (args[1] || '').toLowerCase();
       let top10 = [];
-      let lbTitle = 'Shinobi Level Leaderboard — Top Chatters';
+      let lbTitle = 'Level Leaderboard — Top Chatters';
 
       if (['weekly', 'week'].includes(mode)) {
         top10 = db.getTopUsersByWeeklyXP(10, guildId);
@@ -779,11 +775,11 @@ module.exports = {
         lbTitle = '🗓️ Monthly XP Leaderboard — Top Chatters This Month';
       } else {
         top10 = db.getTopUsersByXP(10, guildId);
-        lbTitle = '🏆 All-Time Shinobi Leaderboard — Top Chatters';
+        lbTitle = '🏆 All-Time Level Leaderboard — Top Chatters';
       }
 
       const items = top10.map((u, i) => `#${i + 1} Lvl ${u.level} - ${u.rank.slice(0, 10)} (${u.xp} XP)`);
-      const box = createDynamicBox('SHINOBI LEADERBOARD TOP 10', items.length ? items : ['No data available']);
+      const box = createDynamicBox('LEVEL LEADERBOARD TOP 10', items.length ? items : ['No data available']);
 
       const embed = createStyledEmbed({
         title: `${emojis.RANK || emojis.LEVEL || '🏆'} ${lbTitle}`,
@@ -1131,7 +1127,7 @@ module.exports = {
         // Fallback embed
         const pct = Math.round(progress * 100);
         const barStr = '█'.repeat(Math.floor(pct / 10)) + '░'.repeat(10 - Math.floor(pct / 10));
-        const box = createDynamicBox('SHINOBI RANK CARD', [
+        const box = createDynamicBox('RANK CARD', [
           { key: 'Username', value: targetUser.username.slice(0, 12) },
           { key: 'Rank    ', value: (userData.rank || 'Student').slice(0, 12) },
           { key: 'Level   ', value: String(level) },
@@ -1139,7 +1135,7 @@ module.exports = {
           { key: 'Progress', value: '[' + barStr + '] ' + pct + '%' }
         ]);
         const embed = createStyledEmbed({
-          title: `📊 Shinobi Rank Card — ${targetUser.username}`,
+          title: `📊 Rank Card — ${targetUser.username}`,
           subtitle: `${userData.rank || 'Academy Student'}`,
           description: '```\n' + box + '\n```',
           requestedBy: author,

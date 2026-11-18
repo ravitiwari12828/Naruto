@@ -6,8 +6,8 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 
 module.exports = {
   name: 'vc',
-  description: 'Shinobi Voice Tracking Suite: .vc, .vc add, .vc remove, .vc clear, .vc allowed view',
-  aliases: ['voiced', 'vctime', 'addvctime', 'reducevctime', 'clearvoice', 'vcd', 'vfilter', 'vblacklist', 'vwhitelist', 'vchelp'],
+  description: 'Voice Tracking Suite: .vc, .vc add, .vc remove, .vc clear, .vc allowed view',
+  aliases: ['voicetime', 'vctime'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -312,7 +312,7 @@ module.exports = {
     // ─────────────────────────────────────────
     // 6. MAIN VOICE TRACKING DASHBOARD (.vc)
     // ─────────────────────────────────────────
-    const infoBox = createDynamicBox('SHINOBI VOICE TRACKING SUITE', [
+    const infoBox = createDynamicBox('VOICE TRACKING SUITE', [
       `Module    : Voice Time & Filter Suite`,
       `Authority : Admin & Hokage Management`,
       `Commands  : Executive Tracking Tools`
@@ -331,7 +331,7 @@ module.exports = {
     ]);
 
     const embed = createStyledEmbed({
-      title: `${emojis.VOICE || '🎤'} Shinobi Voice Tracking Panel`,
+      title: `${emojis.VOICE || '🎤'} Voice Tracking Panel`,
       subtitle: `Admin Voice Minutes Management & VC Filters`,
       description:
         '```\n' + infoBox + '\n```\n\n' +

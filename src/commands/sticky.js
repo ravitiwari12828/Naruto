@@ -34,9 +34,9 @@ hydrateStickyNotes();
 db.onCloudRestore(hydrateStickyNotes);
 
 module.exports = {
-  name: 'stickynote',
+  name: 'sticky',
   description: 'Sticky Note Commands: stickynote set, stickynote remove, stickynote list, unsticky',
-  aliases: ['sticky', 'unsticky'],
+  aliases: ['stickynote', 'unsticky'],
   stickyNotesStore: stickyNotes,
 
   async execute(message, args) {

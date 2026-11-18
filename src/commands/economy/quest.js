@@ -32,7 +32,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(complete ? config.successColor : config.embedColor)
-      .setTitle(`${emojis.target || '🎯'} Shinobi Daily Mission Quest`)
+      .setTitle(`${emojis.target || '🎯'} Daily Mission Quest`)
       .setDescription(
         `📜 **Mission Goal:**\n` +
         `**${q.label}**\n\n` +

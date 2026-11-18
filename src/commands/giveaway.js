@@ -246,7 +246,7 @@ function rehydrateGiveawayTimers(client) {
 module.exports = {
   name: 'giveaway',
   description: 'Host and manage giveaways. Short syntax: .gstart, .gend, .greroll, .gdelete, .gedit',
-  aliases: ['gstart', 'gcreate', 'gend', 'greroll', 'reroll', 'gdelete', 'gedit'],
+  aliases: ['gstart', 'gend', 'greroll', 'gdelete', 'gedit'],
   giveaways,
   buildActiveEmbed,
   rehydrateGiveawayTimers,

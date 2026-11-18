@@ -6,8 +6,8 @@ const { createDynamicBox } = require('../utils/boxBuilder');
 
 module.exports = {
   name: 'msg',
-  description: 'Shinobi Message Tracking Suite: .msg, .msg add, .msg remove, .msg clear, .msg allowed view',
-  aliases: ['messaged', 'message', 'messages', 'addmessages', 'removemessages', 'clearmsgs', 'msgfilter', 'msgblacklist', 'msgwhitelist'],
+  description: 'Message Tracking Suite: .msg, .msg add, .msg remove, .msg clear, .msg allowed view',
+  aliases: ['messages', 'msg'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';
@@ -278,7 +278,7 @@ module.exports = {
     // ─────────────────────────────────────────
     // 6. MAIN MESSAGE TRACKING DASHBOARD (.msg)
     // ─────────────────────────────────────────
-    const infoBox = createDynamicBox('SHINOBI MESSAGE TRACKING SUITE', [
+    const infoBox = createDynamicBox('MESSAGE TRACKING SUITE', [
       `Module    : Message Stats & Filter Suite`,
       `Authority : Admin & Hokage Management`,
       `Commands  : Executive Tracking Tools`
@@ -297,7 +297,7 @@ module.exports = {
     ]);
 
     const embed = createStyledEmbed({
-      title: `${emojis.MESSAGES || '💻'} Shinobi Message Tracking Panel`,
+      title: `${emojis.MESSAGES || '💻'} Message Tracking Panel`,
       subtitle: `Admin Message Stats Management & Channel Filters`,
       description:
         '```\n' + infoBox + '\n```\n\n' +

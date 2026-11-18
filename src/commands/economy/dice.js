@@ -56,7 +56,7 @@ module.exports = {
         `${resultIcon} ${isWin ? `**WINNER!** You beat the dealer! Won **+${fmt(payout)}** Ryo!` : isTie ? `**PUSH!** Tie game! Bet returned.` : `**LOST!** Dealer won. Lost -${fmt(bet)} Ryo.`}`
       )
       .setImage('attachment://naruto-dice.png')
-      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Shinobi Games` })
+      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Games` })
       .setTimestamp();
 
     return message.channel.send({ embeds: [embed], files: [cardAttachment] });

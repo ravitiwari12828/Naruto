@@ -96,7 +96,7 @@ function buildServerInfoMainEmbed(guild, owner, activeTab = 'overview', author, 
     description = splashURL ? `🎨 **Invite Splash Image**\n[Click for High-Res Original Image](${splashURL})` : `${emojis.WARNING} *This server does not have an invite splash.*`;
   } else {
     // OVERVIEW
-    const ownerName = owner ? owner.user.username : 'Unknown';
+    const ownerName = owner ? owner.user.username : 'info';
     const boxText =
       '```\n' +
       '╭──────────────────────────╮\n' +
@@ -239,12 +239,7 @@ module.exports = {
   buildAfkEmbed,
   buildAfkButtons,
 
-  aliases: [
-    'about', 'node',
-    'serverinfo', 'si',
-    'userinfo', 'membercount', 'members', 'mc',
-    'botinfo', 'uptime', 'afk', 'mentions', 'avatar', 'av', 'roleinfo', 'serverbanner', 'servericon', 'snipe'
-  ],
+  aliases: ['about', 'serverinfo', 'si', 'userinfo', 'ui', 'botinfo', 'bi', 'membercount', 'mc', 'uptime', 'afk', 'avatar', 'av', 'roleinfo', 'snipe', 'banner'],
   snipeStore,
   afkStore,
 
@@ -271,7 +266,7 @@ module.exports = {
 
       const { createDynamicBox } = require('../utils/boxBuilder');
       const boxText = '```\n' + createDynamicBox('BOT & SYSTEM INFO', [
-        { key: 'Bot Name', value: 'Naruto Shinobi' },
+        { key: 'Bot Name', value: 'Naruto' },
         { key: 'Prefix', value: '.' },
         { key: 'Guilds', value: String(totalGuilds) },
         { key: 'Users', value: String(totalUsers) },
@@ -284,7 +279,7 @@ module.exports = {
 
       const embed = createStyledEmbed({
         title: `${emojis.STATS_NEW || '📊'} Naruto Bot Information & System Metrics`,
-        subtitle: `Developed with ❤️ by Synn • All-In-One Shinobi Bot`,
+        subtitle: `Developed with ❤️ by Synn • All-In-One Discord Bot`,
         description:
           boxText + `\n\n` +
           `**⚡ Quick Info Links:**\n` +
@@ -642,7 +637,7 @@ module.exports = {
     }
 
     // 🖼️ SERVERBANNER
-    if (invoked === 'serverbanner') {
+    if (invoked === 'serverbanner' || invoked === 'banner') {
       const banner = guild.bannerURL({ dynamic: true, size: 1024 });
       if (!banner) return message.reply(`${emojis.WARNING} This server has no banner set.`);
 
@@ -799,7 +794,7 @@ module.exports = {
 
       const embed = createStyledEmbed({
         title: `${inviteEmoji} Invite ${clientUser.username} to Your Server`,
-        subtitle: `All-In-One Shinobi Discord Bot`,
+        subtitle: `All-In-One Discord Bot`,
         description:
           '```\n' + box + '\n```\n\n' +
           `${inviteEmoji} **[Click Here to Invite ${clientUser.username}](${inviteUrl})**\n` +

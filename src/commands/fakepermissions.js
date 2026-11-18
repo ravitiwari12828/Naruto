@@ -70,11 +70,7 @@ function buildPermsList(perms) {
 module.exports = {
   name: 'fakepermissions',
   description: 'Assign fake display permissions to roles or users (cosmetic only, no real Discord perms changed)',
-  aliases: [
-    'fakeperm', 'fakeperms', 'fp',
-    'fakepermissionslist', 'fakepermissionsreset',
-    'fakepermissionsremove', 'fakepermissionsuser'
-  ],
+  aliases: ['fakeperm', 'fakeperms', 'fp'],
 
   async execute(message, args) {
     // Require Manage Guild permission to use fake permissions

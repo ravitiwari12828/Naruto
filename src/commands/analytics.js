@@ -123,9 +123,9 @@ function buildUserMetricRow(activeCat) {
       .setLabel('Invites')
       .setStyle(activeCat === 'invites' ? ButtonStyle.Primary : ButtonStyle.Secondary),
     new ButtonBuilder()
-      .setCustomId('ucat_shinobi')
+      .setCustomId('ucat_level')
       .setLabel('Rank')
-      .setStyle(activeCat === 'shinobi' ? ButtonStyle.Primary : ButtonStyle.Secondary)
+      .setStyle(activeCat === 'level' ? ButtonStyle.Primary : ButtonStyle.Secondary)
   );
 }
 
@@ -329,8 +329,8 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
       { key: 'Period Inv', val: `${sTf.invites.toLocaleString()} joins` },
       { key: 'Total Inv', val: `${totalInvs.toLocaleString()} joins` }
     ];
-  } else if (activeCat === 'shinobi' || activeCat === 'rank') {
-    titleText = 'SHINOBI RANK PROGRESS';
+  } else if (activeCat === 'level' || activeCat === 'rank') {
+    titleText = 'LEVEL & RANK PROGRESS';
     rows = [
       { key: 'Username', val: targetUser.username },
       { key: 'Rank', val: dbUser.rank || 'Academy Student' },
@@ -632,14 +632,7 @@ function renderTicketStatsPanel(guild, timeframeKey = '1d', author, clientUser) 
 module.exports = {
   name: 'analytics',
   description: 'Analytics, Leaderboards, User & Server Metrics Suite',
-  aliases: [
-    'lbm', 'lbvc', 'lbi', 'st', 'ss', 'tracker',
-    'userstats', 'useranalytics', 'u', 'usr', 'topmessages', 'msgstats', 'chat', 'topmsg', 'msgs', 'topm',
-    'topvoice', 'voicestats', 'vctiming', 'vctimimng', 'voicetime', 'topvc', 'vctimes', 'vct',
-    'topinvites', 'invitestats', 'invites', 'topinv', 'invs', 'joinsleaves', 'memberflow', 'joinleavestats', 'flow', 'jl', 'joins', 'leaves',
-    'topcommands', 'commandstats', 'cmd', 'cmds',
-    'ticketstats', 'ticketanalytics', 'tstats', 'tks'
-  ],
+  aliases: ['stats', 'leaderboard', 'lb', 'userstats', 'serverstats'],
 
   async execute(message, args) {
     const rawFirstWord = message.content.trim().split(/ +/)[0] || '';

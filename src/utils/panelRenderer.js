@@ -22,7 +22,7 @@ const CATEGORY_COLORS = {
   giveaway: 0xE91E63,      // Hot Pink
   info: 0x00B8D9,          // Deep Teal / Cyan
   mod: 0xE67E22,           // Amber Orange
-  ninja: 0xFF3366,         // Shinobi Pink / Rose Red
+  ninja: 0xFF3366,
   economy: 0x2ECC71,       // Casino Green
   channel: 0x3498DB,       // Sky Blue
   autorole: 0x1ABC9C,      // Turquoise
@@ -134,7 +134,7 @@ const CATEGORIES = [
     ]
   },
   {
-    label: 'Levels & Shinobi Suite',
+    label: 'Levels & XP Suite',
     value: 'level',
     description: 'Level System: rank, custom bg, leaderboards, multipliers, role rewards & XP rates',
     customEmoji: '🏆',
@@ -219,20 +219,6 @@ const CATEGORIES = [
       'case edit/delete', 'audit', 'clone', 'nuke',
       'modlimits', 'fakepermissions add/remove/list',
       'msg add', 'msg clear', 'msg count'
-    ]
-  },
-  {
-    label: 'Shinobi Ninja RPG',
-    value: 'ninja',
-    description: 'Naruto jutsu battles, chakra training, missions, clan & scrolls',
-    customEmoji: '🍥',
-    unicodeFallback: '🍥',
-    heading: '🍥',
-    commands: [
-      'ninja profile', 'ninja train', 'ninja jutsu',
-      'ninja battle', 'ninja mission', 'ninja clan',
-      'ninja rankup', 'ninja shop', 'ninja inventory',
-      'ninja top'
     ]
   },
   {
@@ -460,7 +446,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
 
     const jobsBox = createDynamicBox('JOBS & RESOURCE HARVESTING', [
       '.work        - Earn salary from your job',
-      '.job         - Choose Shinobi profession',
+      '.job         - Choose profession',
       '.mine        - Mine rare gems & minerals',
       '.dig         - Dig for buried treasure',
       '.fish        - Catch rare sea creatures',
@@ -473,7 +459,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
       '.daily       - Claim daily ryo allowance',
       '.weekly      - Claim weekly ninja bonus',
       '.monthly     - Claim monthly VIP reward',
-      '.shop        - View Shinobi market items',
+      '.shop        - View market items',
       '.buy         - Purchase market goods',
       '.sell        - Sell inventory items',
       '.inventory   - View owned items & gear'
@@ -561,7 +547,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
 
   // SPECIAL FORMATTING FOR FUN CATEGORY SUB-GROUPS
   if (cat.value === 'fun') {
-    const gamesBox = createDynamicBox('SHINOBI GAMES & ORACLE', [
+    const gamesBox = createDynamicBox('GAMES & ORACLE', [
       '.8ball       - Ask mystic ninja 8ball',
       '.truth       - Answer revealing truth question',
       '.dare        - Perform daring ninja task',
@@ -570,7 +556,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
       '.vibecheck   - Check server vibe percentage'
     ]);
 
-    const ratingBox = createDynamicBox('SHINOBI RATINGS & MINI-GAMES', [
+    const ratingBox = createDynamicBox('RATINGS & MINI-GAMES', [
       '.smartrate   - Calculate IQ intelligence rate',
       '.rizzmeter   - Measure charisma & rizz rate',
       '.shipname    - Combine two usernames',
@@ -581,7 +567,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
       '.bonk        - Bonk horny ninja user'
     ]);
 
-    const memeBox = createDynamicBox('SHINOBI MEME GENERATORS', [
+    const memeBox = createDynamicBox('MEME GENERATORS', [
       '.spongebobchicken - Mocking meme text generator',
       '.slapcar     - Slap roof of car meme',
       '.isthisa     - Is this a pigeon meme',
@@ -591,7 +577,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
       '.tradeoffer  - Trade offer meme generator'
     ]);
 
-    const emoteBox = createDynamicBox('SHINOBI ANIME EMOTES', [
+    const emoteBox = createDynamicBox('ANIME EMOTES', [
       '.blush       - Show cute blush expression',
       '.cry         - Express deep sadness',
       '.dance       - Dance with excitement',
@@ -604,7 +590,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
       '.triggered   - Show triggered reaction'
     ]);
 
-    const actionBox = createDynamicBox('SHINOBI ANIME ACTIONS', [
+    const actionBox = createDynamicBox('ANIME ACTIONS', [
       '.cuddle      - Cuddle warmly with user',
       '.hug         - Give warm embrace hug',
       '.kiss        - Send sweet kiss to user',
@@ -627,9 +613,9 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
     const embed = new EmbedBuilder()
       .setColor(catColor)
       .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
-      .setTitle(`${cat.heading} Shinobi Fun & Entertainment Hub`)
+      .setTitle(`${cat.heading} Fun & Entertainment Hub`)
       .setDescription(
-        `# ${cat.heading} Shinobi Fun & Entertainment Hub\n` +
+        `# ${cat.heading} Fun & Entertainment Hub\n` +
         `Welcome **${username}**! Below is the categorized command suite for **Fun & Games**.\n\n` +
         '```\n' + gamesBox + '\n```\n\n' +
         '```\n' + ratingBox + '\n```\n\n' +
@@ -685,14 +671,14 @@ function _unusedLegacyBuildCategory(messageOrInteraction, cat, botUser, botAvata
     const embed = new EmbedBuilder()
       .setColor(catColor)
       .setAuthor(botAvatarURL ? { name: 'Naruto Help Menu', iconURL: botAvatarURL } : { name: 'Naruto Help Menu' })
-      .setTitle(`${funEmoji} Shinobi Fun & Entertainment Suite`)
+      .setTitle(`${funEmoji} Fun & Entertainment Suite`)
       .setDescription(
         `Below is the complete list of commands for **${cat.label}**.\n\n` +
-        `${gameEmoji} **Shinobi Games & Oracle**\n` +
+        `${gameEmoji} **Games & Oracle**\n` +
         `\`\`\`\n` +
         `.8ball .truth .dare .wyr .pickup .fortune .vibecheck .mood\n` +
         `\`\`\`\n\n` +
-        `${zapEmoji} **Shinobi Ratings & Mini-Games**\n` +
+        `${zapEmoji} **Ratings & Mini-Games**\n` +
         `\`\`\`\n` +
         `.smartrate .rizzmeter .shipname .wanted .wasted .powerlevel .coolrate .bonk\n` +
         `\`\`\`\n\n` +

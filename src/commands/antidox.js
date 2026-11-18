@@ -196,7 +196,7 @@ async function checkMessageForDox(message) {
 module.exports = {
   name: 'antidox',
   description: 'Anti-Dox & Leak Guard Protection Suite (IP, Phone Number, Doxbin & IP Logger Links)',
-  aliases: ['doxguard', 'doxprotect', 'antidoxguard', 'dox'],
+  aliases: ['doxguard', 'dox'],
   ownerOnly: true,
   hidden: true,
   getOrCreateAntidox,

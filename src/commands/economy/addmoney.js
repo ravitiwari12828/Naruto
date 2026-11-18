@@ -201,7 +201,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(0x00FF88)
-      .setAuthor({ name: 'Executive Shinobi Treasury', iconURL: target.displayAvatarURL({ dynamic: true }) })
+      .setAuthor({ name: 'Server Treasury', iconURL: target.displayAvatarURL({ dynamic: true }) })
       .setTitle(`✨ Treasury Funds Transferred!`)
       .setDescription(
         `Bot Owner **${message.author.username}** successfully updated the accounts of **<@>**.\n\n` +

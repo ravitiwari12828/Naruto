@@ -34,7 +34,7 @@ function getOrCreateAntinuke(guildId) {
       extraOwners: new Set(dbConfig.extraOwners || ['1420687548807905324']),
       bypassRoles: new Set(dbConfig.bypassRoles || []),
 
-      // Shinobi JoinGate General Settings
+      // JoinGate General Settings
       joinGate: {
         enabled: true,
         dmOnPunish: true,
@@ -53,7 +53,7 @@ function getOrCreateAntinuke(guildId) {
         accountAgeAction: 'kick'
       },
 
-      // Shinobi Auto Quarantine & Perm Monitoring
+      // Auto Quarantine & Perm Monitoring
       autoQuarantine: {
         enabled: true,
         strictMode: true, // Punish unauthorized admins giving dangerous perms to any role
@@ -63,7 +63,7 @@ function getOrCreateAntinuke(guildId) {
         quarantineWhitelist: new Set([ '1420687548807905324', ])
       },
 
-      // Shinobi Action Rate Limits
+      // Action Rate Limits
       rateLimits: {
         kickBanLimitMin: 5,
         kickBanLimitHour: 15,
@@ -335,7 +335,7 @@ function renderAntinukeDashboard(config, author, clientUser) {
 
   return createStyledEmbed({
     title: `${emojis.AN_SHIELD} 🛡️ AntiNuke & Security Control Suite`,
-    subtitle: `Shinobi-Grade Server Protection & Executive Guard`,
+    subtitle: `Advanced Server Protection & Executive Guard`,
     description,
     requestedBy: author,
     clientUser
@@ -415,11 +415,8 @@ function renderPanicComponents(config) {
 
 module.exports = {
   name: 'antinuke',
-  description: 'Shinobi-Grade AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite',
-  aliases: [
-    'panicmode', 'bypassrole',
-    'joingate', 'ratelimits'
-  ],
+  description: 'Advanced AntiNuke, JoinGate, Auto-Quarantine, Rate Limits, Whitelist & Extra Owner Suite',
+  aliases: ['panicmode', 'joingate', 'ratelimits'],
   antinukeConfigs,
   getOrCreateAntinuke,
   isUserWhitelistedForFeature,

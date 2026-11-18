@@ -98,7 +98,7 @@ module.exports = {
 
       return createStyledEmbed({
         title: `${emojis.AN_SHIELD || emojis.SHIELD || '🛡️'} One-Click Server Security & Protection Setup`,
-        subtitle: `Shinobi Defense Grid Wizard`,
+        subtitle: `Security Defense Grid Wizard`,
         description,
         requestedBy: author,
         clientUser

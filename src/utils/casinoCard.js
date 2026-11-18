@@ -1,7 +1,7 @@
 const { createCanvas } = require('@napi-rs/canvas');
 const { AttachmentBuilder } = require('discord.js');
 
-// 🍥 Naruto Shinobi Naruto Shinobi Palette
+// 🍥 Naruto Casino Palette
 const THEME = {
   bgDark: '#080d19',
   cardBg: '#131b2e',
@@ -86,7 +86,7 @@ async function renderCrashCard({ multiplier, status, bet, payout, isCrash, isWin
   ctx.font = 'bold 16px sans-serif';
   ctx.fillStyle = THEME.textMuted;
   ctx.textAlign = 'right';
-  ctx.fillText(`Shinobi: ${username.slice(0, 16)}`, 755, 58);
+  ctx.fillText(`User: ${username.slice(0, 16)}`, 755, 58);
 
   // Graph Canvas Area
   const graphX = 35;
@@ -343,7 +343,7 @@ async function renderRouletteCard({ winningNumber, color, bet, payout, isWin, us
   ctx.textAlign = 'left';
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = colorHex;
-  ctx.fillText('KONOHA SHINOBI ROULETTE WHEEL', 90, 53);
+  ctx.fillText('ROULETTE WHEEL', 90, 53);
 
   // Roulette Wheel Circle Representation
   const cx = 300;
@@ -509,7 +509,7 @@ async function renderHigherLowerCard({ currentCard, nextCard, guess, bet, payout
   ctx.textAlign = 'left';
   ctx.font = 'bold 22px sans-serif';
   ctx.fillStyle = THEME.chakraBlue;
-  ctx.fillText('SHINOBI HIGHER OR LOWER', 90, 53);
+  ctx.fillText('HIGHER OR LOWER', 90, 53);
 
   // Current Card
   const c1X = 160;

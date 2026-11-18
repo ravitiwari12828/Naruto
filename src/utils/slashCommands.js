@@ -59,7 +59,7 @@ async function registerSlashCommands(client) {
       },
       {
         name: 'economy',
-        desc: 'Shinobi Economy & Casino: balance, daily, work, beg, deposit, withdraw, pay, shop',
+        desc: 'Economy & Casino: balance, daily, work, beg, deposit, withdraw, pay, shop',
         subcommands: [
           { name: 'balance', desc: 'View your wallet and bank balance' },
           { name: 'daily', desc: 'Claim your daily Ryo reward' },
@@ -127,11 +127,11 @@ async function registerSlashCommands(client) {
       },
       {
         name: 'fun',
-        desc: 'Naruto Shinobi Roleplay & Mini-Games: jutsu, battle, rps, 8ball, coinflip, dice',
+        desc: 'Naruto Roleplay & Mini-Games: jutsu, battle, rps, 8ball, coinflip, dice',
         subcommands: [
           { name: 'naruto', desc: 'Generate Naruto character card or lore' },
           { name: 'jutsu', desc: 'Cast a random ninja jutsu technique' },
-          { name: 'battle', desc: 'Battle another member in Shinobi arena', optionType: 'user', optionName: 'target', optionDesc: 'Target user' },
+          { name: 'battle', desc: 'Battle another member in arena', optionType: 'user', optionName: 'target', optionDesc: 'Target user' },
           { name: 'rps', desc: 'Play Rock Paper Scissors' },
           { name: '8ball', desc: 'Ask the Magic 8-Ball a question', optionType: 'string', optionName: 'question', optionDesc: 'Your question' },
           { name: 'coinflip', desc: 'Flip a coin' },

@@ -93,7 +93,7 @@ module.exports = {
       `5. Welcome Greetings    : .setup welcome  (Join Cards & Greetings)`,
       `6. Support Tickets      : .setup ticket   (Deploy Ticket System)`,
       `7. ModMail Inbox        : .setup modmail  (Deploy Private ModMail)`,
-      `8. Leveling & Shinobi XP: .setup level    (Level Up Channel & Roles)`,
+      `8. Leveling & XP: .setup level    (Level Up Channel & Roles)`,
       `9. Member AutoRole      : .setup autorole (Auto-Assign Roles on Join)`,
       `10. Channel Counter     : .setup counter  (Member & Voice Stats)`,
       `11. Sticky Messages     : .setup sticky   (Auto-reposting Notices)`,
@@ -123,7 +123,7 @@ module.exports = {
         { label: 'Welcome & Greetings', value: 'setup_welcome', description: 'Set up welcome greetings, join cards & auto-roles', emoji: '👋' },
         { label: 'Support Ticket System', value: 'setup_ticket', description: 'Deploy ticket category, embed panel & transcript logs', emoji: '🎟️' },
         { label: 'ModMail Inbox', value: 'setup_modmail', description: 'Deploy private DM support inbox for members', emoji: '📬' },
-        { label: 'Leveling & Shinobi XP', value: 'setup_level', description: 'Configure level-up announcements & chakra roles', emoji: '🍥' },
+        { label: 'Leveling & XP System', value: 'setup_level', description: 'Configure level-up announcements & rank roles', emoji: '📊' },
         { label: 'AutoRole Settings', value: 'setup_autorole', description: 'Auto-assign default roles to new members on join', emoji: '🎭' }
       ]);
 

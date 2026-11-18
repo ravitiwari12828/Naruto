@@ -71,7 +71,7 @@ module.exports = {
     await message.channel.send({
       embeds: [new EmbedBuilder()
         .setColor(config.embedColor)
-        .setTitle(`🐾 ${message.author.username}'s Shinobi Companions`)
+        .setTitle(`🐾 ${message.author.username}'s Companions`)
         .setThumbnail(message.author.displayAvatarURL({ dynamic: true }))
         .setDescription(list)
         .setFooter({ text: 'Type .pet adopt to adopt another companion!' })],

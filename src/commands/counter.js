@@ -56,7 +56,7 @@ async function refreshGuildCounters(guild) {
 module.exports = {
   name: 'counter',
   description: 'Server Stats Counters & Goal Counter Channels (Total, Users, Bots, Online, Boosters, Goal)',
-  aliases: ['counters', 'serverstats', 'statschannel'],
+  aliases: ['counters', 'serverstats'],
   refreshGuildCounters,
 
   async execute(message, args) {

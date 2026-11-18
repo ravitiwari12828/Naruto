@@ -4,7 +4,7 @@ const emojis = require('../utils/emojis');
 module.exports = {
   name: 'whitelist',
   description: 'AntiNuke Whitelist Dashboard & Granular Permissions Suite (Olympus Layout)',
-  aliases: ['whitelisted', 'wl'],
+  aliases: ['wl'],
 
   async execute(message, args) {
     if (message.guild && message.guild.ownerId !== message.author.id) {
