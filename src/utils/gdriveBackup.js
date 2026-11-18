@@ -94,7 +94,7 @@ function getAccessTokenFromServiceAccount(serviceAccountJson) {
       const now = Math.floor(Date.now() / 1000);
       const claim = {
         iss: serviceAccountJson.client_email,
-        scope: 'https://www.googleapis.com/auth/drive.file',
+        scope: 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive',
         aud: 'https://oauth2.googleapis.com/token',
         exp: now + 3600,
         iat: now
@@ -194,7 +194,8 @@ function uploadFileToDrive(accessToken, filepath, folderId = null) {
             if (parsed.id) {
               resolve(parsed);
             } else {
-              reject(new Error(parsed.error?.message || 'Upload failed'));
+              const errMsg = parsed.error?.message || 'Upload failed';
+              reject(new Error(errMsg));
             }
           } catch (e) {
             reject(e);
@@ -212,6 +213,32 @@ function uploadFileToDrive(accessToken, filepath, folderId = null) {
 }
 
 /**
+ * Resolves Google Drive Credentials (checks env string, env path, or local credentials file)
+ */
+function resolveDriveCredentials() {
+  const credsEnv = process.env.GOOGLE_DRIVE_CREDENTIALS || process.env.GDRIVE_CREDENTIALS;
+  if (credsEnv) {
+    const trimmed = credsEnv.trim();
+    if (trimmed.startsWith('{')) {
+      try { return JSON.parse(trimmed); } catch (e) {}
+    } else {
+      const candidatePath = path.isAbsolute(trimmed) ? trimmed : path.join(process.cwd(), trimmed);
+      if (fs.existsSync(candidatePath)) {
+        try { return JSON.parse(fs.readFileSync(candidatePath, 'utf8')); } catch (e) {}
+      }
+    }
+  }
+
+  // Fallback to local data/credentials/google-service-account.json
+  const fallbackPath = path.join(__dirname, '../../data/credentials/google-service-account.json');
+  if (fs.existsSync(fallbackPath)) {
+    try { return JSON.parse(fs.readFileSync(fallbackPath, 'utf8')); } catch (e) {}
+  }
+
+  return null;
+}
+
+/**
  * Full Automated Backup Pipeline to Google Drive
  */
 async function performDriveBackup() {
@@ -220,13 +247,13 @@ async function performDriveBackup() {
     return { success: false, error: 'Snapshot creation failed: ' + snapshotRes.error };
   }
 
-  const credsEnv = process.env.GOOGLE_DRIVE_CREDENTIALS || process.env.GDRIVE_CREDENTIALS;
   const clientId = process.env.GDRIVE_CLIENT_ID;
   const clientSecret = process.env.GDRIVE_CLIENT_SECRET;
   const refreshToken = process.env.GDRIVE_REFRESH_TOKEN;
-  const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || null;
+  const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID || '1AQUNHUh8yLlbKQ9Xjyuhy24E03TkT6yB';
+  const serviceAccount = resolveDriveCredentials();
 
-  if (!credsEnv && !(clientId && clientSecret && refreshToken)) {
+  if (!serviceAccount && !(clientId && clientSecret && refreshToken)) {
     return {
       success: true,
       snapshotOnly: true,
@@ -242,8 +269,7 @@ async function performDriveBackup() {
     if (clientId && clientSecret && refreshToken) {
       token = await getAccessTokenFromRefreshToken(clientId, clientSecret, refreshToken);
     } else {
-      const credsJson = JSON.parse(credsEnv);
-      token = await getAccessTokenFromServiceAccount(credsJson);
+      token = await getAccessTokenFromServiceAccount(serviceAccount);
     }
 
     const driveFile = await uploadFileToDrive(token, snapshotRes.filepath, folderId);
@@ -258,13 +284,17 @@ async function performDriveBackup() {
     };
   } catch (err) {
     console.error('❌ [Drive Backup Warning]:', err.message);
+    const friendlyError = err.message.includes('Service Accounts do not have storage quota')
+      ? 'Google Drive Note: Service Account has 0 MB personal quota on personal My Drive. Move folder to a Google Shared Drive for direct upload.'
+      : err.message;
+
     return {
       success: true,
       driveError: err.message,
       filename: snapshotRes.filename,
       filepath: snapshotRes.filepath,
       size: snapshotRes.size,
-      message: `Local snapshot saved, but Google Drive upload encountered error: ${err.message}`
+      message: `Local snapshot saved, but Google Drive upload note: ${friendlyError}`
     };
   }
 }
@@ -283,5 +313,6 @@ module.exports = {
   performDriveBackup,
   getAccessTokenFromServiceAccount,
   getAccessTokenFromRefreshToken,
-  uploadFileToDrive
+  uploadFileToDrive,
+  resolveDriveCredentials
 };

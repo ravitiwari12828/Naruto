@@ -1,7 +1,7 @@
 const { isBotOwner } = require('../utils/owners');
 const { EmbedBuilder, PermissionsBitField, AttachmentBuilder } = require('discord.js');
 const { createDynamicBox } = require('../utils/boxBuilder');
-const { performDriveBackup, createSnapshot } = require('../utils/gdriveBackup');
+const { performDriveBackup, createSnapshot, resolveDriveCredentials } = require('../utils/gdriveBackup');
 const fs = require('fs');
 const path = require('path');
 
@@ -80,7 +80,8 @@ module.exports = {
       totalBytes = files.reduce((acc, f) => acc + (fs.statSync(path.join(backupDir, f)).size || 0), 0);
     }
 
-    const driveStatus = (process.env.GOOGLE_DRIVE_CREDENTIALS || process.env.GDRIVE_CREDENTIALS) ? 'CONNECTED (5TB Drive)' : 'LOCAL SNAPSHOT ENGINE ACTIVE';
+    const hasDriveCreds = !!(resolveDriveCredentials() || (process.env.GDRIVE_CLIENT_ID && process.env.GDRIVE_REFRESH_TOKEN));
+    const driveStatus = hasDriveCreds ? 'CONNECTED (5TB Drive)' : 'LOCAL SNAPSHOT ENGINE ACTIVE';
 
     const infoBox = createDynamicBox('5TB CLOUD BACKUP DASHBOARD', [
       `Cloud Engine     : ${driveStatus}`,
