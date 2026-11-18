@@ -1,7 +1,7 @@
 const { createCanvas } = require('@napi-rs/canvas');
 const { AttachmentBuilder } = require('discord.js');
 
-// 🍥 Naruto Casino Palette
+// Casino Palette
 const THEME = {
   bgDark: '#080d19',
   cardBg: '#131b2e',
@@ -54,7 +54,7 @@ function drawAkatsukiCloud(ctx, x, y, width, height) {
 }
 
 /**
- * 🍥 Naruto Crash Rocket Visual Canvas Card
+ * Crash Rocket Visual Canvas Card
  */
 async function renderCrashCard({ multiplier, status, bet, payout, isCrash, isWin, username }) {
   const canvas = createCanvas(800, 420);
@@ -164,11 +164,11 @@ async function renderCrashCard({ multiplier, status, bet, payout, isCrash, isWin
   ctx.fillText(`${payout} Ryo`, panelX + 20, panelY + 238);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'naruto-crash.png' });
+  return new AttachmentBuilder(buffer, { name: 'crash.png' });
 }
 
 /**
- * 🍥 Naruto Plinko Plunge Visual Canvas Card
+ * Plinko Plunge Visual Canvas Card
  */
 async function renderPlinkoCard({ path, slotIndex, multiplier, bet, payout, isWin, username }) {
   const canvas = createCanvas(800, 420);
@@ -240,11 +240,11 @@ async function renderPlinkoCard({ path, slotIndex, multiplier, bet, payout, isWi
   ctx.fillText(isWin ? `WINNER! Multiplier: ${multiplier}x | +${payout} Ryo` : `Landed: ${multiplier}x | Payout: ${payout} Ryo`, 45, 383);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'naruto-plinko.png' });
+  return new AttachmentBuilder(buffer, { name: 'plinko.png' });
 }
 
 /**
- * 🍥 Naruto Blackjack Visual Felt Card
+ * Blackjack Visual Felt Card
  */
 async function renderBlackjackCard({ dealerCards, playerCards, dealerScore, playerScore, bet, payout, status, username }) {
   const canvas = createCanvas(800, 420);
@@ -313,12 +313,12 @@ async function renderBlackjackCard({ dealerCards, playerCards, dealerScore, play
   ctx.fillText(`Bet: ${bet} Ryo`, 645, 245);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'naruto-blackjack.png' });
+  return new AttachmentBuilder(buffer, { name: 'blackjack.png' });
 }
 
 
 /**
- * 🍥 Naruto Roulette Visual Canvas Card
+ * Roulette Visual Canvas Card
  */
 async function renderRouletteCard({ winningNumber, color, bet, payout, isWin, username }) {
   const canvas = createCanvas(800, 420);
@@ -405,11 +405,11 @@ async function renderRouletteCard({ winningNumber, color, bet, payout, isWin, us
   ctx.fillText(`${payout} Ryo`, panelX + 25, panelY + 235);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'naruto-roulette.png' });
+  return new AttachmentBuilder(buffer, { name: 'roulette.png' });
 }
 
 /**
- * 🍥 Naruto Dice Roller Visual Canvas Card
+ * Dice Roller Visual Canvas Card
  */
 async function renderDiceCard({ userRoll, dealerRoll, target, bet, payout, isWin, username }) {
   const canvas = createCanvas(800, 420);
@@ -483,11 +483,11 @@ async function renderDiceCard({ userRoll, dealerRoll, target, bet, payout, isWin
   ctx.fillText(isWin ? `WINNER! You rolled ${userRoll} vs ${dealerRoll}! (+${payout} Ryo)` : `LOST! You rolled ${userRoll} vs ${dealerRoll}! (-${bet} Ryo)`, 45, 380);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'naruto-dice.png' });
+  return new AttachmentBuilder(buffer, { name: 'dice.png' });
 }
 
 /**
- * 🍥 Naruto Higher/Lower Visual Canvas Card
+ * Higher/Lower Visual Canvas Card
  */
 async function renderHigherLowerCard({ currentCard, nextCard, guess, bet, payout, isWin, username }) {
   const canvas = createCanvas(800, 420);
@@ -555,7 +555,7 @@ async function renderHigherLowerCard({ currentCard, nextCard, guess, bet, payout
   ctx.fillText(isWin ? `WINNER! Guessed ${guess} correctly! (+${payout} Ryo)` : `WRONG! Guessed ${guess}! (-${bet} Ryo)`, 45, 380);
 
   const buffer = canvas.toBuffer('image/png');
-  return new AttachmentBuilder(buffer, { name: 'naruto-higherlower.png' });
+  return new AttachmentBuilder(buffer, { name: 'higherlower.png' });
 }
 
 module.exports = {

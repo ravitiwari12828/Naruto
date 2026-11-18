@@ -179,7 +179,7 @@ module.exports = (client) => {
 
       const header = [
         `==================================================`,
-        `NARUTO EXECUTIVE PURGE AUDIT TRANSCRIPT`,
+        `EXECUTIVE PURGE AUDIT TRANSCRIPT`,
         `Server  : ${guild.name} (${guild.id})`,
         `Channel : #${channel ? channel.name : 'unknown'} (${channel ? channel.id : '0'})`,
         `Purged  : ${count} Messages`,

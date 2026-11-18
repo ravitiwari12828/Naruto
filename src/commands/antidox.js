@@ -181,7 +181,7 @@ async function checkMessageForDox(message) {
         `• **Channel:** <#${message.channel.id}>\n` +
         `• **Violation Type:** \`${detectedType}\`\n` +
         `• **Action Taken:** Message deleted & **${config.timeoutMinutes} Minutes Timeout** applied!\n\n` +
-        `*Notice: Personal privacy leak attempts are strictly monitored by Naruto Anti-Dox Security.*`
+        `*Notice: Personal privacy leak attempts are strictly monitored by Anti-Dox Security.*`
       )
       .setTimestamp();
 

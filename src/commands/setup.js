@@ -106,7 +106,7 @@ module.exports = {
       title: `${emojis.SETTINGS || '⚙️'} Master Server Setup & Configuration Suite`,
       subtitle: `All-In-One Guild Management Module for ${guild.name}`,
       description:
-        `Configure and deploy all Naruto Bot systems for **${guild.name}** in one central location.\n\n` +
+        `Configure and deploy all bot systems for **${guild.name}** in one central location.\n\n` +
         '```\n' + box + '\n```\n' +
         `**Quick Usage:** Type \`.setup <module>\` (e.g. \`.setup logs\`, \`.setup antinuke\`, \`.setup welcome\`) or select a module below!`,
       requestedBy: author,

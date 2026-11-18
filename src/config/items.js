@@ -1,5 +1,5 @@
 /**
- * Items Registry for Naruto Bot Economy & RPG Suite
+ * Items Registry for Bot Economy Suite
  */
 
 const TOOLS = {

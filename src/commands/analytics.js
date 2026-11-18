@@ -372,7 +372,7 @@ function renderUserStatsPanel(guild, targetUser, activeCat = 'all', timeframeKey
     subtitle: `Member Activity Audit — ${guild.name}`,
     description: boxText,
     thumbnailUrl: targetUser.displayAvatarURL({ dynamic: true, size: 512 }),
-    footerText: `Timeframe: ${label} • Live Sync • Naruto One`,
+    footerText: `Timeframe: ${label} • Live Sync • Analytics Suite`,
     requestedBy: author,
     clientUser
   });
@@ -422,7 +422,7 @@ async function renderMessagesLeaderboard(guild, timeframeKey = 'lifetime', page 
     subtitle: `Top Chatters in ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Page ${currentPage}/${totalPages} • Timeframe: ${label} • Naruto One`,
+    footerText: `Page ${currentPage}/${totalPages} • Timeframe: ${label} • Analytics Suite`,
     requestedBy: author,
     clientUser
   });
@@ -474,7 +474,7 @@ async function renderVoiceLeaderboard(guild, timeframeKey = 'lifetime', page = 1
     subtitle: `Top Voice Members in ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Page ${currentPage}/${totalPages} • Timeframe: ${label} • Naruto One`,
+    footerText: `Page ${currentPage}/${totalPages} • Timeframe: ${label} • Analytics Suite`,
     requestedBy: author,
     clientUser
   });
@@ -535,7 +535,7 @@ async function renderInvitesLeaderboard(guild, timeframeKey = 'lifetime', page =
     subtitle: `Top Recruiters in ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Page ${currentPage}/${totalPages} • Timeframe: ${label} • Naruto One`,
+    footerText: `Page ${currentPage}/${totalPages} • Timeframe: ${label} • Analytics Suite`,
     requestedBy: author,
     clientUser
   });
@@ -566,7 +566,7 @@ function renderJoinsLeavesPanel(guild, timeframeKey = '1d', author, clientUser) 
     subtitle: `Joins vs Leaves — ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Timeframe: ${label} • Live Sync • Naruto Executive`,
+    footerText: `Timeframe: ${label} • Live Sync • Executive Suite`,
     requestedBy: author,
     clientUser
   });
@@ -593,7 +593,7 @@ function renderTopCommandsPanel(guild, timeframeKey = '1d', author, clientUser) 
     subtitle: `Automation Metrics — ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Timeframe: ${label} • Live Sync • Naruto Executive`,
+    footerText: `Timeframe: ${label} • Live Sync • Executive Suite`,
     requestedBy: author,
     clientUser
   });
@@ -622,7 +622,7 @@ function renderTicketStatsPanel(guild, timeframeKey = '1d', author, clientUser) 
     subtitle: `Support Stats — ${guild.name}`,
     description: boxText,
     thumbnailUrl: guild.iconURL({ dynamic: true, size: 512 }),
-    footerText: `Timeframe: ${label} • Live Sync • Naruto Executive`,
+    footerText: `Timeframe: ${label} • Live Sync • Executive Suite`,
     requestedBy: author,
     clientUser
   });

@@ -28,7 +28,7 @@ async function removeExpiredTempRole(client, key, data) {
     if (guildObj) {
       const member = await guildObj.members.fetch(data.userId).catch(() => null);
       if (member && member.roles.cache.has(data.roleId)) {
-        await member.roles.remove(data.roleId, 'TempRole expired — auto-removed by Naruto Bot').catch(() => {});
+        await member.roles.remove(data.roleId, 'TempRole expired — auto-removed by Security System').catch(() => {});
       }
       if (data.channelId) {
         const channel = client.channels.cache.get(data.channelId) || await client.channels.fetch(data.channelId).catch(() => null);

@@ -1,5 +1,5 @@
 /**
- * Economy Core Helpers for Naruto Bot Economy Suite
+ * Economy Core Helpers for Bot Economy Suite
  */
 
 function fmt(num) {

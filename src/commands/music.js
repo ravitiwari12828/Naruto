@@ -330,14 +330,14 @@ async function sendMusicCard(channel, track, player) {
   return sentMsg;
 }
 
-// Naruto OST Presets
-const NARUTO_OST = {
-  'bluebird': 'Naruto Shippuden OP 3 - Blue Bird',
-  'silhouette': 'Naruto Shippuden OP 16 - Silhouette',
-  'sadness': 'Naruto OST - Sadness and Sorrow',
-  'theme': 'Naruto Main Theme - Raising Fighting Spirit',
-  'wind': 'Naruto ED 1 - Wind',
-  'hero': 'Naruto Shippuden OP 1 - Hero\'s Come Back!!'
+// Popular Music Presets
+const MUSIC_PRESETS = {
+  'lofi': 'Lofi Hip Hop Chill Beats to Relax/Study to',
+  'tophits': 'Today Top Global Pop Hits',
+  'chill': 'Acoustic Chill Vibes & Melodies',
+  'gaming': 'Gaming Synthwave High Energy Mix',
+  'piano': 'Peaceful Piano Relaxing Melodies',
+  'bass': 'Bass Boosted EDM Car Music'
 };
 
 function buildMusicPlayerEmbed(track, player) {
@@ -444,9 +444,9 @@ function buildMusicActionRows(player = null) {
 
   if (!suggestedOptions.length) {
     suggestedOptions = [
-      { label: 'Naruto Shippuden OP 3 - Blue Bird', value: 'sug_bluebird', description: 'Recommended Naruto Anime OST', emoji: '🍥' },
-      { label: 'Naruto Shippuden OP 16 - Silhouette', value: 'sug_silhouette', description: 'Recommended Naruto Anime OST', emoji: '🍥' },
-      { label: 'Naruto OST - Sadness and Sorrow', value: 'sug_sadness', description: 'Recommended Naruto Emotional Track', emoji: '🍥' },
+      { label: 'Lo-Fi Chill Beats', value: 'sug_lofi', description: 'Relaxing Lo-Fi Study Beats', emoji: '☕' },
+      { label: 'Today Top Global Hits', value: 'sug_hits', description: 'Trending Chart-Topping Hits', emoji: '🔥' },
+      { label: 'Chill Acoustic Vibes', value: 'sug_chill', description: 'Peaceful Acoustic & Melodies', emoji: '🎵' },
       { label: 'Heeriye - Jasleen Royal & Arijit Singh', value: 'sug_heeriye', description: 'Trending Acoustic Pop', emoji: '✨' },
       { label: 'Tere Baare Mein Jab Socha - Jagjit Singh', value: 'sug_jagjit', description: 'Trending Ghazal Classic', emoji: '✨' }
     ];
@@ -566,7 +566,7 @@ module.exports = {
       }
 
       const key = query.toLowerCase().replace(/\s+/g, '');
-      if (NARUTO_OST[key]) query = NARUTO_OST[key];
+      if (MUSIC_PRESETS[key]) query = MUSIC_PRESETS[key];
 
       let player = lavalink?.getPlayer(guildId);
 
@@ -860,7 +860,7 @@ module.exports = {
 ` +
             `*Use a play command to start music!*`
           )
-          .setFooter({ text: 'Naruto Music Suite' });
+          .setFooter({ text: 'Music Suite' });
 
         return message.reply({ embeds: [joinEmbed] });
       } catch (err) {

@@ -10,7 +10,7 @@ const MULTIPLIERS = [10.0, 3.0, 1.5, 0.5, 1.5, 3.0, 10.0];
 
 module.exports = {
   name: 'plinko',
-  description: 'Naruto Plinko Plunge — Visual canvas pinball drop!',
+  description: 'Plinko Plunge — Visual canvas pinball drop!',
   usage: '.plinko <bet>',
   cooldown: 3000,
   async execute(message, args) {
@@ -55,14 +55,14 @@ module.exports = {
 
     const resultEmbed = new EmbedBuilder()
       .setColor(isWin ? 0x57F287 : 0xED4245)
-      .setTitle(`${resultIcon} Naruto Konoha Chakra Plinko Plunge`)
+      .setTitle(`${resultIcon} Plinko Plunge`)
       .setDescription(
         `**Trajectory:** ${path.join(' ')}\n\n` +
         `${resultIcon} Ball landed on **${multiplier}x**!\n` +
         `• **Payout Won:** **${fmt(payout)}** 💵 (Net: **${isWin ? '+' : ''}${fmt(payout - bet)}**)`
       )
-      .setImage('attachment://naruto-plinko.png')
-      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Visuals` })
+      .setImage('attachment://plinko.png')
+      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Casino Visuals` })
       .setTimestamp();
 
     return message.channel.send({ embeds: [resultEmbed], files: [cardAttachment] });

@@ -266,7 +266,7 @@ module.exports = {
 
       const { createDynamicBox } = require('../utils/boxBuilder');
       const boxText = '```\n' + createDynamicBox('BOT & SYSTEM INFO', [
-        { key: 'Bot Name', value: 'Naruto' },
+        { key: 'Bot Name', value: message.client.user?.username || 'Bot' },
         { key: 'Prefix', value: '.' },
         { key: 'Guilds', value: String(totalGuilds) },
         { key: 'Users', value: String(totalUsers) },
@@ -278,7 +278,7 @@ module.exports = {
       ]) + '\n```';
 
       const embed = createStyledEmbed({
-        title: `${emojis.STATS_NEW || '📊'} Naruto Bot Information & System Metrics`,
+        title: `${emojis.STATS_NEW || '📊'} Bot Information & System Metrics`,
         subtitle: `Developed with ❤️ by Synn • All-In-One Discord Bot`,
         description:
           boxText + `\n\n` +
@@ -806,7 +806,7 @@ module.exports = {
       const { ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
       const row = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
-          .setLabel('Invite Naruto Bot')
+          .setLabel('Invite Bot')
           .setStyle(ButtonStyle.Link)
           .setURL(inviteUrl)
           .setEmoji(emojis.OBJ_INVITE || '🔗'),

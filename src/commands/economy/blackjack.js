@@ -48,7 +48,7 @@ function fmtHandArray(hand, hideSecond = false) {
 module.exports = {
   name: 'blackjack',
   aliases: ['bj'],
-  description: 'Naruto Blackjack 21 vs Dealer',
+  description: 'Blackjack 21 vs Dealer',
   usage: '.blackjack <bet>',
   cooldown: 3000,
   async execute(message, args) {
@@ -90,13 +90,13 @@ module.exports = {
       const embed = new EmbedBuilder()
         .setColor(color)
         .setAuthor({ name: `${message.author.username}'s Blackjack 21`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-        .setTitle(`🃏 Naruto Ninja Blackjack 21 Table Table`)
+        .setTitle(`🃏 Blackjack 21 Table`)
         .addFields(
           { name: `Dealer (${String(dVal)})`, value: String(fmtHandStr(dealer, !finished)), inline: true },
           { name: `You (${String(pVal)})`, value: String(fmtHandStr(player)), inline: true }
         )
         .setDescription(String(resultText || 'Hit to draw a card, Stand to stay, or Double your bet!'))
-        .setImage('attachment://naruto-blackjack.png')
+        .setImage('attachment://blackjack.png')
         .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Wallet: ${fmt(eco.balance)} Ryo` })
         .setTimestamp();
 

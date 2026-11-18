@@ -15,7 +15,6 @@ const MODULE_ALIASES = {
   moderation: ['mod', 'modlogs', 'modlimits', 'channel'],
   economy: ['balance', 'deposit', 'withdraw', 'pay', 'networth', 'leaderboard', 'blackjack', 'plinko', 'crash', 'roulette', 'dice', 'higherlower', 'work', 'job', 'mine', 'dig', 'fish', 'chop', 'hunt', 'crime', 'daily', 'weekly', 'monthly', 'shop', 'buy', 'sell', 'inventory', 'pet', 'marry', 'stocks', 'quest'],
   casino: ['blackjack', 'plinko', 'crash', 'roulette', 'dice', 'higherlower', 'limbo', 'scratchcard'],
-  naruto: ['ninja'],
   rpg: ['ninja']
 };
 

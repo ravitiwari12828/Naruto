@@ -25,6 +25,6 @@ module.exports = {
   formatExpiryText,
 
   async execute(message) {
-    return message.reply(`${emojis.INFO || 'ℹ️'} **No-Prefix Feature Disabled**: No-prefix functionality has been permanently removed from Naruto Bot. All commands strictly require the \`.\` prefix.`);
+    return message.reply(`${emojis.INFO || 'ℹ️'} **No-Prefix Feature Disabled**: No-prefix functionality has been permanently removed from the bot. All commands strictly require the \`.\` prefix.`);
   }
 };

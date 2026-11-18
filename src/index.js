@@ -82,7 +82,7 @@ http.createServer((req, res) => {
       method: 'GET',
       headers: {
         'Authorization': 'Bot ' + t,
-        'User-Agent': 'DiscordBot (https://github.com/ravitiwari12828/Naruto, 1.0.0)'
+        'User-Agent': 'DiscordBot (https://github.com/ravitiwari12828/Bot, 1.0.0)'
       }
     };
 
@@ -168,7 +168,7 @@ http.createServer((req, res) => {
       method: 'GET',
       headers: {
         'Authorization': 'Bot ' + t,
-        'User-Agent': 'DiscordBot (https://github.com/ravitiwari12828/Naruto, 1.0.0)'
+        'User-Agent': 'DiscordBot (https://github.com/ravitiwari12828/Bot, 1.0.0)'
       }
     };
     
@@ -259,7 +259,7 @@ http.createServer((req, res) => {
 
   res.writeHead(200, { 'Content-Type': 'text/plain; charset=utf-8' });
 
-  res.end('🍥 Naruto Bot is 24/7 Active!\n');
+  res.end('⚡ Bot is 24/7 Active!\n');
 
 }).listen(PORT, () => {
 
@@ -363,7 +363,7 @@ const client = new Client({
 
     status: 'online',
 
-    activities: [{ name: '💻 .help | Naruto Bot', type: 3 }]
+    activities: [{ name: '💻 .help | Multi-Purpose Bot', type: 3 }]
 
   },
 
@@ -628,7 +628,7 @@ client.once('clientReady', async () => {
 
   console.log(`\n==============================================`);
 
-  console.log(`🍥 Naruto Bot is ONLINE & Fully Operational!`);
+  console.log(`⚡ Bot is ONLINE & Fully Operational!`);
 
   console.log(`• Tag & ID      : ${client.user.tag} (${client.user.id})`);
 
@@ -3449,7 +3449,7 @@ client.on('messageCreate', async (message) => {
 
           .setDescription(content || '*[Attachment]*')
 
-          .setFooter({ text: 'Naruto Support Desk • Staff Identity Protected' });
+          .setFooter({ text: 'Support Desk • Staff Identity Protected' });
 
 
 
@@ -4042,7 +4042,7 @@ client.on('messageCreate', async (message) => {
 
                 clientUser: client.user,
 
-                footerText: `Naruto Leveling • Chat to unlock higher Ninja Ranks!`
+                footerText: `Leveling • Chat to unlock higher Server Ranks!`
 
               });
 
@@ -4821,11 +4821,9 @@ client.on('interactionCreate', async (interaction) => {
 
       const map = {
 
-        'sug_bluebird': 'Naruto Shippuden OP 3 - Blue Bird',
-
-        'sug_silhouette': 'Naruto Shippuden OP 16 - Silhouette',
-
-        'sug_sadness': 'Naruto OST - Sadness and Sorrow',
+        'sug_lofi': 'Lofi Hip Hop Chill Beats to Relax/Study to',
+        'sug_hits': 'Today Top Global Pop Hits',
+        'sug_chill': 'Acoustic Chill Vibes & Melodies',
 
         'sug_heeriye': 'Heeriye Jasleen Royal Arijit Singh',
 
@@ -4835,7 +4833,7 @@ client.on('interactionCreate', async (interaction) => {
 
 
 
-      const query = map[val] || 'Naruto Blue Bird';
+      const query = map[val] || 'Lofi Hip Hop Chill Beats';
 
       let res = await player.search({ query, source: 'spsearch' }, interaction.user);
 

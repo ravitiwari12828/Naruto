@@ -1,5 +1,5 @@
 /**
- * Bulletproof Emojis Proxy Registry for Naruto Bot
+ * Bulletproof Emojis Proxy Registry for Discord Bot
  * Guarantees zero undefined property access errors across all 54 commands.
  */
 
@@ -164,7 +164,7 @@ const CUSTOM = {
   laptop_animated: '💻',
   leaf_animated: '🍃',
   money_alt_animated: '💰',
-  naruto_animated: '🍥',
+  naruto_animated: '⚡',
   networth_animated: '🔹',
   online_animated: '🔹',
   pet_dog_animated: '🔹',
@@ -567,7 +567,7 @@ const baseExports = {
   SCROLL: CUSTOM.scroll_animated || '📜',
   FLANTIC_DANCE: CUSTOM.flantic_dance_animated || '💃',
   LINKX: CUSTOM.linkx_animated || '🔗',
-  NARUTO: CUSTOM.naruto_animated || '🍥'
+  NARUTO: CUSTOM.naruto_animated || '⚡'
 };
 
 const emojisProxy = new Proxy(baseExports, {
@@ -608,7 +608,7 @@ const emojisProxy = new Proxy(baseExports, {
     if (propLower.includes('hour') || propLower.includes('time')) return '⏳';
     if (propLower.includes('fire') || propLower.includes('streak')) return '🔥';
 
-    return CUSTOM.naruto_animated || '🍥';
+    return CUSTOM.naruto_animated || '⚡';
   }
 });
 

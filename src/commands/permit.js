@@ -199,7 +199,7 @@ function buildPermitHelpEmbed() {
       `• \`.nuke\` & \`.permit add/remove/reset\` stay locked to **Administrators / Owners only**.\n` +
       `• Non-admin permitted staff must still obey **Discord role hierarchy** and cannot assign roles with dangerous permissions.`
     )
-    .setFooter({ text: 'Narutobot Security • Hierarchy & Permit Enforcement Active' });
+    .setFooter({ text: 'Security Grid • Hierarchy & Permit Enforcement Active' });
 }
 
 module.exports = {

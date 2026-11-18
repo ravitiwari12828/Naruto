@@ -34,7 +34,7 @@ module.exports = {
     const statusMsg = await message.channel.send(`🧪 **Testing all 15 server log channels...**`);
 
     const logTypes = [
-      { key: 'narutologs', name: 'naruto-logs', title: 'Naruto Master Audit Log' },
+      { key: 'narutologs', name: 'server-logs', title: 'Master Audit Log' },
       { key: 'modlogs', name: 'mod-logs', title: 'Moderation Action Log' },
       { key: 'antinuke', name: 'antinuke-logs', title: 'AntiNuke Protection Log' },
       { key: 'automod', name: 'automod-logs', title: 'AutoMod Enforcement Log' },
@@ -63,13 +63,13 @@ module.exports = {
             const testEmbed = new EmbedBuilder()
               .setColor(0x7E0808)
               .setTitle(`✅ Log Test: ${item.title}`)
-              .setDescription(`Automated verification test sent by **Naruto Bot** to confirm **#${channel.name}** is active.`)
+              .setDescription(`Automated verification test sent by the bot to confirm **#${channel.name}** is active.`)
               .addFields([
                 { name: 'Channel Name', value: `#${channel.name}`, inline: true },
                 { name: 'Channel ID', value: `\`${channel.id}\``, inline: true },
                 { name: 'Tested By', value: `<@${author.id}>`, inline: true }
               ])
-              .setFooter({ text: 'Naruto Audit Log Verifier • All Systems Normal' })
+              .setFooter({ text: 'Audit Log Verifier • All Systems Normal' })
               .setTimestamp();
 
             await channel.send({ embeds: [testEmbed] });
@@ -138,13 +138,13 @@ module.exports = {
           {
             name: '🛡️ · Security Logs ·',
             channels: [
-              { key: 'narutologs', name: 'naruto-logs' },
-              { key: 'automod', name: 'naruto-automod-logs' },
-              { key: 'emojis', name: 'naruto-emoji-logs' },
-              { key: 'modcases', name: 'naruto-mod-cases' },
-              { key: 'antinuke', name: 'naruto-security-logs' },
-              { key: 'limitlogs', name: 'naruto-limit-logs' },
-              { key: 'modlogs', name: 'naruto-mod-logs' }
+              { key: 'narutologs', name: 'server-logs' },
+              { key: 'automod', name: 'automod-logs' },
+              { key: 'emojis', name: 'emoji-logs' },
+              { key: 'modcases', name: 'mod-cases' },
+              { key: 'antinuke', name: 'security-logs' },
+              { key: 'limitlogs', name: 'limit-logs' },
+              { key: 'modlogs', name: 'mod-logs' }
             ]
           },
           {

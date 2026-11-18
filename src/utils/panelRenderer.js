@@ -155,7 +155,7 @@ const CATEGORIES = [
   {
     label: 'Fun',
     value: 'fun',
-    description: 'Naruto-themed fun: truth, dare, vibecheck, rizzmeter & more',
+    description: 'Fun & games: truth, dare, vibecheck, rizzmeter & more',
     customEmoji: '🎭',
     emojiId: '1537447200362070126',
     unicodeFallback: '🎭',
@@ -474,7 +474,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
 
     const embed = new EmbedBuilder()
       .setColor(catColor)
-      .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
+      .setAuthor(botAvatarURL ? { name: 'Executive Suite', iconURL: botAvatarURL } : { name: 'Executive Suite' })
       .setTitle(`${cat.heading} Economy & Casino Executive Hub`)
       .setDescription(
         `# ${cat.heading} Economy & Casino Executive Hub\n` +
@@ -526,7 +526,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
 
     const embed = new EmbedBuilder()
       .setColor(catColor || 0x2B2D31)
-      .setAuthor(botAvatarURL ? { name: 'Naruto Moderation Suite', iconURL: botAvatarURL } : { name: 'Naruto Moderation Suite' })
+      .setAuthor(botAvatarURL ? { name: 'Moderation Suite', iconURL: botAvatarURL } : { name: 'Moderation Suite' })
       .setTitle('🛠️ | Moderation Control Hub')
       .setDescription(
         `# 🛠️ Moderation Executive Hub\n` +
@@ -612,7 +612,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
 
     const embed = new EmbedBuilder()
       .setColor(catColor)
-      .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
+      .setAuthor(botAvatarURL ? { name: 'Executive Suite', iconURL: botAvatarURL } : { name: 'Executive Suite' })
       .setTitle(`${cat.heading} Fun & Entertainment Hub`)
       .setDescription(
         `# ${cat.heading} Fun & Entertainment Hub\n` +
@@ -642,7 +642,7 @@ function buildCategoryEmbed(messageOrInteraction, cat, botUser, botAvatar, devPo
 
   const embed = new EmbedBuilder()
     .setColor(catColor)
-    .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
+    .setAuthor(botAvatarURL ? { name: 'Executive Suite', iconURL: botAvatarURL } : { name: 'Executive Suite' })
     .setTitle(`${cat.heading} ${cat.label}`)
     .setDescription(
       `# ${cat.heading} ${cat.label} Executive Hub\n` +
@@ -670,7 +670,7 @@ function _unusedLegacyBuildCategory(messageOrInteraction, cat, botUser, botAvata
 
     const embed = new EmbedBuilder()
       .setColor(catColor)
-      .setAuthor(botAvatarURL ? { name: 'Naruto Help Menu', iconURL: botAvatarURL } : { name: 'Naruto Help Menu' })
+      .setAuthor(botAvatarURL ? { name: 'Help Menu', iconURL: botAvatarURL } : { name: 'Help Menu' })
       .setTitle(`${funEmoji} Fun & Entertainment Suite`)
       .setDescription(
         `Below is the complete list of commands for **${cat.label}**.\n\n` +
@@ -736,7 +736,7 @@ function _unusedLegacyBuildCategory(messageOrInteraction, cat, botUser, botAvata
 
     const embed = new EmbedBuilder()
       .setColor(catColor)
-      .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
+      .setAuthor(botAvatarURL ? { name: 'Executive Suite', iconURL: botAvatarURL } : { name: 'Executive Suite' })
       .setTitle(`${welcomeEmoji} Welcome & Greetings System`)
       .setDescription(
         `Welcome **${username}**! Below is the executive suite for **${cat.label}**.\n\n` +
@@ -762,7 +762,7 @@ function _unusedLegacyBuildCategory(messageOrInteraction, cat, botUser, botAvata
   if (cat.value === 'music') {
     const embed = new EmbedBuilder()
       .setColor(catColor)
-      .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
+      .setAuthor(botAvatarURL ? { name: 'Executive Suite', iconURL: botAvatarURL } : { name: 'Executive Suite' })
       .setTitle(`${emojis.MUSIC || '🎵'} Music Player Suite & Control Panel`)
       .setDescription(
         `Welcome **${username}**! Below is the executive suite for **Music**.\n\n` +
@@ -810,7 +810,7 @@ function _unusedLegacyBuildCategory(messageOrInteraction, cat, botUser, botAvata
 
   const embed = new EmbedBuilder()
     .setColor(catColor)
-    .setAuthor(botAvatarURL ? { name: 'Naruto Executive Suite', iconURL: botAvatarURL } : { name: 'Naruto Executive Suite' })
+    .setAuthor(botAvatarURL ? { name: 'Executive Suite', iconURL: botAvatarURL } : { name: 'Executive Suite' })
     .setTitle(`${cat.heading}`)
     .setDescription(
       `# ${cat.heading} ${cat.label} Executive Hub\n` +

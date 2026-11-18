@@ -695,7 +695,7 @@ module.exports = {
           .setThumbnail(targetAvatar)
           .setDescription(buildOlympusDescription(userPerms))
           .setFooter({
-            text: 'Powered by Naruto Bot Development™',
+            text: 'Powered by Security Grid™',
             iconURL: clientUser.displayAvatarURL({ dynamic: true })
           });
 
@@ -802,7 +802,7 @@ module.exports = {
             .setThumbnail(targetAvatar)
             .setDescription(buildOlympusDescription(currentPerms))
             .setFooter({
-              text: 'Powered by Naruto Bot Development™',
+              text: 'Powered by Security Grid™',
               iconURL: clientUser.displayAvatarURL({ dynamic: true })
             });
 

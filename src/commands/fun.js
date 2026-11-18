@@ -49,13 +49,13 @@ function getAssessmentText(cmdName, score, targetUser, author, user2) {
     return score > 80 ? '🧠 **Super Genius** — Shikamaru IQ: 200+' : score > 50 ? '📜 **Above Average** — Kakashi-level reading speed' : '🌿 **Dense as a Rock** — Might Guy energy!';
   }
   if (cmdName === 'rizzmeter') {
-    return score > 80 ? '🔥 **Full Minato Yellow Flash Charm Unlocked**' : score > 50 ? '⚡ **Solid Chunin-Level Rizz**' : '🥹 **Naruto before Hinata noticed him**';
+    return score > 80 ? '🔥 **Main Character Charisma Unlocked**' : score > 50 ? '⚡ **Solid Natural Charisma**' : '🥹 **Too shy to text first**';
   }
   if (cmdName === 'shipname') {
     const name1 = author.username.slice(0, Math.ceil(author.username.length / 2));
     const name2 = (user2 || author).username.slice(Math.floor((user2 || author).username.length / 2));
     const ship = name1 + name2;
-    return `🚢 **Ship Name:** \`${ship}\`\n\n` + (score >= 80 ? '🌸 A love story worthy of a Naruto ending arc!' : score >= 50 ? '⚡ There is potential — keep fighting for it!' : '💔 Awkward silence in Ichiraku ramen...');
+    return `🚢 **Ship Name:** \`${ship}\`\n\n` + (score >= 80 ? '🌸 A match made in heaven!' : score >= 50 ? '⚡ There is potential — keep fighting for it!' : '💔 Awkward silence on the first date...');
   }
   if (cmdName === 'wanted') {
     return score > 80 ? '☠️ **S-Rank Rogue Ninja** — Maximum Bounty! Report to Hokage!' : score > 50 ? '📜 **B-Rank Wanted** — Watch out for ANBU Black Ops' : '🌱 **Low-Level Rascal** — Only stole ramen!';
@@ -169,10 +169,10 @@ const EIGHT_BALL = [
 ];
 
 const TRUTH_Q = [
-  'What\'s your most embarrassing Naruto-related memory?',
+  'What is your most embarrassing moment in school or college?',
   'Have you ever cried at an anime death? Which one?',
   'What superpower would you choose if you could have one?',
-  'Who is your least favourite Naruto character and why?',
+  'Who is the most overrated celebrity or movie character?',
   'What\'s the weirdest thing you\'ve done alone?',
   'Have you ever rage-quit an anime mid-episode?',
   'What\'s a secret talent only your closest friends know?',
@@ -182,13 +182,13 @@ const TRUTH_Q = [
 ];
 
 const DARE_D = [
-  'Do your best Naruto run for 30 seconds and record it.',
+  'Speak in an exaggerated accent for the next 3 messages.',
   'Say "Believe it!" after every sentence for the next 5 minutes.',
   'Let the next person in chat change your nickname for 1 hour.',
   'Send a voice message doing your best Kakashi impression.',
   'Type your next 3 messages entirely in caps.',
   'Send a childhood photo in chat.',
-  'Write a 3-line poem about your favourite Naruto character.',
+  'Send a funny compliment to the last person who messaged in chat.',
   'Call out your rival in chat and challenge them to a jutsu duel.',
   'Do a dramatic anime "noooo" reaction in VC.',
   'Send your current lock screen image in chat.'
@@ -201,7 +201,7 @@ const WOULD_YOU_RATHER = [
   'Have unlimited chakra but be forbidden from using ninjutsu OR use any jutsu but only 10 times a day?',
   'Train under Might Guy OR Jiraiya?',
   'Live in Konoha OR Sunagakure for one year?',
-  'Fight 100 Naruto clones OR 1 Sasuke at peak power?',
+  'Fight 1 horse-sized duck OR 100 duck-sized horses?',
   'Have the ability to use all 5 nature types OR master space-time ninjutsu?',
   'Be Hokage for a day OR be a Kage from any other village?',
   'Have Kakashi\'s Sharingan OR Rock Lee\'s physical power without chakra?'
@@ -234,9 +234,9 @@ const FORTUNES = [
 ];
 
 const VIBES = ['🔥 Chaotic Energy', '😤 Revenge Arc Energy', '✨ Main Character Aura', '🌸 Sakura Useless Energy', '🦊 Nine-Tails Unleashed', '😴 Shikamaru Mode (Too Troublesome)', '😤 Sasuke Uchiha Cold Energy', '🌀 Rasengan Gyaat', '🍜 Ramen-Powered', '🥹 Emotional Backstory Incoming'];
-const MOODS   = ['⚡ Ready to take on the Akatsuki', '😴 Shikamaru-level lazy today', '🔥 Full Might Guy Eight Gates mode', '🍜 Just hungry for Ichiraku ramen', '😤 Full Sasuke brooding mode', '🌸 Cherry blossom chill vibes', '🦊 Nine-Tails chakra leaking slightly', '🧘 Sage mode meditation energy', '😂 Naruto laughing at his own jokes', '💀 Rock Lee without his eyebrows energy'];
-const SMART   = ['Super Genius — Shikamaru IQ: 200+', 'Above Average — Kakashi-level reading speed', 'Street Smart — Naruto\'s pure instinct', 'You\'d pass the Chunin Exams on charm alone', 'Barely Passing — but you make it look good', 'Galaxy Brain — Minato-level tactical thinking', 'Book Smart — could rival Sakura\'s medical knowledge', 'Dense as a Rock — Might Guy doesn\'t need brains!'];
-const RIZO    = ['0% — Naruto before Hinata noticed him', '20% — You tried. Lee acknowledges the effort.', '40% — Solid Chunin-level rizz', '60% — Kakashi-tier mysterious appeal', '80% — Sasuke dark aura rizz activated', '99% — Full Minato Yellow Flash charm unlocked', '100% — Even the Nine-Tails would blush'];
+const MOODS   = ['⚡ Ready to conquer the day', '😴 Peak cozy & lazy today', '🔥 Maximum energy overdrive', '🍕 Just craving good food', '😤 Cool, focused & unstoppable', '🌸 Chill vibes only', '🧘 Deep zen meditation energy', '😂 Laughing at my own jokes', '☕ Running on coffee & good music', '✨ Living my best life'];
+const SMART   = ['Super Genius — IQ: 200+', 'Above Average — High-speed problem solver', 'Street Smart — Pure instinct and intuition', 'Smooth Operator — Passes tests on charisma alone', 'Galaxy Brain — 4D chess grandmaster', 'Book Smart — Encyclopedic memory', 'Pure Muscle — Who needs brains when you have strength?'];
+const RIZO    = ['0% — Total introvert, too shy to text first', '20% — You tried! Effort acknowledged.', '40% — Solid conversationalist', '60% — Mysterious aesthetic & charm', '80% — Smooth talker with undeniable charisma', '99% — Main character energy unlocked', '100% — Absolute rizz master'];
 
 // MEME TEMPLATES MAP
 const MEMES_MAP = {
@@ -305,7 +305,7 @@ const ACTIONS_MAP = {
 
 module.exports = {
   name: 'fun',
-  description: 'Complete Fun Suite: Memes, Emotes, Actions, Games & Naruto Lore',
+  description: 'Complete Fun Suite: Memes, Emotes, Actions & Community Games',
   aliases: ['meme', 'ship', 'coinflip', 'roll', 'gauge', 'bonk', '8ball', 'truth', 'dare', 'wyr', 'pickup', 'fortune', 'vibecheck', 'mood', 'hug', 'kiss', 'slap', 'pat', 'cuddle'],
 
   async execute(message, args) {
@@ -340,12 +340,12 @@ module.exports = {
       const memeInfo = MEMES_MAP[memeKey];
       const fullArgs = args.join(' ');
       const RANDOM_MEME_PRESETS = [
-        { text1: 'Me trying to pass Chunin Exams', text2: 'Without opening a single book' },
-        { text1: 'When you use Rasengan', text2: 'To solve every minor problem' },
-        { text1: 'Shikamaru looking at work', text2: 'What a drag...' },
-        { text1: 'Me after 5 minutes of study', text2: 'Sage Mode Activated' },
-        { text1: 'When Kakashi is 3 hours late', text2: 'Lost on the road of life' },
-        { text1: 'When you unlock Eight Gates', text2: 'Just to win a 1v1 duel' },
+        { text1: 'Me trying to pass the exam', text2: 'Without opening a single book' },
+        { text1: 'When you use extreme measures', text2: 'To solve a minor problem' },
+        { text1: 'Looking at my to-do list on Monday', text2: 'Not today...' },
+        { text1: 'Me after 5 minutes of studying', text2: 'I deserve a 4-hour break' },
+        { text1: 'When my friend is 2 hours late', text2: 'Lost on the road of life' },
+        { text1: 'When you try way too hard', text2: 'Just to win an argument online' },
         { text1: 'Itachi looking at his brother', text2: 'You lack hatred...' }
       ];
       const randomPreset = RANDOM_MEME_PRESETS[Math.floor(Math.random() * RANDOM_MEME_PRESETS.length)];
@@ -718,7 +718,7 @@ async function fetchActionAnimeGif(action) {
       const randomMemeKey = pick(Object.keys(MEMES_MAP));
       const memeInfo = MEMES_MAP[randomMemeKey];
       const fullArgs = args.join(' ');
-      let text1 = fullArgs || 'When you run Naruto Bot commands!';
+      let text1 = fullArgs || 'When you run bot commands!';
       let text2 = fullArgs ? 'Believe it!' : 'Instant Power!';
 
       const encodedText1 = encodeURIComponent(text1);

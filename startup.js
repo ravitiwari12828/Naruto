@@ -25,7 +25,7 @@ try {
 } catch (e) {}
 
 console.log('🍥 ================================================');
-console.log('🍥  Naruto One Bot — Online Launcher');
+console.log('⚡ Discord Bot — Online Launcher');
 console.log('🍥 ================================================');
 
 // Launch bot directly

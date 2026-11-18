@@ -85,11 +85,11 @@ async function dispatchLog(guild, logType, embedData, attachments = []) {
 
   if (!channelId) {
     const channelNameMap = {
-      narutologs: ['naruto-logs', 'all-logs'],
-      modlogs: ['mod-logs', 'modlogs', 'naruto-mod-logs'],
-      antinuke: ['naruto-security-logs', 'security-logs', 'antinuke-logs', 'bot-antinuke-logs'],
-      automod: ['automod-logs', 'olympus-automod', 'naruto-automod-logs'],
-      automodrules: ['automod-logs', 'naruto-automod-logs'],
+      narutologs: ['server-logs', 'all-logs', 'naruto-logs'],
+      modlogs: ['mod-logs', 'modlogs', 'mod-logs'],
+      antinuke: ['security-logs', 'security-logs', 'antinuke-logs', 'bot-antinuke-logs'],
+      automod: ['automod-logs', 'olympus-automod', 'automod-logs'],
+      automodrules: ['automod-logs', 'automod-logs'],
       messages: ['message-logs', 'msgs-log', 'message-log'],
       invites: ['invite-logs', 'invites-log'],
       channels: ['channel-logs', 'channel-log'],
@@ -105,10 +105,10 @@ async function dispatchLog(guild, logType, embedData, attachments = []) {
       transcripts: ['ticket-transcripts'],
       modmaillogs: ['modmail-logs'],
       modmailtranscripts: ['modmail-transcripts'],
-      emojis: ['emoji-logs', 'naruto-emoji-logs', 'emojis-log'],
-      emojiaudit: ['emoji-logs', 'naruto-emoji-logs'],
-      modcases: ['mod-cases', 'naruto-mod-cases', 'cases-log', 'mod-logs', 'naruto-mod-logs'],
-      limitlogs: ['naruto-limit-logs', 'limit-logs', 'limitlogs', 'naruto-security-logs', 'security-logs', 'server-logs'],
+      emojis: ['emoji-logs', 'emoji-logs', 'emojis-log'],
+      emojiaudit: ['emoji-logs', 'emoji-logs'],
+      modcases: ['mod-cases', 'mod-cases', 'cases-log', 'mod-logs', 'mod-logs'],
+      limitlogs: ['limit-logs', 'limit-logs', 'limitlogs', 'security-logs', 'security-logs', 'server-logs'],
       server: ['server-logs', 'server-log'],
       applications: ['application-logs', 'applications-log', 'apps-log'],
       events: ['event-logs', 'events-log', 'scheduled-events-logs'],
@@ -117,7 +117,7 @@ async function dispatchLog(guild, logType, embedData, attachments = []) {
       stickers: ['sticker-logs', 'stickers-log', 'emoji-logs'],
       soundboard: ['soundboard-logs', 'soundboard-log'],
       threads: ['thread-logs', 'threads-log'],
-      moderation: ['mod-logs', 'moderation-logs', 'naruto-mod-logs']
+      moderation: ['mod-logs', 'moderation-logs', 'mod-logs']
     };
 
     const targets = channelNameMap[logType] || [logType];
@@ -130,7 +130,7 @@ async function dispatchLog(guild, logType, embedData, attachments = []) {
 
   // Master Fallback: If specific channel is missing, try naruto-logs
   if (!channelId) {
-    const narutoChan = guild.channels.cache.find(c => c.name === 'naruto-logs' || c.name === 'all-logs');
+    const narutoChan = guild.channels.cache.find(c => c.name === 'server-logs' || c.name === 'all-logs' || c.name === 'naruto-logs');
     if (narutoChan) channelId = narutoChan.id;
   }
 

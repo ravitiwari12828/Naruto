@@ -223,11 +223,11 @@ function dispatchLimitLog(guild, { actionTitle, executor, target, details, remai
     .setTitle(`🛡️ ${actionTitle}`)
     .setDescription(descLines.join('\n'))
     .setThumbnail(executor ? executor.displayAvatarURL({ dynamic: true }) : (guild.iconURL({ dynamic: true }) || undefined))
-    .setFooter({ text: `Naruto Limit System | ${cleanActionName}` })
+    .setFooter({ text: `Action Limit System | ${cleanActionName}` })
     .setTimestamp();
 
   dispatchLog(guild, 'limitlogs', embed);
-  dispatchLog(guild, 'narutologs', embed);
+  dispatchLog(guild, 'limitlogs', embed);
   dispatchLog(guild, 'roles', embed);
 }
 

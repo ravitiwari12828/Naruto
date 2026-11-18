@@ -37,7 +37,7 @@ module.exports = {
         .setColor(0x00E5FF)
         .setTitle('☁️ 5TB Google Drive Backup Completed')
         .setDescription('```\n' + box + '\n```\n>>> ' + res.message)
-        .setFooter({ text: 'Automated 24h cloud backup active • Naruto Suite' });
+        .setFooter({ text: 'Automated 24h cloud backup active • Backup Suite' });
 
       if (res.filepath && fs.existsSync(res.filepath)) {
         const attachment = new AttachmentBuilder(res.filepath, { name: res.filename });
@@ -75,7 +75,7 @@ module.exports = {
     let totalBytes = 0;
 
     if (fs.existsSync(backupDir)) {
-      const files = fs.readdirSync(backupDir).filter(f => f.startsWith('naruto_db_backup_'));
+      const files = fs.readdirSync(backupDir).filter(f => (f.startsWith('db_backup_') || f.startsWith('naruto_db_backup_')));
       localSnapshots = files.length;
       totalBytes = files.reduce((acc, f) => acc + (fs.statSync(path.join(backupDir, f)).size || 0), 0);
     }
@@ -99,7 +99,7 @@ module.exports = {
         '• `.gdrive backup`  - Create instant snapshot & download backup file\n' +
         '• `.gdrive setup`   - View 5TB Google Drive Service Account setup guide'
       )
-      .setFooter({ text: 'Naruto Suite • 5TB Cloud Storage Integration' });
+      .setFooter({ text: '5TB Cloud Storage Integration' });
 
     return message.reply({ embeds: [embed] });
   }

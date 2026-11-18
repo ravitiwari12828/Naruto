@@ -66,7 +66,7 @@ function findExistingLogChannel(guild, chKey, defaultName, assignedSet = new Set
   const channelAliases = {
     securitydef: ['security-defense', 'security-logs', 'defense-logs'],
     noprefix: ['noprefix-audit', 'audit-logs'],
-    narutologs: ['naruto-logs', 'all-logs', 'bot-logs'],
+    narutologs: ['server-logs', 'all-logs', 'bot-logs', 'naruto-logs'],
     server: ['server-logs', 'server-log', 'serverlogs', 'guild-logs'],
     messages: ['message-logs', 'message-log', 'msg-logs', 'chat-logs'],
     channels: ['channel-logs', 'channel-log', 'chan-logs'],
@@ -75,7 +75,7 @@ function findExistingLogChannel(guild, chKey, defaultName, assignedSet = new Set
     users: ['user-logs', 'users-log'],
     voice: ['voice-logs', 'vc-logs', 'voice-log'],
     joinleave: ['join-leave-logs', 'join-leave', 'welcome-logs'],
-    emojis: ['naruto-emoji-logs', 'emoji-logs', 'emojis-log'],
+    emojis: ['emoji-logs', 'naruto-emoji-logs', 'emojis-log'],
     emojiaudit: ['emoji-logs', 'emojis-log'],
     ticketlogs: ['ticket-logs', 'tickets-log'],
     transcripts: ['ticket-transcripts', 'transcripts'],
@@ -83,7 +83,7 @@ function findExistingLogChannel(guild, chKey, defaultName, assignedSet = new Set
     modmailtranscripts: ['modmail-transcripts'],
     applications: ['application-logs', 'applications-logs', 'apps-log'],
     automodrules: ['automod-logs', 'automod-log'],
-    automod: ['naruto-automod-logs', 'automod-logs'],
+    automod: ['automod-logs', 'naruto-automod-logs'],
     events: ['event-logs', 'events-log', 'scheduled-events-logs'],
     invites: ['invite-logs', 'invites-log'],
     polls: ['poll-logs', 'polls-log'],
@@ -93,10 +93,10 @@ function findExistingLogChannel(guild, chKey, defaultName, assignedSet = new Set
     threads: ['thread-logs', 'threads-log'],
     webhooks: ['webhook-logs', 'webhooks-log'],
     moderation: ['mod-logs', 'moderation-logs'],
-    modlogs: ['naruto-mod-logs', 'mod-logs'],
-    modcases: ['naruto-mod-cases', 'mod-cases'],
-    antinuke: ['naruto-security-logs', 'security-logs'],
-    limitlogs: ['naruto-limit-logs', 'limit-logs']
+    modlogs: ['mod-logs', 'naruto-mod-logs'],
+    modcases: ['mod-cases', 'naruto-mod-cases'],
+    antinuke: ['security-logs', 'naruto-security-logs'],
+    limitlogs: ['limit-logs', 'naruto-limit-logs']
   };
 
   const aliases = channelAliases[chKey] || [defaultName];
@@ -111,7 +111,7 @@ function findExistingLogChannel(guild, chKey, defaultName, assignedSet = new Set
 
   // 2. Check strict cleanAlias match
   found = guild.channels.cache.find(c => c.isTextBased() && !assignedSet.has(c.id) && aliases.some(a => {
-    const cleanAlias = a.toLowerCase().replace(/^naruto-/, '');
+    const cleanAlias = a.toLowerCase().replace(/^(naruto|server)-/, '');
     return c.name.toLowerCase() === cleanAlias || c.name.toLowerCase().endsWith('-' + cleanAlias) || c.name.toLowerCase().startsWith(cleanAlias + '-');
   }));
 
@@ -159,12 +159,12 @@ module.exports = {
         description:
           `**${emojis.SHIELD || '🛡️'} Security Logs Category**\n` +
           `\`\`\`\n` +
-          `naruto-logs         : ${resolve('narutologs', 'unifiedChanId', 'naruto-logs')}\n` +
-          `naruto-automod-logs : ${resolve('automod', 'automodLogs', 'naruto-automod-logs')}\n` +
-          `naruto-emoji-logs   : ${resolve('emojis', 'emojiLogs', 'naruto-emoji-logs')}\n` +
-          `naruto-mod-cases    : ${resolve('modcases', 'modCaseLogs', 'naruto-mod-cases')}\n` +
-          `naruto-security-logs: ${resolve('antinuke', 'securityLogs', 'naruto-security-logs')}\n` +
-          `naruto-mod-logs     : ${resolve('modlogs', 'modLogs', 'naruto-mod-logs')}\n` +
+          `server-logs         : ${resolve('narutologs', 'unifiedChanId', 'server-logs')}\n` +
+          `automod-logs        : ${resolve('automod', 'automodLogs', 'automod-logs')}\n` +
+          `emoji-logs          : ${resolve('emojis', 'emojiLogs', 'emoji-logs')}\n` +
+          `mod-cases           : ${resolve('modcases', 'modCaseLogs', 'mod-cases')}\n` +
+          `security-logs       : ${resolve('antinuke', 'securityLogs', 'security-logs')}\n` +
+          `mod-logs            : ${resolve('modlogs', 'modLogs', 'mod-logs')}\n` +
           `\`\`\`\n\n` +
           `**${emojis.TOOLS || '⚙️'} Full Server Audit Categories (18/18)**\n` +
           `\`\`\`\n` +
@@ -205,7 +205,7 @@ module.exports = {
         new ActionRowBuilder().addComponents(
           new ButtonBuilder()
             .setCustomId('log_setup_single')
-            .setLabel('1-Click Unified Channel (#naruto-logs)')
+            .setLabel('1-Click Unified Channel (#server-logs)')
             .setEmoji(emojis.OBJ_ZAP)
             .setStyle(ButtonStyle.Success),
           new ButtonBuilder()
@@ -252,13 +252,13 @@ module.exports = {
       let actionStatus = '';
 
       if (interaction.customId === 'log_setup_single') {
-        let chan = findExistingLogChannel(guild, 'narutologs', 'naruto-logs');
+        let chan = findExistingLogChannel(guild, 'narutologs', 'server-logs');
 
         if (!chan) {
           const category = findExistingLogCategory(guild);
           try {
             chan = await guild.channels.create({
-              name: 'naruto-logs',
+              name: 'server-logs',
               type: ChannelType.GuildText,
               parent: category ? category.id : undefined,
               topic: 'Unified Moderation, Security & Server Audit Logs',
@@ -304,13 +304,13 @@ module.exports = {
           {
             name: '🛡️ · Security Logs ·',
             channels: [
-              { key: 'narutologs', name: 'naruto-logs' },
-              { key: 'automod', name: 'naruto-automod-logs' },
-              { key: 'emojis', name: 'naruto-emoji-logs' },
-              { key: 'modcases', name: 'naruto-mod-cases' },
-              { key: 'antinuke', name: 'naruto-security-logs' },
-              { key: 'limitlogs', name: 'naruto-limit-logs' },
-              { key: 'modlogs', name: 'naruto-mod-logs' }
+              { key: 'narutologs', name: 'server-logs' },
+              { key: 'automod', name: 'automod-logs' },
+              { key: 'emojis', name: 'emoji-logs' },
+              { key: 'modcases', name: 'mod-cases' },
+              { key: 'antinuke', name: 'security-logs' },
+              { key: 'limitlogs', name: 'limit-logs' },
+              { key: 'modlogs', name: 'mod-logs' }
             ]
           },
           {

@@ -9,7 +9,7 @@ const VOTE_REWARD = 10000;
 
 module.exports = {
   name: 'vote',
-  description: 'Vote for Naruto Bot and claim 10,000 Ryo coins & 1 Gem!',
+  description: 'Vote for the Bot and claim 10,000 Ryo coins & 1 Gem!',
   usage: '.vote',
   cooldown: 3000,
   async execute(message) {
@@ -28,7 +28,7 @@ module.exports = {
     const embed = new EmbedBuilder()
       .setColor(config.successColor)
       .setTitle(`${emojis.sparkle || '✨'} Vote Reward Claimed!`)
-      .setDescription(`Thank you for voting for **Naruto Bot**!\n\n` +
+      .setDescription(`Thank you for voting for **the Bot**!\n\n` +
                       `🎁 Reward Received: **+${fmt(VOTE_REWARD)}** ${emojis.coin} & **+1** 💎 Gem!`)
       .addFields({ name: `Wallet Balance`, value: `**${fmt(eco.balance)}** ${emojis.coin}`, inline: true })
       .setFooter({ text: 'You can vote every 12 hours for bonuses!' })

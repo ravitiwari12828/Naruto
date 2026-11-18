@@ -19,8 +19,8 @@ function stripCustomEmojis(str) {
  * Matches exact Image 2 aesthetic design across all panels!
  */
 function createStyledEmbed({
-  title = 'Naruto Module Panel',
-  authorName = 'Naruto Module Panel',
+  title = 'Module Panel',
+  authorName = 'Module Panel',
   subtitle = '',
   description = '',
   fields = [],

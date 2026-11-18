@@ -1,5 +1,5 @@
 /**
- * Config Exports for Naruto Bot Economy & System Suite
+ * Config Exports for Bot Economy & System Suite
  */
 
 module.exports = {

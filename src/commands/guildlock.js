@@ -101,7 +101,7 @@ module.exports = {
       if (!gId) return message.reply(`${emojis.WARNING} Usage: \`.botlock add <serverID>\``);
 
       botLockStore.whitelistedGuilds.add(gId);
-      return message.reply(`${emojis.SHIELD} Server ID **\`${gId}\`** has been authorized to use Naruto Bot!`);
+      return message.reply(`${emojis.SHIELD} Server ID **\`${gId}\`** has been authorized to use the bot!`);
     }
 
     // .botlock remove <guildID>

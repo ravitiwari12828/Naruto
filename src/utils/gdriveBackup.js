@@ -14,7 +14,7 @@ if (!fs.existsSync(backupDir)) {
 function createSnapshot() {
   try {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `naruto_db_backup_${timestamp}.json`;
+    const filename = `db_backup_${timestamp}.json`;
     const filepath = path.join(backupDir, filename);
 
     const snapshotData = {
@@ -27,7 +27,7 @@ function createSnapshot() {
     
     // Maintain max 10 local backup snapshots
     const files = fs.readdirSync(backupDir)
-      .filter(f => f.startsWith('naruto_db_backup_') && f.endsWith('.json'))
+      .filter(f => (f.startsWith('db_backup_') || f.startsWith('naruto_db_backup_')) && f.endsWith('.json'))
       .sort((a, b) => b.localeCompare(a));
 
     if (files.length > 10) {

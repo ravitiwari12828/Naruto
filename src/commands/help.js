@@ -67,7 +67,7 @@ function buildMainEmbed(messageOrInteraction, botUser, botAvatar, devPortalBanne
     .setAuthor({ name: 'help', iconURL: botAvatar })
     .setThumbnail(botAvatar)
     .setDescription(
-      `A feature-packed All-In-One Discord bot built with a sleek **Naruto** theme!\n\n` +
+      `A feature-packed All-In-One Discord bot built with sleek modern features!\n\n` +
       '```\n' + metricsBox + '\n```\n\n' +
       `### All Active Server Modules\n` +
       `${moduleLines}\n\n` +

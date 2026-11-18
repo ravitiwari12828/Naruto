@@ -124,7 +124,7 @@ async function ensureLevelRolesAndPerks(guild) {
         role = await guild.roles.create({
           name: def.name,
           color: def.color,
-          reason: 'Naruto Level Rank Auto-Setup'
+          reason: 'Level Rank Auto-Setup'
         });
         createdRoles.push(def.name);
       } catch (e) {
@@ -147,7 +147,7 @@ async function ensureLevelRolesAndPerks(guild) {
           name: def.name,
           color: def.color,
           permissions: def.permissions,
-          reason: `Naruto Level ${def.minLevel} Perk Role Auto-Setup`
+          reason: `Level ${def.minLevel} Perk Role Auto-Setup`
         });
         createdRoles.push(def.name);
       } catch (e) {
@@ -290,7 +290,7 @@ module.exports = {
       const embed = createStyledEmbed({
         title: `${emojis.LEVEL || '📊'} Leveling & Role Hierarchy Configured`,
         description:
-          `Successfully configured Naruto Leveling Engine & Role Hierarchy for **${guild.name}**!\n\n` +
+          `Successfully configured Leveling Engine & Role Hierarchy for **${guild.name}**!\n\n` +
           '```\n' + box + '\n```\n' +
           `*Run \`.level perks\` to view full Level Perk rewards guide!*`,
         requestedBy: author,

@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: naruto-discord-bot
+    name: discord-bot
     env: node
     plan: free
     buildCommand: npm install

@@ -212,7 +212,7 @@ async function fetchHordeImage(prompt, timeoutMs = 30000) {
     headers: {
       'Content-Type': 'application/json',
       'apikey': process.env.AI_HORDE_API_KEY || '0000000000',
-      'Client-Agent': 'NarutoBot:1.0:discord'
+      'Client-Agent': 'DiscordBot:1.0:discord'
     },
     body: JSON.stringify({
       prompt: `${prompt}, masterpiece, award winning photography, 8k resolution, highly detailed, photorealistic, cinematic lighting ### text, watermark, bad anatomy, deformed, mutated, extra fingers, blurry, ugly, disfigured, low quality, bad hands, distorted, logo`,
@@ -414,7 +414,7 @@ module.exports = {
         )
         .setImage('attachment://ai_artwork.png')
         .setFooter({
-          text: `Naruto Imagine Engine • ${author.tag}`,
+          text: `Imagine Engine • ${author.tag}`,
           iconURL: author.displayAvatarURL({ dynamic: true })
         })
         .setTimestamp();

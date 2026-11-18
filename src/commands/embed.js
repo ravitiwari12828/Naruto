@@ -321,7 +321,7 @@ module.exports = {
     // ─────────────────────────────────────────
     if (sub === 'author') {
       const rest = args.slice(1).join(' ');
-      if (!rest) return message.reply(`❌ Usage: \`.embed author <name> [icon-url]\`\n> Example: \`.embed author Naruto Uzumaki https://...\``);
+      if (!rest) return message.reply(`❌ Usage: \`.embed author <name> [icon-url]\`\n> Example: \`.embed author Community Admin https://...\``);
       
       // Check if last part is a URL
       const parts = rest.split(' ');

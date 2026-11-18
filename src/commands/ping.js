@@ -59,7 +59,7 @@ module.exports = {
       : '100';
 
     const uptimeStr = formatUptime(client.uptime);
-    const botName = client.user?.username || 'Naruto';
+    const botName = client.user?.username || 'Bot';
     const avatarUrl = client.user?.displayAvatarURL ? client.user.displayAvatarURL({ extension: 'png', size: 128 }) : null;
 
     try {

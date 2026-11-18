@@ -1,7 +1,7 @@
 const https = require('https');
 
 /**
- * Ultra-Fast High-Intelligence Deep Knowledge AI Engine for Naruto Bot
+ * Ultra-Fast High-Intelligence Deep Knowledge AI Engine for Discord Bot
  * Features:
  * 1. Google Gemini API (gemini-1.5-flash & gemini-2.0-flash with 12s timeout & key sanitization)
  * 2. Multi-Pass Typo-Corrected Deep Knowledge Extraction Engine
@@ -99,7 +99,7 @@ async function generateAIAnswer(prompt, mode = 'general') {
 
 function fetchGeminiAPI(prompt, apiKey, mode, modelName = 'gemini-1.5-flash') {
   return new Promise((resolve, reject) => {
-    let systemInstruction = 'You are Naruto One AI, an intelligent, helpful, and concise AI assistant built for Discord. Give clear, accurate, and structured answers with deep explanations.';
+    let systemInstruction = 'You are an intelligent, helpful, and concise AI assistant built for Discord. Give clear, accurate, and structured answers with deep explanations.';
     if (mode === 'code') {
       systemInstruction = 'You are an expert software engineer. Provide clear, working code with syntax highlighting in the requested language (Python, C++, Java, JS, etc.) with concise comments.';
     }
@@ -164,7 +164,7 @@ function searchWikipediaDeep(query) {
   return new Promise((resolve) => {
     const corrected = autocorrectPrompt(query);
     const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(corrected) + '&format=json';
-    https.get(searchUrl, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res) => {
+    https.get(searchUrl, { headers: { 'User-Agent': 'DiscordBot/1.0' } }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
@@ -177,7 +177,7 @@ function searchWikipediaDeep(query) {
           const pageId = best.pageid;
 
           const extractUrl = 'https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=1&exsentences=15&pageids=' + pageId + '&format=json';
-          https.get(extractUrl, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res2) => {
+          https.get(extractUrl, { headers: { 'User-Agent': 'DiscordBot/1.0' } }, (res2) => {
             let data2 = '';
             res2.on('data', chunk => data2 += chunk);
             res2.on('end', () => {
@@ -200,7 +200,7 @@ function searchWikipediaSnippets(query) {
   return new Promise((resolve) => {
     const corrected = autocorrectPrompt(query);
     const searchUrl = 'https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=' + encodeURIComponent(corrected) + '&format=json';
-    https.get(searchUrl, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res) => {
+    https.get(searchUrl, { headers: { 'User-Agent': 'DiscordBot/1.0' } }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
@@ -286,7 +286,7 @@ function extractSubject(prompt) {
 function fetchDuckDuckGo(query) {
   return new Promise((resolve) => {
     const url = 'https://api.duckduckgo.com/?q=' + encodeURIComponent(query) + '&format=json&no_html=1&skip_disambig=1';
-    https.get(url, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res) => {
+    https.get(url, { headers: { 'User-Agent': 'DiscordBot/1.0' } }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {
@@ -305,7 +305,7 @@ function fetchDuckDuckGo(query) {
 function fetchWikiSummary(query) {
   return new Promise((resolve) => {
     const url = 'https://en.wikipedia.org/api/rest_v1/page/summary/' + encodeURIComponent(query);
-    https.get(url, { headers: { 'User-Agent': 'NarutoBot/1.0' } }, (res) => {
+    https.get(url, { headers: { 'User-Agent': 'DiscordBot/1.0' } }, (res) => {
       let data = '';
       res.on('data', chunk => data += chunk);
       res.on('end', () => {

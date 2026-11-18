@@ -1,5 +1,5 @@
 /**
- * Bot Owner Registry for Naruto One Bot
+ * Bot Owner Registry for Discord Bot
  * 
  * Primary Bot Owner: 1529362747047805029 (sy_nn)
  * Co-Bot Owner: 1420687548807905324 (Ravit)

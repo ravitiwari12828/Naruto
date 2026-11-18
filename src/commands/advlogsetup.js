@@ -39,13 +39,13 @@ module.exports = {
         description:
           `**${emojis.SHIELD || '🛡️'} Security Logs Category**\n` +
           `\`\`\`\n` +
-          `naruto-logs          ✓\n` +
-          `naruto-automod-logs  ✓\n` +
-          `naruto-emoji-logs    ✓\n` +
-          `naruto-mod-cases     ✓\n` +
-          `naruto-security-logs ✓\n` +
-          `naruto-limit-logs    ✓\n` +
-          `naruto-mod-logs      ✓\n` +
+          `server-logs          ✓\n` +
+          `automod-logs         ✓\n` +
+          `emoji-logs           ✓\n` +
+          `mod-cases            ✓\n` +
+          `security-logs        ✓\n` +
+          `limit-logs           ✓\n` +
+          `mod-logs             ✓\n` +
           `\`\`\`\n\n` +
           `**${emojis.TOOLS || '⚙️'} Full Server Audit Categories (18/18)**\n` +
           `\`\`\`\n` +
@@ -133,13 +133,13 @@ module.exports = {
           {
             name: '🛡️ · Security Logs ·',
             channels: [
-              { key: 'narutologs', name: 'naruto-logs' },
-              { key: 'automod', name: 'naruto-automod-logs' },
-              { key: 'emojis', name: 'naruto-emoji-logs' },
-              { key: 'modcases', name: 'naruto-mod-cases' },
-              { key: 'antinuke', name: 'naruto-security-logs' },
-              { key: 'limitlogs', name: 'naruto-limit-logs' },
-              { key: 'modlogs', name: 'naruto-mod-logs' }
+              { key: 'narutologs', name: 'server-logs' },
+              { key: 'automod', name: 'automod-logs' },
+              { key: 'emojis', name: 'emoji-logs' },
+              { key: 'modcases', name: 'mod-cases' },
+              { key: 'antinuke', name: 'security-logs' },
+              { key: 'limitlogs', name: 'limit-logs' },
+              { key: 'modlogs', name: 'mod-logs' }
             ]
           },
           {

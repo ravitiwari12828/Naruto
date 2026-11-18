@@ -1,5 +1,5 @@
 /**
- * Fun Core Helpers for Naruto Bot Casino & Games
+ * Fun Core Helpers for Casino & Games
  */
 
 async function animate(message, frames, intervalMs = 1000) {

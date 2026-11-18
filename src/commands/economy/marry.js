@@ -53,7 +53,7 @@ module.exports = {
           .setColor(0xFF69B4)
           .setTitle(`💖 Marriage Ceremony Complete!`)
           .setDescription(`🎉 **<@${message.author.id}>** and **${target}** are now officially married! 💕`)
-          .setFooter({ text: 'Congratulations from Naruto Bot!' })
+          .setFooter({ text: 'Congratulations!' })
           .setTimestamp();
 
         await i.update({ embeds: [winEmbed], components: [] });

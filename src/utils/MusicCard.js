@@ -1,7 +1,7 @@
 /**
- * MusicCard.js - Naruto One Bot
+ * MusicCard.js - Discord Bot
  * Canvas-based music player card renderer
- * Ported from synn project (original by Synn) — adapted to CommonJS for Naruto bot
+ * Ported from synn project (original by Synn) — adapted to CommonJS for Discord Bot
  * Uses @napi-rs/canvas for high-performance canvas rendering
  */
 

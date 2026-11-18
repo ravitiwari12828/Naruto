@@ -128,7 +128,7 @@ async function ensureTicketLogChannels(guild) {
       staffRole = await guild.roles.create({
         name: 'Ticket Staff',
         color: 0x00FFBB,
-        reason: 'Auto-created for Naruto Ticket System'
+        reason: 'Auto-created for Ticket System'
       });
     } catch (e) {}
   }
@@ -423,7 +423,7 @@ module.exports = {
           config.categories.map(c => `• ${resolveEmojiDisplay(c.emoji)} **${c.name}** — ${c.description}`).join('\n') + `\n\n` +
           `**Support Staff Role**: ${staffRoleMentions}`
         )
-        .setFooter({ text: 'Naruto Ticket System • Fast Private Support' });
+        .setFooter({ text: 'Ticket System • Fast Private Support' });
 
       const selectMenu = new StringSelectMenuBuilder()
         .setCustomId('ticket_category_select')

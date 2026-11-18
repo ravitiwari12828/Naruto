@@ -8,9 +8,9 @@ if (!fs.existsSync(outputDir)) {
 }
 
 /**
- * Renders a 3D Glassmorphic Naruto Spiral Animated GIF (Orange & White Theme)
+ * Renders a 3D Glassmorphic Geometric Spiral Animated GIF (Orange & White Theme)
  */
-function renderNarutoGlassGif(filename, framesCount = 20) {
+function renderGlassGif(filename, framesCount = 20) {
   const width = 256;
   const height = 256;
   const canvas = createCanvas(width, height);
@@ -62,7 +62,7 @@ function renderNarutoGlassGif(filename, framesCount = 20) {
     ctx.stroke();
     ctx.restore();
 
-    // 3. Inner 3D Glassmorphic Naruto Spiral (Orange & White)
+    // 3. Inner 3D Glassmorphic Geometric Spiral (Orange & White)
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(-angle);
@@ -110,5 +110,5 @@ function renderNarutoGlassGif(filename, framesCount = 20) {
 }
 
 console.log('Rendering 3D Glassmorphic Animated Elements...');
-const p1 = renderNarutoGlassGif('naruto_3d_glass.png');
+const p1 = renderGlassGif('glass_3d_preview.png');
 console.log('3D Glassmorphic Elements Created Successfully! ✅', p1);

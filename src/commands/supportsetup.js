@@ -13,7 +13,7 @@ const SUPPORT_SERVER_INVITE = 'https://discord.gg/ZPKcPreUMT';
 
 module.exports = {
   name: 'supportsetup',
-  description: 'Automated 1-Click Support Server Architecture Builder with Naruto Theme',
+  description: 'Automated 1-Click Support Server Architecture Builder with Modern Clean Theme',
   aliases: [],
 
   async execute(message, args) {
@@ -30,7 +30,7 @@ module.exports = {
       clientUser = await message.client.users.fetch(message.client.user.id, { force: true });
     } catch (e) {}
 
-    const statusMsg = await message.channel.send(`⏳ **Building Naruto Support Server Architecture...**`);
+    const statusMsg = await message.channel.send(`⏳ **Building Support Server Architecture...**`);
 
     try {
       // ─────────────────────────────────────────
@@ -182,7 +182,7 @@ module.exports = {
       // ─────────────────────────────────────────
       // 6. CATEGORY 5: TECHNICIANS DACT LABS
       // ─────────────────────────────────────────
-      const techCat = await guild.channels.create({ name: '「 ⚡ · NARUTO LABS 」', type: ChannelType.GuildCategory });
+      const techCat = await guild.channels.create({ name: '「 ⚡ · SYSTEM LABS 」', type: ChannelType.GuildCategory });
 
       await guild.channels.create({ name: '🐍・python-jutsu', type: ChannelType.GuildText, parent: techCat.id });
       await guild.channels.create({ name: '🛡️・cyber-defense', type: ChannelType.GuildText, parent: techCat.id });
@@ -251,7 +251,7 @@ module.exports = {
       // POPULATE EMBEDS & TICKET PANEL
       // ─────────────────────────────────────────
       const rulesEmbed = createStyledEmbed({
-        title: `📜 Naruto Support Headquarters Rules`,
+        title: `📜 Server Rules & Guidelines`,
         subtitle: `Official Village Directives & Community Guidelines`,
         description:
           `1. **Respect All Members**: Courtesy is mandatory across all channels.\n` +
@@ -294,7 +294,7 @@ module.exports = {
           ticketCategories.map(c => `• ${c.emoji || '🎫'} **${c.name}** — ${c.description}`).join('\n') + `\n\n` +
           `**Support Staff:** <@&${staffRole.id}> & <@&${ticketStaffRole.id}>`
         )
-        .setFooter({ text: 'Naruto Ticket System • Fast Private Support' });
+        .setFooter({ text: 'Ticket System • Fast Private Support' });
 
       const selectMenu = new StringSelectMenuBuilder()
         .setCustomId('ticket_category_select')
@@ -314,7 +314,7 @@ module.exports = {
 
       // Final Success Message
       const completeEmbed = createStyledEmbed({
-        title: `🎉 Naruto Support Server Built Successfully!`,
+        title: `🎉 Support Server Built Successfully!`,
         subtitle: `9 Categories, 25+ Styled Channels & 6 Custom Roles Deployed`,
         description:
           `**Custom Created Roles:**\n` +
@@ -329,7 +329,7 @@ module.exports = {
         clientUser
       });
 
-      return statusMsg.edit({ content: `${emojis.SUCCESS} Naruto Support Server Setup Complete!`, embeds: [completeEmbed] });
+      return statusMsg.edit({ content: `${emojis.SUCCESS} Support Server Setup Complete!`, embeds: [completeEmbed] });
     } catch (e) {
       return statusMsg.edit(`${emojis.ERROR} Support server setup failed: ${e.message}`);
     }

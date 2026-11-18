@@ -1,7 +1,7 @@
 {
-  "name": "naruto-one-bot",
+  "name": "discord-bot",
   "version": "1.0.3",
-  "description": "Naruto One - Feature-Packed Discord Bot with Activity, AI, Automations, Autoresponder, Automod & Naruto Ninjutsu RPG",
+  "description": "Feature-Packed Discord Bot with Activity, AI, Automations, Autoresponder, Automod & Music",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
@@ -10,7 +10,6 @@
   "keywords": [
     "discord",
     "discord-bot",
-    "naruto",
     "automod",
     "activity",
     "autoresponder"

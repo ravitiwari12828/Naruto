@@ -36,7 +36,7 @@ function isUserPremium(userId) {
 
 function buildAppearanceDashboard(guild, draft, author, clientUser) {
   const nickname = draft.nickname || guild.members.me?.nickname || clientUser.username;
-  const bio = draft.bio || 'Naruto Bot Active';
+  const bio = draft.bio || 'Bot Active';
   const avatarStatus = draft.avatar ? 'Custom Image [Pending Save]' : (clientUser.avatar ? 'Custom Avatar' : 'Default Avatar');
   const bannerStatus = draft.banner ? 'Custom Banner [Pending Save]' : 'Default Banner';
 

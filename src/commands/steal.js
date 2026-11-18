@@ -261,7 +261,7 @@ module.exports = {
           const createdSticker = await guild.stickers.create({
             file: media.url,
             name: cleanName,
-            tags: 'naruto, stolen'
+            tags: 'stolen'
           });
 
           const successEmbed = new EmbedBuilder()

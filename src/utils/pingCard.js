@@ -48,7 +48,7 @@ const hex2rgba = (hex, alpha) => {
 };
 
 async function renderPingCard({
-  botName = 'Naruto',
+  botName = 'Bot',
   avatarUrl = null,
   gatewayPing = 16,
   restPing = 87,
@@ -138,7 +138,7 @@ async function renderPingCard({
     } catch (e) {}
   }
   if (!avatarLoaded) {
-    const botAvatarPath = path.join(__dirname, '..', '..', 'assets', 'naruto_one_bot_avatar.png');
+    const botAvatarPath = path.join(__dirname, '..', '..', 'assets', 'bot_avatar.png');
     if (fs.existsSync(botAvatarPath)) {
       try {
         const bImg = await loadImage(botAvatarPath);

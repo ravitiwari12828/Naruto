@@ -1,5 +1,5 @@
 /**
- * Cloudflare Worker: Discord API Reverse Proxy for Naruto Bot
+ * Cloudflare Worker: Discord API Reverse Proxy for Discord Bot
  * 
  * Bypasses Cloudflare DDoS IP blocks on shared cloud hostings (e.g. Render Free Tier)
  * by proxying Discord REST API requests through Cloudflare's own trusted global edge network.
@@ -7,12 +7,12 @@
  * How to deploy in 2 minutes:
  * 1. Log in to https://dash.cloudflare.com/ (free account)
  * 2. Navigate to: Workers & Pages -> Create application -> Create Worker
- * 3. Give it a name: e.g. "naruto-discord-proxy"
+ * 3. Give it a name: e.g. "discord-proxy"
  * 4. Click "Deploy" -> then click "Edit code"
  * 5. Paste this entire file, click "Save and Deploy"
- * 6. Copy your Worker URL: e.g. https://naruto-discord-proxy.<your-subdomain>.workers.dev
- * 7. In Render Dashboard -> Naruto Bot -> Environment -> Add:
- *    DISCORD_API_URL = https://naruto-discord-proxy.<your-subdomain>.workers.dev
+ * 6. Copy your Worker URL: e.g. https://discord-proxy.<your-subdomain>.workers.dev
+ * 7. In Render Dashboard -> Discord Bot -> Environment -> Add:
+ *    DISCORD_API_URL = https://discord-proxy.<your-subdomain>.workers.dev
  */
 
 export default {
@@ -23,7 +23,7 @@ export default {
     if (url.pathname === '/' || url.pathname === '') {
       return new Response(JSON.stringify({
         status: 'active',
-        service: 'Naruto Bot Discord API Proxy',
+        service: 'Discord API Proxy',
         timestamp: new Date().toISOString()
       }, null, 2), {
         headers: { 'Content-Type': 'application/json' }

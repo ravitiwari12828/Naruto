@@ -29,7 +29,7 @@ module.exports = {
 
     const embed = new EmbedBuilder()
       .setColor(0x7E0808)
-      .setAuthor({ name: 'Naruto Executive Suite', iconURL: botAvatar })
+      .setAuthor({ name: 'Executive Suite', iconURL: botAvatar })
       .setThumbnail(botAvatar)
       .setTitle(`${emojis.OWNER_CROWN || '👑'} Bot Owner Executive Commands`)
       .setDescription(

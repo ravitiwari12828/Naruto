@@ -48,7 +48,7 @@ module.exports = {
         `**Base Card:** \`[ ${baseCard.s} ${baseCard.r} ]\`\n\n` +
         `Will the next drawn card be **HIGHER** or **LOWER**? Click below!`
       )
-      .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Naruto Games` });
+      .setFooter({ text: `Bet: ${fmt(bet)} Ryo • Casino Games` });
 
     const sent = await message.channel.send({ embeds: [embed], components: [row] });
     const collector = sent.createMessageComponentCollector({ time: 30000 });
@@ -88,8 +88,8 @@ module.exports = {
           `**Base Card:** \`[ ${baseCard.s} ${baseCard.r} ]\` | **Drawn Card:** \`[ ${nextCard.s} ${nextCard.r} ]\`\n\n` +
           `${resultIcon} ${isWin ? `**WINNER!** Guessed **${guess}** correctly! Won **+${fmt(payout)}** Ryo!` : `**LOST!** Guessed **${guess}**. Lost -${fmt(bet)} Ryo.`}`
         )
-        .setImage('attachment://naruto-higherlower.png')
-        .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Games` })
+        .setImage('attachment://higherlower.png')
+        .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Casino Games` })
         .setTimestamp();
 
       await i.update({ embeds: [resultEmbed], files: [cardAttachment], components: [] }).catch(() => {});

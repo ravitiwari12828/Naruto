@@ -78,7 +78,7 @@ module.exports = {
           '```\n' + featureBox + '\n```',
         requestedBy: message.author,
         clientUser,
-        footerText: 'Naruto One Priority AI • Google Gemini Integrated'
+        footerText: 'Priority AI • Google Gemini Integrated'
       });
 
       return message.channel.send({ embeds: [embed] });
@@ -107,7 +107,7 @@ module.exports = {
         requestedBy: message.author,
         clientUser,
         showThumbnail: false,
-        footerText: 'Powered by Naruto One Priority AI'
+        footerText: 'Powered by Priority AI'
       });
 
       return waitingMsg.edit({ content: ' ', embeds: [embed] });

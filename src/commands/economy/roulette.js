@@ -62,8 +62,8 @@ module.exports = {
         `**Winning Slot:** **${winningNumber} (${winningColor})**\n\n` +
         `${resultIcon} ${isWin ? `**WINNER!** Choice matched! Won **+${fmt(payout)}** Ryo!` : `**LOST!** Roulette landed on ${winningNumber} (${winningColor}). Lost -${fmt(bet)} Ryo.`}`
       )
-      .setImage('attachment://naruto-roulette.png')
-      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Naruto Games` })
+      .setImage('attachment://roulette.png')
+      .setFooter({ text: `Wallet: ${fmt(eco.balance)} Ryo • Casino Games` })
       .setTimestamp();
 
     return message.channel.send({ embeds: [embed], files: [cardAttachment] });

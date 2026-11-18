@@ -1,5 +1,5 @@
 /**
- * git-pull.js — Naruto One Bot | npm preinstall auto-pull hook
+ * git-pull.js — Discord Bot | npm preinstall auto-pull hook
  *
  * This runs automatically before every `npm install` on Pterodactyl.
  * It stashes local changes (package-lock.json etc.) and force-pulls

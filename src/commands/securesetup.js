@@ -192,7 +192,7 @@ module.exports = {
         if (!logChan) {
           try {
             logChan = await guild.channels.create({
-              name: 'naruto-security-logs',
+              name: 'security-logs',
               type: ChannelType.GuildText,
               topic: 'Automated Security Audit & AntiNuke Protection Logs',
               permissionOverwrites: [
@@ -235,7 +235,7 @@ module.exports = {
         if (!logChan) {
           try {
             logChan = await guild.channels.create({
-              name: 'naruto-security-logs',
+              name: 'security-logs',
               type: ChannelType.GuildText,
               permissionOverwrites: [
                 { id: guild.roles.everyone.id, deny: [PermissionsBitField.Flags.ViewChannel] }

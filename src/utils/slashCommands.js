@@ -24,7 +24,7 @@ async function registerSlashCommands(client) {
         desc: 'Master All-in-One Server Setup Wizard (logs, antinuke, welcome, ticket, automod)',
         subcommands: [
           { name: 'dashboard', desc: 'Interactive Server Setup Dashboard' },
-          { name: 'logs', desc: 'Configure unified event audit logging (#naruto-logs)' },
+          { name: 'logs', desc: 'Configure unified event audit logging (#server-logs)' },
           { name: 'advlogs', desc: 'Deploy multi-category pro audit logging channels' },
           { name: 'antinuke', desc: 'Configure AntiNuke & Anti-Raid server protection' },
           { name: 'automod', desc: 'Configure AutoMod spam & link filters' },
@@ -117,7 +117,7 @@ async function registerSlashCommands(client) {
         desc: 'Bot Utilities: help, stats, ping, info, serverinfo, userinfo, avatar, banner, enlarge, steal',
         subcommands: [
           { name: 'help', desc: 'Interactive Multi-Module Help Panel' },
-          { name: 'stats', desc: 'View Naruto Bot system analytics' },
+          { name: 'stats', desc: 'View Bot system analytics' },
           { name: 'ping', desc: 'Check Bot WebSocket latency' },
           { name: 'serverinfo', desc: 'View server information' },
           { name: 'userinfo', desc: 'View user profile information', optionType: 'user', optionName: 'target', optionDesc: 'Target user' },
@@ -127,11 +127,8 @@ async function registerSlashCommands(client) {
       },
       {
         name: 'fun',
-        desc: 'Naruto Roleplay & Mini-Games: jutsu, battle, rps, 8ball, coinflip, dice',
+        desc: 'Fun & Mini-Games: rps, 8ball, coinflip, dice',
         subcommands: [
-          { name: 'naruto', desc: 'Generate Naruto character card or lore' },
-          { name: 'jutsu', desc: 'Cast a random ninja jutsu technique' },
-          { name: 'battle', desc: 'Battle another member in arena', optionType: 'user', optionName: 'target', optionDesc: 'Target user' },
           { name: 'rps', desc: 'Play Rock Paper Scissors' },
           { name: '8ball', desc: 'Ask the Magic 8-Ball a question', optionType: 'string', optionName: 'question', optionDesc: 'Your question' },
           { name: 'coinflip', desc: 'Flip a coin' },

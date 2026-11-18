@@ -23,7 +23,7 @@ module.exports = {
     ]);
 
     const embed = createStyledEmbed({
-      title: `${emojis.CELEBRATION || '🍥'} Naruto One Support & Community Server`,
+      title: `Support & Community Server`,
       subtitle: `Official Headquarters & Help Center`,
       description:
         '```\n' + box + '\n```\n\n' +
