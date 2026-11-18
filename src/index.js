@@ -381,7 +381,7 @@ const client = new Client({
 
     GuildEmojiManager: 100,
 
-    ReactionManager: 0,
+    ReactionManager: 50,
 
     PresenceManager: 0,
 
@@ -429,7 +429,7 @@ const client = new Client({
 
   ],
 
-  partials: [Partials.Message, Partials.Channel, Partials.Reaction]
+  partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.User, Partials.GuildMember]
 
 });
 
@@ -7220,139 +7220,99 @@ client.on('messageReactionAdd', async (reaction, user) => {
 
 
 // 🎭 REACTION ROLE SYSTEM ASSIGNMENT & REMOVAL
-
 client.on('messageReactionAdd', async (reaction, user) => {
-
   try {
-
     if (user.bot) return;
-
     if (reaction.partial) await reaction.fetch().catch(() => null);
-
     if (reaction.message?.partial) await reaction.message.fetch().catch(() => null);
 
-
-
     const guild = reaction.message?.guild;
-
     if (!guild) return;
 
-
-
     const rrCmd = client.commands.get('reactionrole');
-
     const reactionRoles = rrCmd ? rrCmd.reactionRoles : null;
-
     if (!reactionRoles) return;
 
-
-
     const guildRR = reactionRoles.get(guild.id) || [];
-
     if (guildRR.length === 0) return;
 
-
-
-    const emojiStr = reaction.emoji.id ? (reaction.emoji.animated ? `<a:${reaction.emoji.name}:${reaction.emoji.id}>` : `<:${reaction.emoji.name}:${reaction.emoji.id}>`) : reaction.emoji.name;
-
-
+    const reactionId = reaction.emoji.id;
+    const reactionName = reaction.emoji.name;
+    const emojiStr = reactionId ? (reaction.emoji.animated ? `<a:${reactionName}:${reactionId}>` : `<:${reactionName}:${reactionId}>`) : reactionName;
 
     const match = guildRR.find(r =>
-
-      r.messageId === reaction.message.id &&
-
-      (r.emoji === emojiStr || r.emoji === reaction.emoji.name || (reaction.emoji.id && r.emoji.includes(reaction.emoji.id)))
-
+      r.messageId === reaction.message.id && (
+        (reactionId && (r.emojiId === reactionId || (r.emoji && r.emoji.includes(reactionId)))) ||
+        (!reactionId && (r.emoji === reactionName || r.emojiName === reactionName || (r.emoji && r.emoji.includes(reactionName)))) ||
+        r.emoji === emojiStr
+      )
     );
 
-
-
     if (match) {
-
       const member = await guild.members.fetch(user.id).catch(() => null);
-
       if (member) {
-
-        await member.roles.add(match.roleId).catch(() => null);
-
+        const role = guild.roles.cache.get(match.roleId) || await guild.roles.fetch(match.roleId).catch(() => null);
+        if (role) {
+          const botMember = guild.members.me || await guild.members.fetch(client.user.id).catch(() => null);
+          if (botMember && !botMember.permissions.has(PermissionsBitField.Flags.ManageRoles)) {
+            console.error(`[ReactionRole Error] Bot lacks "Manage Roles" permission in ${guild.name} (${guild.id})`);
+          } else if (botMember && botMember.roles.highest.position <= role.position) {
+            console.warn(`[ReactionRole Error] Bot highest role (${botMember.roles.highest.name}) is below or equal to target role (${role.name}). Bot role must be higher in server roles list.`);
+          } else {
+            await member.roles.add(role.id, 'Reaction Role Assignment').catch(err => {
+              console.error('[ReactionRole Add Error]', err.message);
+            });
+          }
+        }
       }
-
     }
-
   } catch (err) {
-
     console.error('[ReactionRole Add Error]', err.message);
-
   }
-
 });
 
-
-
 client.on('messageReactionRemove', async (reaction, user) => {
-
   try {
-
     if (user.bot) return;
-
     if (reaction.partial) await reaction.fetch().catch(() => null);
-
     if (reaction.message?.partial) await reaction.message.fetch().catch(() => null);
 
-
-
     const guild = reaction.message?.guild;
-
     if (!guild) return;
 
-
-
     const rrCmd = client.commands.get('reactionrole');
-
     const reactionRoles = rrCmd ? rrCmd.reactionRoles : null;
-
     if (!reactionRoles) return;
 
-
-
     const guildRR = reactionRoles.get(guild.id) || [];
-
     if (guildRR.length === 0) return;
 
-
-
-    const emojiStr = reaction.emoji.id ? (reaction.emoji.animated ? `<a:${reaction.emoji.name}:${reaction.emoji.id}>` : `<:${reaction.emoji.name}:${reaction.emoji.id}>`) : reaction.emoji.name;
-
-
+    const reactionId = reaction.emoji.id;
+    const reactionName = reaction.emoji.name;
+    const emojiStr = reactionId ? (reaction.emoji.animated ? `<a:${reactionName}:${reactionId}>` : `<:${reactionName}:${reactionId}>`) : reactionName;
 
     const match = guildRR.find(r =>
-
-      r.messageId === reaction.message.id &&
-
-      (r.emoji === emojiStr || r.emoji === reaction.emoji.name || (reaction.emoji.id && r.emoji.includes(reaction.emoji.id)))
-
+      r.messageId === reaction.message.id && (
+        (reactionId && (r.emojiId === reactionId || (r.emoji && r.emoji.includes(reactionId)))) ||
+        (!reactionId && (r.emoji === reactionName || r.emojiName === reactionName || (r.emoji && r.emoji.includes(reactionName)))) ||
+        r.emoji === emojiStr
+      )
     );
 
-
-
     if (match) {
-
       const member = await guild.members.fetch(user.id).catch(() => null);
-
       if (member) {
-
-        await member.roles.remove(match.roleId).catch(() => null);
-
+        const role = guild.roles.cache.get(match.roleId) || await guild.roles.fetch(match.roleId).catch(() => null);
+        if (role) {
+          await member.roles.remove(role.id, 'Reaction Role Removal').catch(err => {
+            console.error('[ReactionRole Remove Error]', err.message);
+          });
+        }
       }
-
     }
-
   } catch (err) {
-
     console.error('[ReactionRole Remove Error]', err.message);
-
   }
-
 });
 
 

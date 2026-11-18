@@ -25,7 +25,18 @@ function initLavalink(client) {
       port: parseInt(process.env.BACKUP_LAVALINK_PORT) || 23100,
       authorization: process.env.BACKUP_LAVALINK_PASSWORD || 'kaalontop',
       secure: String(process.env.BACKUP_LAVALINK_SECURE).toLowerCase() === 'true',
-      retryAmount: 2,
+      retryAmount: 5,
+      retryDelay: 5000
+    });
+  } else {
+    // Built-in resilient high-availability fallback node so music works even if primary host is offline
+    nodes.push({
+      id: 'lavalink-fallback-main',
+      host: 'lavalink.serenetia.com',
+      port: 443,
+      authorization: 'youshallnotpass',
+      secure: true,
+      retryAmount: 5,
       retryDelay: 5000
     });
   }

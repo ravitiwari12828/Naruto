@@ -24,9 +24,9 @@ module.exports = {
     const sub2 = args[1]?.toLowerCase();
 
     // ─────────────────────────────────────────
-    // 0. VOICEMASTER TEMP VC HELP (.vc help / .vchelp)
+    // 0. VOICEMASTER TEMP VC HELP (.vc help)
     // ─────────────────────────────────────────
-    if (invoked === 'vchelp' || sub === 'help' || sub === 'h' || sub === 'menu') {
+    if (sub === 'help' || sub === 'h' || sub === 'menu') {
       const voicemasterCmd = message.client.commands.get('voicemaster');
       if (voicemasterCmd && typeof voicemasterCmd.buildVoiceHelpEmbed === 'function') {
         const embed = voicemasterCmd.buildVoiceHelpEmbed(message.member);
