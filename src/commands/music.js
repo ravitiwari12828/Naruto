@@ -10,7 +10,7 @@ const {
 const { createStyledEmbed } = require('../utils/embedBuilder');
 const { createDynamicBox } = require('../utils/boxBuilder');
 const emojis = require('../utils/emojis');
-const { getLavalink } = require('../utils/lavalink');
+const { getLavalink, getOptimalNode } = require('../utils/lavalink');
 const { isGuildPremium, isUserPremium } = require('./premium');
 const db = require('../database/db');
 
@@ -76,7 +76,7 @@ async function connect247Guild(client, guildId, entry) {
         return true;
       }
       if (!player) {
-        const connectedNode = Array.from(lavalink.nodeManager.nodes.values()).find(n => n.connected);
+        const connectedNode = getOptimalNode();
         player = await lavalink.createPlayer({
           guildId,
           voiceChannelId: entry.voiceChannelId,
@@ -587,7 +587,7 @@ module.exports = {
       if (lavalink && lavalink.nodeManager.nodes.size > 0) {
         try {
           if (!player) {
-            const connectedNode = Array.from(lavalink.nodeManager.nodes.values()).find(n => n.connected);
+            const connectedNode = getOptimalNode();
             player = await lavalink.createPlayer({
               guildId,
               voiceChannelId: voiceState.channel.id,
@@ -821,7 +821,7 @@ module.exports = {
           try {
             let player = lavalink.getPlayer(guildId);
             if (!player) {
-              const connectedNode = Array.from(lavalink.nodeManager.nodes.values()).find(n => n.connected);
+              const connectedNode = getOptimalNode();
               player = await lavalink.createPlayer({
                 guildId,
                 voiceChannelId: channel.id,
@@ -1140,7 +1140,7 @@ module.exports = {
 
         let player = lavalink?.getPlayer(guildId);
         if (!player && lavalink) {
-          const connectedNode = Array.from(lavalink.nodeManager.nodes.values()).find(n => n.connected);
+          const connectedNode = getOptimalNode();
           player = await lavalink.createPlayer({
             guildId,
             voiceChannelId: voiceState.channel.id,

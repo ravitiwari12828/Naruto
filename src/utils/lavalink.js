@@ -8,7 +8,16 @@ let _handleAutoplay = null;
 function initLavalink(client) {
   const nodes = [
     {
-      id: 'lavalink-serenetia-main',
+      id: 'visihost-node-main',
+      host: process.env.LAVALINK_HOST?.trim() || 'noida8.visihost.in',
+      port: parseInt(process.env.LAVALINK_PORT) || 25648,
+      authorization: process.env.LAVALINK_PASSWORD?.trim() || 'SynnIsLob',
+      secure: process.env.LAVALINK_SECURE === 'true',
+      retryAmount: 15,
+      retryDelay: 8000
+    },
+    {
+      id: 'lavalink-fallback-serenetia',
       host: 'lavalink.serenetia.com',
       port: 443,
       authorization: 'youshallnotpass',
@@ -17,7 +26,7 @@ function initLavalink(client) {
       retryDelay: 8000
     },
     {
-      id: 'lavalink-vinster-backup',
+      id: 'lavalink-fallback-vinster',
       host: 'freelavalinkvinster.in',
       port: 443,
       authorization: 'youshallnotpass',
@@ -26,20 +35,6 @@ function initLavalink(client) {
       retryDelay: 8000
     }
   ];
-
-  // Custom Primary Lavalink Node (if provided in environment)
-  const envHost = process.env.LAVALINK_HOST?.trim();
-  if (envHost && !nodes.some(n => n.host === envHost)) {
-    nodes.push({
-      id: 'custom-node-primary',
-      host: envHost,
-      port: parseInt(process.env.LAVALINK_PORT) || 25648,
-      authorization: process.env.LAVALINK_PASSWORD?.trim() || 'SynnIsLob',
-      secure: process.env.LAVALINK_SECURE === 'true',
-      retryAmount: 3,
-      retryDelay: 15000
-    });
-  }
 
   // Custom Backup Lavalink Node (if provided in environment)
   const backupHost = process.env.BACKUP_LAVALINK_HOST?.trim();
@@ -50,8 +45,8 @@ function initLavalink(client) {
       port: parseInt(process.env.BACKUP_LAVALINK_PORT) || 23100,
       authorization: process.env.BACKUP_LAVALINK_PASSWORD || 'kaalontop',
       secure: String(process.env.BACKUP_LAVALINK_SECURE).toLowerCase() === 'true',
-      retryAmount: 3,
-      retryDelay: 15000
+      retryAmount: 5,
+      retryDelay: 10000
     });
   }
 
@@ -539,6 +534,14 @@ function getLavalink() {
   return lavalink;
 }
 
+function getOptimalNode() {
+  if (!lavalink?.nodeManager?.nodes) return null;
+  const nodes = Array.from(lavalink.nodeManager.nodes.values());
+  const primary = nodes.find(n => n.id === 'visihost-node-main' && n.connected);
+  if (primary) return primary;
+  return nodes.find(n => n.connected) || null;
+}
+
 function getNodesStatus() {
   if (!lavalink?.nodeManager?.nodes) return [];
   return Array.from(lavalink.nodeManager.nodes.values()).map(n => ({
@@ -554,6 +557,7 @@ function getNodesStatus() {
 }
 
 module.exports = {
+  getOptimalNode,
   getNodesStatus,
   initLavalink,
   getLavalink,

@@ -33,6 +33,8 @@ module.exports = {
     let fields = [];
     allNodes.forEach((node, index) => {
       const isOnline = Boolean(node.connected);
+      const isPrimary = node.id === 'visihost-node-main';
+      const roleTag = isPrimary ? '★ Primary (VisiHost)' : '⚡ Fallback Node';
       const statusIcon = isOnline ? '🟢' : '🔴';
       const statusText = isOnline ? '**Online (Connected)**' : '**Offline / Retrying**';
       
@@ -45,7 +47,7 @@ module.exports = {
       const uptime = node.stats?.uptime ? formatUptime(node.stats.uptime) : 'N/A';
 
       fields.push({
-        name: `${statusIcon} Node #${index + 1}: \`${node.id}\``,
+        name: `${statusIcon} Node #${index + 1}: \`${node.id}\` — *${roleTag}*`,
         value: 
           `• **Host:** \`${node.options.host}:${node.options.port}\` (${node.options.secure ? 'SSL' : 'HTTP'})\n` +
           `• **Status:** ${statusText}\n` +
