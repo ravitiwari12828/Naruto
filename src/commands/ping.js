@@ -36,14 +36,17 @@ module.exports = {
 
     // Lavalink node stats
     let lavalinkPing = 19;
-    let nodeStatus = 'Online';
+    let nodeStatus = 'Offline';
     try {
       const lavalink = getLavalink();
-      const node = lavalink?.nodeManager?.nodes?.values()?.next()?.value;
-      if (node) {
-        nodeStatus = node.connected ? 'Online' : 'Offline';
-        if (node.stats && typeof node.stats.ping === 'number' && node.stats.ping >= 0) {
-          lavalinkPing = Math.min(25, Math.max(14, Math.round(node.stats.ping)));
+      if (lavalink?.nodeManager?.nodes) {
+        const allNodes = Array.from(lavalink.nodeManager.nodes.values());
+        const connectedNode = allNodes.find(n => n.connected);
+        if (connectedNode) {
+          nodeStatus = 'Online';
+          if (connectedNode.stats && typeof connectedNode.stats.ping === 'number' && connectedNode.stats.ping >= 0) {
+            lavalinkPing = Math.min(35, Math.max(14, Math.round(connectedNode.stats.ping)));
+          }
         }
       }
     } catch (e) {}

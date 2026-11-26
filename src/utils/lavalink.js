@@ -8,36 +8,50 @@ let _handleAutoplay = null;
 function initLavalink(client) {
   const nodes = [
     {
-      id: 'visihost-node-main',
-      host: process.env.LAVALINK_HOST?.trim() || 'noida8.visihost.in',
-      port: parseInt(process.env.LAVALINK_PORT) || 25648,
-      authorization: process.env.LAVALINK_PASSWORD?.trim() || 'SynnIsLob',
-      secure: process.env.LAVALINK_SECURE === 'true',
-      retryAmount: 15,
-      retryDelay: 5000
-    }
-  ];
-
-  if (process.env.BACKUP_LAVALINK_HOST && process.env.BACKUP_LAVALINK_HOST.trim()) {
-    nodes.push({
-      id: 'backup-node',
-      host: process.env.BACKUP_LAVALINK_HOST.trim(),
-      port: parseInt(process.env.BACKUP_LAVALINK_PORT) || 23100,
-      authorization: process.env.BACKUP_LAVALINK_PASSWORD || 'kaalontop',
-      secure: String(process.env.BACKUP_LAVALINK_SECURE).toLowerCase() === 'true',
-      retryAmount: 5,
-      retryDelay: 5000
-    });
-  } else {
-    // Built-in resilient high-availability fallback node so music works even if primary host is offline
-    nodes.push({
-      id: 'lavalink-fallback-main',
+      id: 'lavalink-serenetia-main',
       host: 'lavalink.serenetia.com',
       port: 443,
       authorization: 'youshallnotpass',
       secure: true,
-      retryAmount: 5,
-      retryDelay: 5000
+      retryAmount: 10,
+      retryDelay: 8000
+    },
+    {
+      id: 'lavalink-vinster-backup',
+      host: 'freelavalinkvinster.in',
+      port: 443,
+      authorization: 'youshallnotpass',
+      secure: true,
+      retryAmount: 10,
+      retryDelay: 8000
+    }
+  ];
+
+  // Custom Primary Lavalink Node (if provided in environment)
+  const envHost = process.env.LAVALINK_HOST?.trim();
+  if (envHost && !nodes.some(n => n.host === envHost)) {
+    nodes.push({
+      id: 'custom-node-primary',
+      host: envHost,
+      port: parseInt(process.env.LAVALINK_PORT) || 25648,
+      authorization: process.env.LAVALINK_PASSWORD?.trim() || 'SynnIsLob',
+      secure: process.env.LAVALINK_SECURE === 'true',
+      retryAmount: 3,
+      retryDelay: 15000
+    });
+  }
+
+  // Custom Backup Lavalink Node (if provided in environment)
+  const backupHost = process.env.BACKUP_LAVALINK_HOST?.trim();
+  if (backupHost && !nodes.some(n => n.host === backupHost)) {
+    nodes.push({
+      id: 'custom-node-backup',
+      host: backupHost,
+      port: parseInt(process.env.BACKUP_LAVALINK_PORT) || 23100,
+      authorization: process.env.BACKUP_LAVALINK_PASSWORD || 'kaalontop',
+      secure: String(process.env.BACKUP_LAVALINK_SECURE).toLowerCase() === 'true',
+      retryAmount: 3,
+      retryDelay: 15000
     });
   }
 
@@ -97,9 +111,16 @@ function initLavalink(client) {
     console.log(`🔄 [Lavalink] Reconnecting to Lavalink node ${node.id}...`);
   });
 
+  const errorLogThrottle = new Map();
+
   lavalink.nodeManager.on('error', (node, error) => {
     const errCode = error?.code || error?.message || 'Connection glitch';
-    console.log(`❌ [Lavalink Connection] Node ${node.id} network check (${errCode}) - Auto-reconnecting...`);
+    const now = Date.now();
+    const last = errorLogThrottle.get('err_' + node.id) || 0;
+    if (now - last > 60000) {
+      errorLogThrottle.set('err_' + node.id, now);
+      console.log(`⚠️ [Lavalink Notice] Node ${node.id} (${node.options.host}) network notice (${errCode}) - Retrying in background...`);
+    }
   });
 
   // Forward raw gateway voice packets to Lavalink
@@ -510,6 +531,7 @@ function initLavalink(client) {
     lavalink.init({ id: client.user.id, username: client.user.username });
   } catch (e) {}
 
+  client.lavalink = lavalink;
   return lavalink;
 }
 
@@ -517,7 +539,22 @@ function getLavalink() {
   return lavalink;
 }
 
+function getNodesStatus() {
+  if (!lavalink?.nodeManager?.nodes) return [];
+  return Array.from(lavalink.nodeManager.nodes.values()).map(n => ({
+    id: n.id,
+    host: n.options.host,
+    port: n.options.port,
+    secure: Boolean(n.options.secure),
+    connected: Boolean(n.connected),
+    ping: (n.stats && typeof n.stats.ping === 'number' && n.stats.ping >= 0) ? Math.round(n.stats.ping) : null,
+    players: n.stats?.players || 0,
+    playingPlayers: n.stats?.playingPlayers || 0
+  }));
+}
+
 module.exports = {
+  getNodesStatus,
   initLavalink,
   getLavalink,
   handleAutoplay: async (player, track, client) => {

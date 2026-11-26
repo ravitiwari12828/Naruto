@@ -76,12 +76,14 @@ async function connect247Guild(client, guildId, entry) {
         return true;
       }
       if (!player) {
+        const connectedNode = Array.from(lavalink.nodeManager.nodes.values()).find(n => n.connected);
         player = await lavalink.createPlayer({
           guildId,
           voiceChannelId: entry.voiceChannelId,
           textChannelId: entry.textChannelId || null,
           selfDeaf: true,
-          volume: 100
+          volume: 100,
+          node: connectedNode ? connectedNode.id : undefined
         });
       } else {
         player.voiceChannelId = entry.voiceChannelId;
@@ -585,12 +587,14 @@ module.exports = {
       if (lavalink && lavalink.nodeManager.nodes.size > 0) {
         try {
           if (!player) {
+            const connectedNode = Array.from(lavalink.nodeManager.nodes.values()).find(n => n.connected);
             player = await lavalink.createPlayer({
               guildId,
               voiceChannelId: voiceState.channel.id,
               textChannelId: message.channel.id,
               selfDeaf: true,
-              volume: 100
+              volume: 100,
+              node: connectedNode ? connectedNode.id : undefined
             });
             await player.connect();
             await player.setVolume(100).catch(() => {});
@@ -817,11 +821,13 @@ module.exports = {
           try {
             let player = lavalink.getPlayer(guildId);
             if (!player) {
+              const connectedNode = Array.from(lavalink.nodeManager.nodes.values()).find(n => n.connected);
               player = await lavalink.createPlayer({
                 guildId,
                 voiceChannelId: channel.id,
                 textChannelId: message.channel.id,
-                selfDeaf: true
+                selfDeaf: true,
+                node: connectedNode ? connectedNode.id : undefined
               });
             } else {
               player.voiceChannelId = channel.id;
@@ -1134,11 +1140,13 @@ module.exports = {
 
         let player = lavalink?.getPlayer(guildId);
         if (!player && lavalink) {
+          const connectedNode = Array.from(lavalink.nodeManager.nodes.values()).find(n => n.connected);
           player = await lavalink.createPlayer({
             guildId,
             voiceChannelId: voiceState.channel.id,
             textChannelId: message.channel.id,
-            selfDeaf: true
+            selfDeaf: true,
+            node: connectedNode ? connectedNode.id : undefined
           });
           await player.connect();
         }
